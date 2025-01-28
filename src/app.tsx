@@ -8,7 +8,7 @@ const App = () => {
     // This code runs after the component mounts
     console.log("Component mounted");
     // You can update the state or perform other side effects here
-    setMessage("Hello from useEffect!");
+    setMessage("Hello from useEffect!"); 
 
     // Cleanup function (optional)
     return () => {
