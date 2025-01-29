@@ -3,6 +3,7 @@ import { AppBar, IconButton, Toolbar, Typography, Dialog } from "@mui/material";
 // import { SettingsPage } from "./SettingsPage";
 import CloseIcon from "@mui/icons-material/Close";
 import theme from "../../theme";
+import { SettingsPage } from "./SettingsPage";
 
 interface SettingsModalProps {
   open: boolean;
@@ -41,7 +42,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </Toolbar>
         </AppBar>
 
-        {/* <SettingsPage /> */}
+        <SettingsPage />
       </>
     </Dialog>
   );

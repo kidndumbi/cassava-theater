@@ -4,6 +4,7 @@ import { SettingsIpcChannels } from "./enums/settings-IPC-channels.enum";
 
 import { contextBridge, ipcRenderer } from "electron";
 import { SettingsModel } from "./models/settings.model";
+import { OpenDialogIpcChannels } from "./enums/open-dialog-IPC-channels.enum";
 
 
 contextBridge.exposeInMainWorld("myAPI", {
@@ -19,5 +20,14 @@ contextBridge.exposeInMainWorld("settingsAPI", {
   },
   setSetting: (key: keyof SettingsModel, value: any) => {
     return ipcRenderer.invoke(SettingsIpcChannels.SET_SETTING, key, value) as Promise<any>;
+  },
+});
+
+contextBridge.exposeInMainWorld("openDialogAPI", {
+  openFileDialog: (filters?: { name: string; extensions: string[] }[]) => {
+    return ipcRenderer.invoke(OpenDialogIpcChannels.OPEN_FILE_DIALOG, filters) as Promise<string | null>;
+  },
+  openFolderDialog: () => {
+    return ipcRenderer.invoke(OpenDialogIpcChannels.OPEN_FOLDER_DIALOG) as Promise<string | null>;
   },
 });
