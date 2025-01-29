@@ -16,18 +16,30 @@ export const useSettings = () => {
     }
   };
 
-//   const updateSetting = async (settingsName: string, value: any) => {
-//     try {
-//       await dispatch(settingsActions.setSetting({ settingsName, value }));
-//     } catch (error) {
-//       console.error("Failed to update setting:", error);
-//       throw error;
-//     }
-//   };
+  const getSetting = async (key: keyof typeof settings) => {
+    try {
+      const setting = await dispatch(settingsActions.getSetting(key));
+      return setting.payload;
+    } catch (error) {
+      console.error("Failed to fetch setting:", error);
+    }
+  };
+
+  const setSetting = async (key: keyof typeof settings, value: any) => {
+    try {
+      const setting = await dispatch(
+        settingsActions.setSetting({ key, value })
+      );
+      return setting.payload;
+    } catch (error) {
+      console.error("Failed to fetch setting:", error);
+    }
+  };
 
   return {
     settings,
     fetchAllSettings,
-    // updateSetting,
+    getSetting,
+    setSetting,
   };
 };

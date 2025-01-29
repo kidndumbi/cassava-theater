@@ -14,6 +14,6 @@ export function registerIpcHandlers() {
   });
 
   ipcMain.handle(SettingsIpcChannels.SET_SETTING, (_event: any, key: keyof SettingsModel, value: any) => {
-    setValue(key, value);
+    return setValue(key, value);
   });
 }

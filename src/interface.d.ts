@@ -6,7 +6,7 @@ export interface IElectronAPI {
 export interface settingsAPI {
   getALLSettings: () => Promise<SettingsModel>;
   getSetting: (key: keyof SettingsModel) => Promise<SettingsModel[keyof SettingsModel]>;
-  setSetting: (key: keyof SettingsModel, value: any) => Promise<void>;
+  setSetting: (key: keyof SettingsModel, value: any) => Promise<any>;
 }
 
 declare global {

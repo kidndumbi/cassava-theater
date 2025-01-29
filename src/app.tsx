@@ -9,22 +9,11 @@ import { useSettings } from "./renderer/hooks/useSettings";
 import { store } from "./renderer/store";
 
 const App = () => {
-  const [message, setMessage] = useState("Hello from React!");
-  const [isDesktop, setIsDesktop] = useState(false);
   const { fetchAllSettings, settings } = useSettings();
 
   useEffect(() => {
-    // This code runs after the component mounts
-    console.log("Component mounted");
-    // You can update the state or perform other side effects here
-    setMessage("Hello from useEffect!");
-
     fetchAllSettings();
-
-    return () => {
-      console.log("Component unmounted");
-    };
-  }, []); // Empty dependency array means this runs once after initial render
+  }, []);
 
   useEffect(() => {
     console.log("settings", settings);
@@ -32,9 +21,9 @@ const App = () => {
 
   return (
     <>
-      <h2>{message}</h2>
-      <p>{isDesktop ? "Running on desktop" : "Not running on desktop"}</p>
-      <Button color="primary">Cancel</Button>
+      <h2>APP PAGE</h2>
+
+      <Button color="primary">APP PAGE</Button>
     </>
   );
 };
