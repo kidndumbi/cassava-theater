@@ -44,16 +44,16 @@ let mainWindow: BrowserWindow | null = null;
 
 io.on("connection", (socket) => {
   console.log("a user connected");
-  log.info("a user connected::::::::");
+  mainWindow.webContents.send("user-connected", socket.id);
   socket.on("disconnect", () => {
-    console.log("user disconnected");
+    mainWindow.webContents.send("user-disconnected", socket.id);
     log.info("user disconnected::::::::");
   });
 
   socket.on(AppSocketEvents.REMOTE_COMMAND, (command: VideoCommands) => {
     console.log("command: " + command);
     if (mainWindow) {
-      mainWindow.webContents.send("message-from-main", command);
+      mainWindow.webContents.send("video-command", command);
     }
   });
 

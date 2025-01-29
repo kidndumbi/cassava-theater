@@ -48,9 +48,24 @@ contextBridge.exposeInMainWorld("openDialogAPI", {
 contextBridge.exposeInMainWorld("videoCommandsAPI", {
   videoCommand: (callback: (command: VideoCommands) => void) => {
     ipcRenderer.on(
-      "message-from-main",
+      "video-command",
       (event: Electron.IpcRendererEvent, command: VideoCommands) =>
         callback(command)
+    );
+  },
+});
+
+contextBridge.exposeInMainWorld("mainNotificationsAPI", {
+  userConnected: (callback: (userId: string) => void) => {
+    ipcRenderer.on(
+      "user-connected",
+      (event: Electron.IpcRendererEvent, userId: string) => callback(userId)
+    );
+  },
+  userDisconnected: (callback: (userId: string) => void) => {
+    ipcRenderer.on(
+      "user-disconnected",
+      (event: Electron.IpcRendererEvent, userId: string) => callback(userId)
     );
   },
 });

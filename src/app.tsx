@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import CssBaseline from "@mui/material/CssBaseline";
-import { Box, ThemeProvider } from "@mui/material";
+import { Alert, Box, Snackbar, ThemeProvider } from "@mui/material";
 import { Provider } from "react-redux";
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import theme from "./renderer/theme";
@@ -15,18 +15,39 @@ import { Layout } from "./renderer/pages/Layout";
 const App = () => {
   const { fetchAllSettings, settings } = useSettings();
 
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success" as "success" | "error",
+  });
+
+  const openSnackbar = (message: string, severity: "success" | "error") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
   useEffect(() => {
     fetchAllSettings();
 
-    window.videoCommandsAPI.videoCommand((command: string) => { 
-      console.log("Received command from main process:", command);
+    // window.videoCommandsAPI.videoCommand((command: string) => {
+    //   console.log("Received command from main process:", command);
+    // });
+
+    window.mainNotificationsAPI.userConnected((userId: string) => {
+      openSnackbar(`User ${userId} connected`, "success");
     });
 
+    window.mainNotificationsAPI.userDisconnected((userId: string) => {
+      openSnackbar(`User ${userId} disconnected`, "error");
+    });
   }, []);
 
   useEffect(() => {
     console.log("settings", settings);
   }, [settings]);
+
+  const closeSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
 
   return (
     <Box
@@ -38,6 +59,15 @@ const App = () => {
       <main>
         <AppRoutes />
       </main>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={closeSnackbar}
+      >
+        <Alert onClose={closeSnackbar} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
@@ -55,10 +85,6 @@ root.render(
 );
 
 function AppRoutes() {
-  //const socket = useSocket(); // Use the same URL your backend is running on
-
-  //useSocketHandlers(socket);
-
   return (
     <HashRouter>
       <Routes>
