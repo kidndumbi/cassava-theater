@@ -15,8 +15,8 @@ const schema: Schema<SettingsModel> = {
     default: "",
   },
   folders: {
-    type: "string",
-    default: "",
+    type: "array",
+    default: [],
   },
   continuousPlay: {
     type: "boolean",
@@ -34,8 +34,9 @@ export const getValue = (key: keyof SettingsModel): any => {
   return store.get(key);
 };
 
-export const setValue = (key: keyof SettingsModel, value: any): void => {
+export const setValue = (key: keyof SettingsModel, value: any): any => {
   store.set(key, value);
+  return value;
 };
 
 export const getAllValues = (): SettingsModel => {

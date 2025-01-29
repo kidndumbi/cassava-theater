@@ -18,6 +18,6 @@ contextBridge.exposeInMainWorld("settingsAPI", {
     return ipcRenderer.invoke(SettingsIpcChannels.GET_SETTING, key) as Promise<SettingsModel[keyof SettingsModel]>;
   },
   setSetting: (key: keyof SettingsModel, value: any) => {
-    return ipcRenderer.invoke(SettingsIpcChannels.SET_SETTING, key, value) as Promise<void>;
+    return ipcRenderer.invoke(SettingsIpcChannels.SET_SETTING, key, value) as Promise<any>;
   },
 });
