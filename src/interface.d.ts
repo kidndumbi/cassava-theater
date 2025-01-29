@@ -9,9 +9,15 @@ export interface settingsAPI {
   setSetting: (key: keyof SettingsModel, value: any) => Promise<any>;
 }
 
+export interface OpenDialogAPI {
+  openFileDialog: (options: any) => Promise<string | null>;
+  openFolderDialog: () => Promise<string | null>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
     settingsAPI: settingsAPI;
+    openDialogAPI: OpenDialogAPI;
   }
 }
