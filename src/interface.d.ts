@@ -21,11 +21,17 @@ export interface VideoCommandsAPI {
   videoCommand: (callback: (command: VideoCommands) => void) => void;
 }
 
+export interface MainNotificationsAPI {
+  userConnected: (callback: (userId: string) => void) => void;
+  userDisconnected: (callback: (userId: string) => void) => void;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
     settingsAPI: settingsAPI;
     openDialogAPI: OpenDialogAPI;
     videoCommandsAPI: VideoCommandsAPI;
+    mainNotificationsAPI: MainNotificationsAPI;
   }
 }
