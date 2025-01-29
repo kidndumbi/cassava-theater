@@ -4,7 +4,7 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { registerIpcHandlers } from "./main/ipcHandlers";
-import { initializeStore } from "./main/store";
+import { getAllValues, initializeStore } from "./main/store";
 import log from "electron-log/main";
 import { Server } from "socket.io";
 import * as http from "http";
@@ -56,6 +56,19 @@ io.on("connection", (socket) => {
       mainWindow.webContents.send("message-from-main", command);
     }
   });
+
+  socket.on(
+    AppSocketEvents.GET_SETTINGS,
+    async (requestData: {}, callback: (response: any) => void) => {
+      try {
+        const settings = getAllValues();
+        callback({ success: true, data: settings });
+      } catch (error) {
+        console.error("Error fetching videos data:", error);
+        callback({ success: false, error: "Failed to fetch videos data" });
+      }
+    }
+  );
 });
 
 const createWindow = (): void => {
