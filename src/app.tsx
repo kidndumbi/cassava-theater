@@ -17,6 +17,11 @@ const App = () => {
 
   useEffect(() => {
     fetchAllSettings();
+
+    window.videoCommandsAPI.videoCommand((command: string) => { 
+      console.log("Received command from main process:", command);
+    });
+
   }, []);
 
   useEffect(() => {
