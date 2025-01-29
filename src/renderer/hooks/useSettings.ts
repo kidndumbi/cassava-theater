@@ -1,5 +1,3 @@
-// import { useAppDispatch } from "../../store";
-// import { settingsActions, selSettings } from "../../store/settingsSlice";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
 import { selSettings, settingsActions } from "../store/settingsSlice";
@@ -8,32 +6,34 @@ export const useSettings = () => {
   const dispatch = useAppDispatch();
   const settings = useSelector(selSettings);
 
-  const fetchAllSettings = async () => {
+  const dispatchAsync = async (action: any, errorMessage: string) => {
     try {
-      await dispatch(settingsActions.getAllSettings());
+      const result = await dispatch(action);
+      return result.payload;
     } catch (error) {
-      console.error("Failed to fetch setting:", error);
+      console.error(errorMessage, error);
     }
+  };
+
+  const fetchAllSettings = async () => {
+    return dispatchAsync(
+      settingsActions.getAllSettings(),
+      "Failed to fetch settings"
+    );
   };
 
   const getSetting = async (key: keyof typeof settings) => {
-    try {
-      const setting = await dispatch(settingsActions.getSetting(key));
-      return setting.payload;
-    } catch (error) {
-      console.error("Failed to fetch setting:", error);
-    }
+    return dispatchAsync(
+      settingsActions.getSetting(key),
+      "Failed to fetch setting"
+    );
   };
 
   const setSetting = async (key: keyof typeof settings, value: any) => {
-    try {
-      const setting = await dispatch(
-        settingsActions.setSetting({ key, value })
-      );
-      return setting.payload;
-    } catch (error) {
-      console.error("Failed to fetch setting:", error);
-    }
+    return dispatchAsync(
+      settingsActions.setSetting({ key, value }),
+      "Failed to set setting"
+    );
   };
 
   return {
