@@ -1,21 +1,16 @@
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import CssBaseline from "@mui/material/CssBaseline";
 import { Box, ThemeProvider } from "@mui/material";
 import { Provider } from "react-redux";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-} from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import theme from "./renderer/theme";
-import Button from "@mui/material/Button";
 import { useSettings } from "./renderer/hooks/useSettings";
 import { store } from "./renderer/store";
 import { LandingPage } from "./renderer/pages/landing-page/LandingPage";
 import { VideoDetailsPage } from "./renderer/pages/video-details-page/VideoDetailsPage";
 import { VideoPlayerPage } from "./renderer/pages/video-player-page/VideoPlayerPage";
+import { Layout } from "./renderer/pages/Layout";
 
 const App = () => {
   const { fetchAllSettings, settings } = useSettings();
@@ -29,18 +24,16 @@ const App = () => {
   }, [settings]);
 
   return (
-    <Router>
-      <Box
-        data-testid="box-container"
-        sx={{
-          backgroundColor: theme.customVariables.appDarker,
-        }}
-      >
-        <main>
-          <AppRoutes />
-        </main>
-      </Box>
-    </Router>
+    <Box
+      data-testid="box-container"
+      sx={{
+        backgroundColor: theme.customVariables.appDarker,
+      }}
+    >
+      <main>
+        <AppRoutes />
+      </main>
+    </Box>
   );
 };
 
@@ -62,11 +55,15 @@ function AppRoutes() {
   //useSocketHandlers(socket);
 
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/video-player" element={<VideoPlayerPage />} />
-      <Route path="/video-details" element={<VideoDetailsPage />} />
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<LandingPage />} />
+          <Route path="video-player" element={<VideoPlayerPage />} />
+          <Route path="video-details" element={<VideoDetailsPage />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Route>
+      </Routes>
+    </HashRouter>
   );
 }
