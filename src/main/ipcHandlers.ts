@@ -3,6 +3,7 @@ import { ipcMain } from "electron";
 import { SettingsIpcChannels } from "../enums/settings-IPC-channels.enum";
 import { getAllValues, getValue, setValue } from "./store";
 import { SettingsModel } from "../models/settings.model";
+import { app } from "electron";
 import {
   openFileDialog,
   openFolderDialog,
@@ -13,6 +14,7 @@ import {
   fetchVideoDetails,
   fetchVideosData,
 } from "./services/video.service";
+import { MainUtilIPCChannels } from "../enums/main-util-IPC-channels";
 
 export function registerIpcHandlers() {
   ipcMain.handle(
@@ -64,4 +66,6 @@ export function registerIpcHandlers() {
 
   ipcMain.handle(OpenDialogIpcChannels.OPEN_FOLDER_DIALOG, openFolderDialog);
   ipcMain.handle(OpenDialogIpcChannels.OPEN_FILE_DIALOG, openFileDialog);
+
+  ipcMain.handle(MainUtilIPCChannels.IS_PACKAGED, () => app.isPackaged);
 }

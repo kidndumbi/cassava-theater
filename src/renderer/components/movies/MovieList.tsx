@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { trimFileName } from "../../../util/helperFunctions";
+import { trimFileName } from "../../util/helperFunctions";
 import { PosterCard } from "../common/PosterCard";
 
 interface MovieListProps {

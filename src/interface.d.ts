@@ -1,3 +1,4 @@
+import { isPackaged } from "./interface.d";
 import { SettingsModel } from "./main/store";
 import { VideoCommands } from "./models/video-commands.model";
 export interface IElectronAPI {
@@ -26,6 +27,10 @@ export interface MainNotificationsAPI {
   userDisconnected: (callback: (userId: string) => void) => void;
 }
 
+export interface MainUtilAPI {
+  isPackaged: () => Promise<boolean>;
+}
+
 export interface VideoAPI {
   fetchVideoData: (args: {
     filePath: string;
@@ -44,5 +49,6 @@ declare global {
     videoCommandsAPI: VideoCommandsAPI;
     mainNotificationsAPI: MainNotificationsAPI;
     videoAPI: VideoAPI;
+    mainUtilAPI: MainUtilAPI;
   }
 }

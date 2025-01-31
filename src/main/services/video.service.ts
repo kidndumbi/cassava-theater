@@ -1,13 +1,12 @@
 import { IncomingMessage, ServerResponse } from "http";
 import * as fs from "fs";
-import { readFile, access } from "fs/promises";
 import { stat, readdir } from "fs/promises";
 import { Stats } from "fs";
 import * as path from "path";
 import { VideoDataModel } from "../../models/videoData.model";
 import ffmpeg from "fluent-ffmpeg";
 import { app } from "electron";
-import log from "electron-log/main";
+import { loggingService as log } from "./main-logging.service";
 
 import {
   readThumbnailCache,
@@ -16,6 +15,11 @@ import {
 } from "./thumbnailCache.service";
 import { generateThumbnail } from "./thumbnail.service";
 import { TvShowDetails } from "../../models/tv-show-details.model";
+import {
+  readOrDefaultJson,
+  readJsonData,
+  shouldProcessFile,
+} from "./video.helpers";
 
 let ffprobePath = path.join(
   app.getAppPath(),
@@ -34,7 +38,6 @@ if (app.isPackaged) {
 if (fs.existsSync(ffprobePath)) {
   ffmpeg.setFfprobePath(ffprobePath);
 } else {
-  console.error("ffprobe.exe does not exist at the resolved path.");
   log.error("ffprobe.exe does not exist at the resolved path.");
   throw new Error(
     "ffprobe binary not found. Please ensure ffprobe-static is installed correctly."
@@ -84,6 +87,7 @@ export const fetchVideosData = async ({
       a.fileName!.localeCompare(b.fileName!)
     );
   } catch (error) {
+    log.error("Error fetching video list: ", error);
     throw new Error("Error fetching video list: " + error);
   }
 };
@@ -123,6 +127,7 @@ export const fetchVideoDetails = async (
 
     return processedVideoData;
   } catch (error) {
+    log.error("Error fetching video details: ", error);
     throw new Error("Error fetching video details: " + error);
   }
 };
@@ -165,26 +170,10 @@ export const fetchFolderDetails = async (
 
     return videoDetails;
   } catch (error) {
+    log.error("Error fetching Folder details: ", error);
     throw new Error("Error fetching Folder details: " + error);
   }
 };
-
-export const createFolderDataObject = (
-  basePath: string,
-  filePath: string,
-  jsonFileContents: VideoDataModel | null,
-  tv_show_details: TvShowDetails | null,
-  childFolders: { folderPath: string; basename: string }[] = []
-) => ({
-  basePath,
-  filePath,
-  season_id: jsonFileContents?.season_id || null,
-  tv_show_details,
-  childFolders,
-  lastVideoPlayed: jsonFileContents?.lastVideoPlayed,
-  lastVideoPlayedTime: jsonFileContents?.lastVideoPlayedTime || 0,
-  lastVideoPlayedDate: jsonFileContents?.lastVideoPlayedDate || null,
-});
 
 async function processVideoData(
   video: VideoDataModel,
@@ -217,10 +206,7 @@ async function processVideoData(
         video.videoProgressScreenshot = videoProgressScreenshot;
       }
     } catch (error) {
-      console.error(
-        `Error generating thumbnail for video ${video.filePath}:`,
-        error
-      );
+      log.error( `Error generating thumbnail for video ${video.filePath}:`, error);
       video.videoProgressScreenshot = DEFAULT_THUMBNAIL_URL;
     }
   } else {
@@ -272,6 +258,7 @@ export const getRootVideoData = async (
       return directoryDifference;
     });
   } catch (error) {
+    log.error("An error occurred while fetching root video data: ", error);
     throw new Error(
       "An error occurred while fetching root video data." + error
     );
@@ -300,7 +287,6 @@ export const populateVideoData = async (
       jsonFileContents
     );
   } catch (error: any) {
-    console.error("Error populating video data:", error);
     log.error("Error populating video data:", error);
     return null;
   }
@@ -317,45 +303,19 @@ export const calculateDuration = async (file: string) => {
   return duration;
 };
 
-
-export const readJsonData = async (jsonPath: string) => {
-  try {
-    const exists = await fileExists(jsonPath);
-    if (exists) {
-      const jsonFile = await readFileData(jsonPath);
-      const parsedData = JSON.parse(jsonFile || "");
-      return parsedData;
-    }
-    return null;
-  } catch (error) {
-    console.error("Error in readJsonData:", error);
-    throw error;
-  }
-};
-
 export function getVideoDuration(
   filePath: string
 ): Promise<number | "unknown"> {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(filePath, (err, metadata) => {
       if (err) {
+        log.error("Error getting video duration: ", err);
         return reject(err);
       }
       const duration = metadata.format.duration;
       resolve(duration !== undefined ? duration : "unknown");
     });
   });
-}
-
-async function readOrDefaultJson(
-  filePath: string,
-  defaultData: VideoDataModel = { notes: [], overview: {} }
-): Promise<VideoDataModel> {
-  if (await fileExists(filePath)) {
-    const file = await readFileData(filePath);
-    return file ? JSON.parse(file) : defaultData;
-  }
-  return defaultData;
 }
 
 export const createVideoDataObject = (
@@ -390,37 +350,22 @@ export const createVideoDataObject = (
   tv_show_details: jsonFileContents?.tv_show_details || null,
 });
 
-export const readFileData = async (
-  filePath: string
-): Promise<string | undefined> => {
-  try {
-    const jsonFile = await readFile(filePath);
-    return jsonFile?.toString();
-  } catch (error) {
-    console.log("error::: readFile() ", error);
-  }
-};
-
-export const fileExists = async (filePath: string): Promise<boolean> => {
-  try {
-    await access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-export const shouldProcessFile = (
-  file: string,
-  stats: Stats,
-  searchText?: string
-) => {
-  return searchText &&
-    !file.toLowerCase().includes(searchText.toLowerCase()) &&
-    !stats.isDirectory()
-    ? false
-    : true;
-};
+export const createFolderDataObject = (
+  basePath: string,
+  filePath: string,
+  jsonFileContents: VideoDataModel | null,
+  tv_show_details: TvShowDetails | null,
+  childFolders: { folderPath: string; basename: string }[] = []
+) => ({
+  basePath,
+  filePath,
+  season_id: jsonFileContents?.season_id || null,
+  tv_show_details,
+  childFolders,
+  lastVideoPlayed: jsonFileContents?.lastVideoPlayed,
+  lastVideoPlayedTime: jsonFileContents?.lastVideoPlayedTime || 0,
+  lastVideoPlayedDate: jsonFileContents?.lastVideoPlayedDate || null,
+});
 
 export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
   const url = new URL(req.url!, `http://${req.headers.host}`);

@@ -1,3 +1,4 @@
+import { rendererLoggingService as log } from "../util/renderer-logging.service";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
 import { selSettings, settingsActions } from "../store/settingsSlice";
@@ -11,7 +12,7 @@ export const useSettings = () => {
       const result = await dispatch(action);
       return result.payload;
     } catch (error) {
-      console.error(errorMessage, error);
+      log.error(errorMessage, error);
     }
   };
 

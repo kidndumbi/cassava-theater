@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { Box, Chip } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 // import Moment from "react-moment";
-import { secondsTohhmmss } from "../../../../util/helperFunctions";
+import { secondsTohhmmss } from "../../../util/helperFunctions";
 import { NoteModel } from "../../../../models/note.model"; // Adjust the import to your actual path
 
 type NoteChipProps = {

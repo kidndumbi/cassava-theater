@@ -4,7 +4,7 @@ import { Box, IconButton, Tooltip } from "@mui/material";
 import {
   getPlayedPercentage,
   secondsTohhmmss,
-} from "../../../util/helperFunctions";
+} from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ClosedCaptionButton from "../common/ClosedCaptionButton";

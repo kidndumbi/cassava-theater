@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Tabs, Tab } from "@mui/material";
-import { getYearFromDate } from "../../../util/helperFunctions";
+import { getYearFromDate } from "../../util/helperFunctions";
 
 import { a11yProps } from "../common/TabPanel";
 import MovieDetailsButtons from "./MovieDetailsButtons";

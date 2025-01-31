@@ -41,10 +41,6 @@ const App = () => {
     });
   }, []);
 
-  useEffect(() => {
-    console.log("settings", settings);
-  }, [settings]);
-
   const closeSnackbar = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
