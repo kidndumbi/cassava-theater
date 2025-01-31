@@ -1,4 +1,3 @@
-
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "./index";
 import { hasExtension } from "../../util/helperFunctions";
@@ -7,7 +6,6 @@ import { ipcRenderer } from "electron";
 import { VideoDataModel } from "../../models/videoData.model";
 import { VideoIPCChannels } from "../../enums/VideoIPCChannels";
 // import { response } from "@types/express";
-
 
 const folderVideosInfoSlice = createSlice({
   name: "folderVideosInfo",
@@ -149,6 +147,7 @@ const fetchVideoData = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
+      console.log("fetchVideoData Fetching video data for category:", category);
       if (!path) {
         console.error("Path is required");
         return {
@@ -157,11 +156,18 @@ const fetchVideoData = createAsyncThunk(
         };
       }
 
-    //   const response = await ipcRenderer.invoke(
-    //     VideoIPCChannels.FetchVideoData,
-    //     { filePath: path, searchText, includeThumbnail }
-    //   );
-    const response: any = []
+      // const response = await ipcRenderer.invoke(
+      //   VideoIPCChannels.FetchVideoData,
+      //   { filePath: path, searchText, includeThumbnail }
+      // );
+
+      const response = await window.videoAPI.fetchVideoData({
+        filePath: path,
+        searchText,
+        includeThumbnail,
+      });
+
+      //const response: any = []
 
       return {
         category,
@@ -185,7 +191,7 @@ const fetchVideoDetailsApi = async ({ path }: { path: string }) => {
     //   VideoIPCChannels.FetchVideoDetails,
     //   path
     // );
-    const response: any = []
+    const response: any = [];
 
     return response;
   } catch (error) {
@@ -211,11 +217,11 @@ const fetchFolderDetails = createAsyncThunk(
   "folderVideosInfo/fetchFolderDetails",
   async ({ path }: { path: string }, { rejectWithValue }) => {
     try {
-    //   const response = await ipcRenderer.invoke(
-    //     VideoIPCChannels.FetchFolderDetails,
-    //     path
-    //   );
-    const response: any = []
+      //   const response = await ipcRenderer.invoke(
+      //     VideoIPCChannels.FetchFolderDetails,
+      //     path
+      //   );
+      const response: any = [];
       return response;
     } catch (error) {
       console.error("Error fetching folder details:", error);
