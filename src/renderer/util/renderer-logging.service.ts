@@ -21,52 +21,79 @@ class RendererLoggingService {
     }
   }
 
+  private getCallerFile() {
+    const stack = new Error().stack;
+    if (!stack) return "";
+    const stackLines = stack.split("\n");
+    // Adjust the index based on the stack trace structure
+    for (let i = 2; i < stackLines.length; i++) {
+      const line = stackLines[i];
+      if (!line.includes("renderer-logging.service.ts")) {
+        const match = line.match(/\((.*):\d+:\d+\)/);
+        if (match) {
+          return match[1] + " ";
+        }
+      }
+    }
+    return "";
+  }
+
   log(message: string, ...args: any[]) {
     this.ensureIsProductionSet(() => {
+      const file = this.getCallerFile();
+      const logMessage = `${file}${this.context}${message}`;
       if (this.isProduction) {
-        log.log(this.context + message, ...args);
+        log.log(logMessage, ...args);
       } else {
-        console.log(message, ...args);
+        console.log(`${file}${message}`, ...args);
       }
     });
   }
 
   info(message: string, ...args: any[]) {
     this.ensureIsProductionSet(() => {
+      const file = this.getCallerFile();
+      const logMessage = `${file}${this.context}${message}`;
       if (this.isProduction) {
-        log.info(this.context + message, ...args);
+        log.info(logMessage, ...args);
       } else {
-        console.info(message, ...args);
+        console.info(`${file}${message}`, ...args);
       }
     });
   }
 
   warn(message: string, ...args: any[]) {
     this.ensureIsProductionSet(() => {
+      const file = this.getCallerFile();
+      const logMessage = `${file}${this.context}${message}`;
       if (this.isProduction) {
-        log.warn(this.context + message, ...args);
+        log.warn(logMessage, ...args);
       } else {
-        console.warn(message, ...args);
+        console.warn(`${file}${message}`, ...args);
       }
     });
   }
 
   error(message: string, ...args: any[]) {
     this.ensureIsProductionSet(() => {
+      const file = this.getCallerFile();
+      const logMessage = `${file}${this.context}${message}`;
       if (this.isProduction) {
-        log.error(this.context + message, ...args);
+        log.error(logMessage, ...args);
       } else {
-        console.error(message, ...args);
+        console.error(`${file}${message}`, ...args);
       }
     });
   }
 
   debug(message: string, ...args: any[]) {
     this.ensureIsProductionSet(() => {
+      const file = this.getCallerFile();
+      const logMessage = `${file}${this.context}${message}`;
       if (this.isProduction) {
-        log.debug(this.context + message, ...args);
+        log.debug(logMessage, ...args);
       } else {
-        console.debug(message, ...args);
+        console.debug(`${file}${message}`, ...args);
       }
     });
   }
