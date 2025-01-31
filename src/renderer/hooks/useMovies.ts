@@ -34,8 +34,6 @@ export const useMovies = () => {
   };
 
   const getMovies = async () => {
-
-    console.log("getMovies");
     const movieFolderPath = await dispatch(
       settingsActions.getSetting("movieFolderPath")
     );

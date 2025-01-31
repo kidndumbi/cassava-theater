@@ -32,6 +32,7 @@ export interface VideoAPI {
     searchText?: string;
     includeThumbnail: boolean;
   }) => Promise<any>;
+  fetchVideoDetails: (args: { path: string }) => Promise<any>;
 }
 
 declare global {
