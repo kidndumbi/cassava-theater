@@ -8,7 +8,11 @@ import {
   openFolderDialog,
 } from "./services/openDialog.service";
 import { VideoIPCChannels } from "../enums/VideoIPCChannels";
-import { fetchVideoDetails, fetchVideosData } from "./services/video.service";
+import {
+  fetchFolderDetails,
+  fetchVideoDetails,
+  fetchVideosData,
+} from "./services/video.service";
 
 export function registerIpcHandlers() {
   ipcMain.handle(
@@ -48,6 +52,13 @@ export function registerIpcHandlers() {
     VideoIPCChannels.FetchVideoDetails,
     (_event: any, args: { path: string }) => {
       return fetchVideoDetails(args.path);
+    }
+  );
+
+  ipcMain.handle(
+    VideoIPCChannels.FetchFolderDetails,
+    (_event: any, args: { path: string }) => {
+      return fetchFolderDetails(args.path.replace("/", "\\"));
     }
   );
 

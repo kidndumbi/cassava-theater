@@ -33,6 +33,7 @@ export interface VideoAPI {
     includeThumbnail: boolean;
   }) => Promise<any>;
   fetchVideoDetails: (args: { path: string }) => Promise<any>;
+  fetchFolderDetails: (args: { path: string }) => Promise<any>;
 }
 
 declare global {

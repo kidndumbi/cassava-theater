@@ -1,0 +1,79 @@
+import React from "react";
+import { Box, Theme } from "@mui/material";
+import { VideoDataModel } from "../../../models/videoData.model";
+import { Episode } from "./episode";
+import LoadingIndicator from "../common/LoadingIndicator";
+
+interface EpisodesProps {
+  loadingEpisodes: boolean;
+  episodes: VideoDataModel[];
+  theme: Theme;
+  onEpisodeClick: (episode: VideoDataModel) => void;
+  seasonPosterPath: string;
+  overview: string;
+  seasonAirDate: string;
+  handleFilepathChange: (
+    newSubtitleFilePath: string,
+    episode: VideoDataModel
+  ) => void;
+}
+
+export const Episodes: React.FC<EpisodesProps> = ({
+  loadingEpisodes,
+  episodes,
+  theme,
+  onEpisodeClick,
+  seasonPosterPath,
+  overview,
+  seasonAirDate,
+  handleFilepathChange,
+}) => {
+  const formatDate = (dateString: string) => {
+    const [year, month, day] = dateString.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
+  const renderEpisodes = () => (
+    <Box
+      sx={{
+        color: theme.customVariables.appWhiteSmoke,
+        paddingLeft: 4,
+        paddingTop: 4,
+        paddingBottom: 4,
+        display: "flex",
+        flexDirection: "column",
+        gap: 2,
+        backgroundSize: "cover",
+        backgroundImage: `linear-gradient(to right, ${theme.customVariables.appDarker}, rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0)), linear-gradient(to top, ${theme.customVariables.appDarker}, rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0)), url(${seasonPosterPath})`,
+      }}
+    >
+      {overview && (
+        <p style={{ maxWidth: "80%" }}>
+          {overview} ({formatDate(seasonAirDate)})
+        </p>
+      )}
+      {episodes.map((episode) => (
+        <Episode
+          key={episode.filePath}
+          episode={episode}
+          theme={theme}
+          onEpisodeClick={onEpisodeClick}
+          handleFilepathChange={handleFilepathChange}
+        />
+      ))}
+    </Box>
+  );
+
+  return (
+    <>
+      {loadingEpisodes ? (
+        <LoadingIndicator
+          showCircularProgress={false}
+          message="Loading Episodes..."
+        />
+      ) : (
+        renderEpisodes()
+      )}
+    </>
+  );
+};

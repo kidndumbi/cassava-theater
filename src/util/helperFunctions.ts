@@ -1,6 +1,3 @@
-// import _ from "lodash";
-// import { basename, extname } from "path";
-
 const secondsTohhmmss = (valueInseconds: number): string => {
   const totalSeconds = Math.round(valueInseconds);
   const hours = Math.floor(totalSeconds / 3600);
@@ -22,13 +19,14 @@ const isEmptyObject = (obj: object): boolean => {
   return !Object.keys(obj).length;
 };
 
-// const getFilename = (filePath: string): string => {
-//   return basename(filePath);
-// };
-
 // const getFilenameWithoutExtension = (filePath: string): string => {
 //   return basename(filePath, extname(filePath));
 // };
+
+const getFilename = (filePath: string): string => {
+  const parts = filePath.replace(/\\/g, "/").split("/");
+  return parts[parts.length - 1];
+};
 
 const trimFileName = (fileName: string, maxLength: number = 20) => {
   const nameWithoutExtension = fileName.replace(/\.mp4$/, "");
@@ -63,12 +61,12 @@ const removeLastSegments = (filePath: string, count: number) => {
 export {
   secondsTohhmmss,
   isEmptyObject,
-//   getFilename,
-//   getFilenameWithoutExtension,
+  //   getFilenameWithoutExtension,
   trimFileName,
   getYearFromDate,
   getPlayedPercentage,
   hasExtension,
   removeLastSegments,
   sec,
+  getFilename,
 };
