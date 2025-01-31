@@ -13,16 +13,30 @@ import { useSettings } from "../../hooks/useSettings";
 import { useCustomFolder } from "../../hooks/useCustomFolder";
 import { SettingsModal } from "../../components/settings/SettingsModal";
 import { Grid2 } from "@mui/material";
+import { renderActivePage } from "./RenderActivePage";
+import { useMovies } from "../../hooks/useMovies";
+import { useTvShows } from "../../hooks/useTvShows";
 
 export const LandingPage = () => {
   const theme = useTheme();
   const { settings, fetchAllSettings } = useSettings();
 
+  const { movies, getMovies, loadingMovies } = useMovies();
+
+  useEffect(() => { 
+     console.log("movies", movies);
+  }, [movies]);
+
+  const { tvShows, getTvShows, loadingTvShows } = useTvShows();
+
   const { customFolderData, loadCustomFolder, loadingCustomFolderData } =
     useCustomFolder();
 
+  
+
   useEffect(() => {
     fetchAllSettings();
+    getMovies();
   }, []);
 
   const handleMenuClick = (menuItem: MenuItem) => {
@@ -117,6 +131,11 @@ export const LandingPage = () => {
     }
   }, [selectedCustomFolder]);
 
+  const refreshData = () => {
+    getMovies();
+    getTvShows();
+  };
+
   return (
     <Grid2
       container
@@ -142,7 +161,7 @@ export const LandingPage = () => {
           overflowY: "auto",
         }}
       >
-        {/* {renderActivePage(activeMenu, {
+        {renderActivePage(activeMenu, {
         loadingMovies,
         movies,
         loadingTvShows,
@@ -154,7 +173,7 @@ export const LandingPage = () => {
         customFolderData,
         loadCustomFolder,
         selectedCustomFolder,
-      })} */}
+      })}
       </Grid2>
       <SettingsModal
         open={isSettingsModalOpen}

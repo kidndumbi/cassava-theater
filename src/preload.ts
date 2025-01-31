@@ -6,6 +6,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import { SettingsModel } from "./models/settings.model";
 import { OpenDialogIpcChannels } from "./enums/open-dialog-IPC-channels.enum";
 import { VideoCommands } from "./models/video-commands.model";
+import { VideoIPCChannels } from "./enums/VideoIPCChannels";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -67,5 +68,15 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
       "user-disconnected",
       (event: Electron.IpcRendererEvent, userId: string) => callback(userId)
     );
+  },
+});
+
+contextBridge.exposeInMainWorld("videoAPI", {
+  fetchVideoData: (args: {
+    filePath: string;
+    searchText: string | undefined;
+    includeThumbnail: boolean;
+  }) => {
+    return ipcRenderer.invoke(VideoIPCChannels.FetchVideoData, args);
   },
 });

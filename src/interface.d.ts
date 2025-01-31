@@ -26,6 +26,14 @@ export interface MainNotificationsAPI {
   userDisconnected: (callback: (userId: string) => void) => void;
 }
 
+export interface VideoAPI {
+  fetchVideoData: (args: {
+    filePath: string;
+    searchText?: string;
+    includeThumbnail: boolean;
+  }) => Promise<any>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -33,5 +41,6 @@ declare global {
     openDialogAPI: OpenDialogAPI;
     videoCommandsAPI: VideoCommandsAPI;
     mainNotificationsAPI: MainNotificationsAPI;
+    videoAPI: VideoAPI;
   }
 }
