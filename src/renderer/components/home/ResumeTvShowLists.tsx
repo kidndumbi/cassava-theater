@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
-import { trimFileName } from "../../../util/helperFunctions";
+import { trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import LoadingIndicator from "../common/LoadingIndicator";
 

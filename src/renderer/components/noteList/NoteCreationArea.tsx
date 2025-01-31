@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { Paper } from "@mui/material";
-import { secondsTohhmmss } from "../../../util/helperFunctions";
+import { secondsTohhmmss } from "../../util/helperFunctions";
 import { NoteTextEditor } from "../NoteTextEditor";
 import CreateNewNote from "./CreateNewNote";
 import theme from "../../theme";

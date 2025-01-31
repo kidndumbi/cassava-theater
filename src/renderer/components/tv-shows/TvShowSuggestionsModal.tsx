@@ -4,7 +4,7 @@ import theme from "../../theme";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { Season, TvShowDetails } from "../../../models/tv-show-details.model";
-import { getFilename } from "../../../util/helperFunctions";
+import { getFilename } from "../../util/helperFunctions";
 
 interface TvShowSuggestionsModalProps {
   open: boolean;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
+import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 import {
   Box,
   Button,
@@ -14,7 +15,7 @@ import { SelectChangeEvent } from "@mui/material/Select";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
-import { getFilename, getYearFromDate } from "../../../util/helperFunctions";
+import { getFilename, getYearFromDate } from "../../util/helperFunctions";
 import { Episodes } from "./episodes";
 import { VideoDataModel } from "../../../models/videoData.model";
 import RenderSelect from "./RenderSelect";
@@ -91,9 +92,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   };
 
   const initializeSeason = async (path: string, details: any) => {
-    console.log("initializeSeason path:", path);
+    log.log("initializeSeason path:", path);
     const seasonName = getFilename(path);
-    console.log("seasonName:", seasonName);
+    log.log("seasonName:", seasonName);
     const selectedSeasonDetails =
       details?.tv_show_details?.seasons?.find(
         (season: any) => season.name.toLowerCase() === seasonName.toLowerCase()
@@ -110,7 +111,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   };
 
   function updateBackgroundAndSeason(tvShowDetails: VideoDataModel) {
-    console.log("updateBackgroundAndSeason tvShowDetails:", tvShowDetails);
+    log.log("updateBackgroundAndSeason tvShowDetails:", tvShowDetails);
 
     setTvShowBackgroundUrl(
       tvShowDetails?.tv_show_details?.backdrop_path

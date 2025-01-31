@@ -8,7 +8,7 @@ import { useAppDispatch } from "../store";
 // import { IPCChannels } from "../../enums/IPCChannels";
 import { ipcRenderer } from "electron";
 import { selCurrentVideo } from "../store/currentVideo.slice";
-import { isEmptyObject } from "../../util/helperFunctions";
+import { isEmptyObject } from "../util/helperFunctions";
 import { useState } from "react";
 import { selVideoJson, videoJsonActions } from "../store/videoJson.slice";
 import { VideoDataModel } from "../../models/videoData.model";

@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Divider, Typography, useTheme } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
-import { trimFileName } from "../../../util/helperFunctions";
+import { trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import LoadingIndicator from "../common/LoadingIndicator";
 import CustomScrollbar from "../common/CustomScrollbar";

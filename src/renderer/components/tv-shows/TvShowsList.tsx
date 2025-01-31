@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, useTheme } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { trimFileName } from "../../../util/helperFunctions";
+import { trimFileName } from "../../util/helperFunctions";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { PosterCard } from "../common/PosterCard";
 

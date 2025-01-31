@@ -1,25 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useSettings } from "../../hooks/useSettings";
 import { Container, Snackbar, Alert, Box, Tab, Tabs } from "@mui/material";
-// import { useMovies } from "../../hooks/useMovies";
-// import { useTvShows } from "../../hooks/useTvShows";
 import { CustomFolderModel } from "../../../models/custom-folder";
-
-// import useSelectFolder from "../../hooks/useSelectFolder";
 import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
-// import ConfirmationDialog from "../common/ConfirmationDialog";
 import { SettingsModel } from "../../../models/settings.model";
 import { CustomFoldersSettings } from "./CustomFoldersSettings";
 import { GeneralSettings } from "./GeneralSettings";
 import { a11yProps, CustomTabPanel } from "../common/TabPanel";
 import useSelectFolder from "../../hooks/useSelectFolder";
 import ConfirmationDialog from "../common/ConfirmationDialog";
-
+import { useMovies } from "../../hooks/useMovies";
+import { useTvShows } from "../../hooks/useTvShows";
 
 export const SettingsPage: React.FC = () => {
   const { settings, setSetting } = useSettings();
-//   const { getMovies } = useMovies();
-//   const { getTvShows } = useTvShows();
+  const { getMovies } = useMovies();
+  const { getTvShows } = useTvShows();
   const [movieFolderPath, setMovieFolderPath] = useState("");
   const [tvShowsFolderPath, setTvShowsFolderPath] = useState("");
   const [continuousPlay, setContinuousPlay] = useState(false);
@@ -78,9 +74,9 @@ export const SettingsPage: React.FC = () => {
       await setSetting(settingName, folderPath);
       handleSnackbar("Setting updated successfully", "success");
       if (settingName === "movieFolderPath") {
-        // getMovies();
+        getMovies();
       } else if (settingName === "tvShowsFolderPath") {
-        // getTvShows();
+        getTvShows();
       }
     });
   };
@@ -98,7 +94,10 @@ export const SettingsPage: React.FC = () => {
     });
   };
 
-  const handleUpdateSetting = async (settingName: keyof SettingsModel, value: any) => {
+  const handleUpdateSetting = async (
+    settingName: keyof SettingsModel,
+    value: any
+  ) => {
     try {
       await setSetting(settingName, value);
       handleSnackbar("Setting updated successfully", "success");
@@ -178,9 +177,10 @@ export const SettingsPage: React.FC = () => {
             appUrl={appUrl}
             handleFolderSelection={handleFolderSelection}
             handleUpdateSetting={handleUpdateSetting}
-            handleContinuousPlayChange={(value) => { 
+            handleContinuousPlayChange={(value) => {
               setContinuousPlay(value);
-              handleUpdateSetting("continuousPlay", value)} }
+              handleUpdateSetting("continuousPlay", value);
+            }}
           />
         </CustomTabPanel>
         <CustomTabPanel value={currentTabValue} index={1}>

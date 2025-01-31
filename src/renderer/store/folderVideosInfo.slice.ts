@@ -1,11 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "./index";
-import { hasExtension } from "../../util/helperFunctions";
-import { ipcRenderer } from "electron";
+import { hasExtension } from "../util/helperFunctions";
 
 import { VideoDataModel } from "../../models/videoData.model";
-import { VideoIPCChannels } from "../../enums/VideoIPCChannels";
-// import { response } from "@types/express";
+import { rendererLoggingService as log } from "../util/renderer-logging.service";
 
 const folderVideosInfoSlice = createSlice({
   name: "folderVideosInfo",
@@ -148,7 +146,7 @@ const fetchVideoData = createAsyncThunk(
   ) => {
     try {
       if (!path) {
-        console.error("Path is required");
+        log.error("Path is required, path: ", path);
         return {
           category,
           data: [],
@@ -166,7 +164,7 @@ const fetchVideoData = createAsyncThunk(
         data: response,
       };
     } catch (error) {
-      console.error("Error fetching video data:", error);
+      log.error("Error fetching video data:", error);
       return rejectWithValue(error);
     }
   }
@@ -175,7 +173,7 @@ const fetchVideoData = createAsyncThunk(
 const fetchVideoDetailsApi = async ({ path }: { path: string }) => {
   try {
     if (!path) {
-      console.error("Path is undefined");
+      log.error("Path is undefined");
       return {};
     }
 
@@ -183,7 +181,7 @@ const fetchVideoDetailsApi = async ({ path }: { path: string }) => {
 
     return response;
   } catch (error) {
-    console.error("Error fetching video details via API:", error);
+    log.error("Error fetching video details via API:", error);
     throw error;
   }
 };
@@ -195,7 +193,7 @@ const fetchVideoDetails = createAsyncThunk(
       const data = await fetchVideoDetailsApi(args);
       return data;
     } catch (error) {
-      console.error("Error fetching video details:", error);
+      log.error("Error fetching video details:", error);
       return rejectWithValue(error);
     }
   }
@@ -208,7 +206,7 @@ const fetchFolderDetails = createAsyncThunk(
       const response = await window.videoAPI.fetchFolderDetails({ path });
       return response;
     } catch (error) {
-      console.error("Error fetching folder details:", error);
+      log.error("Error fetching folder details:", error);
       return rejectWithValue(error);
     }
   }

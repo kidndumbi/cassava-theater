@@ -1,3 +1,5 @@
+import { rendererLoggingService as log } from "../util/renderer-logging.service";
+
 const secondsTohhmmss = (valueInseconds: number): string => {
   const totalSeconds = Math.round(valueInseconds);
   const hours = Math.floor(totalSeconds / 3600);
@@ -52,7 +54,7 @@ const hasExtension = (filename: string) => {
 const removeLastSegments = (filePath: string, count: number) => {
   const parts = filePath?.split("/");
   if (count < 1 || count >= parts?.length) {
-    console.error("Invalid segment count:", count);
+    log.error("Invalid segment count:", count);
     return filePath;
   }
   return parts?.slice(0, -count).join("/");

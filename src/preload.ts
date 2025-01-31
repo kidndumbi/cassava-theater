@@ -1,3 +1,5 @@
+
+import 'electron-log/preload'
 import { SettingsIpcChannels } from "./enums/settings-IPC-channels.enum";
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
@@ -7,9 +9,14 @@ import { SettingsModel } from "./models/settings.model";
 import { OpenDialogIpcChannels } from "./enums/open-dialog-IPC-channels.enum";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoIPCChannels } from "./enums/VideoIPCChannels";
+import { MainUtilIPCChannels } from './enums/main-util-IPC-channels';
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
+});
+
+contextBridge.exposeInMainWorld('mainUtilAPI', {
+  isPackaged: () => ipcRenderer.invoke(MainUtilIPCChannels.IS_PACKAGED) as Promise<boolean>
 });
 
 contextBridge.exposeInMainWorld("settingsAPI", {
