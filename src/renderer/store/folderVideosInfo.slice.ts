@@ -187,11 +187,7 @@ const fetchVideoDetailsApi = async ({ path }: { path: string }) => {
       return {};
     }
 
-    // const response = await ipcRenderer.invoke(
-    //   VideoIPCChannels.FetchVideoDetails,
-    //   path
-    // );
-    const response: any = [];
+    const response = window.videoAPI.fetchVideoDetails({ path });
 
     return response;
   } catch (error) {

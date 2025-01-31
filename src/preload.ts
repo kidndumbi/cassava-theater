@@ -79,4 +79,7 @@ contextBridge.exposeInMainWorld("videoAPI", {
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.FetchVideoData, args);
   },
+  fetchVideoDetails: (args: { path: string }) => {
+    return ipcRenderer.invoke(VideoIPCChannels.FetchVideoDetails, args);
+  },
 });

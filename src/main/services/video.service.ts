@@ -87,6 +87,45 @@ export const fetchVideosData = async ({
   }
 };
 
+export const fetchVideoDetails = async (
+  filePath: string
+): Promise<VideoDataModel> => {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Path does not exist: ${filePath}`);
+  }
+
+  try {
+    const jsonFilePath = filePath.replace(".mp4", ".json");
+    const stats = await stat(filePath);
+    const jsonFileContents = await readJsonData(jsonFilePath);
+    const duration = await calculateDuration(filePath);
+    const fileName = path.basename(filePath);
+
+    const videoDetails: VideoDataModel = createVideoDataObject(
+      fileName,
+      filePath,
+      false,
+      stats.birthtimeMs,
+      "",
+      duration,
+      jsonFileContents
+    );
+
+    const thumbnailCacheFilePath = path.join(
+      path.dirname(filePath),
+      "thumbnailCache.json"
+    );
+    const cache = readThumbnailCache(thumbnailCacheFilePath);
+    const processedVideoData = await processVideoData(videoDetails, cache);
+
+    writeThumbnailCache(cache, thumbnailCacheFilePath);
+
+    return processedVideoData;
+  } catch (error) {
+    throw new Error("Error fetching video details: " + error);
+  }
+};
+
 async function processVideoData(
   video: VideoDataModel,
   cache: ThumbnailCache,
@@ -216,6 +255,22 @@ export const calculateDuration = async (file: string) => {
     }
   }
   return duration;
+};
+
+
+export const readJsonData = async (jsonPath: string) => {
+  try {
+    const exists = await fileExists(jsonPath);
+    if (exists) {
+      const jsonFile = await readFileData(jsonPath);
+      const parsedData = JSON.parse(jsonFile || "");
+      return parsedData;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error in readJsonData:", error);
+    throw error;
+  }
 };
 
 export function getVideoDuration(
