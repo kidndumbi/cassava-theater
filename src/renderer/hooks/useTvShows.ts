@@ -57,7 +57,7 @@ export const useTvShows = () => {
     const tvShowsFolderPath = await dispatch(
       settingsActions.getSetting("tvShowsFolderPath")
     );
-    fetchData(tvShowsFolderPath.payload.value, "tvShows");
+    fetchData(tvShowsFolderPath.payload, "tvShows");
   };
 
   const getTvShowSuggestions = (query: string) => {
@@ -68,8 +68,13 @@ export const useTvShows = () => {
     dispatch(theMovieDbActions.resetTvShowSuggestions());
   };
 
-  const updateTvShowTMDBId = async ( filePath: string, tv_show_details: TvShowDetails) => {
-    const extraTvShowDetails = await fetchTvShowById(tv_show_details.id.toString());
+  const updateTvShowTMDBId = async (
+    filePath: string,
+    tv_show_details: TvShowDetails
+  ) => {
+    const extraTvShowDetails = await fetchTvShowById(
+      tv_show_details.id.toString()
+    );
     await dispatch(
       videoJsonActions.postVideoJason({
         currentVideo: { filePath },
@@ -143,6 +148,6 @@ export const useTvShows = () => {
     updateTvShowTMDBId,
     getTvShowById,
     updateSeasonTMDBId,
-    findNextEpisode
+    findNextEpisode,
   };
 };

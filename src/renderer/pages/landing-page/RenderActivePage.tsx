@@ -6,6 +6,7 @@ import { MenuItem } from "../../../models/menu-item.model";
 import { CustomFolderModel } from "../../../models/custom-folder";
 // import { CustomFolder } from "../../components/custom-folder/CustomFolder";
 import { VideoDataModel } from "../../../models/videoData.model";
+import { TvShows } from "../../components/tv-shows/TvShows";
 // import { HomePage } from "../../components/home/Home";
 
 export interface RenderActivePageProps {
@@ -38,21 +39,21 @@ const renderMoviesPage = (
   );
 };
 
-// const renderTvShowsPage = (
-//   loadingTvShows: boolean,
-//   tvShows: any[],
-//   getTvShows: () => void,
-//   menuId: string
-// ) => {
-//   return (
-//     <TvShows
-//       menuId={menuId}
-//       loadingTvShows={loadingTvShows}
-//       tvShows={tvShows}
-//       refreshTvShows={getTvShows}
-//     />
-//   );
-// };
+const renderTvShowsPage = (
+  loadingTvShows: boolean,
+  tvShows: any[],
+  getTvShows: () => void,
+  menuId: string
+) => {
+  return (
+    <TvShows
+      menuId={menuId}
+      loadingTvShows={loadingTvShows}
+      tvShows={tvShows}
+      refreshTvShows={getTvShows}
+    />
+  );
+};
 
 export const renderActivePage = (
   activeMenu: MenuItem,
@@ -84,13 +85,13 @@ export const renderActivePage = (
     //   );
     case "app-movies":
       return renderMoviesPage(loadingMovies, movies, getMovies, activeMenu.id);
-    // case "app-tv-shows":
-    //   return renderTvShowsPage(
-    //     loadingTvShows,
-    //     tvShows,
-    //     getTvShows,
-    //     activeMenu.id
-    //   );
+    case "app-tv-shows":
+      return renderTvShowsPage(
+        loadingTvShows,
+        tvShows,
+        getTvShows,
+        activeMenu.id
+      );
     // case "app-playlists":
     //   return <PlaylistsPage />;
     // default:

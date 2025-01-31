@@ -12,7 +12,7 @@ import { CustomFolderModel } from "../../../models/custom-folder";
 import { useSettings } from "../../hooks/useSettings";
 import { useCustomFolder } from "../../hooks/useCustomFolder";
 import { SettingsModal } from "../../components/settings/SettingsModal";
-import { Grid2 } from "@mui/material";
+import { Grid, Grid2 } from "@mui/material";
 import { renderActivePage } from "./RenderActivePage";
 import { useMovies } from "../../hooks/useMovies";
 import { useTvShows } from "../../hooks/useTvShows";
@@ -22,21 +22,15 @@ export const LandingPage = () => {
   const { settings, fetchAllSettings } = useSettings();
 
   const { movies, getMovies, loadingMovies } = useMovies();
-
-  useEffect(() => { 
-     console.log("movies", movies);
-  }, [movies]);
-
   const { tvShows, getTvShows, loadingTvShows } = useTvShows();
 
   const { customFolderData, loadCustomFolder, loadingCustomFolderData } =
     useCustomFolder();
 
-  
-
   useEffect(() => {
     fetchAllSettings();
     getMovies();
+    getTvShows();
   }, []);
 
   const handleMenuClick = (menuItem: MenuItem) => {
@@ -137,7 +131,7 @@ export const LandingPage = () => {
   };
 
   return (
-    <Grid2
+    <Grid
       container
       sx={{
         height: "100vh",
@@ -145,16 +139,17 @@ export const LandingPage = () => {
         color: theme.customVariables.appWhiteSmoke,
       }}
     >
-      <Grid2 columns={2} sx={{ padding: "10px" }}>
+      <Grid item xs={2} style={{ padding: "10px" }}>
         <MainMenu
           menuItems={menuItems}
           onActiveMenuItemChange={setActiveMenu}
           activeMenuItem={activeMenu}
           onSettingsClick={handleOpenSettingsModal}
         />
-      </Grid2>
-      <Grid2
-        columns={10}
+      </Grid>
+      <Grid
+        item
+        xs={10}
         sx={{
           width: "100%",
           maxHeight: "calc(100vh - 30px)",
@@ -162,23 +157,23 @@ export const LandingPage = () => {
         }}
       >
         {renderActivePage(activeMenu, {
-        loadingMovies,
-        movies,
-        loadingTvShows,
-        tvShows,
-        refreshData,
-        getMovies,
-        getTvShows,
-        loadingCustomFolderData,
-        customFolderData,
-        loadCustomFolder,
-        selectedCustomFolder,
-      })}
-      </Grid2>
+          loadingMovies,
+          movies,
+          loadingTvShows,
+          tvShows,
+          refreshData,
+          getMovies,
+          getTvShows,
+          loadingCustomFolderData,
+          customFolderData,
+          loadCustomFolder,
+          selectedCustomFolder,
+        })}
+      </Grid>
       <SettingsModal
         open={isSettingsModalOpen}
         onClose={handleCloseSettingsModal}
       />
-    </Grid2>
+    </Grid>
   );
 };

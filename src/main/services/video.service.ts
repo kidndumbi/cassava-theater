@@ -15,6 +15,7 @@ import {
   writeThumbnailCache,
 } from "./thumbnailCache.service";
 import { generateThumbnail } from "./thumbnail.service";
+import { TvShowDetails } from "../../models/tv-show-details.model";
 
 let ffprobePath = path.join(
   app.getAppPath(),
@@ -125,6 +126,65 @@ export const fetchVideoDetails = async (
     throw new Error("Error fetching video details: " + error);
   }
 };
+
+export const fetchFolderDetails = async (
+  dirPath: string
+): Promise<VideoDataModel> => {
+  if (!fs.existsSync(dirPath)) {
+    throw new Error(`Path does not exist: ${dirPath}`);
+  }
+
+  try {
+    const jsonFilePath = `${dirPath}.json`;
+    const jsonFileContents = await readJsonData(jsonFilePath);
+    const basename = path.basename(dirPath);
+
+    const childFoldersPromises = fs
+      .readdirSync(dirPath, { withFileTypes: true })
+      .filter((dirent) => dirent.isDirectory())
+      .map(async (dirent) => {
+        const folderPath = path.join(dirPath, dirent.name).replace(/\\/g, "/");
+        const jsonFilePath = `${folderPath}.json`;
+        const jsonFileContents = await readJsonData(jsonFilePath);
+        return {
+          folderPath,
+          basename: dirent.name,
+          season_id: jsonFileContents?.season_id || null,
+        };
+      });
+
+    const childFolders = await Promise.all(childFoldersPromises);
+
+    const videoDetails: VideoDataModel = createFolderDataObject(
+      basename,
+      dirPath,
+      jsonFileContents,
+      jsonFileContents?.tv_show_details,
+      childFolders
+    );
+
+    return videoDetails;
+  } catch (error) {
+    throw new Error("Error fetching Folder details: " + error);
+  }
+};
+
+export const createFolderDataObject = (
+  basePath: string,
+  filePath: string,
+  jsonFileContents: VideoDataModel | null,
+  tv_show_details: TvShowDetails | null,
+  childFolders: { folderPath: string; basename: string }[] = []
+) => ({
+  basePath,
+  filePath,
+  season_id: jsonFileContents?.season_id || null,
+  tv_show_details,
+  childFolders,
+  lastVideoPlayed: jsonFileContents?.lastVideoPlayed,
+  lastVideoPlayedTime: jsonFileContents?.lastVideoPlayedTime || 0,
+  lastVideoPlayedDate: jsonFileContents?.lastVideoPlayedDate || null,
+});
 
 async function processVideoData(
   video: VideoDataModel,
