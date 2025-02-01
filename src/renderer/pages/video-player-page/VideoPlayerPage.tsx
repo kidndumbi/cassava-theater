@@ -122,6 +122,7 @@ export const VideoPlayerPage = () => {
 
   return (
     <AppVideoPlayer
+      port={settings?.port}
       isTvShow={isTvShow}
       episodes={episodes}
       startFromBeginning={startFromBeginning}

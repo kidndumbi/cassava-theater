@@ -4,7 +4,7 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { registerIpcHandlers } from "./main/ipc-handlers/ipcHandlers";
-import { getAllValues, initializeStore, getValue } from "./main/store";
+import { initializeStore, getValue } from "./main/store";
 import { loggingService } from "./main/services/main-logging.service";
 import { initializeSocket } from "./main/services/socket.service";
 
@@ -48,7 +48,7 @@ const createWindow = (): void => {
 };
 
 const rawPort = getValue("port");
-const settingsPort = rawPort ?? "4002";
+const settingsPort = rawPort || "4002";
 const port: number = parseInt(settingsPort, 10);
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

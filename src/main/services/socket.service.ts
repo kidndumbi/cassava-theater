@@ -7,17 +7,42 @@ import {
   handleVideoRequest,
   saveLastWatch,
 } from "../services/video.service";
-import { getAllValues } from "../store";
+import { getAllValues, setValue } from "../store";
 import { loggingService as log } from "./main-logging.service";
 import { AppSocketEvents } from "../../enums/app-socket-events.enum";
 import { VideoCommands } from "../../models/video-commands.model";
 import { VideoDataModel } from "../../models/videoData.model";
+import * as net from "net";
+
+// Function to check if a port is available
+const checkPortAvailability = (port: number): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once("error", () => {
+      resolve(false);
+    });
+    server.once("listening", () => {
+      server.close();
+      resolve(true);
+    });
+    server.listen(port);
+  });
+};
+
+const findAvailablePort = async (startPort: number): Promise<number> => {
+  let port = startPort;
+  while (!(await checkPortAvailability(port))) {
+    port += 1;
+  }
+  return port;
+};
 
 // Initialize the HTTP server and Socket.IO events.
-export function initializeSocket(
+export async function initializeSocket(
   mainWindow: BrowserWindow,
-  port: number
-): void {
+  startPort: number
+): Promise<void> {
+  const port = await findAvailablePort(startPort);
   // Create HTTP server
   const server = http.createServer();
 
@@ -67,8 +92,6 @@ export function initializeSocket(
           startFromBeginning: string;
         };
       }) => {
-
-        console.log("current-video::: ", data);
         mainWindow.webContents.send("set-current-video", data);
       }
     );
@@ -80,7 +103,7 @@ export function initializeSocket(
           const settings = getAllValues();
           callback({ success: true, data: settings });
         } catch (error) {
-            log.error("Error fetching videos data:", error);
+          log.error("Error fetching videos data:", error);
           callback({ success: false, error: "Failed to fetch videos data" });
         }
       }
@@ -166,6 +189,7 @@ export function initializeSocket(
   });
 
   server.listen(port, () => {
+    setValue("port", port.toString());
     log.info(`Server running on port ${port}`);
   });
 }
