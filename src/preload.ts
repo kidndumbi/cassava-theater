@@ -11,6 +11,7 @@ import { VideoIPCChannels } from "./enums/VideoIPCChannels";
 import { MainUtilIPCChannels } from "./enums/main-util-IPC-channels";
 import { VideoDataModel } from "./models/videoData.model";
 import { TheMovieDbIPCChannels } from "./enums/TheMovieDbIPCChannels";
+import { SetPlayingModel } from "./models/set-playing.model";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -55,6 +56,8 @@ contextBridge.exposeInMainWorld("openDialogAPI", {
   },
 });
 
+
+
 contextBridge.exposeInMainWorld("videoCommandsAPI", {
   videoCommand: (callback: (command: VideoCommands) => void) => {
     ipcRenderer.on(
@@ -64,6 +67,14 @@ contextBridge.exposeInMainWorld("videoCommandsAPI", {
       }
     );
   },
+  setCurrentVideo: (callback: (data: SetPlayingModel) => void) => {
+    ipcRenderer.on(
+      "set-current-video",
+      (event: Electron.IpcRendererEvent, data: SetPlayingModel) => {
+        callback(data);
+      }
+    );
+  }
 });
 
 contextBridge.exposeInMainWorld("mainNotificationsAPI", {

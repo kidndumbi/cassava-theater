@@ -21,6 +21,7 @@ export interface OpenDialogAPI {
 
 export interface VideoCommandsAPI {
   videoCommand: (callback: (command: VideoCommands) => void) => void;
+  setCurrentVideo: (callback: (data: setPlayingModel) => void) => void;
 }
 
 export interface MainNotificationsAPI {
