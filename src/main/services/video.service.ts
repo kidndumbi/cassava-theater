@@ -22,6 +22,7 @@ import {
   getJsonFilePath,
   readJsonFile,
   writeJsonToFile,
+  filterByCategory,
 } from "./video.helpers";
 
 let ffprobePath = path.join(
@@ -54,10 +55,12 @@ export const fetchVideosData = async ({
   filePath,
   searchText,
   includeThumbnail,
+  category,
 }: {
   filePath: string;
   searchText: string | undefined;
   includeThumbnail: boolean;
+  category: string;
 }): Promise<VideoDataModel[]> => {
   if (!filePath) {
     throw new Error("Path is required");
@@ -86,9 +89,11 @@ export const fetchVideosData = async ({
 
     writeThumbnailCache(cache, thumbnailCacheFilePath);
 
-    return updatedVideoData.sort((a, b) =>
+    const sorted = updatedVideoData.sort((a, b) =>
       a.fileName!.localeCompare(b.fileName!)
     );
+
+    return filterByCategory(sorted, category);
   } catch (error) {
     log.error("Error fetching video list: ", error);
     throw new Error("Error fetching video list: " + error);

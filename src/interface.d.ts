@@ -37,6 +37,7 @@ export interface VideoAPI {
     filePath: string;
     searchText?: string;
     includeThumbnail: boolean;
+    category: string;
   }) => Promise<any>;
   fetchVideoDetails: (args: { path: string }) => Promise<any>;
   fetchFolderDetails: (args: { path: string }) => Promise<any>;
