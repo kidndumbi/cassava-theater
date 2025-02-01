@@ -16,6 +16,7 @@ import { Grid, Grid2 } from "@mui/material";
 import { renderActivePage } from "./RenderActivePage";
 import { useMovies } from "../../hooks/useMovies";
 import { useTvShows } from "../../hooks/useTvShows";
+import { getLocationSearchParams } from "../../util/helperFunctions";
 
 export const LandingPage = () => {
   const theme = useTheme();
@@ -29,8 +30,7 @@ export const LandingPage = () => {
 
   useEffect(() => {
     fetchAllSettings();
-    getMovies();
-    getTvShows();
+    refreshData();
   }, []);
 
   const handleMenuClick = (menuItem: MenuItem) => {
@@ -129,6 +129,23 @@ export const LandingPage = () => {
     getMovies();
     getTvShows();
   };
+
+  function syncActiveMenuFromUrl(
+    menuItems: MenuItem[],
+    setActiveMenu: React.Dispatch<React.SetStateAction<MenuItem>>,
+    location: Location
+  ) {
+    const params = getLocationSearchParams(location.search, location.hash);
+    const menuId = params.get("menuId");
+    const menuItem = menuItems.find((item) => item.id === menuId);
+    if (menuItem) {
+      setActiveMenu(menuItem);
+    }
+  }
+
+  useEffect(() => {
+    syncActiveMenuFromUrl(menuItems, setActiveMenu, location);
+  }, [location.search, menuItems]);
 
   return (
     <Grid

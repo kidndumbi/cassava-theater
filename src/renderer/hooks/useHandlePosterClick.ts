@@ -44,7 +44,8 @@ const useHandlePosterClick = (
     resetEpisodes();
     getEpisodeDetails(seasonPath || "");
     setCurrentVideo(selectedVideo);
-    navigate(`/video-player?menuId=${menuId}&resumeId=${resumeId}`);
+    const path = `/video-player?menuId=${menuId}&resumeId=${resumeId}`
+    navigate(path);
     setLoadingItems((prev) => ({ ...prev, [video.filePath!]: false }));
   };
 
