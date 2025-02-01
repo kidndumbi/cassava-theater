@@ -19,6 +19,9 @@ import {
   readOrDefaultJson,
   readJsonData,
   shouldProcessFile,
+  getJsonFilePath,
+  readJsonFile,
+  writeJsonToFile,
 } from "./video.helpers";
 
 let ffprobePath = path.join(
@@ -175,6 +178,63 @@ export const fetchFolderDetails = async (
   }
 };
 
+export const saveLastWatch = async (
+  event: any,
+  {
+    currentVideo,
+    lastWatched,
+    isEpisode,
+  }: { currentVideo: VideoDataModel; lastWatched: number; isEpisode?: boolean }
+) => {
+  try {
+    const jsonFilePath = getJsonFilePath(currentVideo.filePath!);
+
+    let jsonFileContents = (await readJsonFile(jsonFilePath)) || {
+      notes: [],
+      overview: {},
+    };
+
+    jsonFileContents.lastWatched = lastWatched;
+    jsonFileContents.watched = lastWatched !== 0;
+    jsonFileContents.lastVideoPlayedDate = new Date().toISOString();
+
+    await writeJsonToFile(jsonFilePath, jsonFileContents);
+
+    if (isEpisode) {
+      const parentFilePath = path.dirname(currentVideo.filePath!);
+      const grandParentFilePath = path.dirname(parentFilePath);
+      const grandParentJsonFilePath = getJsonFilePath(grandParentFilePath);
+
+      let grandParentJsonFileContents = (await readJsonFile(
+        grandParentJsonFilePath
+      )) || {
+        notes: [],
+        overview: {},
+      };
+
+      grandParentJsonFileContents.lastVideoPlayed = currentVideo.filePath;
+      grandParentJsonFileContents.lastVideoPlayedTime = lastWatched;
+      grandParentJsonFileContents.lastVideoPlayedDate =
+        new Date().toISOString();
+      grandParentJsonFileContents.lastVideoPlayedDuration =
+        currentVideo.duration;
+
+      await writeJsonToFile(
+        grandParentJsonFilePath,
+        grandParentJsonFileContents
+      );
+    }
+
+    return jsonFileContents;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      log.error("save:lastWatch error ", error);
+    } else {
+      log.error("An unknown error occurred:", error);
+    }
+  }
+};
+
 async function processVideoData(
   video: VideoDataModel,
   cache: ThumbnailCache,
@@ -206,7 +266,10 @@ async function processVideoData(
         video.videoProgressScreenshot = videoProgressScreenshot;
       }
     } catch (error) {
-      log.error( `Error generating thumbnail for video ${video.filePath}:`, error);
+      log.error(
+        `Error generating thumbnail for video ${video.filePath}:`,
+        error
+      );
       video.videoProgressScreenshot = DEFAULT_THUMBNAIL_URL;
     }
   } else {

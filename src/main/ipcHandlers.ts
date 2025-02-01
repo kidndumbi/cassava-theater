@@ -13,6 +13,7 @@ import {
   fetchFolderDetails,
   fetchVideoDetails,
   fetchVideosData,
+  saveLastWatch,
 } from "./services/video.service";
 import { MainUtilIPCChannels } from "../enums/main-util-IPC-channels";
 
@@ -63,6 +64,8 @@ export function registerIpcHandlers() {
       return fetchFolderDetails(args.path.replace("/", "\\"));
     }
   );
+
+  ipcMain.handle(VideoIPCChannels.SaveLastWatch, saveLastWatch);
 
   ipcMain.handle(OpenDialogIpcChannels.OPEN_FOLDER_DIALOG, openFolderDialog);
   ipcMain.handle(OpenDialogIpcChannels.OPEN_FILE_DIALOG, openFileDialog);

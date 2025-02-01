@@ -1,6 +1,7 @@
 import { isPackaged } from "./interface.d";
 import { SettingsModel } from "./main/store";
 import { VideoCommands } from "./models/video-commands.model";
+import { VideoDataModel } from "./models/videoData.model";
 export interface IElectronAPI {
   desktop: boolean;
 }
@@ -39,6 +40,11 @@ export interface VideoAPI {
   }) => Promise<any>;
   fetchVideoDetails: (args: { path: string }) => Promise<any>;
   fetchFolderDetails: (args: { path: string }) => Promise<any>;
+  saveLastWatch: (args: {
+    currentVideo: VideoDataModel;
+    lastWatched: number;
+    isEpisode?: boolean;
+  }) => Promise<any>;
 }
 
 declare global {
