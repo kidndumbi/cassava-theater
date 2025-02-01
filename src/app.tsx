@@ -24,7 +24,7 @@ import { SetPlayingModel } from "./models/set-playing.model";
 import { useVideoListLogic } from "./renderer/hooks/useVideoListLogic";
 
 const App = () => {
-  const { fetchAllSettings, settings } = useSettings();
+  const { fetchAllSettings } = useSettings();
 
   const globalVideoPlayer = useSelector(selVideoPlayer);
   const globalVideoPlayerRef = useRef(globalVideoPlayer);
@@ -107,7 +107,6 @@ function AppRoutes() {
 
   useEffect(() => {
     window.videoCommandsAPI.setCurrentVideo((data: SetPlayingModel) => {
-      console.log("APP current-video::: ", data);
       handleVideoSelect(data.video);
       navigate(
         "/video-player?menuId=" +

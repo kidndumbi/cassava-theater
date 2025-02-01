@@ -127,10 +127,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
           .join("/")
       : getFirstChildFolderPath(tvShowDetails);
 
-    const season_id = tvShowDetails?.childFolders?.find(
-      (f) => f.folderPath === selSeason
-    )?.season_id;
-
     setSelectedSeason(selSeason);
     initializeSeason(selSeason, tvShowDetails);
   }

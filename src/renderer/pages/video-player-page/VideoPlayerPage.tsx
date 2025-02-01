@@ -7,7 +7,10 @@ import AppVideoPlayer from "../../components/video-player/AppVideoPlayer";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../store";
 import { videoJsonActions } from "../../store/videoJson.slice";
-import { removeLastSegments } from "../../util/helperFunctions";
+import {
+  getLocationSearchParams,
+  removeLastSegments,
+} from "../../util/helperFunctions";
 import { useTvShows } from "../../hooks/useTvShows";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useSettings } from "../../hooks/useSettings";
@@ -39,16 +42,16 @@ export const VideoPlayerPage = () => {
       menuId,
       startFromBeginning: start,
       resumeId,
-    } = parseSearchParams(location.search);
+    } = parseSearchParams(location.search, location.hash);
 
     setMenuId(menuId);
     setResumeId(resumeId);
     setStartFromBeginning(start === "true");
     setIsTvShow(menuId === "app-tv-shows" || resumeId === "tvShow");
-  }, [location.search, player, episodes, currentVideo]);
+  }, [location.search, location.hash, player, episodes, currentVideo]);
 
-  const parseSearchParams = (search: string) => {
-    const params = new URLSearchParams(search);
+  const parseSearchParams = (search: string, hash: string) => {
+    const params = getLocationSearchParams(search, hash);
     return {
       menuId: params.get("menuId") || "",
       startFromBeginning: params.get("startFromBeginning"),

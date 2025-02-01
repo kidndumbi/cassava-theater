@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import MovieDetails from "../../components/movies/MovieDetails";
 import TvShowDetails from "../../components/tv-shows/TvShowDetails";
+import { getLocationSearchParams } from "../../util/helperFunctions";
 
 const isTvShow = (menuId: string, resumeId: string): boolean => {
   return (
@@ -11,7 +12,7 @@ const isTvShow = (menuId: string, resumeId: string): boolean => {
 
 export const VideoDetailsPage = () => {
   const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
+  const queryParams = getLocationSearchParams(location.search, location.hash);
   const videoPath = queryParams.get("videoPath") || "";
   const menuId = queryParams.get("menuId") || "";
   const resumeId = queryParams.get("resumeId") || "";

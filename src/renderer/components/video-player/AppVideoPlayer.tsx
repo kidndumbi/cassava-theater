@@ -57,7 +57,6 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
     const url = `http://localhost:4002/video?path=${encodeURIComponent(
       videoData.filePath
     )}`;
-    console.log("videoUrl", url);
     setVideoUrl(url);
 
     if (videoPlayerRef.current) {
