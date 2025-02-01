@@ -23,6 +23,7 @@ type AppVideoPlayerProps = {
   episodes: VideoDataModel[];
   playNextEpisode: (episode: VideoDataModel) => void;
   findNextEpisode: (currentFilePath: string) => VideoDataModel | null;
+  port: string;
 };
 
 const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
@@ -38,6 +39,7 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
   episodes,
   playNextEpisode,
   findNextEpisode,
+  port,
 }) => {
   const { setPlayer, clearPlayer } = useVideoListLogic();
   const videoPlayerRef = useRef<HTMLVideoElement>(null);
@@ -51,10 +53,8 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
   }, []);
 
   useEffect(() => {
-    log.log("videoData changed:", videoData.filePath);
-
     if (!videoData) return;
-    const url = `http://localhost:4002/video?path=${encodeURIComponent(
+    const url = `http://localhost:${port}/video?path=${encodeURIComponent(
       videoData.filePath
     )}`;
     setVideoUrl(url);
