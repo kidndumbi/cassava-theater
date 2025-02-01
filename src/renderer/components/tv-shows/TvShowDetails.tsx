@@ -111,8 +111,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   };
 
   function updateBackgroundAndSeason(tvShowDetails: VideoDataModel) {
-    log.log("updateBackgroundAndSeason tvShowDetails:", tvShowDetails);
-
     setTvShowBackgroundUrl(
       tvShowDetails?.tv_show_details?.backdrop_path
         ? getTmdbImageUrl(
