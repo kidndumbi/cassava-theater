@@ -1,0 +1,16 @@
+.video-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+.custom-video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.custom-video-player::-webkit-media-controls-fullscreen-button {
+  display: none;
+}
+.custom-video-player::-webkit-media-controls-enclosure {
+  overflow: hidden;
+}

@@ -57,6 +57,7 @@
     "@types/ffprobe-static": "^2.0.3",
     "@types/fluent-ffmpeg": "^2.1.27",
     "@types/lodash": "^4.17.15",
+    "@uidotdev/usehooks": "^2.4.1",
     "asar": "^3.2.0",
     "axios": "^1.7.9",
     "copy-webpack-plugin": "^12.0.2",
