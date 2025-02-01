@@ -1,5 +1,4 @@
-
-import 'electron-log/preload'
+import "electron-log/preload";
 import { SettingsIpcChannels } from "./enums/settings-IPC-channels.enum";
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
@@ -9,15 +8,17 @@ import { SettingsModel } from "./models/settings.model";
 import { OpenDialogIpcChannels } from "./enums/open-dialog-IPC-channels.enum";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoIPCChannels } from "./enums/VideoIPCChannels";
-import { MainUtilIPCChannels } from './enums/main-util-IPC-channels';
-import { VideoDataModel } from './models/videoData.model';
+import { MainUtilIPCChannels } from "./enums/main-util-IPC-channels";
+import { VideoDataModel } from "./models/videoData.model";
+import { TheMovieDbIPCChannels } from "./enums/TheMovieDbIPCChannels";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
 });
 
-contextBridge.exposeInMainWorld('mainUtilAPI', {
-  isPackaged: () => ipcRenderer.invoke(MainUtilIPCChannels.IS_PACKAGED) as Promise<boolean>
+contextBridge.exposeInMainWorld("mainUtilAPI", {
+  isPackaged: () =>
+    ipcRenderer.invoke(MainUtilIPCChannels.IS_PACKAGED) as Promise<boolean>,
 });
 
 contextBridge.exposeInMainWorld("settingsAPI", {
@@ -99,5 +100,22 @@ contextBridge.exposeInMainWorld("videoAPI", {
     isEpisode?: boolean;
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.SaveLastWatch, args);
+  },
+});
+
+contextBridge.exposeInMainWorld("theMovieDbAPI", {
+  search: (query: string, queryType: "movie" | "tv") => {
+    return ipcRenderer.invoke(
+      TheMovieDbIPCChannels.Search,
+      query,
+      queryType
+    ) as Promise<any>;
+  },
+  movieOrTvShow: (id: string, queryType: "movie" | "tv") => {
+    return ipcRenderer.invoke(
+      TheMovieDbIPCChannels.MovieOrTvShow,
+      id,
+      queryType
+    ) as Promise<any>;
   },
 });

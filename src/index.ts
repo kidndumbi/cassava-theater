@@ -3,7 +3,7 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { registerIpcHandlers } from "./main/ipcHandlers";
+import { registerIpcHandlers } from "./main/ipc-handlers/ipcHandlers";
 import { getAllValues, initializeStore } from "./main/store";
 import { Server } from "socket.io";
 import * as http from "http";

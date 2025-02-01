@@ -1,46 +1,42 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
 import { RootState } from ".";
 import { MovieDetails } from "../../models/movie-detail.model";
 import { TvShowDetails } from "../../models/tv-show-details.model";
-import { ipcRenderer } from "electron";
-import { TheMovieDbIPCChannels } from "../../enums/TheMovieDbIPCChannels";
 
 const fetchMovieSuggestions = createAsyncThunk(
   "theMovieDb/fetchMovieSuggestions",
   async (query: string) => {
-    // const response = await ipcRenderer.invoke(
-    //   TheMovieDbIPCChannels.Search,
-    //   query,
-    //   "movie"
-    // );
-    const response: any = [];
-    return response;
+    try {
+      return await window.theMovieDbAPI.search(query, "movie");
+    } catch (error) {
+      console.error("Failed to fetch movie suggestions:", error);
+      throw error;
+    }
   }
 );
 
 const fetchTvShowSuggestions = createAsyncThunk(
   "theMovieDb/fetchTvShowSuggestions",
   async (query: string) => {
-    // const response = await ipcRenderer.invoke(
-    //   TheMovieDbIPCChannels.Search,
-    //   query,
-    //   "tv"
-    // );
-    const response: any = [];
-    return response;
+    try {
+      return await window.theMovieDbAPI.search(query, "tv");
+    } catch (error) {
+      console.error("Failed to fetch TV show suggestions:", error);
+      throw error;
+    }
   }
 );
 
 const fetchTvShowById = async (id: string) => {
-  // const response = await ipcRenderer.invoke(
-  //   TheMovieDbIPCChannels.MovieOrTvShow,
-  //   id,
-  //   "tv"
-  // );
-  const response: any = {};
-
-  return response as TvShowDetails;
+  try {
+    return (await window.theMovieDbAPI.movieOrTvShow(
+      id,
+      "tv"
+    )) as TvShowDetails;
+  } catch (error) {
+    console.error("Failed to fetch TV show by ID:", error);
+    throw error;
+  }
 };
 
 const theMovieDbSlice = createSlice({
