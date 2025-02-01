@@ -21,10 +21,6 @@ const isEmptyObject = (obj: object): boolean => {
   return !Object.keys(obj).length;
 };
 
-// const getFilenameWithoutExtension = (filePath: string): string => {
-//   return basename(filePath, extname(filePath));
-// };
-
 const getFilename = (filePath: string): string => {
   const parts = filePath.replace(/\\/g, "/").split("/");
   return parts[parts.length - 1];
@@ -63,7 +59,6 @@ const removeLastSegments = (filePath: string, count: number) => {
 export {
   secondsTohhmmss,
   isEmptyObject,
-  //   getFilenameWithoutExtension,
   trimFileName,
   getYearFromDate,
   getPlayedPercentage,

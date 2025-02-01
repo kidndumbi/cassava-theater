@@ -1,6 +1,7 @@
 import { RootState } from "./index";
 import { VideoDataModel } from "../../models/videoData.model";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { rendererLoggingService as log } from "../util/renderer-logging.service";
 
 const videoJsonSlice = createSlice({
   name: "videoJson",
@@ -20,14 +21,13 @@ const videoJsonSlice = createSlice({
 const getVideoJson = createAsyncThunk(
   "videoJson/getVideoJson",
   async (currentVideo: VideoDataModel | undefined) => {
+    try {
+      return await window.videoAPI.getVideoJsonData(currentVideo);
+    } catch (error) {
+      log.error("Failed to get video JSON data:", error);
 
-    console.log("getVideoJson", currentVideo);
-    // const response = await ipcRenderer.invoke(
-    //   VideoDataIpcChannels.GetVideoJsonData,
-    //   currentVideo
-    // );
-    const response: any = [];
-    return response;
+      throw error;
+    }
   }
 );
 
@@ -40,13 +40,15 @@ const postVideoJason = createAsyncThunk(
     currentVideo: VideoDataModel | undefined;
     newVideoJsonData: VideoDataModel | undefined;
   }) => {
-    // const response = await ipcRenderer.invoke(VideoDataIpcChannels.SaveVideoJsonData, {
-    //   currentVideo,
-    //   newVideoJsonData,
-    // });
-    const response: any = [];
-
-    return response;
+    try {
+      return await window.videoAPI.saveVideoJsonData({
+        currentVideo,
+        newVideoJsonData,
+      });
+    } catch (error) {
+      log.error("Failed to post video JSON data:", error);
+      throw error;
+    }
   }
 );
 

@@ -4,7 +4,9 @@ import {
   fetchFolderDetails,
   fetchVideoDetails,
   fetchVideosData,
+  getVideoJsonData,
   saveLastWatch,
+  saveVideoJsonData,
 } from "../services/video.service";
 
 export const videosIpcHandlers = () => {
@@ -38,4 +40,7 @@ export const videosIpcHandlers = () => {
   );
 
   ipcMain.handle(VideoIPCChannels.SaveLastWatch, saveLastWatch);
+
+  ipcMain.handle(VideoIPCChannels.GetVideoJsonData, getVideoJsonData);
+  ipcMain.handle(VideoIPCChannels.SaveVideoJsonData, saveVideoJsonData);
 };

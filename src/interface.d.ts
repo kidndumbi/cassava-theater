@@ -46,6 +46,11 @@ export interface VideoAPI {
     lastWatched: number;
     isEpisode?: boolean;
   }) => Promise<any>;
+  getVideoJsonData: (currentVideo: VideoDataModel) => Promise<any>;
+  saveVideoJsonData: (args: {
+    currentVideo: VideoDataModel;
+    newVideoJsonData: VideoDataModel;
+  }) => Promise<any>;
 }
 
 export interface TheMovieDbAPI {
