@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 import { useSubtitle } from "../../hooks/useSubtitle";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";

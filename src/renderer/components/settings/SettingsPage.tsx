@@ -19,7 +19,7 @@ export const SettingsPage: React.FC = () => {
   const [movieFolderPath, setMovieFolderPath] = useState("");
   const [tvShowsFolderPath, setTvShowsFolderPath] = useState("");
   const [continuousPlay, setContinuousPlay] = useState(false);
-  const [appUrl, setAppUrl] = useState("");
+  const [port, setPort] = useState("");
   const [customFolders, setCustomFolders] = useState<CustomFolderModel[]>([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -38,8 +38,8 @@ export const SettingsPage: React.FC = () => {
     if (settings.tvShowsFolderPath) {
       setTvShowsFolderPath(settings.tvShowsFolderPath);
     }
-    if (settings.appUrl) {
-      setAppUrl(settings.appUrl);
+    if (settings.port) {
+      setPort(settings.port);
     }
     if (settings.folders) {
       const folders = settings.folders as CustomFolderModel[];
@@ -174,7 +174,7 @@ export const SettingsPage: React.FC = () => {
             continuousPlay={continuousPlay}
             movieFolderPath={movieFolderPath}
             tvShowsFolderPath={tvShowsFolderPath}
-            appUrl={appUrl}
+            port={port}
             handleFolderSelection={handleFolderSelection}
             handleUpdateSetting={handleUpdateSetting}
             handleContinuousPlayChange={(value) => {
