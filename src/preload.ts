@@ -59,8 +59,9 @@ contextBridge.exposeInMainWorld("videoCommandsAPI", {
   videoCommand: (callback: (command: VideoCommands) => void) => {
     ipcRenderer.on(
       "video-command",
-      (event: Electron.IpcRendererEvent, command: VideoCommands) =>
-        callback(command)
+      (event: Electron.IpcRendererEvent, command: VideoCommands) => {
+        callback(command);
+      }
     );
   },
 });
