@@ -72,12 +72,10 @@ const folderVideosInfoSlice = createSlice({
         }
       })
       .addCase(fetchVideoData.fulfilled, (state, action) => {
-        const filterFoldersFromList = (videos: VideoDataModel[]) =>
-          videos.filter((vid) => hasExtension(vid.fileName!));
 
         switch (action.payload.category) {
           case "movies":
-            state.movies = filterFoldersFromList(action.payload.data);
+            state.movies = action.payload.data;
             state.loadingMovies = false;
             break;
           case "tvShows":
@@ -85,7 +83,7 @@ const folderVideosInfoSlice = createSlice({
             state.loadingTvShows = false;
             break;
           case "episodes":
-            state.episodes = filterFoldersFromList(action.payload.data);
+            state.episodes = action.payload.data;
             state.loadingEpisodes = false;
             break;
           case "customFolder":
@@ -157,6 +155,7 @@ const fetchVideoData = createAsyncThunk(
         filePath: path,
         searchText,
         includeThumbnail,
+        category,
       });
 
       return {

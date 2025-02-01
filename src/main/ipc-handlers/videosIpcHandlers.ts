@@ -16,6 +16,7 @@ export const videosIpcHandlers = () => {
         filePath: string;
         searchText: string | undefined;
         includeThumbnail: boolean;
+        category: string;
       }
     ) => {
       return fetchVideosData(args);
