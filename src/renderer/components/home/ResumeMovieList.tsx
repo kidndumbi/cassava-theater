@@ -5,7 +5,6 @@ import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import LoadingIndicator from "../common/LoadingIndicator";
-import CustomScrollbar from "../common/CustomScrollbar";
 
 interface ResumeMovieListProps {
   sortedMovies: VideoDataModel[];
@@ -52,7 +51,8 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
           onClick={() => handlePosterClick("movie", movie)}
           onError={(e) => {
             e.currentTarget.style.display = "none";
-            const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+            const nextSibling = e.currentTarget
+              .nextElementSibling as HTMLElement;
             if (nextSibling) {
               nextSibling.style.display = "block";
             }
@@ -92,13 +92,14 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
           marginRight: 2,
         }}
       />
-      <CustomScrollbar
+      <Box
+        className="custom-scrollbar"
         display="flex"
         gap="8px"
         sx={{ maxWidth: "calc(100vw - 30px)", overflowY: "auto" }}
       >
         {renderMovies()}
-      </CustomScrollbar>
+      </Box>
     </>
   );
 };
