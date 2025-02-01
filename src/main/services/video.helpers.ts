@@ -2,14 +2,13 @@ import { readFile, access, writeFile } from "fs/promises";
 import { Stats } from "fs";
 import { loggingService as log } from "./main-logging.service";
 import { VideoDataModel } from "../../models/videoData.model";
-import { hasExtension } from "../../renderer/util/helperFunctions";
 
 export const filterByCategory = (
   videos: VideoDataModel[],
   category: string
 ) => {
   if (["movies", "episodes"].includes(category)) {
-    return videos.filter((vid) => hasExtension(vid.fileName!));
+    return videos.filter((vid) => /\.[^.]+$/.test(vid.fileName!));
   }
   return videos;
 };

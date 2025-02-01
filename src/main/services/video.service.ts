@@ -240,6 +240,57 @@ export const saveLastWatch = async (
   }
 };
 
+export const getVideoJsonData = async (
+  event: any,
+  currentVideo: VideoDataModel
+) => {
+  try {
+    // Constant for reusable value
+    const EMPTY_JSON_RESPONSE: VideoDataModel = { notes: [], overview: {} };
+    //Validate the input data
+    if (!currentVideo || !currentVideo.filePath) {
+      console.warn(
+        "Warning: Received undefined or invalid currentVideo.filepath."
+      );
+      return EMPTY_JSON_RESPONSE;
+      //throw new Error("Invalid input data");
+    }
+
+    // Construct the new file path using template literals
+    const newFilePath = currentVideo.filePath.replace(".mp4", ".json");
+
+    // Check if the file exists
+    return await readOrDefaultJson(newFilePath);
+  } catch (error) {
+    // Handle the error appropriately
+    console.error("An error occurred:", error);
+    return null;
+  }
+};
+
+export const saveVideoJsonData = async (
+  event: any,
+  {
+    currentVideo,
+    newVideoJsonData,
+  }: { currentVideo: VideoDataModel; newVideoJsonData: VideoDataModel }
+) => {
+  try {
+    const newFilePath = getJsonFilePath(currentVideo.filePath || "");
+    const existingData = (await readJsonFile(newFilePath)) || {};
+    const mergedData = { ...existingData, ...newVideoJsonData };
+    await writeJsonToFile(newFilePath, mergedData);
+    return mergedData;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("An error occurred:", error.message);
+    } else {
+      console.error("An unknown error occurred:", error);
+    }
+    throw new Error("Failed to save video JSON data");
+  }
+};
+
 async function processVideoData(
   video: VideoDataModel,
   cache: ThumbnailCache,

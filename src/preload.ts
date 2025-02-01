@@ -101,6 +101,15 @@ contextBridge.exposeInMainWorld("videoAPI", {
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.SaveLastWatch, args);
   },
+  getVideoJsonData: (currentVideo: VideoDataModel) => {
+    return ipcRenderer.invoke(VideoIPCChannels.GetVideoJsonData, currentVideo);
+  },
+  saveVideoJsonData: (args: {
+    currentVideo: VideoDataModel;
+    newVideoJsonData: VideoDataModel;
+  }) => {
+    return ipcRenderer.invoke(VideoIPCChannels.SaveVideoJsonData, args);
+  },
 });
 
 contextBridge.exposeInMainWorld("theMovieDbAPI", {
