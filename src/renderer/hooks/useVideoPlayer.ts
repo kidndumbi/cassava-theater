@@ -8,7 +8,7 @@ import {
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { useSelector } from "react-redux";
 import { selVideoPlayer } from "../store/videoPlayer.slice";
-
+import { VideoCommands } from "../../models/video-commands.model";
 
 export const useVideoPlayer = (
   videoEnded?: (filePath: string) => void,
@@ -25,6 +25,48 @@ export const useVideoPlayer = (
 
   const hasValidGlobalVideoPlayer =
     globalVideoPlayer && !isEmptyObject(globalVideoPlayer);
+
+  useEffect(() => {
+    console.log("Volume changed:", volume);
+  }, [volume]);
+
+  useEffect(() => {
+    if (!hasValidGlobalVideoPlayer) {
+      return;
+    }
+
+    window.videoCommandsAPI.videoCommand((command: VideoCommands) => {
+      console.log("Received command from main process:", command);
+      switch (command) {
+        case "play":
+          play();
+          break;
+        case "pause":
+          pause();
+          break;
+        case "forward30":
+          skipBy(30);
+          break;
+        case "backward10":
+          skipBy(-10);
+          break;
+        case "restart":
+          break;
+        case "volumeDown":
+          if (volume > 0) {
+            setVolume(Math.max(volume - 0.1, 0));
+          }
+          break;
+        case "volumeUp":
+          if (volume < 1) {
+            setVolume(Math.min(volume + 0.1, 1));
+          }
+          break;
+        default:
+          console.log(`Unknown command: ${command}`);
+      }
+    });
+  }, [globalVideoPlayer]);
 
   useEffect(() => {
     if (!hasValidGlobalVideoPlayer) {
@@ -75,7 +117,6 @@ export const useVideoPlayer = (
       globalVideoPlayer.pause();
     }
   };
-
 
   const toggleFullscreen = (containerRef: React.RefObject<HTMLDivElement>) => {
     if (!document.fullscreenElement) {
