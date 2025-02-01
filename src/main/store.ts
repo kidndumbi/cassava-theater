@@ -10,7 +10,7 @@ const schema: Schema<SettingsModel> = {
     type: "string",
     default: "",
   },
-  appUrl: {
+  port: {
     type: "string",
     default: "",
   },

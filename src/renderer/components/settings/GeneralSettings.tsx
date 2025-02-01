@@ -15,7 +15,7 @@ interface GeneralSettingsProps {
   movieFolderPath: string;
   tvShowsFolderPath: string;
   continuousPlay: boolean;
-  appUrl: string;
+  port: string;
   handleFolderSelection: (settingName: string) => Promise<void>;
   handleUpdateSetting: (settingName: string, value: any) => Promise<void>;
   handleContinuousPlayChange: (value: boolean) => void;
@@ -24,7 +24,7 @@ interface GeneralSettingsProps {
 export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   movieFolderPath,
   tvShowsFolderPath,
-  appUrl,
+  port,
   handleFolderSelection,
   handleUpdateSetting,
   continuousPlay,
@@ -32,11 +32,11 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
 }) => {
   const theme = useTheme();
 
-  const [componentAppUrl, setComponentAppUrl] = useState(appUrl);
+  const [componentPort, setComponentPort] = useState(port);
 
   useEffect(() => {
-    setComponentAppUrl(appUrl);
-  }, [appUrl]);
+    setComponentPort(port);
+  }, [port]);
 
   const renderFolderSetting = (
     label: string,
@@ -77,15 +77,15 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
           )}
           <Box style={{ display: "flex", alignItems: "center" }}>
             {renderTextField(
-              "WebSocket URL",
-              componentAppUrl,
-              (e) => setComponentAppUrl(e.target.value),
+              "Port",
+              componentPort,
+              (e) => setComponentPort(e.target.value),
               theme
             )}
             <Button
               variant="contained"
               color="primary"
-              onClick={() => handleUpdateSetting("appUrl", componentAppUrl)}
+              onClick={() => handleUpdateSetting("port", componentPort)}
             >
               <Save />
             </Button>
