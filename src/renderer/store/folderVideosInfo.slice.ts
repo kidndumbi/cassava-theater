@@ -1,7 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { RootState } from "./index";
-import { hasExtension } from "../util/helperFunctions";
-
 import { VideoDataModel } from "../../models/videoData.model";
 import { rendererLoggingService as log } from "../util/renderer-logging.service";
 
