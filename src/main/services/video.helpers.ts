@@ -1,7 +1,7 @@
-import * as fs from "fs";
-import { readFile, access } from "fs/promises";
+import { readFile, access, writeFile } from "fs/promises";
 import { Stats } from "fs";
 import { loggingService as log } from "./main-logging.service";
+import { VideoDataModel } from "../../models/videoData.model";
 
 export async function readOrDefaultJson(
   filePath: string,
@@ -60,3 +60,38 @@ export function shouldProcessFile(
     ? false
     : true;
 }
+
+export const getJsonFilePath = (filePath: string): string => {
+  if (!filePath) {
+    throw new Error("filePath is undefined!");
+  }
+
+  // Check if the filePath ends with .mp4 and replace it with .json
+  if (filePath.endsWith(".mp4")) {
+    return filePath.replace(".mp4", ".json");
+  }
+
+  // Check if the filePath has no extension and append .json
+  if (!filePath.includes('.')) {
+    return `${filePath}.json`;
+  }
+
+  // If neither condition is met, return the filePath as is
+  return filePath;
+};
+
+export const readJsonFile = async (
+  filePath: string
+): Promise<VideoDataModel | null> => {
+  const jsonFile = await readFileData(filePath);
+  return jsonFile ? (JSON.parse(jsonFile) as VideoDataModel) : null;
+};
+
+export const writeJsonToFile = async (
+  filePath: string,
+  jsonData: VideoDataModel
+): Promise<VideoDataModel> => {
+  await writeFile(filePath, JSON.stringify(jsonData, null, 2));
+  return jsonData;
+};
+

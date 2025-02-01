@@ -5,14 +5,11 @@ import {
   videoPlayerActions,
 } from "../store/videoPlayer.slice";
 import { useAppDispatch } from "../store";
-// import { IPCChannels } from "../../enums/IPCChannels";
-import { ipcRenderer } from "electron";
 import { selCurrentVideo } from "../store/currentVideo.slice";
 import { isEmptyObject } from "../util/helperFunctions";
 import { useState } from "react";
 import { selVideoJson, videoJsonActions } from "../store/videoJson.slice";
 import { VideoDataModel } from "../../models/videoData.model";
-import { VideoDataIpcChannels } from "../../enums/video-data-IPC-channels.enum";
 
 export const useVideoPlayerLogic = () => {
   const dispatch = useAppDispatch();
@@ -34,11 +31,11 @@ export const useVideoPlayerLogic = () => {
     const lastWatchedTime =
       player.currentTime === currentVideo.duration ? 1 : player.currentTime;
 
-    // await ipcRenderer.invoke(VideoDataIpcChannels.SaveLastWatch, {
-    //   currentVideo,
-    //   lastWatched: lastWatchedTime,
-    //   isEpisode,
-    // });
+    await window.videoAPI.saveLastWatch({
+      currentVideo,
+      lastWatched: lastWatchedTime,
+      isEpisode,
+    });
   };
 
   const resetVideo = () => {

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
-import { ipcRenderer } from "electron";
 import { selFoldersVideosInfo } from "../store/folderVideosInfo.slice";
 import { currentVideoActions } from "../store/currentVideo.slice";
 import {
@@ -10,9 +9,7 @@ import {
 } from "../store/videoPlayer.slice";
 import { selVideoJson } from "../store/videoJson.slice";
 import { VideoDataModel } from "../../models/videoData.model";
-// import { IPCChannels } from "../../enums/IPCChannels";
 import { useVideoPlayerLogic } from "./useVideoPlayerLogic";
-import { VideoDataIpcChannels } from "../../enums/video-data-IPC-channels.enum";
 
 export const useVideoListLogic = () => {
   const dispatch = useAppDispatch();
@@ -42,13 +39,6 @@ export const useVideoListLogic = () => {
     } else {
     }
   };
-
-//   const deleteVideos = async () => {
-//     if (selectedVideos.length > 0) {
-//       await ipcRenderer.invoke(VideoDataIpcChannels.DeleteVideo, selectedVideos);
-//       setSelectedVideos([]);
-//     }
-//   };
 
   const setPlayer = (p: HTMLVideoElement) => {
     dispatch(videoPlayerActions.setVideoPlayer(p));

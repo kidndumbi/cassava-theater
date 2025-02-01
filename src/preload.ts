@@ -10,6 +10,7 @@ import { OpenDialogIpcChannels } from "./enums/open-dialog-IPC-channels.enum";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoIPCChannels } from "./enums/VideoIPCChannels";
 import { MainUtilIPCChannels } from './enums/main-util-IPC-channels';
+import { VideoDataModel } from './models/videoData.model';
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -91,5 +92,12 @@ contextBridge.exposeInMainWorld("videoAPI", {
   },
   fetchFolderDetails: (args: { path: string }): Promise<string> => {
     return ipcRenderer.invoke(VideoIPCChannels.FetchFolderDetails, args);
+  },
+  saveLastWatch: (args: {
+    currentVideo: VideoDataModel;
+    lastWatched: number;
+    isEpisode?: boolean;
+  }) => {
+    return ipcRenderer.invoke(VideoIPCChannels.SaveLastWatch, args);
   },
 });
