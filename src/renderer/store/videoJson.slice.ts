@@ -1,9 +1,6 @@
-import { VideoDataIpcChannels } from './../../enums/video-data-IPC-channels.enum';
 import { RootState } from "./index";
 import { VideoDataModel } from "../../models/videoData.model";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { ipcRenderer } from "electron";
-// import { IPCChannels } from "../enums/IPCChannels";
 
 const videoJsonSlice = createSlice({
   name: "videoJson",
@@ -23,6 +20,8 @@ const videoJsonSlice = createSlice({
 const getVideoJson = createAsyncThunk(
   "videoJson/getVideoJson",
   async (currentVideo: VideoDataModel | undefined) => {
+
+    console.log("getVideoJson", currentVideo);
     // const response = await ipcRenderer.invoke(
     //   VideoDataIpcChannels.GetVideoJsonData,
     //   currentVideo

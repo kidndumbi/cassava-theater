@@ -1,13 +1,11 @@
-import React from "react";
 import { Movies } from "../../components/movies/Movies";
-// import { TvShows } from "../../components/tv-shows/TvShows";
-// import { PlaylistsPage } from "../../components/playlists/PlaylistsPage";
 import { MenuItem } from "../../../models/menu-item.model";
 import { CustomFolderModel } from "../../../models/custom-folder";
-// import { CustomFolder } from "../../components/custom-folder/CustomFolder";
+import { CustomFolder } from "../../components/custom-folder/CustomFolder";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { TvShows } from "../../components/tv-shows/TvShows";
-// import { HomePage } from "../../components/home/Home";
+import { HomePage } from "../../components/home/Home";
+import { PlaylistsPage } from "../../components/playlists/PlaylistsPage";
 
 export interface RenderActivePageProps {
   loadingMovies: boolean;
@@ -72,17 +70,17 @@ export const renderActivePage = (
   }: RenderActivePageProps
 ) => {
   switch (activeMenu.id) {
-    // case "app-home":
-    //   return (
-    //     <HomePage
-    //       menuId={activeMenu.id}
-    //       loadingTvShows={loadingTvShows}
-    //       loadingMovies={loadingMovies}
-    //       tvShows={tvShows}
-    //       movies={movies}
-    //       refreshData={refreshData}
-    //     />
-    //   );
+    case "app-home":
+      return (
+        <HomePage
+          menuId={activeMenu.id}
+          loadingTvShows={loadingTvShows}
+          loadingMovies={loadingMovies}
+          tvShows={tvShows}
+          movies={movies}
+          refreshData={refreshData}
+        />
+      );
     case "app-movies":
       return renderMoviesPage(loadingMovies, movies, getMovies, activeMenu.id);
     case "app-tv-shows":
@@ -92,17 +90,17 @@ export const renderActivePage = (
         getTvShows,
         activeMenu.id
       );
-    // case "app-playlists":
-    //   return <PlaylistsPage />;
-    // default:
-    //   return (
-    //     <CustomFolder
-    //       menuId={activeMenu.id}
-    //       customFolder={selectedCustomFolder}
-    //       loadingCustomFolderData={loadingCustomFolderData}
-    //       refreshCustomFolderData={loadCustomFolder}
-    //       customFolderData={customFolderData}
-    //     ></CustomFolder>
-    //   );
+    case "app-playlists":
+      return <PlaylistsPage />;
+    default:
+      return (
+        <CustomFolder
+          menuId={activeMenu.id}
+          customFolder={selectedCustomFolder}
+          loadingCustomFolderData={loadingCustomFolderData}
+          refreshCustomFolderData={loadCustomFolder}
+          customFolderData={customFolderData}
+        ></CustomFolder>
+      );
   }
 };

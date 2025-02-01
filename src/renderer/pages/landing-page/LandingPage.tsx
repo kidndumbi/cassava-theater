@@ -1,5 +1,5 @@
 import { useTheme } from "@mui/material/styles";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import MainMenu from "../../components/main-menu/MainMenu";
 import { MenuItem } from "../../../models/menu-item.model";
 import {
