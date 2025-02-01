@@ -72,8 +72,14 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   return (
     <>
       <div
-        className="movie-details-background"
-        style={{ backgroundImage: `url(${backgroundImageUrl})` }}
+        style={{
+          position: "relative",
+          backgroundSize: "cover",
+          backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0)), linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0)), url(${backgroundImageUrl})`,
+          height: "100vh",
+          width: "100vw",
+        }}
+
       >
         {loadingVideoDetails ? (
           <div className="loading-container">

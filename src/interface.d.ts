@@ -47,6 +47,11 @@ export interface VideoAPI {
   }) => Promise<any>;
 }
 
+export interface TheMovieDbAPI {
+  search: (query: string, queryType: "movie" | "tv") => Promise<any>;
+  movieOrTvShow: (id: string, queryType: "movie" | "tv") => Promise<any>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -56,5 +61,6 @@ declare global {
     mainNotificationsAPI: MainNotificationsAPI;
     videoAPI: VideoAPI;
     mainUtilAPI: MainUtilAPI;
+    theMovieDbAPI: TheMovieDbAPI;
   }
 }
