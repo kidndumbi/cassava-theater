@@ -5,8 +5,6 @@ import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import AppVideoPlayer from "../../components/video-player/AppVideoPlayer";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../../store";
-import { videoJsonActions } from "../../store/videoJson.slice";
 import {
   getLocationSearchParams,
   removeLastSegments,
@@ -16,7 +14,6 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import { useSettings } from "../../hooks/useSettings";
 
 export const VideoPlayerPage = () => {
-  const dispatch = useAppDispatch();
   const { updateSubtitle, subtitleFilePath, setSubtitleFilePath } =
     useSubtitle();
   const { setCurrentVideo } = useVideoListLogic();
@@ -30,12 +27,6 @@ export const VideoPlayerPage = () => {
   const [resumeId, setResumeId] = useState("");
   const [startFromBeginning, setStartFromBeginning] = useState(false);
   const [isTvShow, setIsTvShow] = useState(false);
-
-  useEffect(() => {
-    if (currentVideo) {
-      dispatch(videoJsonActions.getVideoJson(currentVideo));
-    }
-  }, [currentVideo, dispatch]);
 
   useEffect(() => {
     const {

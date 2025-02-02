@@ -20,11 +20,12 @@ const folderVideosInfoSlice = createSlice({
     loadingVideoDetails: false,
     loadingFolderDetails: false,
     loadingCustomFolder: false,
+    loadingPostVideoJson: false,
   } as {
     folderVideosInfo: VideoDataModel[];
     movies: VideoDataModel[];
     tvShows: VideoDataModel[];
-    customFolderData: VideoDataModel[]; // Corrected type
+    customFolderData: VideoDataModel[];
     episodes: VideoDataModel[];
     VideoDetails: VideoDataModel | null;
     folderDetails: VideoDataModel | null;
@@ -34,7 +35,8 @@ const folderVideosInfoSlice = createSlice({
     loadingEpisodes: boolean;
     loadingVideoDetails: boolean;
     loadingFolderDetails: boolean;
-    loadingCustomFolder: boolean; // Added loadingCustomFolder type
+    loadingCustomFolder: boolean;
+    loadingPostVideoJson: boolean;
   },
   reducers: {
     resetFolderVideosInfo: (state) => {
@@ -70,7 +72,6 @@ const folderVideosInfoSlice = createSlice({
         }
       })
       .addCase(fetchVideoData.fulfilled, (state, action) => {
-
         switch (action.payload.category) {
           case "movies":
             state.movies = action.payload.data;
@@ -120,6 +121,12 @@ const folderVideosInfoSlice = createSlice({
       })
       .addCase(fetchFolderDetails.rejected, (state) => {
         state.loadingFolderDetails = false;
+      })
+      .addCase(postVideoJason.pending, (state, action) => {
+        state.loadingPostVideoJson = true;
+      })
+      .addCase(postVideoJason.fulfilled, (state, action) => {
+        state.loadingPostVideoJson = false;
       });
   },
 });
@@ -209,6 +216,27 @@ const fetchFolderDetails = createAsyncThunk(
   }
 );
 
+const postVideoJason = createAsyncThunk(
+  "folderVideosInfo/postVideoJason",
+  async ({
+    currentVideo,
+    newVideoJsonData,
+  }: {
+    currentVideo: VideoDataModel | undefined;
+    newVideoJsonData: VideoDataModel | undefined;
+  }) => {
+    try {
+      return await window.videoAPI.saveVideoJsonData({
+        currentVideo,
+        newVideoJsonData,
+      });
+    } catch (error) {
+      log.error("Failed to post video JSON data:", error);
+      throw error;
+    }
+  }
+);
+
 const selFoldersVideosInfo = (state: RootState) =>
   state.folderVideosInfo.folderVideosInfo;
 
@@ -246,6 +274,7 @@ const folderVideosInfoActions = {
   resetEpisodes: folderVideosInfoSlice.actions.resetEpisodes,
   resetFolderDetails: folderVideosInfoSlice.actions.resetFolderDetails,
   resetCustomFolder: folderVideosInfoSlice.actions.resetCustomFolder,
+  postVideoJason,
 };
 
 export {

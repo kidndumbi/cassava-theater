@@ -1,13 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
 import { selFoldersVideosInfo } from "../store/folderVideosInfo.slice";
 import { currentVideoActions } from "../store/currentVideo.slice";
-import {
-  selVideoPlayer,
-  videoPlayerActions,
-} from "../store/videoPlayer.slice";
-import { selVideoJson } from "../store/videoJson.slice";
+import { selVideoPlayer, videoPlayerActions } from "../store/videoPlayer.slice";
 import { VideoDataModel } from "../../models/videoData.model";
 import { useVideoPlayerLogic } from "./useVideoPlayerLogic";
 
@@ -18,15 +14,7 @@ export const useVideoListLogic = () => {
   const [selectedVideos, setSelectedVideos] = useState<VideoDataModel[]>([]);
   const player = useSelector(selVideoPlayer);
   const folderVideosInfo = useSelector(selFoldersVideosInfo);
-  const videoJsonData = useSelector(selVideoJson);
-
   const { updateLastWatched } = useVideoPlayerLogic();
-
-  useEffect(() => {
-    if (player && player.currentTime && videoJsonData.lastWatched) {
-      player.currentTime = videoJsonData.lastWatched;
-    }
-  }, [player, videoJsonData.lastWatched]);
 
   const setCurrentVideo = (video: VideoDataModel) => {
     dispatch(currentVideoActions.setCurrentVideo(video));
@@ -56,9 +44,7 @@ export const useVideoListLogic = () => {
     selectedVideos,
     folderVideosInfo,
     handleVideoSelect,
-    // deleteVideos,
     player,
-    videoJsonData,
     setPlayer,
     setCurrentVideo,
     clearPlayer,

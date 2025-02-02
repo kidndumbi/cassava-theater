@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
-import { videoJsonActions } from "../store/videoJson.slice";
 import { selVideoPlayer } from "../store/videoPlayer.slice";
 import { v4 as uuidv4 } from "uuid";
 import { NoteModel } from "../../models/note.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import { OverviewModel } from "../../models/overview.model";
-import { fetchVideoDetailsApi } from "../store/folderVideosInfo.slice";
+import { fetchVideoDetailsApi, folderVideosInfoActions } from "../store/folderVideosInfo.slice";
 
 export const useNoteListLogic = () => {
   const dispatch = useAppDispatch();
@@ -29,7 +28,7 @@ export const useNoteListLogic = () => {
     };
 
     dispatch(
-      videoJsonActions.postVideoJason({
+      folderVideosInfoActions.postVideoJason({
         currentVideo: videoData,
         newVideoJsonData,
       })
