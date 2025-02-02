@@ -12,7 +12,7 @@ import { CustomFolderModel } from "../../../models/custom-folder";
 import { useSettings } from "../../hooks/useSettings";
 import { useCustomFolder } from "../../hooks/useCustomFolder";
 import { SettingsModal } from "../../components/settings/SettingsModal";
-import { Grid, Grid2 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { renderActivePage } from "./RenderActivePage";
 import { useMovies } from "../../hooks/useMovies";
 import { useTvShows } from "../../hooks/useTvShows";
@@ -156,7 +156,7 @@ export const LandingPage = () => {
         color: theme.customVariables.appWhiteSmoke,
       }}
     >
-      <Grid item xs={2} style={{ padding: "10px" }}>
+      <Grid size={{ md: 2, lg: 2 }} style={{ padding: "10px" }}>
         <MainMenu
           menuItems={menuItems}
           onActiveMenuItemChange={setActiveMenu}
@@ -165,8 +165,7 @@ export const LandingPage = () => {
         />
       </Grid>
       <Grid
-        item
-        xs={10}
+        size={{ md: 10, lg: 10 }}
         sx={{
           width: "100%",
           maxHeight: "calc(100vh - 30px)",
