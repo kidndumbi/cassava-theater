@@ -24,18 +24,23 @@ export const SettingsPage: React.FC = () => {
   const [customFolders, setCustomFolders] = useState<CustomFolderModel[]>([]);
   const [currentTabValue, setCurrentTabValue] = useState(0);
   const { selectFolder } = useSelectFolder();
-  const { isOpen, openDialog, closeDialog, message, setMessage } = useConfirmationDialog();
+  const { isOpen, openDialog, closeDialog, message, setMessage } =
+    useConfirmationDialog();
   const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
     if (settings.movieFolderPath) setMovieFolderPath(settings.movieFolderPath);
-    if (settings.tvShowsFolderPath) setTvShowsFolderPath(settings.tvShowsFolderPath);
+    if (settings.tvShowsFolderPath)
+      setTvShowsFolderPath(settings.tvShowsFolderPath);
     if (settings.port) setPort(settings.port);
-    if (settings.folders) setCustomFolders(settings.folders as CustomFolderModel[]);
+    if (settings.folders)
+      setCustomFolders(settings.folders as CustomFolderModel[]);
     if (settings.continuousPlay) setContinuousPlay(settings.continuousPlay);
   }, [settings]);
 
-  const handleFolderUpdate = async (onFolderPathSelected: (folderPath: string) => Promise<void>) => {
+  const handleFolderUpdate = async (
+    onFolderPathSelected: (folderPath: string) => Promise<void>
+  ) => {
     const folderPath = await selectFolder();
     if (folderPath) await onFolderPathSelected(folderPath);
   };
@@ -49,27 +54,54 @@ export const SettingsPage: React.FC = () => {
     });
   };
 
-  const handleCustomFolderFolderSelection = async (customFolder: CustomFolderModel) => {
+  const handleCustomFolderFolderSelection = async (
+    customFolder: CustomFolderModel
+  ) => {
     await handleFolderUpdate(async (folderPath) => {
       const updatedFolder = { ...customFolder, folderPath };
-      const updatedFolders = customFolders.map((f) => f.id === customFolder.id ? updatedFolder : f);
+      const updatedFolders = customFolders.map((f) =>
+        f.id === customFolder.id ? updatedFolder : f
+      );
       await setSetting("folders", updatedFolders);
       showSnackbar("Custom Folder Updated", "success");
     });
   };
 
-  const handleUpdateSetting = async (settingName: keyof SettingsModel, value: any) => {
+  const handleUpdateSetting = async (
+    settingName: keyof SettingsModel,
+    value: any
+  ) => {
     try {
-      await setSetting(settingName, value);
-      showSnackbar("Setting updated successfully", "success");
+      if (settingName === "port") {
+        const portNumber = parseInt(value, 10);
+        if (isNaN(portNumber) || portNumber < 1024 || portNumber > 65535) {
+          showSnackbar("Port number must be between 1024 and 65535", "error");
+          return;
+        }
+        await setSetting(settingName, value);
+        showSnackbar(
+          "Port updated successfully. Please restart for change to take effect",
+          "success",
+          "Restart",
+          () => window.mainUtilAPI.restart()
+        );
+      } else {
+        await setSetting(settingName, value);
+        showSnackbar("Setting updated successfully", "success");
+      }
     } catch (error) {
       showSnackbar("Failed to update setting", "error");
     }
   };
 
-  const handleSaveFolderName = async (customFolder: CustomFolderModel, newName: string) => {
+  const handleSaveFolderName = async (
+    customFolder: CustomFolderModel,
+    newName: string
+  ) => {
     const updatedFolder = { ...customFolder, name: newName };
-    const updatedFolders = customFolders.map((f) => f.id === customFolder.id ? updatedFolder : f);
+    const updatedFolders = customFolders.map((f) =>
+      f.id === customFolder.id ? updatedFolder : f
+    );
     await setSetting("folders", updatedFolders);
     showSnackbar("Folder name updated successfully", "success");
   };
@@ -84,7 +116,9 @@ export const SettingsPage: React.FC = () => {
     setMessage("Are you sure you want to delete this folder?");
     const dialogDecision = await openDialog();
     if (dialogDecision === "Ok") {
-      const updatedFolders = customFolders.filter(folder => folder.id !== folderId);
+      const updatedFolders = customFolders.filter(
+        (folder) => folder.id !== folderId
+      );
       await setSetting("folders", updatedFolders);
       showSnackbar("Folder deleted successfully", "success");
     }
@@ -97,11 +131,22 @@ export const SettingsPage: React.FC = () => {
   return (
     <>
       <Container>
-        {/* ...existing code... */}
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-          <Tabs value={currentTabValue} onChange={onTabChange} aria-label="settings tabs">
-            <Tab label="General" {...a11yProps(0)} sx={{ "&:not(.Mui-selected)": { color: "gray" } }} />
-            <Tab label="Custom Folders" {...a11yProps(1)} sx={{ "&:not(.Mui-selected)": { color: "gray" } }} />
+          <Tabs
+            value={currentTabValue}
+            onChange={onTabChange}
+            aria-label="settings tabs"
+          >
+            <Tab
+              label="General"
+              {...a11yProps(0)}
+              sx={{ "&:not(.Mui-selected)": { color: "gray" } }}
+            />
+            <Tab
+              label="Custom Folders"
+              {...a11yProps(1)}
+              sx={{ "&:not(.Mui-selected)": { color: "gray" } }}
+            />
           </Tabs>
         </Box>
         <CustomTabPanel value={currentTabValue} index={0}>
@@ -121,14 +166,20 @@ export const SettingsPage: React.FC = () => {
         <CustomTabPanel value={currentTabValue} index={1}>
           <CustomFoldersSettings
             customFolders={customFolders}
-            handleCustomFolderFolderSelection={handleCustomFolderFolderSelection}
+            handleCustomFolderFolderSelection={
+              handleCustomFolderFolderSelection
+            }
             handleSaveFolderName={handleSaveFolderName}
             saveNewFolder={saveNewFolder}
             handleDeleteFolder={handleDeleteFolder}
           />
         </CustomTabPanel>
       </Container>
-      <ConfirmationDialog open={isOpen} message={message} handleClose={closeDialog} />
+      <ConfirmationDialog
+        open={isOpen}
+        message={message}
+        handleClose={closeDialog}
+      />
     </>
   );
 };

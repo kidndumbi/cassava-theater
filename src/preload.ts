@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld("myAPI", {
 contextBridge.exposeInMainWorld("mainUtilAPI", {
   isPackaged: () =>
     ipcRenderer.invoke(MainUtilIPCChannels.IS_PACKAGED) as Promise<boolean>,
+  restart: () => ipcRenderer.send("restart-app"),
 });
 
 contextBridge.exposeInMainWorld("settingsAPI", {
@@ -56,8 +57,6 @@ contextBridge.exposeInMainWorld("openDialogAPI", {
   },
 });
 
-
-
 contextBridge.exposeInMainWorld("videoCommandsAPI", {
   videoCommand: (callback: (command: VideoCommands) => void) => {
     ipcRenderer.on(
@@ -74,7 +73,7 @@ contextBridge.exposeInMainWorld("videoCommandsAPI", {
         callback(data);
       }
     );
-  }
+  },
 });
 
 contextBridge.exposeInMainWorld("mainNotificationsAPI", {

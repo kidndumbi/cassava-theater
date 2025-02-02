@@ -86,6 +86,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
               variant="contained"
               color="primary"
               onClick={() => handleUpdateSetting("port", componentPort)}
+              disabled={port === componentPort ? true : false}
             >
               <Save />
             </Button>

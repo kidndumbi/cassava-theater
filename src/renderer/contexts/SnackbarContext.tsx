@@ -1,34 +1,65 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { Snackbar, Alert } from "@mui/material";
+import { Snackbar, Alert, Button } from "@mui/material";
 
 type SnackbarSeverity = "success" | "error";
 
 interface SnackbarContextProps {
-  showSnackbar: (message: string, severity: SnackbarSeverity) => void;
+  showSnackbar: (
+    message: string,
+    severity: SnackbarSeverity,
+    actionText?: string,
+    onAction?: () => void
+  ) => void;
 }
 
-const SnackbarContext = createContext<SnackbarContextProps | undefined>(undefined);
+const SnackbarContext = createContext<SnackbarContextProps | undefined>(
+  undefined
+);
 
 export const SnackbarProvider = ({ children }: { children: ReactNode }) => {
-  const [snackbar, setSnackbar] = useState({
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: SnackbarSeverity;
+    actionText?: string;
+    onAction?: () => void;
+  }>({
     open: false,
     message: "",
-    severity: "success" as SnackbarSeverity,
+    severity: "success",
   });
 
-  const showSnackbar = (message: string, severity: SnackbarSeverity) => {
-    setSnackbar({ open: true, message, severity });
+  const showSnackbar = (
+    message: string,
+    severity: SnackbarSeverity,
+    actionText?: string,
+    onAction?: () => void
+  ) => {
+    setSnackbar({ open: true, message, severity, actionText, onAction });
   };
 
   const handleClose = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   return (
     <SnackbarContext.Provider value={{ showSnackbar }}>
       {children}
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity={snackbar.severity}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+      >
+        <Alert onClose={handleClose} severity={snackbar.severity} action={
+          snackbar.actionText ? (
+            <Button color="inherit" size="small" onClick={() => {
+              if (snackbar.onAction) snackbar.onAction();
+              handleClose();
+            }}>
+              {snackbar.actionText}
+            </Button>
+          ) : null
+        }>
           {snackbar.message}
         </Alert>
       </Snackbar>
