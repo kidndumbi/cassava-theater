@@ -92,9 +92,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   };
 
   const initializeSeason = async (path: string, details: any) => {
-    log.log("initializeSeason path:", path);
     const seasonName = getFilename(path);
-    log.log("seasonName:", seasonName);
     const selectedSeasonDetails =
       details?.tv_show_details?.seasons?.find(
         (season: any) => season.name.toLowerCase() === seasonName.toLowerCase()

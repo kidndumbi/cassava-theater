@@ -149,7 +149,6 @@ const fetchVideoData = createAsyncThunk(
   ) => {
     try {
       if (!path) {
-        log.error("Path is required, path: ", path);
         return {
           category,
           data: [],

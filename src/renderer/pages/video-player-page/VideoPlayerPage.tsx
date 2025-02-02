@@ -100,7 +100,6 @@ export const VideoPlayerPage = () => {
   };
 
   const saveLastWatched = async () => {
-    log.log("saveLastWatched called");
     await updateLastWatched(
       menuId === "app-tv-shows" ||
         (menuId === "app-home" && resumeId === "tvShow")
