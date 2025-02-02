@@ -5,6 +5,7 @@ import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import LoadingIndicator from "../common/LoadingIndicator";
+import { PosterCard } from "../common/PosterCard"; // new import
 
 interface ResumeMovieListProps {
   sortedMovies: VideoDataModel[];
@@ -34,41 +35,24 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
     }
 
     return sortedMovies.map((movie: VideoDataModel) => (
-      <Box key={movie.filePath} sx={{ position: "relative" }}>
-        <img
-          src={
+      <Box key={movie.filePath} sx={{ position: "relative", maxWidth: "200px" }}>
+        <PosterCard
+          imageUrl={
             movie?.movie_details?.poster_path
               ? getTmdbImageUrl(movie.movie_details.poster_path)
               : defaultImageUrl
           }
-          alt={movie.fileName}
-          style={{
-            width: "200px",
-            height: "auto",
-            borderRadius: "10px",
-            cursor: "pointer",
-          }}
+          fallbackUrl={defaultImageUrl}
+          altText={movie.fileName}
           onClick={() => handlePosterClick("movie", movie)}
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-            const nextSibling = e.currentTarget
-              .nextElementSibling as HTMLElement;
-            if (nextSibling) {
-              nextSibling.style.display = "block";
-            }
-          }}
+          label={trimFileName(movie.fileName!)}
         />
-        <Box>
-          <Box sx={{ marginTop: "5px" }}>
-            <VideoProgressBar
-              current={movie.currentTime || 0}
-              total={movie.duration || 0}
-            />
-          </Box>
+        <Box sx={{ marginTop: "5px" }}>
+          <VideoProgressBar
+            current={movie.currentTime || 0}
+            total={movie.duration || 0}
+          />
         </Box>
-        <Typography variant="subtitle1" align="center">
-          {trimFileName(movie.fileName!)}
-        </Typography>
       </Box>
     ));
   };

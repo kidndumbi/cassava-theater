@@ -11,6 +11,7 @@ import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import LoadingIndicator from "../common/LoadingIndicator";
+import { PosterCard } from "../common/PosterCard"; // new import
 
 interface ResumeTvShowListsProps {
   sortedTvShows: VideoDataModel[];
@@ -30,27 +31,15 @@ const ResumeTvShowLists: React.FC<ResumeTvShowListsProps> = ({
 
   const renderTvShow = (tvShow: VideoDataModel) => (
     <Box key={tvShow.filePath} sx={{ position: "relative", maxWidth: "200px" }}>
-      <img
-        src={
+      <PosterCard
+        imageUrl={
           tvShow?.tv_show_details?.poster_path
             ? getTmdbImageUrl(tvShow.tv_show_details.poster_path)
             : defaultImageUrl
         }
-        alt={tvShow.fileName}
-        style={{
-          width: "200px",
-          height: "auto",
-          borderRadius: "10px",
-          cursor: "pointer",
-        }}
+        fallbackUrl={defaultImageUrl}
+        altText={tvShow.fileName}
         onClick={() => handlePosterClick("tvShow", tvShow)}
-        onError={(e) => {
-          e.currentTarget.style.display = "none";
-          const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
-          if (nextSibling) {
-            nextSibling.style.display = "block";
-          }
-        }}
       />
       {loadingItems[tvShow.filePath!] && (
         <Box

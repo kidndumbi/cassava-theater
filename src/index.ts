@@ -50,7 +50,7 @@ const createWindow = (): void => {
 };
 
 const rawPort = getValue("port");
-const settingsPort = rawPort || "4002";
+const settingsPort = rawPort || "5000";
 const port: number = parseInt(settingsPort, 10);
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
