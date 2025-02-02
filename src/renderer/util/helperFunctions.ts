@@ -56,12 +56,12 @@ const removeLastSegments = (filePath: string, count: number) => {
   return parts?.slice(0, -count).join("/");
 };
 
-const getLocationSearchParams = (search: string, hash: string) => { 
+const getLocationSearchParams = (search: string, hash: string) => {
   if (!search && hash?.includes("?")) {
     search = hash.substring(hash.indexOf("?"));
   }
   return new URLSearchParams(search);
-}
+};
 
 export {
   secondsTohhmmss,
@@ -73,5 +73,5 @@ export {
   removeLastSegments,
   sec,
   getFilename,
-  getLocationSearchParams
+  getLocationSearchParams,
 };

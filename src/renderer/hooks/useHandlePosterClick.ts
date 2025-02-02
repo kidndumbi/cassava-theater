@@ -40,11 +40,14 @@ const useHandlePosterClick = (
     setLoadingItems((prev) => ({ ...prev, [video.filePath!]: true }));
     const selectedVideo = await getSelectedVideo(videoType, video);
     const resumeId = videoType === "tvShow" ? "tvShow" : "movie";
-    const seasonPath = removeLastSegments(video.lastVideoPlayed || "", 1);
+    const seasonPath =
+      videoType === "tvShow"
+        ? removeLastSegments(video.lastVideoPlayed || "", 1)
+        : "";
     resetEpisodes();
-    getEpisodeDetails(seasonPath || "");
+    getEpisodeDetails(seasonPath);
     setCurrentVideo(selectedVideo);
-    const path = `/video-player?menuId=${menuId}&resumeId=${resumeId}`
+    const path = `/video-player?menuId=${menuId}&resumeId=${resumeId}`;
     navigate(path);
     setLoadingItems((prev) => ({ ...prev, [video.filePath!]: false }));
   };
