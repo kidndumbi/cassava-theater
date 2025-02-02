@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-// import ReactQuill from "react-quill";
+import React, { useState, useEffect } from "react";
+import { useQuill } from "react-quilljs";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import theme from "../theme";
@@ -12,16 +12,31 @@ type EditorProps = {
 };
 
 const Editor = ({ value, onChange }: EditorProps) => {
-  return (<></>
-    // <ReactQuill
-    //   style={{
-    //     backgroundColor: theme.customVariables.appDark,
-    //     color: theme.customVariables.appWhiteSmoke,
-    //   }}
-    //   theme="snow"
-    //   value={value}
-    //   onChange={onChange}
-    // />
+  const { quill, quillRef } = useQuill();
+
+  useEffect(() => {
+    if (quill) {
+      quill.clipboard.dangerouslyPasteHTML(value);
+
+      const handleTextChange = () => {
+        onChange(quill.root.innerHTML);
+      };
+
+      quill.on("text-change", handleTextChange);
+      return () => {
+        quill.off("text-change", handleTextChange);
+      };
+    }
+  }, [quill]);
+
+  return (
+    <div
+      ref={quillRef}
+      style={{
+        backgroundColor: theme.customVariables.appDark,
+        color: theme.customVariables.appWhiteSmoke,
+      }}
+    />
   );
 };
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
 
 import {
@@ -9,9 +9,9 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ClosedCaptionButton from "../common/ClosedCaptionButton";
 import NotesIcon from "@mui/icons-material/Notes";
-// import { NotesModal } from "../common/NotesModal";
-import "./episode.css"; // Import the external CSS file
+import "./episode.css";
 import { VideoProgressBar } from "../common/VideoProgressBar";
+import { NotesModal } from "../common/NotesModal";
 
 interface EpisodeProps {
   episode: VideoDataModel;
@@ -94,7 +94,7 @@ export const Episode: React.FC<EpisodeProps> = ({
           </IconButton>
         </Tooltip>
       </Box>
-      {/* <NotesModal
+      <NotesModal
         handleVideoSeek={(seekTime) => {
           const episodeWithUpdatedTime = { ...episode, currentTime: seekTime };
           onEpisodeClick(episodeWithUpdatedTime);
@@ -103,7 +103,7 @@ export const Episode: React.FC<EpisodeProps> = ({
         handleClose={handleCloseNotesModal}
         videoData={episode}
         currentVideoTime={0}
-      /> */}
+      />
     </Box>
   );
 };
