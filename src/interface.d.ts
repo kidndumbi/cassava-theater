@@ -31,6 +31,7 @@ export interface MainNotificationsAPI {
 
 export interface MainUtilAPI {
   isPackaged: () => Promise<boolean>;
+  restart: () => void;
 }
 
 export interface VideoAPI {
