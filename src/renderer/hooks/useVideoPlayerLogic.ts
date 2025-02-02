@@ -8,15 +8,14 @@ import { useAppDispatch } from "../store";
 import { selCurrentVideo } from "../store/currentVideo.slice";
 import { isEmptyObject } from "../util/helperFunctions";
 import { useState } from "react";
-import { selVideoJson, videoJsonActions } from "../store/videoJson.slice";
 import { VideoDataModel } from "../../models/videoData.model";
+import { folderVideosInfoActions } from "../store/folderVideosInfo.slice";
 
 export const useVideoPlayerLogic = () => {
   const dispatch = useAppDispatch();
   const player = useSelector(selVideoPlayer);
   const videoEnded = useSelector(selVideoEnded);
   const currentVideo = useSelector(selCurrentVideo);
-  const videoJsonData = useSelector(selVideoJson);
   const [isTheaterMode, setIsTheaterMode] = useState(true);
 
   const setVideoEnded = (isVideoEnded: boolean) => {
@@ -40,12 +39,12 @@ export const useVideoPlayerLogic = () => {
 
   const resetVideo = () => {
     const newVideoJsonData: VideoDataModel = {
-      ...videoJsonData,
+      ...currentVideo,
       lastWatched: 1,
     };
 
     return dispatch(
-      videoJsonActions.postVideoJason({
+      folderVideosInfoActions.postVideoJason({
         currentVideo,
         newVideoJsonData,
       })

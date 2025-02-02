@@ -16,7 +16,6 @@ import {
   selTvShowSuggestions,
   theMovieDbActions,
 } from "../store/theMovieDb.slice";
-import { videoJsonActions } from "../store/videoJson.slice";
 import { TvShowDetails } from "../../models/tv-show-details.model";
 
 export const useTvShows = () => {
@@ -76,7 +75,7 @@ export const useTvShows = () => {
       tv_show_details.id.toString()
     );
     await dispatch(
-      videoJsonActions.postVideoJason({
+      folderVideosInfoActions.postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: { tv_show_details: extraTvShowDetails },
       })
@@ -85,7 +84,7 @@ export const useTvShows = () => {
 
   const updateSeasonTMDBId = (season_id: string, filePath: string) => {
     dispatch(
-      videoJsonActions.postVideoJason({
+      folderVideosInfoActions.postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: { season_id },
       })

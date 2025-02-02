@@ -12,7 +12,6 @@ import {
   selMovieSuggestions,
   theMovieDbActions,
 } from "../store/theMovieDb.slice";
-import { videoJsonActions } from "../store/videoJson.slice";
 import { MovieDetails } from "../../models/movie-detail.model";
 
 export const useMovies = () => {
@@ -54,7 +53,7 @@ export const useMovies = () => {
     movie_details: MovieDetails
   ) => {
     await dispatch(
-      videoJsonActions.postVideoJason({
+      folderVideosInfoActions.postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: { movie_details },
       })
