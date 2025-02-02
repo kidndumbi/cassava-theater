@@ -44,7 +44,6 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
   const { setPlayer, clearPlayer } = useVideoListLogic();
   const videoPlayerRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [videoUrl, setVideoUrl] = useState("http://localhost:4002");
 
   useEffect(() => {
     return () => {
@@ -53,16 +52,18 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
   }, []);
 
   useEffect(() => {
-    if (!videoData) return;
-    const url = `http://localhost:${port}/video?path=${encodeURIComponent(
-      videoData.filePath
-    )}`;
-    setVideoUrl(url);
 
     if (videoPlayerRef.current) {
       setPlayer(videoPlayerRef.current);
     }
   }, [videoData]);
+
+  const getUrl = (type: "video" | "file", filePath: string | null | undefined) => {
+    return `http://localhost:${port}/${type}?path=${encodeURIComponent(filePath || "")}`;
+  };
+
+  const getVideoUrl = () => getUrl("video", videoData?.filePath);
+  const getSubtitleUrl = () => getUrl("file", subtitleFilePath);
 
   const {
     skipBy,
@@ -105,30 +106,29 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
 
   return (
     <div ref={containerRef} className="video-container">
-      {videoUrl && (
-        <video
-          ref={videoPlayerRef}
-          className="custom-video-player"
-          controls
-          playsInline
-          src={videoUrl}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain", // Ensures the video fits inside the container
-          }}
-        >
-          {subtitleFilePath && (
-            <track
-              default
-              src={subtitleFilePath}
-              kind="subtitles"
-              srcLang="en"
-              label="English"
-            />
-          )}
-        </video>
-      )}
+      <video
+        ref={videoPlayerRef}
+        crossOrigin="anonymous"
+        className="custom-video-player"
+        controls
+        playsInline
+        src={getVideoUrl()}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+        }}
+      >
+        {subtitleFilePath && (
+          <track
+            default
+            src={getSubtitleUrl()}
+            kind="subtitles"
+            srcLang="en"
+            label="English"
+          />
+        )}
+      </video>
 
       {isMouseActive && (
         <>

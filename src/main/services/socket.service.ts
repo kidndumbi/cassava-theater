@@ -13,6 +13,7 @@ import { AppSocketEvents } from "../../enums/app-socket-events.enum";
 import { VideoCommands } from "../../models/video-commands.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import * as net from "net";
+import { serveLocalFile } from "./file.service";
 
 // Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {
@@ -60,6 +61,12 @@ export async function initializeSocket(
         req.url.startsWith("/video")
       ) {
         handleVideoRequest(req, res);
+      } else if (
+        req.method === "GET" &&
+        req.url &&
+        req.url.startsWith("/file")
+      ) {
+        serveLocalFile(req, res);
       } else {
         res.statusCode = 404;
         res.end();
