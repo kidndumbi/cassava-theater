@@ -5,10 +5,9 @@ import { useVideoPlayer } from "../../hooks/useVideoPlayer";
 import VideoPlayerActionsContainer from "./VideoPlayerActionsContainer";
 import TitleOverlay from "./TitleOverlay";
 import SideControlsOverlay from "./SideControlsOverlay";
-import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 import "./AppVideoPlayer.css";
-// import { NotesModal } from "../common/NotesModal";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
+import Video from "./video";
 
 type AppVideoPlayerProps = {
   videoData: VideoDataModel | undefined;
@@ -52,28 +51,24 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
   }, []);
 
   useEffect(() => {
-
     if (videoPlayerRef.current) {
       setPlayer(videoPlayerRef.current);
     }
   }, [videoData]);
 
-  const getUrl = (type: "video" | "file", filePath: string | null | undefined) => {
-    return `http://localhost:${port}/${type}?path=${encodeURIComponent(filePath || "")}`;
+  const getUrl = (
+    type: "video" | "file",
+    filePath: string | null | undefined
+  ) => {
+    return `http://localhost:${port}/${type}?path=${encodeURIComponent(
+      filePath || ""
+    )}`;
   };
 
   const getVideoUrl = () => getUrl("video", videoData?.filePath);
   const getSubtitleUrl = () => getUrl("file", subtitleFilePath);
 
-  const {
-    skipBy,
-    startPlayingAt,
-    play,
-    pause,
-    toggleFullscreen,
-    currentTime,
-    paused,
-  } = useVideoPlayer(
+  const { skipBy, play, pause, toggleFullscreen, paused } = useVideoPlayer(
     () => onVideoEnded(videoData?.filePath || "", nextEpisode),
     videoData,
     startFromBeginning,
@@ -106,29 +101,12 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
 
   return (
     <div ref={containerRef} className="video-container">
-      <video
-        ref={videoPlayerRef}
-        crossOrigin="anonymous"
-        className="custom-video-player"
-        controls
-        playsInline
-        src={getVideoUrl()}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-        }}
-      >
-        {subtitleFilePath && (
-          <track
-            default
-            src={getSubtitleUrl()}
-            kind="subtitles"
-            srcLang="en"
-            label="English"
-          />
-        )}
-      </video>
+      <Video
+        videoPlayerRef={videoPlayerRef}
+        getVideoUrl={getVideoUrl}
+        getSubtitleUrl={getSubtitleUrl}
+        subtitleFilePath={subtitleFilePath}
+      />
 
       {isMouseActive && (
         <>
