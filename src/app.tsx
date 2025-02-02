@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import CssBaseline from "@mui/material/CssBaseline";
-import { Alert, Box, Snackbar, ThemeProvider } from "@mui/material";
+import { Box, ThemeProvider } from "@mui/material";
 import { Provider, useSelector } from "react-redux";
 import {
   HashRouter,
@@ -22,22 +22,17 @@ import { selVideoPlayer } from "./renderer/store/videoPlayer.slice";
 import { videoCommandsHandler } from "./renderer/util/video-commands-handler";
 import { SetPlayingModel } from "./models/set-playing.model";
 import { useVideoListLogic } from "./renderer/hooks/useVideoListLogic";
+import {
+  SnackbarProvider,
+  useSnackbar,
+} from "./renderer/contexts/SnackbarContext";
 
 const App = () => {
   const { fetchAllSettings } = useSettings();
+  const { showSnackbar } = useSnackbar();
 
   const globalVideoPlayer = useSelector(selVideoPlayer);
   const globalVideoPlayerRef = useRef(globalVideoPlayer);
-
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success" as "success" | "error",
-  });
-
-  const openSnackbar = (message: string, severity: "success" | "error") => {
-    setSnackbar({ open: true, message, severity });
-  };
 
   useEffect(() => {
     globalVideoPlayerRef.current = globalVideoPlayer;
@@ -52,17 +47,13 @@ const App = () => {
     });
 
     window.mainNotificationsAPI.userConnected((userId: string) => {
-      openSnackbar(`User ${userId} connected`, "success");
+      showSnackbar("User connected: " + userId, "success");
     });
 
     window.mainNotificationsAPI.userDisconnected((userId: string) => {
-      openSnackbar(`User ${userId} disconnected`, "error");
+      showSnackbar("User disconnected: " + userId, "error");
     });
   }, []);
-
-  const closeSnackbar = () => {
-    setSnackbar((prev) => ({ ...prev, open: false }));
-  };
 
   return (
     <HashRouter>
@@ -75,15 +66,6 @@ const App = () => {
         <main>
           <AppRoutes />
         </main>
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={closeSnackbar}
-        >
-          <Alert onClose={closeSnackbar} severity={snackbar.severity}>
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
       </Box>
     </HashRouter>
   );
@@ -91,14 +73,14 @@ const App = () => {
 
 const root = createRoot(document.body);
 root.render(
-  <>
+  <SnackbarProvider>
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Provider store={store}>
         <App />
       </Provider>
     </ThemeProvider>
-  </>
+  </SnackbarProvider>
 );
 
 function AppRoutes() {
