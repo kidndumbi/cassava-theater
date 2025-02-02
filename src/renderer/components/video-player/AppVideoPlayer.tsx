@@ -8,6 +8,7 @@ import SideControlsOverlay from "./SideControlsOverlay";
 import "./AppVideoPlayer.css";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import Video from "./video";
+import { NotesModal } from "../common/NotesModal";
 
 type AppVideoPlayerProps = {
   videoData: VideoDataModel | undefined;
@@ -68,7 +69,7 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
   const getVideoUrl = () => getUrl("video", videoData?.filePath);
   const getSubtitleUrl = () => getUrl("file", subtitleFilePath);
 
-  const { skipBy, play, pause, toggleFullscreen, paused } = useVideoPlayer(
+  const { skipBy, play, pause, toggleFullscreen, paused, startPlayingAt, currentTime } = useVideoPlayer(
     () => onVideoEnded(videoData?.filePath || "", nextEpisode),
     videoData,
     startFromBeginning,
@@ -129,7 +130,7 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
           />
         </>
       )}
-      {/* <NotesModal
+      <NotesModal
         open={openNotesModal}
         handleClose={handleCloseNotesModal}
         videoData={videoData!}
@@ -138,7 +139,7 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
           handleCloseNotesModal();
           startPlayingAt(seekTime);
         }}
-      /> */}
+      />
     </div>
   );
 };

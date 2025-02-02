@@ -106,7 +106,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       </div>
       <Box>
         <CustomTabPanel value={currentTabValue} index={0}>
-          {/* <AppNotes
+          <AppNotes
             videoData={videoDetails}
             currentVideoTime={0}
             handleVideoSeek={(seekTime) => {
@@ -117,7 +117,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
               setCurrentVideo(videoWithUpdatedTime);
               navigate(`/video-player?menuId=${menuId}`);
             }}
-          ></AppNotes> */}
+          ></AppNotes>
         </CustomTabPanel>
       </Box>
       <MovieSuggestionsModal
