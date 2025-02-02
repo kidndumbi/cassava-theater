@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
+import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 
 interface PosterCardProps {
   imageUrl: string;
@@ -17,7 +18,11 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   label,
 }) => {
   const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.style.display = "none";
+    log.error(
+      "Image failed to load, should be displaying fallback image. Video: " +
+        altText
+    );
+    e.currentTarget.src = fallbackUrl;
     const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
     if (nextSibling) {
       nextSibling.style.display = "block";
@@ -31,7 +36,12 @@ export const PosterCard: React.FC<PosterCardProps> = ({
         alt={altText}
         onError={handleError}
         onClick={onClick}
-        style={{ width: "100%", borderRadius: "10px", cursor: "pointer" }}
+        style={{
+          width: "200px",
+          borderRadius: "10px",
+          height: "auto",
+          cursor: "pointer",
+        }}
       />
       <Typography variant="subtitle1" align="center">
         {label}
