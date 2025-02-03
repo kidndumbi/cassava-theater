@@ -86,39 +86,36 @@ export const useVideoPlayer = (
     return () => clearInterval(interval);
   }, [globalVideoPlayer, volume]);
 
-  const skipBy = (seconds: number) => {
-    if (globalVideoPlayer) {
-      // Update 'start' query parameter in the src URL with totalSeconds
-      console.log("isMkv:::::", isMkv);
-      if (isMkv) {
-        try {
-          const url = new URL(globalVideoPlayer.src, window.location.href);
-          // Use the ref to always get the most current value.
-          url.searchParams.set(
-            "start",
-            (totalSecondsRef.current + seconds).toString()
-          );
-          //globalVideoPlayer.src = url.toString();
-          console.log("url::::", url.toString());
-          changeSource(url.toString());
-          const newOffset = new Date();
-          newOffset.setSeconds(
-            newOffset.getSeconds() + (totalSecondsRef.current + seconds)
-          );
-          reset(newOffset, !globalVideoPlayer.paused);
-        } catch (e) {
-          console.error("Failed to update the src URL:", e);
-        }
-      } else {
-        console.log("src::::", globalVideoPlayer.src);
-        globalVideoPlayer.currentTime += seconds;
-        // Reset stopwatch with new offset based on updated currentTime
-        const newOffset = new Date();
-        newOffset.setSeconds(
-          newOffset.getSeconds() + globalVideoPlayer.currentTime
-        );
-        reset(newOffset, !globalVideoPlayer.paused);
+  // Helper to update the "start" query parameter in the src URL
+  const updateSourceWithStart = (additionalSeconds: number): string => {
+    try {
+      const url = new URL(globalVideoPlayer.src, window.location.href);
+      let newStart = totalSecondsRef.current + additionalSeconds;
+      if (videoData?.duration) {
+        newStart = Math.max(0, Math.min(newStart, videoData.duration));
       }
+      url.searchParams.set("start", newStart.toString());
+      return url.toString();
+    } catch (e) {
+      console.error("Failed to update the src URL:", e);
+      return globalVideoPlayer.src;
+    }
+  };
+
+  const skipBy = (seconds: number) => {
+    if (!globalVideoPlayer) return;
+    
+    if (isMkv) {
+      const newSrc = updateSourceWithStart(seconds);
+      changeSource(newSrc);
+      const newOffset = new Date();
+      newOffset.setSeconds(newOffset.getSeconds() + totalSecondsRef.current + seconds);
+      reset(newOffset, !globalVideoPlayer.paused);
+    } else {
+      globalVideoPlayer.currentTime += seconds;
+      const newOffset = new Date();
+      newOffset.setSeconds(newOffset.getSeconds() + globalVideoPlayer.currentTime);
+      reset(newOffset, !globalVideoPlayer.paused);
     }
   };
 
