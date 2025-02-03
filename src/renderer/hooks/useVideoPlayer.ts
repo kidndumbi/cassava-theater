@@ -9,6 +9,7 @@ import {
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { useSelector } from "react-redux";
 import { selVideoPlayer } from "../store/videoPlayer.slice";
+import { useVideoPlayerLogic } from "./useVideoPlayerLogic";
 
 export const useVideoPlayer = (
   videoEnded?: (filePath: string) => void,
@@ -16,6 +17,7 @@ export const useVideoPlayer = (
   startFromBeginning?: boolean,
   triggeredOnPlayInterval?: () => void
 ) => {
+  const { setMkvCurrentTime } = useVideoPlayerLogic();
   const [currentTime, setCurrentTime] = useState(0);
   const [playedPercentage, setPlayedPercentage] = useState(0);
   const [formattedTime, setFormattedTime] = useState(""); // new state for formatted time
@@ -45,6 +47,7 @@ export const useVideoPlayer = (
   const totalSecondsRef = useRef(totalSeconds);
   useEffect(() => {
     totalSecondsRef.current = totalSeconds;
+    setMkvCurrentTime(totalSecondsRef.current);
   }, [totalSeconds]);
 
   useEffect(() => {
@@ -104,17 +107,21 @@ export const useVideoPlayer = (
 
   const skipBy = (seconds: number) => {
     if (!globalVideoPlayer) return;
-    
+
     if (isMkv) {
       const newSrc = updateSourceWithStart(seconds);
       changeSource(newSrc);
       const newOffset = new Date();
-      newOffset.setSeconds(newOffset.getSeconds() + totalSecondsRef.current + seconds);
+      newOffset.setSeconds(
+        newOffset.getSeconds() + totalSecondsRef.current + seconds
+      );
       reset(newOffset, !globalVideoPlayer.paused);
     } else {
       globalVideoPlayer.currentTime += seconds;
       const newOffset = new Date();
-      newOffset.setSeconds(newOffset.getSeconds() + globalVideoPlayer.currentTime);
+      newOffset.setSeconds(
+        newOffset.getSeconds() + globalVideoPlayer.currentTime
+      );
       reset(newOffset, !globalVideoPlayer.paused);
     }
   };
@@ -240,7 +247,7 @@ export const useVideoPlayer = (
     volume,
     setVolume,
     paused: globalVideoPlayer?.paused,
-    isMkv, // new boolean for .mkv file
-    formattedTime, // new formatted time string
+    isMkv,
+    formattedTime,
   };
 };
