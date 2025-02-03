@@ -6,7 +6,7 @@ import {
   fetchVideosData,
   handleVideoRequest,
   saveLastWatch,
-} from "../services/video.service";
+} from "./video-data.service";
 import { getAllValues, setValue } from "../store";
 import { loggingService as log } from "./main-logging.service";
 import { AppSocketEvents } from "../../enums/app-socket-events.enum";
