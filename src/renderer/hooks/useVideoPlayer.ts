@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useStopwatch } from "react-timer-hook";
 import { VideoDataModel } from "../../models/videoData.model";
 import {
   getPlayedPercentage,
@@ -8,6 +9,7 @@ import {
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { useSelector } from "react-redux";
 import { selVideoPlayer } from "../store/videoPlayer.slice";
+import { useVideoPlayerLogic } from "./useVideoPlayerLogic";
 
 export const useVideoPlayer = (
   videoEnded?: (filePath: string) => void,
@@ -15,15 +17,57 @@ export const useVideoPlayer = (
   startFromBeginning?: boolean,
   triggeredOnPlayInterval?: () => void
 ) => {
+  const { setMkvCurrentTime } = useVideoPlayerLogic();
   const [currentTime, setCurrentTime] = useState(0);
   const [playedPercentage, setPlayedPercentage] = useState(0);
+  const [formattedTime, setFormattedTime] = useState(""); // new state for formatted time
 
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [volume, setVolume] = useLocalStorage("volume", 1);
   const globalVideoPlayer = useSelector(selVideoPlayer);
 
+  const isMkv = videoData?.fileName?.toLowerCase().endsWith(".mkv") ?? false;
+
+  const stopwatchOffset = new Date();
+  stopwatchOffset.setSeconds(
+    stopwatchOffset.getSeconds() + videoData?.currentTime || 0
+  );
+
+  const {
+    totalSeconds,
+    seconds,
+    minutes,
+    hours,
+    start,
+    pause: pauseTimer,
+    reset,
+  } = useStopwatch({ offsetTimestamp: stopwatchOffset });
+
+  // After obtaining totalSeconds from useStopwatch, create a ref for it:
+  const totalSecondsRef = useRef(totalSeconds);
+  useEffect(() => {
+    totalSecondsRef.current = totalSeconds;
+    setMkvCurrentTime(totalSecondsRef.current);
+  }, [totalSeconds]);
+
+  useEffect(() => {
+    const pad = (num: number) => num.toString().padStart(2, "0");
+    const formatted = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    setFormattedTime(formatted);
+  }, [seconds, minutes, hours]);
+
   const hasValidGlobalVideoPlayer =
     globalVideoPlayer && !isEmptyObject(globalVideoPlayer);
+
+  // New effect to sync stopwatch state with video play state
+  useEffect(() => {
+    if (!hasValidGlobalVideoPlayer) return;
+    if (globalVideoPlayer.paused) {
+      pauseTimer(); // pause stopwatch when video is paused
+    } else {
+      start(); // resume stopwatch when video is playing
+    }
+  }, [globalVideoPlayer?.paused]);
 
   useEffect(() => {
     if (!hasValidGlobalVideoPlayer) {
@@ -45,9 +89,40 @@ export const useVideoPlayer = (
     return () => clearInterval(interval);
   }, [globalVideoPlayer, volume]);
 
+  // Helper to update the "start" query parameter in the src URL
+  const updateSourceWithStart = (additionalSeconds: number): string => {
+    try {
+      const url = new URL(globalVideoPlayer.src, window.location.href);
+      let newStart = totalSecondsRef.current + additionalSeconds;
+      if (videoData?.duration) {
+        newStart = Math.max(0, Math.min(newStart, videoData.duration));
+      }
+      url.searchParams.set("start", newStart.toString());
+      return url.toString();
+    } catch (e) {
+      console.error("Failed to update the src URL:", e);
+      return globalVideoPlayer.src;
+    }
+  };
+
   const skipBy = (seconds: number) => {
-    if (globalVideoPlayer) {
+    if (!globalVideoPlayer) return;
+
+    if (isMkv) {
+      const newSrc = updateSourceWithStart(seconds);
+      changeSource(newSrc);
+      const newOffset = new Date();
+      newOffset.setSeconds(
+        newOffset.getSeconds() + totalSecondsRef.current + seconds
+      );
+      reset(newOffset, !globalVideoPlayer.paused);
+    } else {
       globalVideoPlayer.currentTime += seconds;
+      const newOffset = new Date();
+      newOffset.setSeconds(
+        newOffset.getSeconds() + globalVideoPlayer.currentTime
+      );
+      reset(newOffset, !globalVideoPlayer.paused);
     }
   };
 
@@ -83,12 +158,23 @@ export const useVideoPlayer = (
     }
   };
 
+  // New function to update the video source even while playing
+  const changeSource = (newSrc: string) => {
+    if (globalVideoPlayer) {
+      globalVideoPlayer.pause();
+      globalVideoPlayer.src = newSrc;
+      globalVideoPlayer.load(); // triggers "loadstart" event and starts loading new src
+      globalVideoPlayer.play();
+    }
+  };
+
   useEffect(() => {
     if (!hasValidGlobalVideoPlayer) {
       return;
     }
 
     const onEnded = () => {
+      console.log("ended", globalVideoPlayer.src);
       if (videoEnded) {
         videoEnded(globalVideoPlayer.src);
       }
@@ -104,6 +190,9 @@ export const useVideoPlayer = (
     };
 
     const onLoadedMetadata = () => {
+      if (start) {
+        start();
+      }
       globalVideoPlayer.currentTime = startFromBeginning
         ? 0
         : videoData?.currentTime || 0;
@@ -114,12 +203,22 @@ export const useVideoPlayer = (
       setIsFullScreen(!!document.fullscreenElement);
     };
 
+    const onPlay = () => {
+      start();
+    };
+
+    const onPause = () => {
+      pauseTimer();
+    };
+
     globalVideoPlayer.addEventListener("ended", onEnded);
     globalVideoPlayer.addEventListener("timeupdate", onTimeUpdate);
     globalVideoPlayer.addEventListener("loadedmetadata", onLoadedMetadata);
     globalVideoPlayer.addEventListener("volumechange", (ev) => {
       setVolume(globalVideoPlayer.volume);
     });
+    globalVideoPlayer.addEventListener("play", onPlay);
+    globalVideoPlayer.addEventListener("pause", onPause);
     document.addEventListener("fullscreenchange", onFullscreenChange);
 
     return () => {
@@ -130,6 +229,8 @@ export const useVideoPlayer = (
         "fullscreenchange",
         onFullscreenChange
       );
+      globalVideoPlayer.removeEventListener("play", onPlay);
+      globalVideoPlayer.removeEventListener("pause", onPause);
     };
   }, [videoEnded, globalVideoPlayer, videoData, startFromBeginning]);
 
@@ -146,5 +247,7 @@ export const useVideoPlayer = (
     volume,
     setVolume,
     paused: globalVideoPlayer?.paused,
+    isMkv,
+    formattedTime,
   };
 };

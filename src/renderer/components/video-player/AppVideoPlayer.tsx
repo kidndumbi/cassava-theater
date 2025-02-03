@@ -9,6 +9,8 @@ import "./AppVideoPlayer.css";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import Video from "./video";
 import { NotesModal } from "../common/NotesModal";
+import Box from "@mui/material/Box";
+import { secondsTohhmmss } from "../../util/helperFunctions";
 
 type AppVideoPlayerProps = {
   videoData: VideoDataModel | undefined;
@@ -46,6 +48,7 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    console.log("AppVideoPlayer mounted");
     return () => {
       clearPlayer();
     };
@@ -59,17 +62,28 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
 
   const getUrl = (
     type: "video" | "file",
-    filePath: string | null | undefined
+    filePath: string | null | undefined,
+    start:number | null = null
   ) => {
     return `http://localhost:${port}/${type}?path=${encodeURIComponent(
       filePath || ""
-    )}`;
+    )}&start=${start || 0}`;
   };
 
-  const getVideoUrl = () => getUrl("video", videoData?.filePath);
+  const getVideoUrl = () => getUrl("video", videoData?.filePath, videoData?.currentTime);
   const getSubtitleUrl = () => getUrl("file", subtitleFilePath);
 
-  const { skipBy, play, pause, toggleFullscreen, paused, startPlayingAt, currentTime } = useVideoPlayer(
+  const {
+    skipBy,
+    play,
+    pause,
+    toggleFullscreen,
+    paused,
+    startPlayingAt,
+    currentTime,
+    formattedTime,
+    isMkv,
+  } = useVideoPlayer(
     () => onVideoEnded(videoData?.filePath || "", nextEpisode),
     videoData,
     startFromBeginning,
@@ -140,6 +154,18 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
           startPlayingAt(seekTime);
         }}
       />
+      {true && (
+        <Box
+          style={{
+            position: "absolute",
+            bottom: "60px",
+            left: "20px",
+            color: "white",
+          }}
+        >
+          {formattedTime + " / " + (secondsTohhmmss(videoData?.duration) || "")}
+        </Box>
+      )}
     </div>
   );
 };

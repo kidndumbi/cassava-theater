@@ -487,9 +487,13 @@ export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
   const videoPath = decodeURIComponent(url.searchParams.get("path") as string);
   const fileExt = path.extname(videoPath).toLowerCase();
 
-  // If it's MKV, we'll pipe the ffmpeg output as MP4
   if (fileExt === ".mkv") {
-    // Optional: Check if file exists
+    // Optional: extract start time from query parameter (in seconds)
+    const startParam = url.searchParams.get("start");
+    const startTime = startParam ? Number(startParam) : 0;
+
+    console.log("startTime:: ", startTime);  
+
     if (!fs.existsSync(videoPath)) {
       res.writeHead(404, { "Content-Type": "text/plain" });
       res.end("MKV file not found.");
@@ -497,30 +501,23 @@ export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
     }
     console.log("MKV file found, converting to MP4...");
 
-    // Write a 200 OK.
-    // (Range requests require more advanced usage with ffmpeg, so we’re keeping it simple)
-    res.writeHead(200, {
-      "Content-Type": "video/mp4",
-      // "Transfer-Encoding": "chunked" could be used, but is optional
-    });
-
-    // Changed: re-encode instead of copying codecs for .mkv files
-    ffmpeg(videoPath)
+    res.writeHead(200, { "Content-Type": "video/mp4" });
+    const command = ffmpeg(videoPath)
+      // Use -ss input option if startTime specified
+      .inputOptions(startTime > 0 ? [`-ss ${startTime}`] : [])
       .videoCodec("libx264")
       .audioCodec("aac")
       .format("mp4")
-      .outputOptions("-movflags frag_keyframe+empty_moov")
-      // Error handling
-      .on("error", (err) => {
-        console.error("FFmpeg error:", err);
-        if (!res.headersSent) {
-          res.writeHead(500, { "Content-Type": "text/plain" });
-        }
-        res.end("Error processing MKV to MP4 stream.");
-      })
-      // Pipe to response
-      .pipe(res, { end: true });
+      .outputOptions("-movflags frag_keyframe+empty_moov");
 
+    command.on("error", (err) => {
+      console.error("FFmpeg error:", err);
+      if (!res.headersSent) {
+        res.writeHead(500, { "Content-Type": "text/plain" });
+      }
+      res.end("Error processing MKV to MP4 stream.");
+    })
+    .pipe(res, { end: true });
     return;
   }
 

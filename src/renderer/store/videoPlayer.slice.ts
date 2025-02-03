@@ -4,11 +4,13 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 interface VideoPlayerState {
   videoPlayer: HTMLVideoElement | null;
   videoEnded: boolean;
+  mkvCurrentTime: number;
 }
 
 const initialState: VideoPlayerState = {
   videoPlayer: {} as HTMLVideoElement,
   videoEnded: false,
+  mkvCurrentTime: 0,
 };
 
 const videoPlayerSlice = createSlice({
@@ -23,7 +25,10 @@ const videoPlayerSlice = createSlice({
     },
     clearVideoPlayer: (state) => {
       state.videoPlayer = null;
-    }
+    },
+    setMkvCurrentTime: (state, action: PayloadAction<number>) => {
+      state.mkvCurrentTime = action.payload;
+    },
   },
 });
 
@@ -31,5 +36,6 @@ const videoPlayerActions = videoPlayerSlice.actions;
 
 const selVideoPlayer = (state: RootState) => state.videoPlayer.videoPlayer;
 const selVideoEnded = (state: RootState) => state.videoPlayer.videoEnded;
+const selMkvCurrentTime = (state: RootState) => state.videoPlayer.mkvCurrentTime;
 
-export { videoPlayerSlice, videoPlayerActions, selVideoPlayer, selVideoEnded };
+export { videoPlayerSlice, videoPlayerActions, selVideoPlayer, selVideoEnded, selMkvCurrentTime };
