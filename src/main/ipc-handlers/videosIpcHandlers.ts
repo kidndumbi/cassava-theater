@@ -7,7 +7,7 @@ import {
   getVideoJsonData,
   saveLastWatch,
   saveVideoJsonData,
-} from "../services/video.service";
+} from "../services/video-data.service";
 
 export const videosIpcHandlers = () => {
   ipcMain.handle(
