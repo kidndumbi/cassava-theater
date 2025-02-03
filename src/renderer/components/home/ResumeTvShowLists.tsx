@@ -70,7 +70,7 @@ const ResumeTvShowLists: React.FC<ResumeTvShowListsProps> = ({
         sx={{ wordBreak: "break-all" }}
       >
         {trimFileName(tvShow.fileName!)}/
-        {tvShow.lastVideoPlayed?.split("/").pop()?.replace(".mp4", "")}
+        {tvShow.lastVideoPlayed?.split("/").pop()?.replace(/\.(mp4|mkv)$/i, "")}
       </Typography>
     </Box>
   );

@@ -292,7 +292,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                       : "Play"}
                     <br />
                     {getFilename(tvShowDetails?.lastVideoPlayed).replace(
-                      ".mp4",
+                      /\.(mp4|mkv)$/i,
                       ""
                     )}
                   </Button>
@@ -306,7 +306,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                       {"Play From Beginning"}
                       <br />
                       {getFilename(tvShowDetails?.lastVideoPlayed).replace(
-                        ".mp4",
+                        /\.(mp4|mkv)$/i,
                         ""
                       )}
                     </Button>

@@ -108,7 +108,7 @@ export const fetchVideoDetails = async (
   }
 
   try {
-    const jsonFilePath = filePath.replace(".mp4", ".json");
+    const jsonFilePath = filePath.replace(/\.(mp4|mkv)$/i, ".json");
     const stats = await stat(filePath);
     const jsonFileContents = await readJsonData(jsonFilePath);
     const duration = await calculateDuration(filePath);
@@ -245,24 +245,19 @@ export const getVideoJsonData = async (
   currentVideo: VideoDataModel
 ) => {
   try {
-    // Constant for reusable value
     const EMPTY_JSON_RESPONSE: VideoDataModel = { notes: [], overview: {} };
-    //Validate the input data
+
     if (!currentVideo || !currentVideo.filePath) {
       console.warn(
         "Warning: Received undefined or invalid currentVideo.filepath."
       );
       return EMPTY_JSON_RESPONSE;
-      //throw new Error("Invalid input data");
     }
 
-    // Construct the new file path using template literals
-    const newFilePath = currentVideo.filePath.replace(".mp4", ".json");
+    const newFilePath = currentVideo.filePath.replace(/\.(mp4|mkv)$/i, ".json");
 
-    // Check if the file exists
     return await readOrDefaultJson(newFilePath);
   } catch (error) {
-    // Handle the error appropriately
     console.error("An error occurred:", error);
     return null;
   }
@@ -351,9 +346,8 @@ export const getRootVideoData = async (
       if (!shouldProcessFile(file, stats, searchText)) {
         return;
       }
-
       if (
-        path.extname(file).toLocaleLowerCase() === ".mp4" ||
+        [".mp4", ".mkv"].includes(path.extname(file).toLowerCase()) ||
         stats.isDirectory()
       ) {
         const data = await populateVideoData(file, filePath, stats);
@@ -413,7 +407,9 @@ export const populateVideoData = async (
 
 export const calculateDuration = async (file: string) => {
   let duration = 0;
-  if (path.extname(file).toLocaleLowerCase() === ".mp4") {
+
+  const ext = path.extname(file).toLowerCase();
+  if ([".mp4", ".mkv"].includes(ext)) {
     const maybeDuration = await getVideoDuration(file);
     if (typeof maybeDuration === "number") {
       duration = maybeDuration;
@@ -488,7 +484,47 @@ export const createFolderDataObject = (
 
 export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
   const url = new URL(req.url!, `http://${req.headers.host}`);
-  const videoPath = decodeURIComponent(url.searchParams.get("path") as string); // Decode the path
+  const videoPath = decodeURIComponent(url.searchParams.get("path") as string);
+  const fileExt = path.extname(videoPath).toLowerCase();
+
+  // If it's MKV, we'll pipe the ffmpeg output as MP4
+  if (fileExt === ".mkv") {
+    // Optional: Check if file exists
+    if (!fs.existsSync(videoPath)) {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("MKV file not found.");
+      return;
+    }
+    console.log("MKV file found, converting to MP4...");
+
+    // Write a 200 OK.
+    // (Range requests require more advanced usage with ffmpeg, so we’re keeping it simple)
+    res.writeHead(200, {
+      "Content-Type": "video/mp4",
+      // "Transfer-Encoding": "chunked" could be used, but is optional
+    });
+
+    // Changed: re-encode instead of copying codecs for .mkv files
+    ffmpeg(videoPath)
+      .videoCodec("libx264")
+      .audioCodec("aac")
+      .format("mp4")
+      .outputOptions("-movflags frag_keyframe+empty_moov")
+      // Error handling
+      .on("error", (err) => {
+        console.error("FFmpeg error:", err);
+        if (!res.headersSent) {
+          res.writeHead(500, { "Content-Type": "text/plain" });
+        }
+        res.end("Error processing MKV to MP4 stream.");
+      })
+      // Pipe to response
+      .pipe(res, { end: true });
+
+    return;
+  }
+
+  // Otherwise (e.g. MP4 case), use your existing partial-content logic
   const stat = fs.statSync(videoPath);
   const fileSize = stat.size;
   const range = req.headers.range;
@@ -497,23 +533,23 @@ export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
     const parts = range.replace(/bytes=/, "").split("-");
     const start = parseInt(parts[0], 10);
     const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-    const chunksize = end - start + 1;
-    const file = fs.createReadStream(videoPath, { start, end });
+    const chunkSize = end - start + 1;
+
+    const fileStream = fs.createReadStream(videoPath, { start, end });
     const head = {
       "Content-Range": `bytes ${start}-${end}/${fileSize}`,
       "Accept-Ranges": "bytes",
-      "Content-Length": chunksize,
+      "Content-Length": chunkSize,
       "Content-Type": "video/mp4",
     };
 
     res.writeHead(206, head);
-    file.pipe(res);
+    fileStream.pipe(res);
   } else {
     const head = {
       "Content-Length": fileSize,
       "Content-Type": "video/mp4",
     };
-
     res.writeHead(200, head);
     fs.createReadStream(videoPath).pipe(res);
   }

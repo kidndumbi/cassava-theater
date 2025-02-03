@@ -30,7 +30,7 @@ const TitleOverlay: React.FC<TitleOverlayProps> = ({ fileName }) => {
           color: theme.customVariables.appWhite,
         }}
       >
-        {fileName?.replace(/\.mp4$/, "")}
+        {fileName?.replace(/\.(mp4|mkv)$/i, "")}
       </Typography>
     </Box>
   );

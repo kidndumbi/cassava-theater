@@ -76,9 +76,8 @@ export const getJsonFilePath = (filePath: string): string => {
     throw new Error("filePath is undefined!");
   }
 
-  // Check if the filePath ends with .mp4 and replace it with .json
-  if (filePath.endsWith(".mp4")) {
-    return filePath.replace(".mp4", ".json");
+  if (filePath.toLowerCase().endsWith(".mp4") || filePath.toLowerCase().endsWith(".mkv")) {
+    return filePath.replace(/\.(mp4|mkv)$/i, ".json");
   }
 
   // Check if the filePath has no extension and append .json
@@ -86,7 +85,6 @@ export const getJsonFilePath = (filePath: string): string => {
     return `${filePath}.json`;
   }
 
-  // If neither condition is met, return the filePath as is
   return filePath;
 };
 
