@@ -34,4 +34,5 @@ export interface VideoDataModel {
     basename: string;
     season_id?: string | null;
   }[];
+  isMkv?: boolean;
 }

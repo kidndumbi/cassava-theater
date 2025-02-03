@@ -29,18 +29,17 @@ export const useVideoPlayerLogic = () => {
   };
 
   const updateLastWatched = async (isEpisode: boolean = false) => {
-    const isMkv =
-      currentVideo?.fileName?.toLowerCase().endsWith(".mkv") ?? false;
-
     if (
       isEmptyObject(currentVideo) ||
       !player ||
-      (isMkv ? mkvCurrentTime : player.currentTime) <= 0
+      (currentVideo.isMkv ? mkvCurrentTime : player.currentTime) <= 0
     ) {
       return;
     }
 
-    const currentTime = isMkv ? mkvCurrentTime : player.currentTime;
+    const currentTime = currentVideo.isMkv
+      ? mkvCurrentTime
+      : player.currentTime;
     const lastWatchedTime =
       currentTime === currentVideo.duration ? 1 : currentTime;
 
