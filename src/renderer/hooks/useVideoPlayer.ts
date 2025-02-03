@@ -26,8 +26,6 @@ export const useVideoPlayer = (
   const [volume, setVolume] = useLocalStorage("volume", 1);
   const globalVideoPlayer = useSelector(selVideoPlayer);
 
-  const isMkv = videoData?.fileName?.toLowerCase().endsWith(".mkv") ?? false;
-
   const stopwatchOffset = new Date();
   stopwatchOffset.setSeconds(
     stopwatchOffset.getSeconds() + videoData?.currentTime || 0
@@ -108,7 +106,7 @@ export const useVideoPlayer = (
   const skipBy = (seconds: number) => {
     if (!globalVideoPlayer) return;
 
-    if (isMkv) {
+    if (videoData.isMkv) {
       const newSrc = updateSourceWithStart(seconds);
       changeSource(newSrc);
       const newOffset = new Date();
@@ -247,7 +245,6 @@ export const useVideoPlayer = (
     volume,
     setVolume,
     paused: globalVideoPlayer?.paused,
-    isMkv,
     formattedTime,
   };
 };

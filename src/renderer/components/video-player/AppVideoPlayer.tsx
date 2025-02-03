@@ -82,7 +82,6 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
     startPlayingAt,
     currentTime,
     formattedTime,
-    isMkv,
   } = useVideoPlayer(
     () => onVideoEnded(videoData?.filePath || "", nextEpisode),
     videoData,

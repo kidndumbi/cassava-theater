@@ -441,7 +441,7 @@ export const createVideoDataObject = (
   rootPath: string,
   duration: number,
   jsonFileContents: VideoDataModel | null
-) => ({
+): VideoDataModel => ({
   fileName,
   filePath,
   isDirectory,
@@ -463,6 +463,7 @@ export const createVideoDataObject = (
   overview: jsonFileContents?.overview || {},
   movie_details: jsonFileContents?.movie_details || null,
   tv_show_details: jsonFileContents?.tv_show_details || null,
+  isMkv: filePath.toLowerCase().endsWith(".mkv"),
 });
 
 export const createFolderDataObject = (
@@ -471,7 +472,7 @@ export const createFolderDataObject = (
   jsonFileContents: VideoDataModel | null,
   tv_show_details: TvShowDetails | null,
   childFolders: { folderPath: string; basename: string }[] = []
-) => ({
+): VideoDataModel => ({
   basePath,
   filePath,
   season_id: jsonFileContents?.season_id || null,
@@ -492,7 +493,7 @@ export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
     const startParam = url.searchParams.get("start");
     const startTime = startParam ? Number(startParam) : 0;
 
-    console.log("startTime:: ", startTime);  
+    console.log("startTime:: ", startTime);
 
     if (!fs.existsSync(videoPath)) {
       res.writeHead(404, { "Content-Type": "text/plain" });
@@ -510,14 +511,15 @@ export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
       .format("mp4")
       .outputOptions("-movflags frag_keyframe+empty_moov");
 
-    command.on("error", (err) => {
-      console.error("FFmpeg error:", err);
-      if (!res.headersSent) {
-        res.writeHead(500, { "Content-Type": "text/plain" });
-      }
-      res.end("Error processing MKV to MP4 stream.");
-    })
-    .pipe(res, { end: true });
+    command
+      .on("error", (err) => {
+        console.error("FFmpeg error:", err);
+        if (!res.headersSent) {
+          res.writeHead(500, { "Content-Type": "text/plain" });
+        }
+        res.end("Error processing MKV to MP4 stream.");
+      })
+      .pipe(res, { end: true });
     return;
   }
 
