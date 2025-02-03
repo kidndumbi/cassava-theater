@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
+import { useStopwatch } from "react-timer-hook";
 import { VideoDataModel } from "../../models/videoData.model";
 import {
   getPlayedPercentage,
@@ -17,13 +18,63 @@ export const useVideoPlayer = (
 ) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [playedPercentage, setPlayedPercentage] = useState(0);
+  const [formattedTime, setFormattedTime] = useState(""); // new state for formatted time
 
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [volume, setVolume] = useLocalStorage("volume", 1);
   const globalVideoPlayer = useSelector(selVideoPlayer);
 
+  const isMkv = globalVideoPlayer?.src?.toLowerCase().endsWith(".mkv") ?? false;
+
+  useEffect(() => {
+    console.log("isMkv", isMkv);
+  }, [isMkv]);
+
+  const stopwatchOffset = new Date();
+  stopwatchOffset.setSeconds(
+    stopwatchOffset.getSeconds() + videoData?.currentTime || 0
+  );
+
+  const {
+    totalSeconds,
+    seconds,
+    minutes,
+    hours,
+    days,
+    isRunning,
+    start,
+    pause: pauseTimer,
+    reset,
+  } = useStopwatch({ offsetTimestamp: stopwatchOffset });
+
+  useEffect(() => {
+    const pad = (num: number) => num.toString().padStart(2, "0");
+    const formatted = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    setFormattedTime(formatted);
+    console.log(
+      "hours",
+      hours,
+      "minutes",
+      minutes,
+      "seconds",
+      seconds,
+      "formattedTime",
+      formatted
+    );
+  }, [seconds, minutes, hours]);
+
   const hasValidGlobalVideoPlayer =
     globalVideoPlayer && !isEmptyObject(globalVideoPlayer);
+
+  // New effect to sync stopwatch state with video play state
+  useEffect(() => {
+    if (!hasValidGlobalVideoPlayer) return;
+    if (globalVideoPlayer.paused) {
+      pauseTimer(); // pause stopwatch when video is paused
+    } else {
+      start(); // resume stopwatch when video is playing
+    }
+  }, [globalVideoPlayer?.paused]);
 
   useEffect(() => {
     if (!hasValidGlobalVideoPlayer) {
@@ -89,6 +140,7 @@ export const useVideoPlayer = (
     }
 
     const onEnded = () => {
+      console.log("ended", globalVideoPlayer.src);
       if (videoEnded) {
         videoEnded(globalVideoPlayer.src);
       }
@@ -104,6 +156,9 @@ export const useVideoPlayer = (
     };
 
     const onLoadedMetadata = () => {
+      if (start) {
+        start();
+      }
       globalVideoPlayer.currentTime = startFromBeginning
         ? 0
         : videoData?.currentTime || 0;
@@ -114,12 +169,22 @@ export const useVideoPlayer = (
       setIsFullScreen(!!document.fullscreenElement);
     };
 
+    const onPlay = () => {
+      start();
+    };
+
+    const onPause = () => {
+      pauseTimer();
+    };
+
     globalVideoPlayer.addEventListener("ended", onEnded);
     globalVideoPlayer.addEventListener("timeupdate", onTimeUpdate);
     globalVideoPlayer.addEventListener("loadedmetadata", onLoadedMetadata);
     globalVideoPlayer.addEventListener("volumechange", (ev) => {
       setVolume(globalVideoPlayer.volume);
     });
+    globalVideoPlayer.addEventListener("play", onPlay);
+    globalVideoPlayer.addEventListener("pause", onPause);
     document.addEventListener("fullscreenchange", onFullscreenChange);
 
     return () => {
@@ -130,6 +195,8 @@ export const useVideoPlayer = (
         "fullscreenchange",
         onFullscreenChange
       );
+      globalVideoPlayer.removeEventListener("play", onPlay);
+      globalVideoPlayer.removeEventListener("pause", onPause);
     };
   }, [videoEnded, globalVideoPlayer, videoData, startFromBeginning]);
 
@@ -146,5 +213,7 @@ export const useVideoPlayer = (
     volume,
     setVolume,
     paused: globalVideoPlayer?.paused,
+    isMkv, // new boolean for .mkv file
+    formattedTime, // new formatted time string
   };
 };
