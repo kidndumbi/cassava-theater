@@ -10,6 +10,7 @@ import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import Video from "./video";
 import { NotesModal } from "../common/NotesModal";
 import Box from "@mui/material/Box";
+import { secondsTohhmmss } from "../../util/helperFunctions";
 
 type AppVideoPlayerProps = {
   videoData: VideoDataModel | undefined;
@@ -47,6 +48,7 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    console.log("AppVideoPlayer mounted");
     return () => {
       clearPlayer();
     };
@@ -60,14 +62,15 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
 
   const getUrl = (
     type: "video" | "file",
-    filePath: string | null | undefined
+    filePath: string | null | undefined,
+    start:number | null = null
   ) => {
     return `http://localhost:${port}/${type}?path=${encodeURIComponent(
       filePath || ""
-    )}`;
+    )}&start=${start || 0}`;
   };
 
-  const getVideoUrl = () => getUrl("video", videoData?.filePath);
+  const getVideoUrl = () => getUrl("video", videoData?.filePath, videoData?.currentTime);
   const getSubtitleUrl = () => getUrl("file", subtitleFilePath);
 
   const {
@@ -160,7 +163,7 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
             color: "white",
           }}
         >
-          {formattedTime}
+          {formattedTime + " / " + (secondsTohhmmss(videoData?.duration) || "")}
         </Box>
       )}
     </div>

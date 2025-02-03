@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useStopwatch } from "react-timer-hook";
 import { VideoDataModel } from "../../models/videoData.model";
 import {
@@ -24,11 +24,7 @@ export const useVideoPlayer = (
   const [volume, setVolume] = useLocalStorage("volume", 1);
   const globalVideoPlayer = useSelector(selVideoPlayer);
 
-  const isMkv = globalVideoPlayer?.src?.toLowerCase().endsWith(".mkv") ?? false;
-
-  useEffect(() => {
-    console.log("isMkv", isMkv);
-  }, [isMkv]);
+  const isMkv = videoData?.fileName?.toLowerCase().endsWith(".mkv") ?? false;
 
   const stopwatchOffset = new Date();
   stopwatchOffset.setSeconds(
@@ -40,27 +36,21 @@ export const useVideoPlayer = (
     seconds,
     minutes,
     hours,
-    days,
-    isRunning,
     start,
     pause: pauseTimer,
     reset,
   } = useStopwatch({ offsetTimestamp: stopwatchOffset });
 
+  // After obtaining totalSeconds from useStopwatch, create a ref for it:
+  const totalSecondsRef = useRef(totalSeconds);
+  useEffect(() => {
+    totalSecondsRef.current = totalSeconds;
+  }, [totalSeconds]);
+
   useEffect(() => {
     const pad = (num: number) => num.toString().padStart(2, "0");
     const formatted = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
     setFormattedTime(formatted);
-    console.log(
-      "hours",
-      hours,
-      "minutes",
-      minutes,
-      "seconds",
-      seconds,
-      "formattedTime",
-      formatted
-    );
   }, [seconds, minutes, hours]);
 
   const hasValidGlobalVideoPlayer =
@@ -98,7 +88,37 @@ export const useVideoPlayer = (
 
   const skipBy = (seconds: number) => {
     if (globalVideoPlayer) {
-      globalVideoPlayer.currentTime += seconds;
+      // Update 'start' query parameter in the src URL with totalSeconds
+      console.log("isMkv:::::", isMkv);
+      if (isMkv) {
+        try {
+          const url = new URL(globalVideoPlayer.src, window.location.href);
+          // Use the ref to always get the most current value.
+          url.searchParams.set(
+            "start",
+            (totalSecondsRef.current + seconds).toString()
+          );
+          //globalVideoPlayer.src = url.toString();
+          console.log("url::::", url.toString());
+          changeSource(url.toString());
+          const newOffset = new Date();
+          newOffset.setSeconds(
+            newOffset.getSeconds() + (totalSecondsRef.current + seconds)
+          );
+          reset(newOffset, !globalVideoPlayer.paused);
+        } catch (e) {
+          console.error("Failed to update the src URL:", e);
+        }
+      } else {
+        console.log("src::::", globalVideoPlayer.src);
+        globalVideoPlayer.currentTime += seconds;
+        // Reset stopwatch with new offset based on updated currentTime
+        const newOffset = new Date();
+        newOffset.setSeconds(
+          newOffset.getSeconds() + globalVideoPlayer.currentTime
+        );
+        reset(newOffset, !globalVideoPlayer.paused);
+      }
     }
   };
 
@@ -131,6 +151,16 @@ export const useVideoPlayer = (
       containerRef.current?.requestFullscreen();
     } else {
       document.exitFullscreen();
+    }
+  };
+
+  // New function to update the video source even while playing
+  const changeSource = (newSrc: string) => {
+    if (globalVideoPlayer) {
+      globalVideoPlayer.pause();
+      globalVideoPlayer.src = newSrc;
+      globalVideoPlayer.load(); // triggers "loadstart" event and starts loading new src
+      globalVideoPlayer.play();
     }
   };
 
