@@ -27,7 +27,7 @@ const getFilename = (filePath: string): string => {
 };
 
 const trimFileName = (fileName: string, maxLength: number = 20) => {
-  const nameWithoutExtension = fileName.replace(/\.mp4$/, "");
+  const nameWithoutExtension = fileName.replace(/\.(mp4|mkv)$/i, "");
   return nameWithoutExtension.length > maxLength
     ? `${nameWithoutExtension.substring(0, maxLength)}...`
     : nameWithoutExtension;
@@ -51,6 +51,7 @@ const removeLastSegments = (filePath: string, count: number) => {
   const parts = filePath?.split("/");
   if (count < 1 || count >= parts?.length) {
     log.error("Invalid segment count:", count);
+    log.error("Returning original filePath:", filePath);
     return filePath;
   }
   return parts?.slice(0, -count).join("/");

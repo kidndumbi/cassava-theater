@@ -65,7 +65,7 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
             align="center"
             sx={{ wordBreak: "break-all" }}
           >
-            {item.fileName!.replace(/\.mp4$/, "")}
+            {item.fileName!.replace(/\.(mp4|mkv)$/i, "")}
           </Typography>
         </Box>
       ))}
