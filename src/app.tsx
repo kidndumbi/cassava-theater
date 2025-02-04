@@ -18,7 +18,6 @@ import { VideoDetailsPage } from "./renderer/pages/video-details-page/VideoDetai
 import { VideoPlayerPage } from "./renderer/pages/video-player-page/VideoPlayerPage";
 import { Layout } from "./renderer/pages/Layout";
 import { VideoCommands } from "./models/video-commands.model";
-import { selVideoPlayer } from "./renderer/store/videoPlayer.slice";
 import { videoCommandsHandler } from "./renderer/util/video-commands-handler";
 import { SetPlayingModel } from "./models/set-playing.model";
 import { useVideoListLogic } from "./renderer/hooks/useVideoListLogic";
