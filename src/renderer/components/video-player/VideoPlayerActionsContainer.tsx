@@ -2,7 +2,6 @@ import React from "react";
 import Box from "@mui/material/Box";
 import SkipButton from "./SkipButton";
 import { VideoPlayerActionsBar } from "./VideoPlayerActionsBar";
-import { useVideoPlayer } from "../../hooks/useVideoPlayer";
 import "./VideoPlayerActionsContainer.css";
 
 interface VideoPlayerActionsContainerProps {
@@ -10,12 +9,24 @@ interface VideoPlayerActionsContainerProps {
   subtitleFilePath: string | null;
   skip: (seconds: number) => void;
   onToggleFullscreen: () => void;
+  isFullScreen: boolean;
+  paused?: boolean;
+  play: () => void;
+  pause: () => void;
 }
 
 const VideoPlayerActionsContainer: React.FC<
   VideoPlayerActionsContainerProps
-> = ({ onSubtitleChange, subtitleFilePath, skip, onToggleFullscreen }) => {
-  const { isFullScreen, paused, play, pause } = useVideoPlayer();
+> = ({
+  onSubtitleChange,
+  subtitleFilePath,
+  skip,
+  onToggleFullscreen,
+  isFullScreen,
+  paused,
+  play,
+  pause,
+}) => {
 
   return (
     <Box className="video-player-actions-container">

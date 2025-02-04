@@ -24,7 +24,7 @@ export type AppVideoPlayerHandle = {
   play?: () => void;
   pause?: () => void;
   startPlayingAt?: (seconds: number) => void;
-  setVolume: React.Dispatch<React.SetStateAction<number>>
+  setVolume: React.Dispatch<React.SetStateAction<number>>;
 };
 
 type AppVideoPlayerProps = {
@@ -102,7 +102,8 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       startPlayingAt,
       currentTime,
       formattedTime,
-      setVolume
+      setVolume,
+      isFullScreen,
     } = useVideoPlayer(
       () => onVideoEnded(videoData?.filePath || "", nextEpisode),
       videoData,
@@ -115,7 +116,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       play,
       pause,
       startPlayingAt,
-      setVolume
+      setVolume,
     }));
 
     const isMouseActive = useMouseActivity();
@@ -155,6 +156,10 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
         {isMouseActive && (
           <>
             <VideoPlayerActionsContainer
+              isFullScreen={isFullScreen}
+              paused={paused}
+              play={play}
+              pause={pause}
               onSubtitleChange={onSubtitleChange}
               subtitleFilePath={subtitleFilePath}
               skip={skipBy}
