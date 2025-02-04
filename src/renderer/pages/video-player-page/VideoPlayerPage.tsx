@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 import { useSubtitle } from "../../hooks/useSubtitle";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
-import AppVideoPlayer from "../../components/video-player/AppVideoPlayer";
+import AppVideoPlayer, {
+  AppVideoPlayerHandle,
+} from "../../components/video-player/AppVideoPlayer";
 import { useNavigate } from "react-router-dom";
 import {
   getLocationSearchParams,
@@ -13,7 +14,13 @@ import { useTvShows } from "../../hooks/useTvShows";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useSettings } from "../../hooks/useSettings";
 
-export const VideoPlayerPage = () => {
+type VideoPlayerPageProps = {
+  appVideoPlayerRef?: React.Ref<AppVideoPlayerHandle>;
+};
+
+export const VideoPlayerPage = ({
+  appVideoPlayerRef,
+}: VideoPlayerPageProps) => {
   const { updateSubtitle, subtitleFilePath, setSubtitleFilePath } =
     useSubtitle();
   const { setCurrentVideo } = useVideoListLogic();
@@ -112,6 +119,7 @@ export const VideoPlayerPage = () => {
 
   return (
     <AppVideoPlayer
+      ref={appVideoPlayerRef}
       port={settings?.port}
       isTvShow={isTvShow}
       episodes={episodes}
