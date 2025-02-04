@@ -185,7 +185,6 @@ export const useVideoPlayer = (
     }
 
     const onEnded = () => {
-      console.log("ended", globalVideoPlayer.src);
       if (videoEnded) {
         videoEnded(globalVideoPlayer.src);
       }

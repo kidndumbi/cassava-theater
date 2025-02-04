@@ -18,6 +18,9 @@ import Video from "./video";
 import { NotesModal } from "../common/NotesModal";
 import Box from "@mui/material/Box";
 import { secondsTohhmmss } from "../../util/helperFunctions";
+import { AppSlider } from "../common/AppSlider";
+import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
+import { useDebounce } from "@uidotdev/usehooks";
 
 export type AppVideoPlayerHandle = {
   skipBy?: (seconds: number) => void;
@@ -63,6 +66,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     ref
   ) => {
     const { setPlayer, clearPlayer } = useVideoListLogic();
+    const { mkvCurrentTime } = useVideoPlayerLogic();
     const videoPlayerRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -78,6 +82,15 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
         setPlayer(videoPlayerRef.current);
       }
     }, [videoData]);
+
+    const [sliderValue, setSliderValue] = useState<number | null>(null);
+    const debouncedSliderValue = useDebounce(sliderValue, 300);
+
+    useEffect(() => {
+      if (debouncedSliderValue !== null) {
+        startPlayingAt?.(debouncedSliderValue);
+      }
+    }, [debouncedSliderValue]);
 
     const getUrl = (
       type: "video" | "file",
@@ -189,18 +202,41 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           }}
         />
         {videoData.isMkv && isMouseActive && (
-          <Box
-            style={{
-              position: "absolute",
-              bottom: "40px",
-              left: "20px",
-              color: "white",
-            }}
-          >
-            {formattedTime +
-              " / " +
-              (secondsTohhmmss(videoData?.duration) || "")}
-          </Box>
+          <>
+            <span
+              style={{
+                position: "absolute",
+                bottom: "10px",
+                left: "20px",
+                color: "white",
+                fontSize: "14px",
+              }}
+            >
+              {formattedTime +
+                " / " +
+                (secondsTohhmmss(videoData?.duration) || "")}
+            </span>
+            <Box
+              style={{
+                position: "absolute",
+                bottom: "1px",
+                left: "20px",
+                color: "white",
+                width: "100%",
+                margin: 0,
+                padding: 0,
+                marginRight: "20px",
+              }}
+            >
+              <AppSlider
+                max={videoData.duration}
+                value={mkvCurrentTime}
+                onChange={(event, newValue) => {
+                  setSliderValue(newValue as number);
+                }}
+              ></AppSlider>
+            </Box>
+          </>
         )}
       </div>
     );

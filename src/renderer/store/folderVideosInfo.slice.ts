@@ -162,8 +162,6 @@ const fetchVideoData = createAsyncThunk(
         category,
       });
 
-      console.log("Fetched video data:", response);
-
       return {
         category,
         data: response,
