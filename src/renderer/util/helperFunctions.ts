@@ -50,8 +50,8 @@ const hasExtension = (filename: string) => {
 const removeLastSegments = (filePath: string, count: number) => {
   const parts = filePath?.split("/");
   if (count < 1 || count >= parts?.length) {
-    log.error("Invalid segment count:", count);
-    log.error("Returning original filePath:", filePath);
+    log.info("Invalid segment count:", count);
+    log.info("Returning original filePath:", filePath);
     return filePath;
   }
   return parts?.slice(0, -count).join("/");

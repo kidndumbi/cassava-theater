@@ -1,4 +1,11 @@
-import React, { useRef, useState, useEffect, useMemo } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useMemo,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useMouseActivity } from "../../hooks/useMouseActivity";
 import { useVideoPlayer } from "../../hooks/useVideoPlayer";
@@ -11,6 +18,14 @@ import Video from "./video";
 import { NotesModal } from "../common/NotesModal";
 import Box from "@mui/material/Box";
 import { secondsTohhmmss } from "../../util/helperFunctions";
+
+export type AppVideoPlayerHandle = {
+  skipBy?: (seconds: number) => void;
+  play?: () => void;
+  pause?: () => void;
+  startPlayingAt?: (seconds: number) => void;
+  setVolume: React.Dispatch<React.SetStateAction<number>>
+};
 
 type AppVideoPlayerProps = {
   videoData: VideoDataModel | undefined;
@@ -28,145 +43,163 @@ type AppVideoPlayerProps = {
   port: string;
 };
 
-const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
-  videoData,
-  onVideoEnded,
-  subtitleFilePath,
-  onVideoPaused,
-  onSubtitleChange,
-  triggeredOnPlayInterval,
-  handleCancel,
-  startFromBeginning,
-  isTvShow,
-  episodes,
-  playNextEpisode,
-  findNextEpisode,
-  port,
-}) => {
-  const { setPlayer, clearPlayer } = useVideoListLogic();
-  const videoPlayerRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    console.log("AppVideoPlayer mounted");
-    return () => {
-      clearPlayer();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (videoPlayerRef.current) {
-      setPlayer(videoPlayerRef.current);
-    }
-  }, [videoData]);
-
-  const getUrl = (
-    type: "video" | "file",
-    filePath: string | null | undefined,
-    start:number | null = null
+const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
+  (
+    {
+      videoData,
+      onVideoEnded,
+      subtitleFilePath,
+      onVideoPaused,
+      onSubtitleChange,
+      triggeredOnPlayInterval,
+      handleCancel,
+      startFromBeginning,
+      isTvShow,
+      episodes,
+      playNextEpisode,
+      findNextEpisode,
+      port,
+    },
+    ref
   ) => {
-    return `http://localhost:${port}/${type}?path=${encodeURIComponent(
-      filePath || ""
-    )}&start=${start || 0}`;
-  };
+    const { setPlayer, clearPlayer } = useVideoListLogic();
+    const videoPlayerRef = useRef<HTMLVideoElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
-  const getVideoUrl = () => getUrl("video", videoData?.filePath, videoData?.currentTime);
-  const getSubtitleUrl = () => getUrl("file", subtitleFilePath);
+    useEffect(() => {
+      console.log("AppVideoPlayer mounted");
+      return () => {
+        clearPlayer();
+      };
+    }, []);
 
-  const {
-    skipBy,
-    play,
-    pause,
-    toggleFullscreen,
-    paused,
-    startPlayingAt,
-    currentTime,
-    formattedTime,
-  } = useVideoPlayer(
-    () => onVideoEnded(videoData?.filePath || "", nextEpisode),
-    videoData,
-    startFromBeginning,
-    triggeredOnPlayInterval
-  );
-
-  const isMouseActive = useMouseActivity();
-  const nextEpisode = useMemo(
-    () => findNextEpisode(videoData?.filePath || ""),
-    [videoData, episodes, isTvShow]
-  );
-
-  useEffect(() => {
-    if (pause !== undefined) {
-      if (paused) {
-        onVideoPaused();
+    useEffect(() => {
+      if (videoPlayerRef.current) {
+        setPlayer(videoPlayerRef.current);
       }
-    }
-  }, [paused]);
+    }, [videoData]);
 
-  const [openNotesModal, setOpenNotesModal] = useState(false);
-  const handleOpenNotesModal = () => {
-    pause?.();
-    setOpenNotesModal(true);
-  };
-  const handleCloseNotesModal = () => {
-    setOpenNotesModal(false);
-    play?.();
-  };
+    const getUrl = (
+      type: "video" | "file",
+      filePath: string | null | undefined,
+      start: number | null = null
+    ) => {
+      return `http://localhost:${port}/${type}?path=${encodeURIComponent(
+        filePath || ""
+      )}&start=${start || 0}`;
+    };
 
-  return (
-    <div ref={containerRef} className="video-container">
-      <Video
-        videoPlayerRef={videoPlayerRef}
-        getVideoUrl={getVideoUrl}
-        getSubtitleUrl={getSubtitleUrl}
-        subtitleFilePath={subtitleFilePath}
-      />
+    const getVideoUrl = () =>
+      getUrl("video", videoData?.filePath, videoData?.currentTime);
+    const getSubtitleUrl = () => getUrl("file", subtitleFilePath);
 
-      {isMouseActive && (
-        <>
-          <VideoPlayerActionsContainer
-            onSubtitleChange={onSubtitleChange}
-            subtitleFilePath={subtitleFilePath}
-            skip={skipBy}
-            onToggleFullscreen={() => toggleFullscreen(containerRef)}
-          />
-          <TitleOverlay fileName={videoData?.fileName} />
-          <SideControlsOverlay
-            handleCancel={handleCancel}
-            handleNext={
-              isTvShow && nextEpisode
-                ? () => playNextEpisode(nextEpisode)
-                : undefined
-            }
-            filePath={videoData?.filePath}
-            handleOpenNotesModal={handleOpenNotesModal}
-          />
-        </>
-      )}
-      <NotesModal
-        open={openNotesModal}
-        handleClose={handleCloseNotesModal}
-        videoData={videoData!}
-        currentVideoTime={currentTime}
-        handleVideoSeek={(seekTime) => {
-          handleCloseNotesModal();
-          startPlayingAt(seekTime);
-        }}
-      />
-      {true && (
-        <Box
-          style={{
-            position: "absolute",
-            bottom: "60px",
-            left: "20px",
-            color: "white",
+    const {
+      skipBy,
+      play,
+      pause,
+      toggleFullscreen,
+      paused,
+      startPlayingAt,
+      currentTime,
+      formattedTime,
+      setVolume
+    } = useVideoPlayer(
+      () => onVideoEnded(videoData?.filePath || "", nextEpisode),
+      videoData,
+      startFromBeginning,
+      triggeredOnPlayInterval
+    );
+
+    useImperativeHandle(ref, () => ({
+      skipBy,
+      play,
+      pause,
+      startPlayingAt,
+      setVolume
+    }));
+
+    const isMouseActive = useMouseActivity();
+    const nextEpisode = useMemo(
+      () => findNextEpisode(videoData?.filePath || ""),
+      [videoData, episodes, isTvShow]
+    );
+
+    useEffect(() => {
+      if (pause !== undefined) {
+        if (paused) {
+          onVideoPaused();
+        }
+      }
+    }, [paused]);
+
+    const [openNotesModal, setOpenNotesModal] = useState(false);
+    const handleOpenNotesModal = () => {
+      pause?.();
+      setOpenNotesModal(true);
+    };
+    const handleCloseNotesModal = () => {
+      setOpenNotesModal(false);
+      play?.();
+    };
+
+    return (
+      <div ref={containerRef} className="video-container">
+        <Video
+          isMkv={videoData.isMkv}
+          videoPlayerRef={videoPlayerRef}
+          getVideoUrl={getVideoUrl}
+          getSubtitleUrl={getSubtitleUrl}
+          subtitleFilePath={subtitleFilePath}
+        />
+
+        {isMouseActive && (
+          <>
+            <VideoPlayerActionsContainer
+              onSubtitleChange={onSubtitleChange}
+              subtitleFilePath={subtitleFilePath}
+              skip={skipBy}
+              onToggleFullscreen={() => toggleFullscreen(containerRef)}
+            />
+            <TitleOverlay fileName={videoData?.fileName} />
+            <SideControlsOverlay
+              handleCancel={handleCancel}
+              handleNext={
+                isTvShow && nextEpisode
+                  ? () => playNextEpisode(nextEpisode)
+                  : undefined
+              }
+              filePath={videoData?.filePath}
+              handleOpenNotesModal={handleOpenNotesModal}
+            />
+          </>
+        )}
+        <NotesModal
+          open={openNotesModal}
+          handleClose={handleCloseNotesModal}
+          videoData={videoData!}
+          currentVideoTime={currentTime}
+          handleVideoSeek={(seekTime) => {
+            handleCloseNotesModal();
+            startPlayingAt(seekTime);
           }}
-        >
-          {formattedTime + " / " + (secondsTohhmmss(videoData?.duration) || "")}
-        </Box>
-      )}
-    </div>
-  );
-};
+        />
+        {videoData.isMkv && isMouseActive && (
+          <Box
+            style={{
+              position: "absolute",
+              bottom: "40px",
+              left: "20px",
+              color: "white",
+            }}
+          >
+            {formattedTime +
+              " / " +
+              (secondsTohhmmss(videoData?.duration) || "")}
+          </Box>
+        )}
+      </div>
+    );
+  }
+);
 
 export default AppVideoPlayer;

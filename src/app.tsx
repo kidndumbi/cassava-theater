@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import CssBaseline from "@mui/material/CssBaseline";
 import { Box, ThemeProvider } from "@mui/material";
-import { Provider, useSelector } from "react-redux";
+import { Provider } from "react-redux";
 import {
   HashRouter,
   Routes,
@@ -26,24 +26,19 @@ import {
   SnackbarProvider,
   useSnackbar,
 } from "./renderer/contexts/SnackbarContext";
+import { AppVideoPlayerHandle } from "./renderer/components/video-player/AppVideoPlayer";
 
 const App = () => {
   const { fetchAllSettings } = useSettings();
   const { showSnackbar } = useSnackbar();
 
-  const globalVideoPlayer = useSelector(selVideoPlayer);
-  const globalVideoPlayerRef = useRef(globalVideoPlayer);
-
-  useEffect(() => {
-    globalVideoPlayerRef.current = globalVideoPlayer;
-  }, [globalVideoPlayer]);
+  const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
 
   useEffect(() => {
     fetchAllSettings();
 
     window.videoCommandsAPI.videoCommand((command: VideoCommands) => {
-      const currentGlobalVideoPlayer = globalVideoPlayerRef.current;
-      videoCommandsHandler(currentGlobalVideoPlayer, command);
+      videoCommandsHandler(command, appVideoPlayerRef.current);
     });
 
     window.mainNotificationsAPI.userConnected((userId: string) => {
@@ -64,7 +59,7 @@ const App = () => {
         }}
       >
         <main>
-          <AppRoutes />
+          <AppRoutes appVideoPlayerRef={appVideoPlayerRef} />
         </main>
       </Box>
     </HashRouter>
@@ -83,7 +78,12 @@ root.render(
   </SnackbarProvider>
 );
 
-function AppRoutes() {
+// Pass appVideoPlayerRef as a prop to VideoPlayerPage.
+function AppRoutes({
+  appVideoPlayerRef,
+}: {
+  appVideoPlayerRef: React.Ref<AppVideoPlayerHandle>;
+}) {
   const navigate = useNavigate();
   const { handleVideoSelect } = useVideoListLogic();
 
@@ -105,7 +105,10 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<LandingPage />} />
-        <Route path="video-player" element={<VideoPlayerPage />} />
+        <Route
+          path="video-player"
+          element={<VideoPlayerPage appVideoPlayerRef={appVideoPlayerRef} />}
+        />
         <Route path="video-details" element={<VideoDetailsPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Route>

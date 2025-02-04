@@ -131,8 +131,21 @@ export const useVideoPlayer = (
   };
 
   const startPlayingAt = (time: number) => {
-    if (globalVideoPlayer) {
+    if (!globalVideoPlayer) return;
+
+    if (videoData?.isMkv) {
+      // Calculate additional seconds relative to current time
+      const additionalSeconds = time - globalVideoPlayer.currentTime;
+      const newSrc = updateSourceWithStart(additionalSeconds);
+      changeSource(newSrc);
+      const newOffset = new Date();
+      newOffset.setSeconds(newOffset.getSeconds() + time);
+      reset(newOffset, !globalVideoPlayer.paused);
+    } else {
       globalVideoPlayer.currentTime = time;
+      const newOffset = new Date();
+      newOffset.setSeconds(newOffset.getSeconds() + time);
+      reset(newOffset, !globalVideoPlayer.paused);
     }
   };
 
