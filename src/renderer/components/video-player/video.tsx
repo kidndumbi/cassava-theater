@@ -6,6 +6,7 @@ type VideoProps = {
   getVideoUrl: () => string;
   getSubtitleUrl: () => string;
   subtitleFilePath: string | null;
+  isMkv: boolean;
 };
 
 const Video: React.FC<VideoProps> = ({
@@ -13,13 +14,15 @@ const Video: React.FC<VideoProps> = ({
   getVideoUrl,
   getSubtitleUrl,
   subtitleFilePath,
+  isMkv,
 }) => {
+
   return (
     <video
       ref={videoPlayerRef}
       crossOrigin="anonymous"
       className="custom-video-player"
-      controls
+      controls={!isMkv}
       playsInline
       src={getVideoUrl()}
       style={{

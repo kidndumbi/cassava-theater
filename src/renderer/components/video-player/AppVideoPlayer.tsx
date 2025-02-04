@@ -63,14 +63,15 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
   const getUrl = (
     type: "video" | "file",
     filePath: string | null | undefined,
-    start:number | null = null
+    start: number | null = null
   ) => {
     return `http://localhost:${port}/${type}?path=${encodeURIComponent(
       filePath || ""
     )}&start=${start || 0}`;
   };
 
-  const getVideoUrl = () => getUrl("video", videoData?.filePath, videoData?.currentTime);
+  const getVideoUrl = () =>
+    getUrl("video", videoData?.filePath, videoData?.currentTime);
   const getSubtitleUrl = () => getUrl("file", subtitleFilePath);
 
   const {
@@ -116,6 +117,7 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
   return (
     <div ref={containerRef} className="video-container">
       <Video
+        isMkv={videoData.isMkv}
         videoPlayerRef={videoPlayerRef}
         getVideoUrl={getVideoUrl}
         getSubtitleUrl={getSubtitleUrl}
@@ -153,11 +155,11 @@ const AppVideoPlayer: React.FC<AppVideoPlayerProps> = ({
           startPlayingAt(seekTime);
         }}
       />
-      {true && (
+      {videoData.isMkv && isMouseActive && (
         <Box
           style={{
             position: "absolute",
-            bottom: "60px",
+            bottom: "40px",
             left: "20px",
             color: "white",
           }}
