@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use, useState } from "react";
 import { Box } from "@mui/material";
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 
@@ -17,32 +17,46 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   onClick,
   footer,
 }) => {
+  const [hasError, setHasError] = useState(false);
+
   const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    log.error(
-      "Image failed to load, should be displaying fallback image. Video: " +
-        altText
-    );
-    e.currentTarget.src = fallbackUrl;
-    const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
-    if (nextSibling) {
-      nextSibling.style.display = "block";
-    }
+    setHasError(true);
+    log.error("Image failed to load. Video: " + altText);
   };
 
   return (
     <Box m={1} flex="1 1 200px" maxWidth="200px">
-      <img
-        src={imageUrl || fallbackUrl}
-        alt={altText}
-        onError={handleError}
-        onClick={onClick}
-        style={{
-          width: "200px",
-          borderRadius: "10px",
-          height: "auto",
-          cursor: "pointer",
-        }}
-      />
+      {!hasError && (
+        <img
+          src={imageUrl || fallbackUrl}
+          alt={altText}
+          onError={handleError}
+          onClick={onClick}
+          style={{
+            width: "200px",
+            borderRadius: "10px",
+            height: "auto",
+            cursor: "pointer",
+          }}
+        />
+      )}
+
+      {hasError && (
+        <Box
+          onClick={onClick}
+          sx={{
+            cursor: "pointer",
+            width: "200px",
+            height: "300px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "gray",
+          }}
+        >
+          Poster Not Available
+        </Box>
+      )}
       {footer}
     </Box>
   );
