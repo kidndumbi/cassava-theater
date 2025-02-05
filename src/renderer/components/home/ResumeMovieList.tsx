@@ -6,6 +6,7 @@ import { trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { PosterCard } from "../common/PosterCard"; // new import
+import { PosterList } from "./PosterList";
 
 interface ResumeMovieListProps {
   sortedMovies: VideoDataModel[];
@@ -83,14 +84,7 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
           marginRight: 2,
         }}
       />
-      <Box
-        className="custom-scrollbar"
-        display="flex"
-        gap="8px"
-        sx={{ maxWidth: "calc(100vw - 30px)", overflowY: "auto" }}
-      >
-        {renderMovies()}
-      </Box>
+      <PosterList>{renderMovies()}</PosterList>
     </>
   );
 };

@@ -12,6 +12,7 @@ import { trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { PosterCard } from "../common/PosterCard"; // new import
+import { PosterList } from "./PosterList";
 
 interface ResumeTvShowListsProps {
   sortedTvShows: VideoDataModel[];
@@ -99,11 +100,7 @@ const ResumeTvShowLists: React.FC<ResumeTvShowListsProps> = ({
           marginRight: 2,
         }}
       />
-      <Box
-        display="flex"
-        gap="8px"
-        sx={{ maxWidth: "calc(100vw - 30px)", overflowY: "auto" }}
-      >
+      <PosterList>
         {loadingTvShows ? (
           <LoadingIndicator message="Loading TV shows..." />
         ) : sortedTvShows.length === 0 ? (
@@ -118,7 +115,7 @@ const ResumeTvShowLists: React.FC<ResumeTvShowListsProps> = ({
         ) : (
           sortedTvShows.map(renderTvShow)
         )}
-      </Box>
+      </PosterList>
     </Box>
   );
 };
