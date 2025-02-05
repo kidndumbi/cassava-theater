@@ -1,6 +1,5 @@
 import { FC } from "react";
 import LinearProgress from "@mui/material/LinearProgress";
-import React from "react";
 
 interface VideoProgressBarProps {
   current: number;

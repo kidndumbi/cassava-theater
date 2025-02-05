@@ -40,6 +40,25 @@ const ResumeTvShowLists: React.FC<ResumeTvShowListsProps> = ({
         fallbackUrl={defaultImageUrl}
         altText={tvShow.fileName}
         onClick={() => handlePosterClick("tvShow", tvShow)}
+        footer={
+          <Box sx={{ marginTop: "5px" }}>
+            <VideoProgressBar
+              current={tvShow.lastVideoPlayedTime || 0}
+              total={tvShow.lastVideoPlayedDuration || 0}
+            />
+            <Typography
+              variant="subtitle1"
+              align="center"
+              sx={{ wordBreak: "break-all" }}
+            >
+              {trimFileName(tvShow.fileName!)}/
+              {tvShow.lastVideoPlayed
+                ?.split("/")
+                .pop()
+                ?.replace(/\.(mp4|mkv)$/i, "")}
+            </Typography>
+          </Box>
+        }
       />
       {loadingItems[tvShow.filePath!] && (
         <Box
@@ -58,20 +77,6 @@ const ResumeTvShowLists: React.FC<ResumeTvShowListsProps> = ({
           <CircularProgress />
         </Box>
       )}
-      <Box sx={{ marginTop: "5px" }}>
-        <VideoProgressBar
-          current={tvShow.lastVideoPlayedTime || 0}
-          total={tvShow.lastVideoPlayedDuration || 0}
-        />
-      </Box>
-      <Typography
-        variant="subtitle1"
-        align="center"
-        sx={{ wordBreak: "break-all" }}
-      >
-        {trimFileName(tvShow.fileName!)}/
-        {tvShow.lastVideoPlayed?.split("/").pop()?.replace(/\.(mp4|mkv)$/i, "")}
-      </Typography>
     </Box>
   );
 

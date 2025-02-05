@@ -31,7 +31,7 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
             fallbackUrl={defaultImageUrl}
             altText={show.fileName || ""}
             onClick={() => handlePosterClick(show.filePath!)}
-            label={trimFileName(show.fileName!)}
+            footer={trimFileName(show.fileName!)}
           />
         ))}
       </Box>

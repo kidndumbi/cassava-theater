@@ -7,7 +7,7 @@ interface PosterCardProps {
   fallbackUrl: string;
   altText: string;
   onClick: () => void;
-  label?: string;
+  footer?: React.ReactNode;
 }
 
 export const PosterCard: React.FC<PosterCardProps> = ({
@@ -15,7 +15,7 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   fallbackUrl,
   altText,
   onClick,
-  label,
+  footer,
 }) => {
   const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     log.error(
@@ -43,9 +43,10 @@ export const PosterCard: React.FC<PosterCardProps> = ({
           cursor: "pointer",
         }}
       />
-      <Typography variant="subtitle1" align="center">
+      {/* <Typography variant="subtitle1" align="center">
         {label}
-      </Typography>
+      </Typography> */}
+      {footer}
     </Box>
   );
 };
