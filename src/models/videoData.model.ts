@@ -35,4 +35,5 @@ export interface VideoDataModel {
     season_id?: string | null;
   }[];
   isMkv?: boolean;
+  watchLater?: boolean;
 }

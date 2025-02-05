@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, IconButton, useTheme } from "@mui/material";
+import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTvShows } from "../../hooks/useTvShows";
@@ -8,6 +8,7 @@ import useHandlePosterClick from "../../hooks/useHandlePosterClick";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import ResumeTvShowLists from "./ResumeTvShowLists";
 import ResumeMovieList from "./ResumeMovieList";
+import { WatchLater } from "./WatchLater";
 
 interface HomePageProps {
   style?: React.CSSProperties;
@@ -41,6 +42,19 @@ export const HomePage: React.FC<HomePageProps> = ({
     getEpisodeDetails
   );
 
+  const title = (value: string) => (
+    <Typography
+      variant="h6"
+      gutterBottom
+      sx={{
+        color: theme.customVariables.appWhiteSmoke,
+        fontWeight: "bold",
+      }}
+    >
+      {value}
+    </Typography>
+  );
+
   return (
     <Box
       className="custom-scrollbar"
@@ -52,6 +66,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       >
         <RefreshIcon />
       </IconButton>
+      {title("Resume Watching")}
       <Box>
         <ResumeMovieList
           loadingMovies={loadingMovies}
@@ -65,6 +80,15 @@ export const HomePage: React.FC<HomePageProps> = ({
           sortedTvShows={sortedTvShows}
           handlePosterClick={handlePosterClick}
           loadingItems={loadingItems}
+        />
+      </Box>
+      <Box sx={{ marginTop: "20px" }}>{title("Watch Later")}</Box>
+      <Box>
+        <WatchLater
+          handlePosterClick={handlePosterClick}
+          loadingMovies={loadingMovies}
+          movies={movies}
+          tvShows={tvShows}
         />
       </Box>
     </Box>

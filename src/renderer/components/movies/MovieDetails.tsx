@@ -19,8 +19,13 @@ interface MovieDetailsProps {
 }
 
 const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
-  const { getVideoDetails, videoDetails, loadingVideoDetails, updateTMDBId } =
-    useMovies();
+  const {
+    getVideoDetails,
+    videoDetails,
+    loadingVideoDetails,
+    updateTMDBId,
+    updateWatchLater,
+  } = useMovies();
   const [imageUrl, setImageUrl] = useState("");
   const { getTmdbImageUrl, defaultBackdropImageUrl } = useTmdbImageUrl();
   const navigate = useNavigate();
@@ -79,7 +84,6 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
           height: "100vh",
           width: "100vw",
         }}
-
       >
         {loadingVideoDetails ? (
           <div className="loading-container">
@@ -94,6 +98,13 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
               videoPath={videoPath}
               updateSubtitle={updateSubtitle}
               getVideoDetails={getVideoDetails}
+              updateWatchLater={async (
+                filePath: string,
+                watchLater: boolean
+              ) => {
+                await updateWatchLater(filePath, watchLater);
+                getVideoDetails(filePath);
+              }}
             />
             <MovieDetailsContent
               videoDetails={videoDetails}

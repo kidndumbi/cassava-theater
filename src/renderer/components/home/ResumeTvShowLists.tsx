@@ -83,23 +83,6 @@ const ResumeTvShowLists: React.FC<ResumeTvShowListsProps> = ({
 
   return (
     <Box>
-      <Typography
-        variant="h6"
-        gutterBottom
-        sx={{
-          color: theme.customVariables.appWhiteSmoke,
-          fontWeight: "bold",
-        }}
-      >
-        Resume watching These TV Shows
-      </Typography>
-      <Divider
-        sx={{
-          marginY: 2,
-          borderColor: theme.palette.primary.main,
-          marginRight: 2,
-        }}
-      />
       <PosterList>
         {loadingTvShows ? (
           <LoadingIndicator message="Loading TV shows..." />

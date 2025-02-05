@@ -1,33 +1,34 @@
-import React from "react";
-import { Box, Divider, Typography, useTheme } from "@mui/material";
+import { FC } from "react";
 import { VideoDataModel } from "../../../models/videoData.model";
+import { PosterList } from "./PosterList";
+import LoadingIndicator from "../common/LoadingIndicator";
+import { Box, Typography } from "@mui/material";
+import { PosterCard } from "../common/PosterCard";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { trimFileName } from "../../util/helperFunctions";
-import { VideoProgressBar } from "../common/VideoProgressBar";
-import LoadingIndicator from "../common/LoadingIndicator";
-import { PosterCard } from "../common/PosterCard"; // new import
-import { PosterList } from "./PosterList";
 
-interface ResumeMovieListProps {
-  sortedMovies: VideoDataModel[];
-  handlePosterClick: (videoType: string, video: VideoDataModel) => void;
+interface WatchLaterProps {
+  movies: VideoDataModel[];
+  tvShows: VideoDataModel[];
   loadingMovies: boolean;
+  handlePosterClick: (videoType: string, video: VideoDataModel) => void;
 }
 
-const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
-  sortedMovies,
-  handlePosterClick,
+export const WatchLater: FC<WatchLaterProps> = ({
+  movies,
   loadingMovies,
+  handlePosterClick,
 }) => {
-  const theme = useTheme();
   const { getTmdbImageUrl, defaultImageUrl } = useTmdbImageUrl();
+
+  const watchLaterMovies = movies.filter((movie) => movie.watchLater);
 
   const renderMovies = () => {
     if (loadingMovies) {
       return <LoadingIndicator message="Loading movies..." />;
     }
 
-    if (sortedMovies.length === 0) {
+    if (watchLaterMovies.length === 0) {
       return (
         <Box display="flex" justifyContent="center" paddingY="2rem">
           <Box fontSize="2rem">No Movies to display</Box>
@@ -35,7 +36,7 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
       );
     }
 
-    return sortedMovies.map((movie: VideoDataModel) => (
+    return watchLaterMovies.map((movie, index) => (
       <Box
         key={movie.filePath}
         sx={{ position: "relative", maxWidth: "200px" }}
@@ -51,10 +52,6 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
           onClick={() => handlePosterClick("movie", movie)}
           footer={
             <Box sx={{ marginTop: "5px" }}>
-              <VideoProgressBar
-                current={movie.currentTime || 0}
-                total={movie.duration || 0}
-              />
               <Typography variant="subtitle1" align="center">
                 {trimFileName(movie.fileName!)}
               </Typography>
@@ -65,11 +62,5 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
     ));
   };
 
-  return (
-    <>
-      <PosterList>{renderMovies()}</PosterList>
-    </>
-  );
+  return <PosterList>{renderMovies()}</PosterList>;
 };
-
-export default ResumeMovieList;
