@@ -12,7 +12,7 @@ const useSortedVideos = (movies: VideoDataModel[], tvShows: VideoDataModel[]) =>
           new Date(b.lastVideoPlayedDate!).getTime() -
           new Date(a.lastVideoPlayedDate!).getTime()
       )
-      .slice(0, 10);
+      .slice(0, 20);
   }, [movies]);
 
   const getSortedTvShows = React.useCallback(() => {
@@ -25,7 +25,7 @@ const useSortedVideos = (movies: VideoDataModel[], tvShows: VideoDataModel[]) =>
           new Date(b.lastVideoPlayedDate!).getTime() -
           new Date(a.lastVideoPlayedDate!).getTime()
       )
-      .slice(0, 10);
+      .slice(0, 20);
   }, [tvShows]);
 
   const sortedMovies = React.useMemo(() => getSortedMovies(), [getSortedMovies]);

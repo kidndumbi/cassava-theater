@@ -464,6 +464,7 @@ export const createVideoDataObject = (
   movie_details: jsonFileContents?.movie_details || null,
   tv_show_details: jsonFileContents?.tv_show_details || null,
   isMkv: filePath.toLowerCase().endsWith(".mkv"),
+  watchLater: jsonFileContents?.watchLater || false,
 });
 
 export const createFolderDataObject = (

@@ -60,6 +60,15 @@ export const useMovies = () => {
     );
   };
 
+  const updateWatchLater = async (filePath: string, watchLater: boolean) => { 
+    await dispatch(
+      folderVideosInfoActions.postVideoJason({
+        currentVideo: { filePath },
+        newVideoJsonData: { watchLater },
+      })
+    );
+  }
+
   const getVideoDetails = async (path: string) => {
     dispatch(
       folderVideosInfoActions.fetchVideoDetails({
@@ -79,5 +88,6 @@ export const useMovies = () => {
     getMovieSuggestions,
     resetMovieSuggestions,
     updateTMDBId,
+    updateWatchLater
   };
 };
