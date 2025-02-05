@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 
 interface PosterCardProps {
@@ -43,9 +43,6 @@ export const PosterCard: React.FC<PosterCardProps> = ({
           cursor: "pointer",
         }}
       />
-      {/* <Typography variant="subtitle1" align="center">
-        {label}
-      </Typography> */}
       {footer}
     </Box>
   );
