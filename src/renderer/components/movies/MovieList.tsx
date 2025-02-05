@@ -32,7 +32,7 @@ const MovieList: React.FC<MovieListProps> = ({
           fallbackUrl={defaultImageUrl}
           altText={movie.fileName || ""}
           onClick={() => handlePosterClick(movie.filePath || "")}
-          label={trimFileName(movie.fileName || "")}
+          footer={trimFileName(movie.fileName || "")}
         />
       ))}
     </Box>

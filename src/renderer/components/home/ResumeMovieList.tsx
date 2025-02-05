@@ -35,7 +35,10 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
     }
 
     return sortedMovies.map((movie: VideoDataModel) => (
-      <Box key={movie.filePath} sx={{ position: "relative", maxWidth: "200px" }}>
+      <Box
+        key={movie.filePath}
+        sx={{ position: "relative", maxWidth: "200px" }}
+      >
         <PosterCard
           imageUrl={
             movie?.movie_details?.poster_path
@@ -45,14 +48,18 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
           fallbackUrl={defaultImageUrl}
           altText={movie.fileName}
           onClick={() => handlePosterClick("movie", movie)}
-          label={trimFileName(movie.fileName!)}
+          footer={
+            <Box sx={{ marginTop: "5px" }}>
+              <VideoProgressBar
+                current={movie.currentTime || 0}
+                total={movie.duration || 0}
+              />
+              <Typography variant="subtitle1" align="center">
+                {trimFileName(movie.fileName!)}
+              </Typography>
+            </Box>
+          }
         />
-        <Box sx={{ marginTop: "5px" }}>
-          <VideoProgressBar
-            current={movie.currentTime || 0}
-            total={movie.duration || 0}
-          />
-        </Box>
       </Box>
     ));
   };
