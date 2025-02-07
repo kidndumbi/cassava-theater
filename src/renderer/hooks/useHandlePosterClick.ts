@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import { VideoDataModel } from "../../models/videoData.model";
 import { removeLastSegments } from "../util/helperFunctions";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,7 @@ const useHandlePosterClick = (
   getEpisodeDetails: (path: string) => void
 ) => {
   const navigate = useNavigate();
-  const [loadingItems, setLoadingItems] = React.useState<{
+  const [loadingItems, setLoadingItems] = useState<{
     [key: string]: boolean;
   }>({});
 
