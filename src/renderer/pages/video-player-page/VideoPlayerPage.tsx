@@ -5,11 +5,8 @@ import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import AppVideoPlayer, {
   AppVideoPlayerHandle,
 } from "../../components/video-player/AppVideoPlayer";
-import { useNavigate } from "react-router-dom";
-import {
-  getLocationSearchParams,
-  removeLastSegments,
-} from "../../util/helperFunctions";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { removeLastSegments } from "../../util/helperFunctions";
 import { useTvShows } from "../../hooks/useTvShows";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useSettings } from "../../hooks/useSettings";
@@ -27,6 +24,7 @@ export const VideoPlayerPage = ({
   const { setVideoEnded, updateLastWatched, currentVideo, player, resetVideo } =
     useVideoPlayerLogic();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { episodes, resetEpisodes, findNextEpisode } = useTvShows();
   const { settings } = useSettings();
 
@@ -49,11 +47,10 @@ export const VideoPlayerPage = ({
   }, [location.search, location.hash, player, episodes, currentVideo]);
 
   const parseSearchParams = (search: string, hash: string) => {
-    const params = getLocationSearchParams(search, hash);
     return {
-      menuId: params.get("menuId") || "",
-      startFromBeginning: params.get("startFromBeginning"),
-      resumeId: params.get("resumeId") || "",
+      menuId: searchParams.get("menuId") || "",
+      startFromBeginning: searchParams.get("startFromBeginning"),
+      resumeId: searchParams.get("resumeId") || "",
     };
   };
 
