@@ -1,5 +1,5 @@
 import React from "react";
-import "./video.css";
+import styles from "./video.module.css";
 
 type VideoProps = {
   videoPlayerRef: React.RefObject<HTMLVideoElement>;
@@ -21,7 +21,7 @@ const Video: React.FC<VideoProps> = ({
     <video
       ref={videoPlayerRef}
       crossOrigin="anonymous"
-      className="custom-video-player"
+      className={styles.customVideoPlayer}
       controls={!isMkv}
       playsInline
       src={getVideoUrl()}

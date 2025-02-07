@@ -1,0 +1,11 @@
+.customVideoPlayer {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.customVideoPlayer::-webkit-media-controls-fullscreen-button {
+  display: none;
+}
+.customVideoPlayer::-webkit-media-controls-enclosure {
+  overflow: hidden;
+}
