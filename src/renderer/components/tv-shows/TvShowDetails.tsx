@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
-import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 import {
   Box,
   Button,

@@ -1,9 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { VideoDataModel } from "../../models/videoData.model";
 import { removeLastSegments } from "../util/helperFunctions";
 import { useNavigate } from "react-router-dom";
 import { rendererLoggingService as log } from "../util/renderer-logging.service";
-// import log from 'electron-log/renderer';
 
 const useHandlePosterClick = (
   menuId: string,

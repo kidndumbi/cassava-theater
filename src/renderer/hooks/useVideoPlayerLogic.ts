@@ -8,7 +8,7 @@ import {
 import { useAppDispatch } from "../store";
 import { selCurrentVideo } from "../store/currentVideo.slice";
 import { isEmptyObject } from "../util/helperFunctions";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { VideoDataModel } from "../../models/videoData.model";
 import { folderVideosInfoActions } from "../store/folderVideosInfo.slice";
 
