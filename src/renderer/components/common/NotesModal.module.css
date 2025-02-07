@@ -1,5 +1,5 @@
 
-.notes-modal-paper {
+.notesModalPaper {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -10,6 +10,6 @@
     padding: 1rem;
   }
   
-  .notes-modal-box {
+  .notesModalBox {
     margin: 0 auto;
   }
