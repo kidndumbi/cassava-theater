@@ -26,6 +26,7 @@ import {
   useSnackbar,
 } from "./renderer/contexts/SnackbarContext";
 import { AppVideoPlayerHandle } from "./renderer/components/video-player/AppVideoPlayer";
+import { ConfirmationProvider } from "./renderer/contexts/ConfirmationContext";
 
 const App = () => {
   const { fetchAllSettings } = useSettings();
@@ -68,12 +69,14 @@ const App = () => {
 const root = createRoot(document.body);
 root.render(
   <SnackbarProvider>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Provider store={store}>
-        <App />
-      </Provider>
-    </ThemeProvider>
+    <ConfirmationProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </ThemeProvider>
+    </ConfirmationProvider>
   </SnackbarProvider>
 );
 

@@ -2,16 +2,15 @@ import React, { useEffect, useState } from "react";
 import { useSettings } from "../../hooks/useSettings";
 import { Container, Box, Tab, Tabs } from "@mui/material";
 import { CustomFolderModel } from "../../../models/custom-folder";
-import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { SettingsModel } from "../../../models/settings.model";
 import { CustomFoldersSettings } from "./CustomFoldersSettings";
 import { GeneralSettings } from "./GeneralSettings";
 import { a11yProps, CustomTabPanel } from "../common/TabPanel";
 import useSelectFolder from "../../hooks/useSelectFolder";
-import ConfirmationDialog from "../common/ConfirmationDialog";
 import { useMovies } from "../../hooks/useMovies";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useSnackbar } from "../../contexts/SnackbarContext";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 
 export const SettingsPage: React.FC = () => {
   const { settings, setSetting } = useSettings();
@@ -24,8 +23,9 @@ export const SettingsPage: React.FC = () => {
   const [customFolders, setCustomFolders] = useState<CustomFolderModel[]>([]);
   const [currentTabValue, setCurrentTabValue] = useState(0);
   const { selectFolder } = useSelectFolder();
-  const { isOpen, openDialog, closeDialog, message, setMessage } =
-    useConfirmationDialog();
+
+  const { openDialog, setMessage } = useConfirmation();
+
   const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
@@ -175,11 +175,6 @@ export const SettingsPage: React.FC = () => {
           />
         </CustomTabPanel>
       </Container>
-      <ConfirmationDialog
-        open={isOpen}
-        message={message}
-        handleClose={closeDialog}
-      />
     </>
   );
 };
