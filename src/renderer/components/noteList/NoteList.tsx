@@ -2,19 +2,17 @@ import React from "react";
 import Box from "@mui/material/Box";
 import { NoteModel } from "../../../models/note.model";
 import { useNoteListLogic } from "../../hooks/useNoteListLogic";
-
-import { useConfirmationDialog } from "../../hooks/useConfirmationDialog";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { NoteCreationArea } from "./NoteCreationArea";
 import { NoteDisplayArea } from "./NoteDisplayArea";
-import ConfirmationDialog from "../common/ConfirmationDialog";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 
 interface NoteListProps {
   videoData: VideoDataModel | null;
   currentVideoTime: number;
   noteUpdateComplete: () => void;
   noteCreationComplete: () => void;
-  handleVideoSeek: (seekTime: number) => void
+  handleVideoSeek: (seekTime: number) => void;
 }
 
 const NoteList: React.FC<NoteListProps> = ({
@@ -22,7 +20,7 @@ const NoteList: React.FC<NoteListProps> = ({
   currentVideoTime,
   noteUpdateComplete,
   noteCreationComplete,
-  handleVideoSeek
+  handleVideoSeek,
 }) => {
   const {
     showTextEditor,
@@ -33,8 +31,7 @@ const NoteList: React.FC<NoteListProps> = ({
     handleCancelClick,
   } = useNoteListLogic();
 
-  const { isOpen, openDialog, closeDialog, message, setMessage } =
-    useConfirmationDialog();
+  const { openDialog, setMessage } = useConfirmation();
 
   const handleDialogAction = async (message: string, action: () => void) => {
     setMessage(message);
@@ -46,7 +43,12 @@ const NoteList: React.FC<NoteListProps> = ({
 
   const deleteNote = (note: NoteModel) => {
     handleDialogAction(`Are you sure you want to delete note?`, () => {
-      handleDeleteNote(note, videoData?.notes || [], videoData, noteUpdateComplete);
+      handleDeleteNote(
+        note,
+        videoData?.notes || [],
+        videoData,
+        noteUpdateComplete
+      );
     });
   };
 
@@ -54,7 +56,12 @@ const NoteList: React.FC<NoteListProps> = ({
     handleDialogAction(
       "Are you sure you want to save changes to this note?",
       () => {
-        handleNoteSave(note, videoData?.notes || [], videoData, noteUpdateComplete);
+        handleNoteSave(
+          note,
+          videoData?.notes || [],
+          videoData,
+          noteUpdateComplete
+        );
       }
     );
   };
@@ -81,11 +88,6 @@ const NoteList: React.FC<NoteListProps> = ({
         handleVideoSeek={handleVideoSeek}
         handleNoteSave={handleSaveNote}
         deleteNote={deleteNote}
-      />
-      <ConfirmationDialog
-        open={isOpen}
-        message={message}
-        handleClose={closeDialog}
       />
     </Box>
   );
