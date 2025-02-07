@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, Button, useTheme } from "@mui/material";
-import { Folder as FolderIcon, Save } from "@mui/icons-material";
+import { Folder as FolderIcon } from "@mui/icons-material";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { renderTextField } from "../../components/common/RenderTextField";
 import { v4 as uuidv4 } from "uuid";
-// import useSelectFolder from "../../hooks/useSelectFolder";
 import { useForm, Controller } from "react-hook-form";
 import useSelectFolder from "../../hooks/useSelectFolder";
 

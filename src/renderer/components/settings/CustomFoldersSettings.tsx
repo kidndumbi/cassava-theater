@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, Button, useTheme } from "@mui/material";
 import { Folder as FolderIcon, Save, Delete } from "@mui/icons-material";
 import { CustomFolderModel } from "../../../models/custom-folder";
-
-// import AddNewCustomFolder from "./AddNewCustomFolder";
 import { renderTextField } from "../common/RenderTextField";
 import AddNewCustomFolder from "./AddNewCustomFolder";
 
