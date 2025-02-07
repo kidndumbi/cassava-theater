@@ -1,8 +1,8 @@
-import React from "react";
+import  { useCallback, useMemo } from "react";
 import { VideoDataModel } from "../../models/videoData.model";
 
 const useSortedVideos = (movies: VideoDataModel[], tvShows: VideoDataModel[]) => {
-  const getSortedMovies = React.useCallback(() => {
+  const getSortedMovies = useCallback(() => {
     const filtered = movies.filter(
       (m) => m.lastVideoPlayedDate && (m.currentTime || 0) > 1
     );
@@ -15,7 +15,7 @@ const useSortedVideos = (movies: VideoDataModel[], tvShows: VideoDataModel[]) =>
       .slice(0, 20);
   }, [movies]);
 
-  const getSortedTvShows = React.useCallback(() => {
+  const getSortedTvShows = useCallback(() => {
     const filtered = tvShows.filter(
       (m) => m.lastVideoPlayed && m.lastVideoPlayedDate
     );
@@ -28,8 +28,8 @@ const useSortedVideos = (movies: VideoDataModel[], tvShows: VideoDataModel[]) =>
       .slice(0, 20);
   }, [tvShows]);
 
-  const sortedMovies = React.useMemo(() => getSortedMovies(), [getSortedMovies]);
-  const sortedTvShows = React.useMemo(() => getSortedTvShows(), [getSortedTvShows]);
+  const sortedMovies = useMemo(() => getSortedMovies(), [getSortedMovies]);
+  const sortedTvShows = useMemo(() => getSortedTvShows(), [getSortedTvShows]);
 
   return { sortedMovies, sortedTvShows };
 };
