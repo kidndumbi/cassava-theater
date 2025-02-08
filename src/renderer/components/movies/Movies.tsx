@@ -23,7 +23,7 @@ export const Movies: React.FC<MoviesProps> = ({
   menuId,
 }) => {
   const theme = useTheme();
-  const { getTmdbImageUrl, defaultImageUrl } = useTmdbImageUrl();
+  const { getTmdbImageUrl } = useTmdbImageUrl();
   const navigate = useNavigate();
 
   const [filter, setFilter] = useState("");
@@ -72,7 +72,6 @@ export const Movies: React.FC<MoviesProps> = ({
           movies={filteredMovies}
           handlePosterClick={handlePosterClick}
           getImageUrl={getTmdbImageUrl}
-          defaultImageUrl={defaultImageUrl}
         />
       )}
     </Box>

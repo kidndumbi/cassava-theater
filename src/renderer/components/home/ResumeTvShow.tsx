@@ -14,7 +14,6 @@ interface ResumeTvShowProps {
     startFromBeginning: boolean
   ) => void;
   getTmdbImageUrl: (path: string) => string;
-  defaultImageUrl: string;
   loadingItems: { [key: string]: boolean };
 }
 
@@ -22,7 +21,6 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
   tvShow,
   handlePosterClick,
   getTmdbImageUrl,
-  defaultImageUrl,
   loadingItems,
 }) => {
   const [showActionButtons, setShowActions] = React.useState(false);
@@ -45,8 +43,8 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
       <PosterCard
         imageUrl={
           tvShow?.tv_show_details?.poster_path
-            ? getTmdbImageUrl(tvShow.tv_show_details.poster_path)
-            : defaultImageUrl
+            && getTmdbImageUrl(tvShow.tv_show_details.poster_path)
+           
         }
         altText={tvShow.fileName}
         footer={

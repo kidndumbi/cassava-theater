@@ -23,14 +23,13 @@ const ResumeTvShowLists: React.FC<ResumeTvShowListsProps> = ({
   loadingItems,
   loadingTvShows,
 }) => {
-  const { getTmdbImageUrl, defaultImageUrl } = useTmdbImageUrl();
+  const { getTmdbImageUrl } = useTmdbImageUrl();
 
   const renderTvShow = (tvShow: VideoDataModel) => (
     <ResumeTvShow
       key={tvShow.filePath}
       tvShow={tvShow}
       getTmdbImageUrl={getTmdbImageUrl}
-      defaultImageUrl={defaultImageUrl}
       handlePosterClick={handlePosterClick}
       loadingItems={loadingItems}
     />

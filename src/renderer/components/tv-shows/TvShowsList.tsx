@@ -14,7 +14,7 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   shows,
   handlePosterClick,
 }) => {
-  const { getTmdbImageUrl, defaultImageUrl } = useTmdbImageUrl();
+  const { getTmdbImageUrl } = useTmdbImageUrl();
 
   return (
     <>
@@ -24,8 +24,8 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
             key={index}
             imageUrl={
               show.tv_show_details?.poster_path
-                ? getTmdbImageUrl(show.tv_show_details.poster_path)
-                : defaultImageUrl
+                && getTmdbImageUrl(show.tv_show_details.poster_path)
+             
             }
             altText={show.fileName || ""}
             onClick={() => show.filePath && handlePosterClick(show.filePath)}

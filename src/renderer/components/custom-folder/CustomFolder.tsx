@@ -27,7 +27,7 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
   menuId,
 }) => {
   const theme = useTheme();
-  const { getTmdbImageUrl, defaultImageUrl } = useTmdbImageUrl();
+  const { getTmdbImageUrl } = useTmdbImageUrl();
   const navigate = useNavigate();
 
   const [filter, setFilter] = useState("");
@@ -107,7 +107,6 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
         customFolderData={filteredData}
         handlePosterClick={handlePosterClick}
         getImageUrl={getTmdbImageUrl}
-        defaultImageUrl={defaultImageUrl}
       />
     );
   };

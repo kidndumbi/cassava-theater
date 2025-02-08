@@ -1,22 +1,19 @@
 import { useCallback } from "react";
-// import path from "path";
 
-// const defaultPosterImageUrl = path.join(__static, '/poster-not-available.png');
-const defaultPosterImageUrl =
-  "https://res.cloudinary.com/cassavacloudinary/image/upload/v1730167450/wnc1yqvvzbgxuxft0ecg.jpg";
 const baseImageUrl = "https://image.tmdb.org/t/p/";
-const defaultBackdropImageUrl =
-  "https://res.cloudinary.com/cassavacloudinary/image/upload/v1730167450/wnc1yqvvzbgxuxft0ecg.jpg";
-
 export const useTmdbImageUrl = () => {
-  const defaultImageUrl = defaultPosterImageUrl;
-  const getTmdbImageUrl = useCallback(
-    (imgPath: string, size = "w500") => {
-      if (!imgPath) return defaultPosterImageUrl;
-      return `${baseImageUrl}${size}${imgPath}`;
-    },
-    []
-  );
+  const getTmdbImageUrl = useCallback((imgPath: string, size = "w500") => {
+    return `${baseImageUrl}${size}${imgPath}`;
+  }, []);
 
-  return { getTmdbImageUrl, defaultImageUrl, defaultBackdropImageUrl };
+  const getBackgroundGradient = useCallback((imageUrl: string) => {
+    return imageUrl
+      ? `linear-gradient(to right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0)), linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0)), url(${imageUrl})`
+      : `linear-gradient(to right, #485563, #29323c)`;
+  }, []);
+
+  return {
+    getTmdbImageUrl,
+    getBackgroundGradient,
+  };
 };

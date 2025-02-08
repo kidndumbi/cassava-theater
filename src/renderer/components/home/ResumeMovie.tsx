@@ -20,7 +20,7 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
   movie,
   handlePosterClick,
 }) => {
-  const { getTmdbImageUrl, defaultImageUrl } = useTmdbImageUrl();
+  const { getTmdbImageUrl } = useTmdbImageUrl();
   const [showActionButtons, setShowActions] = React.useState(false);
 
   const handlePlay = (startFromBeginning = false) => {
@@ -40,8 +40,8 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
       <PosterCard
         imageUrl={
           movie?.movie_details?.poster_path
-            ? getTmdbImageUrl(movie.movie_details.poster_path)
-            : defaultImageUrl
+            && getTmdbImageUrl(movie.movie_details.poster_path)
+         
         }
         altText={movie.fileName}
         footer={

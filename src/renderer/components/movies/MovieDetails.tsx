@@ -27,7 +27,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     updateWatchLater,
   } = useMovies();
   const [imageUrl, setImageUrl] = useState("");
-  const { getTmdbImageUrl, defaultBackdropImageUrl } = useTmdbImageUrl();
+  const { getTmdbImageUrl, getBackgroundGradient } = useTmdbImageUrl();
   const navigate = useNavigate();
   const { setCurrentVideo } = useVideoListLogic();
   const { updateSubtitle } = useSubtitle();
@@ -45,9 +45,8 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
 
   useEffect(() => {
     setImageUrl(
-      videoDetails?.movie_details?.backdrop_path
-        ? getTmdbImageUrl(videoDetails.movie_details.backdrop_path, "original")
-        : defaultBackdropImageUrl
+      videoDetails?.movie_details?.backdrop_path &&
+        getTmdbImageUrl(videoDetails.movie_details.backdrop_path, "original")
     );
   }, [videoDetails, getTmdbImageUrl]);
 
@@ -70,17 +69,13 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     setCurrentTabValue(newValue);
   };
 
-  const backgroundImageUrl = loadingVideoDetails
-    ? defaultBackdropImageUrl
-    : imageUrl;
-
   return (
     <>
-      <div
+      <Box
         style={{
           position: "relative",
           backgroundSize: "cover",
-          backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0)), linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0)), url(${backgroundImageUrl})`,
+          backgroundImage: getBackgroundGradient(imageUrl),
           height: "100vh",
           width: "100vw",
         }}
@@ -114,7 +109,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
             />
           </>
         )}
-      </div>
+      </Box>
       <Box>
         <CustomTabPanel value={currentTabValue} index={0}>
           <AppNotes
