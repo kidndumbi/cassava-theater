@@ -34,7 +34,8 @@ const useHandlePosterClick = (
 
   const handlePosterClick = async (
     videoType: string,
-    video: VideoDataModel
+    video: VideoDataModel,
+    startFromBeginning = false
   ) => {
     setLoadingItems((prev) => ({ ...prev, [video.filePath!]: true }));
     const selectedVideo = await getSelectedVideo(videoType, video);
@@ -46,7 +47,7 @@ const useHandlePosterClick = (
     resetEpisodes();
     getEpisodeDetails(seasonPath);
     setCurrentVideo(selectedVideo);
-    const path = `/video-player?menuId=${menuId}&resumeId=${resumeId}`;
+    const path = `/video-player?menuId=${menuId}&resumeId=${resumeId}&startFromBeginning=${startFromBeginning}`;
     navigate(path);
     setLoadingItems((prev) => ({ ...prev, [video.filePath!]: false }));
   };

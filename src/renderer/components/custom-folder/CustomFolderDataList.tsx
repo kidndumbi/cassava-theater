@@ -26,7 +26,6 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
             ? getImageUrl(item.movie_details.poster_path)
             : defaultImageUrl
         }
-        fallbackUrl={defaultImageUrl}
         altText={item.fileName}
         onClick={() => handlePosterClick(item.filePath!)}
         footer={renderFolderIcon(item)}

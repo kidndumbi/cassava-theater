@@ -29,7 +29,6 @@ const MovieList: React.FC<MovieListProps> = ({
         <PosterCard
           key={movie.filePath}
           imageUrl={getPosterUrl(movie)}
-          fallbackUrl={defaultImageUrl}
           altText={movie.fileName || ""}
           onClick={() => handlePosterClick(movie.filePath || "")}
           footer={trimFileName(movie.fileName || "")}

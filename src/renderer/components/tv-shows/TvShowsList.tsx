@@ -28,7 +28,6 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
                 ? getTmdbImageUrl(show.tv_show_details.poster_path)
                 : defaultImageUrl
             }
-            fallbackUrl={defaultImageUrl}
             altText={show.fileName || ""}
             onClick={() => handlePosterClick(show.filePath!)}
             footer={trimFileName(show.fileName!)}

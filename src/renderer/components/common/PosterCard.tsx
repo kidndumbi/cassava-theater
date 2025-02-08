@@ -4,15 +4,13 @@ import { rendererLoggingService as log } from "../../util/renderer-logging.servi
 
 interface PosterCardProps {
   imageUrl: string;
-  fallbackUrl: string;
   altText: string;
-  onClick: () => void;
+  onClick?: () => void;
   footer?: React.ReactNode;
 }
 
 export const PosterCard: React.FC<PosterCardProps> = ({
   imageUrl,
-  fallbackUrl,
   altText,
   onClick,
   footer,
@@ -28,7 +26,7 @@ export const PosterCard: React.FC<PosterCardProps> = ({
     <Box m={1} flex="1 1 200px" maxWidth="200px">
       {!hasError && (
         <img
-          src={imageUrl || fallbackUrl}
+          src={imageUrl}
           alt={altText}
           onError={handleError}
           onClick={onClick}

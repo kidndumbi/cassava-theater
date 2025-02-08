@@ -21,12 +21,9 @@ import { useSearchParams } from "react-router-dom";
 export const LandingPage = () => {
   const theme = useTheme();
   const { settings, fetchAllSettings } = useSettings();
-
   const [searchParams, setSearchParams] = useSearchParams();
-
   const { movies, getMovies, loadingMovies } = useMovies();
   const { tvShows, getTvShows, loadingTvShows } = useTvShows();
-
   const { customFolderData, loadCustomFolder, loadingCustomFolderData } =
     useCustomFolder();
 
