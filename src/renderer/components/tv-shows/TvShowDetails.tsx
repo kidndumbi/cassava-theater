@@ -43,7 +43,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   } = useTvShows();
   const { updateSubtitle } = useSubtitle();
   const [tvShowBackgroundUrl, setTvShowBackgroundUrl] = useState("");
-  const { getTmdbImageUrl, defaultBackdropImageUrl } = useTmdbImageUrl();
+  const { getTmdbImageUrl, getBackgroundGradient } = useTmdbImageUrl();
   const navigate = useNavigate();
   const { setCurrentVideo } = useVideoListLogic();
   const [selectedSeason, setSelectedSeason] = useState<string>("");
@@ -77,49 +77,47 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     }
   }, [videoPath]);
 
-  const getFirstChildFolderPath = (tvShowDetails: VideoDataModel) => {
-    if (tvShowDetails?.childFolders && tvShowDetails.childFolders.length > 0) {
-      return tvShowDetails.childFolders[0].folderPath;
-    }
-    return "";
-  };
+  const getFirstChildFolderPath = (tvShowDetails: VideoDataModel) =>
+    tvShowDetails?.childFolders?.[0]?.folderPath ?? "";
 
-  const initializeSeason = async (path: string, details: VideoDataModel) => {
+  const setSeasonDetails = async (path: string, details: VideoDataModel) => {
     const seasonName = getFilename(path);
-    const selectedSeasonDetails =
-      details?.tv_show_details?.seasons?.find(
-        (season: Season) => season.name.toLowerCase() === seasonName.toLowerCase()
-      ) as Season || {} as Season;
+    const selectedSeason = details?.tv_show_details?.seasons?.find(
+      (season: Season) => season.name.toLowerCase() === seasonName.toLowerCase()
+    );
 
-    setSeasonOverview(selectedSeasonDetails?.overview || "");
-    setSeasonAirDate(selectedSeasonDetails?.air_date || "");
+    setSeasonOverview(selectedSeason?.overview ?? "");
+    setSeasonAirDate(selectedSeason?.air_date ?? "");
     setSeasonPosterPath(
-      selectedSeasonDetails?.poster_path
-        ? getTmdbImageUrl(selectedSeasonDetails?.poster_path, "original")
-        : defaultBackdropImageUrl
+      selectedSeason?.poster_path &&
+        getTmdbImageUrl(selectedSeason.poster_path, "original")
     );
     getEpisodeDetails(path);
   };
 
   function updateBackgroundAndSeason(tvShowDetails: VideoDataModel) {
-    setTvShowBackgroundUrl(
-      tvShowDetails?.tv_show_details?.backdrop_path
-        ? getTmdbImageUrl(
-            tvShowDetails.tv_show_details.backdrop_path,
-            "original"
-          )
-        : defaultBackdropImageUrl
-    );
-    const selSeason = tvShowDetails?.lastVideoPlayed?.replace(/\\/g, "/")
-      ? tvShowDetails.lastVideoPlayed
-          .replace(/\\/g, "/")
-          .split("/")
-          .slice(0, -1)
-          .join("/")
-      : getFirstChildFolderPath(tvShowDetails);
+    // Compute background URL based on backdrop_path
+    const backdropPath = tvShowDetails?.tv_show_details?.backdrop_path;
+    const backgroundUrl =
+      backdropPath && getTmdbImageUrl(backdropPath, "original");
 
+    setTvShowBackgroundUrl(backgroundUrl);
+
+    // Determine the selected season from lastVideoPlayed or fallback to the first child folder path
+    let selSeason = "";
+    if (tvShowDetails?.lastVideoPlayed) {
+      selSeason = tvShowDetails.lastVideoPlayed
+        .replace(/\\/g, "/")
+        .split("/")
+        .slice(0, -1)
+        .join("/");
+    } else {
+      selSeason = getFirstChildFolderPath(tvShowDetails);
+    }
     setSelectedSeason(selSeason);
-    initializeSeason(selSeason, tvShowDetails);
+
+    // Set the season details and episodes
+    setSeasonDetails(selSeason, tvShowDetails);
   }
 
   useEffect(() => {
@@ -130,21 +128,22 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
 
   useEffect(() => {
     if (
-      tvShowDetails &&
-      episodes &&
-      episodes.length > 0 &&
-      episodeLastWatched === null
-    ) {
-      const episodeLastWatched = episodes.find(
-        (episode) =>
-          episode.filePath ===
-          tvShowDetails?.lastVideoPlayed?.replace(/\\/g, "/")
-      );
-      if (episodeLastWatched) {
-        setEpisodeLastWatched(episodeLastWatched);
-      }
+      !tvShowDetails?.lastVideoPlayed ||
+      episodes.length === 0 ||
+      episodeLastWatched
+    )
+      return;
+    const normalizedLastPlayed = tvShowDetails.lastVideoPlayed.replace(
+      /\\/g,
+      "/"
+    );
+    const lastWatchedEpisode = episodes.find(
+      (episode) => episode.filePath === normalizedLastPlayed
+    );
+    if (lastWatchedEpisode) {
+      setEpisodeLastWatched(lastWatchedEpisode);
     }
-  }, [episodes, tvShowDetails]);
+  }, [episodes, tvShowDetails, episodeLastWatched]);
 
   const onBackClick = () => {
     navigate("/?menuId=" + menuId);
@@ -154,7 +153,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     const newSeasonFullPath = event.target.value as string;
     setSelectedSeason(newSeasonFullPath);
 
-    initializeSeason(newSeasonFullPath, tvShowDetails);
+    setSeasonDetails(newSeasonFullPath, tvShowDetails);
   };
 
   const onEpisodeClick = (episode: VideoDataModel) => {
@@ -181,21 +180,21 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     }
   };
 
+  const childFolders = tvShowDetails?.childFolders ?? [];
+
   return (
     <>
-      <div
+      <Box
         style={{
           position: "relative",
           backgroundSize: "cover",
-          backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0)), linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0)), url(${
-            loadingFolderDetails ? defaultBackdropImageUrl : tvShowBackgroundUrl
-          })`,
+          backgroundImage: getBackgroundGradient(tvShowBackgroundUrl),
           height: "100vh",
           width: "100vw",
         }}
       >
         {loadingFolderDetails ? (
-          <div
+          <Box
             style={{
               display: "flex",
               justifyContent: "center",
@@ -204,7 +203,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
             }}
           >
             <LoadingIndicator message="Loading..." />
-          </div>
+          </Box>
         ) : (
           <>
             <Box
@@ -238,7 +237,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
               </Tooltip>
             </Box>
 
-            <div
+            <Box
               style={{
                 position: "absolute",
                 bottom: "20px",
@@ -285,20 +284,18 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                     />
                   </Box>
                 )}
-              {episodes.length > 0 &&
-                tvShowDetails?.childFolders &&
-                tvShowDetails.childFolders.length > 0 && (
-                  <Box sx={{ display: "flex", gap: 2 }}>
-                    <RenderSelect
-                      value={selectedSeason}
-                      onChange={onSeasonChange}
-                      items={tvShowDetails.childFolders}
-                      getItemValue={(folder) => folder.folderPath}
-                      getItemLabel={(folder) => folder.basename}
-                      theme={theme}
-                    />
-                  </Box>
-                )}
+              {childFolders.length > 0 && (
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <RenderSelect
+                    value={selectedSeason}
+                    onChange={onSeasonChange}
+                    items={childFolders}
+                    getItemValue={(folder) => folder.folderPath}
+                    getItemLabel={(folder) => folder.basename}
+                    theme={theme}
+                  />
+                </Box>
+              )}
 
               <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
                 <Tabs
@@ -310,10 +307,10 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                   <Tab label="Item Two" {...a11yProps(1)} />
                 </Tabs>
               </Box>
-            </div>
+            </Box>
           </>
         )}
-      </div>
+      </Box>
       <Box sx={{ flexGrow: 1 }}>
         <CustomTabPanel value={currentTabValue} index={0}>
           <Episodes

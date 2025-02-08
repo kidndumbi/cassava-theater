@@ -9,22 +9,20 @@ interface CustomFolderDataListProps {
   customFolderData: VideoDataModel[];
   handlePosterClick: (videoPath: string) => void;
   getImageUrl: (path: string) => string;
-  defaultImageUrl: string;
 }
 
 const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
   handlePosterClick,
   getImageUrl,
   customFolderData,
-  defaultImageUrl,
 }) => {
   const renderPosterImage = (item: VideoDataModel) => (
     <>
       <PosterCard
         imageUrl={
           item?.movie_details?.poster_path
-            ? getImageUrl(item.movie_details.poster_path)
-            : defaultImageUrl
+            && getImageUrl(item.movie_details.poster_path)
+            
         }
         altText={item.fileName}
         onClick={() => item.filePath && handlePosterClick(item.filePath)}

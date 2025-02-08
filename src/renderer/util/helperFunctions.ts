@@ -57,6 +57,11 @@ const removeLastSegments = (filePath: string, count: number) => {
   return parts?.slice(0, -count).join("/");
 };
 
+const formatDate = (dateString: string) => {
+  const [year, month, day] = dateString.split("-");
+  return `${day}/${month}/${year}`;
+};
+
 export {
   secondsTohhmmss,
   isEmptyObject,
@@ -67,4 +72,5 @@ export {
   removeLastSegments,
   sec,
   getFilename,
+  formatDate,
 };

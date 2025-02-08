@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {  useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 
@@ -19,12 +19,12 @@ export const PosterCard: React.FC<PosterCardProps> = ({
 
   const handleError = () => {
     setHasError(true);
-    log.error("Image failed to load. Video: " + altText);
+    log.error("Image failed to load. Video:  " + altText);
   };
 
   return (
     <Box m={1} flex="1 1 200px" maxWidth="200px">
-      {!hasError && (
+      {!hasError && imageUrl ? (
         <img
           src={imageUrl}
           alt={altText}
@@ -37,9 +37,7 @@ export const PosterCard: React.FC<PosterCardProps> = ({
             cursor: "pointer",
           }}
         />
-      )}
-
-      {hasError && (
+      ) : (
         <Box
           onClick={onClick}
           sx={{

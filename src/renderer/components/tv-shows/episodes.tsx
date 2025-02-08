@@ -3,6 +3,7 @@ import { Box, Theme } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { Episode } from "./episode";
 import LoadingIndicator from "../common/LoadingIndicator";
+import { formatDate } from "../../util/helperFunctions";
 
 interface EpisodesProps {
   loadingEpisodes: boolean;
@@ -28,11 +29,6 @@ export const Episodes: React.FC<EpisodesProps> = ({
   seasonAirDate,
   handleFilepathChange,
 }) => {
-  const formatDate = (dateString: string) => {
-    const [year, month, day] = dateString.split("-");
-    return `${day}/${month}/${year}`;
-  };
-
   const renderEpisodes = () => (
     <Box
       sx={{
@@ -52,15 +48,19 @@ export const Episodes: React.FC<EpisodesProps> = ({
           {overview} ({formatDate(seasonAirDate)})
         </p>
       )}
-      {episodes.map((episode) => (
-        <Episode
-          key={episode.filePath}
-          episode={episode}
-          theme={theme}
-          onEpisodeClick={onEpisodeClick}
-          handleFilepathChange={handleFilepathChange}
-        />
-      ))}
+      {episodes.length === 0 ? (
+        <p>No episodes available.</p>
+      ) : (
+        episodes.map((episode) => (
+          <Episode
+            key={episode.filePath}
+            episode={episode}
+            theme={theme}
+            onEpisodeClick={onEpisodeClick}
+            handleFilepathChange={handleFilepathChange}
+          />
+        ))
+      )}
     </Box>
   );
 

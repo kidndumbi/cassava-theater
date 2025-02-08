@@ -19,7 +19,7 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
   movie,
   handlePosterClick,
 }) => {
-  const { getTmdbImageUrl, defaultImageUrl } = useTmdbImageUrl();
+  const { getTmdbImageUrl } = useTmdbImageUrl();
   const [showActionButtons, setShowActions] = useState(false);
 
   const handlePlay = (startFromBeginning = false) => {
@@ -38,9 +38,8 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
     >
       <PosterCard
         imageUrl={
-          movie?.movie_details?.poster_path
-            ? getTmdbImageUrl(movie.movie_details.poster_path)
-            : defaultImageUrl
+          movie?.movie_details?.poster_path &&
+          getTmdbImageUrl(movie.movie_details.poster_path)
         }
         altText={movie.fileName}
         footer={

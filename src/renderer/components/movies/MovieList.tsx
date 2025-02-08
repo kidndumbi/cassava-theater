@@ -8,19 +8,17 @@ interface MovieListProps {
   movies: VideoDataModel[];
   handlePosterClick: (videoPath: string) => void;
   getImageUrl: (path: string) => string;
-  defaultImageUrl: string;
 }
 
 const MovieList: React.FC<MovieListProps> = ({
   movies,
   handlePosterClick,
   getImageUrl,
-  defaultImageUrl,
 }) => {
   const getPosterUrl = (movie: VideoDataModel) => {
     return movie.movie_details?.poster_path
-      ? getImageUrl(movie.movie_details.poster_path)
-      : defaultImageUrl;
+      && getImageUrl(movie.movie_details.poster_path)
+    
   };
 
   return (
