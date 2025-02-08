@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
-import {
-  Box,
-  Button,
-  IconButton,
-  Tab,
-  Tabs,
-  Tooltip,
-  useTheme,
-} from "@mui/material";
+import { Box, IconButton, Tab, Tabs, Tooltip, useTheme } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +17,7 @@ import { useSubtitle } from "../../hooks/useSubtitle";
 import MovieIcon from "@mui/icons-material/Movie";
 import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
 import { VideoProgressBar } from "../common/VideoProgressBar";
+import TvShowDetailsButtons from "./TvShowDetailsButtons";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -271,44 +264,17 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
               </p>
 
               {episodes.length > 0 && tvShowDetails?.lastVideoPlayed && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    gap: 2,
-                    flexWrap: "wrap",
-                    mt: 2,
-                    mb: 2,
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={onContinueClick}
-                  >
-                    {(tvShowDetails?.lastVideoPlayedTime || 0) > 0
-                      ? "Continue"
-                      : "Play"}
-                    <br />
-                    {getFilename(tvShowDetails?.lastVideoPlayed).replace(
-                      /\.(mp4|mkv)$/i,
-                      ""
-                    )}
-                  </Button>
-
-                  {(tvShowDetails?.lastVideoPlayedTime || 0) > 0 && (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={onStartFromBeginningClick}
-                    >
-                      {"Play From Beginning"}
-                      <br />
-                      {getFilename(tvShowDetails?.lastVideoPlayed).replace(
-                        /\.(mp4|mkv)$/i,
-                        ""
-                      )}
-                    </Button>
+                <TvShowDetailsButtons
+                  tvShowDetails={tvShowDetails}
+                  onContinueClick={onContinueClick}
+                  onStartFromBeginningClick={onStartFromBeginningClick}
+                />
+              )}
+              {tvShowDetails?.lastVideoPlayed && (
+                <Box>
+                  {getFilename(tvShowDetails?.lastVideoPlayed).replace(
+                    /\.(mp4|mkv)$/i,
+                    ""
                   )}
                 </Box>
               )}

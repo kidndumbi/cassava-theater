@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import "./MovieDetailsButtons.css";
@@ -20,13 +20,14 @@ const MovieDetailsButtons: React.FC<MovieDetailsButtonsProps> = ({
   startFromBeginningText = "Start from beginning",
 }) => {
   return (
-    <div className="movie-details-buttons">
+    <Box className="movie-details-buttons">
       {videoDetails?.currentTime === 0 ? (
         <Button
           variant="contained"
           color="primary"
           onClick={() => handlePlay()}
         >
+            <PlayArrowIcon></PlayArrowIcon>
           {playText}
         </Button>
       ) : (
@@ -49,7 +50,7 @@ const MovieDetailsButtons: React.FC<MovieDetailsButtonsProps> = ({
           </Button>
         </>
       )}
-    </div>
+    </Box>
   );
 };
 
