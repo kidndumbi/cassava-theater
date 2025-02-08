@@ -1,5 +1,5 @@
 import React from "react";
-import { Select, MenuItem, SelectChangeEvent } from "@mui/material";
+import { Select, MenuItem, SelectChangeEvent, Theme } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 interface RenderSelectProps<T> {
@@ -8,7 +8,7 @@ interface RenderSelectProps<T> {
   items: T[];
   getItemValue: (item: T) => string;
   getItemLabel: (item: T) => string;
-  theme: any;
+  theme: Theme;
 }
 
 const RenderSelect = <T,>({

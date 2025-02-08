@@ -32,11 +32,11 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
 
   const [filter, setFilter] = useState("");
   const [folderPathNavigation, setFolderPathNavigation] = useState<string[]>([
-    customFolder?.folderPath!,
+    customFolder?.folderPath || "",
   ]);
 
   useEffect(() => {
-    setFolderPathNavigation([customFolder?.folderPath!]);
+    setFolderPathNavigation([customFolder?.folderPath || ""]);
   }, [customFolder?.folderPath]);
 
   const handlePosterClick = (videoPath: string) => {
@@ -66,7 +66,7 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
 
   const getFilteredCustomFolderData = () => {
     return customFolderData.filter((data) => {
-      const fileNameWithoutExtension = data.fileName!.replace(/\.(mp4|mkv)$/i, "");
+      const fileNameWithoutExtension = data.fileName ? data.fileName.replace(/\.(mp4|mkv)$/i, "") : "";
       return fileNameWithoutExtension
         .toLowerCase()
         .includes(filter.toLowerCase());
@@ -79,7 +79,7 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
         aria-label="breadcrumb"
         separator={<span style={{ color: theme.palette.primary.main }}>/</span>}
       >
-        {folderPathNavigation.map((path, index) => (
+        {folderPathNavigation.map((path) => (
           <Typography key={path} color="primary">
             {path?.split("/").pop()}
           </Typography>

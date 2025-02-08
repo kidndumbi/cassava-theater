@@ -32,7 +32,7 @@ export const WatchLaterList: FC<WatchLaterProps> = ({
       );
     }
 
-    return watchLaterMovies.map((movie, index) => (
+    return watchLaterMovies.map((movie) => (
       <WatchLater
         key={movie.filePath}
         movie={movie}

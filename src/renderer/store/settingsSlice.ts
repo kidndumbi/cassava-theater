@@ -26,7 +26,7 @@ const getSetting = createAsyncThunk(
 
 const setSetting = createAsyncThunk(
   "settings/setSetting",
-  async ({ key, value }: { key: keyof SettingsModel; value: any }) => {
+  async ({ key, value }: { key: keyof SettingsModel; value: SettingsModel[keyof SettingsModel] }) => {
     return await window.settingsAPI.setSetting(key, value);
   }
 );

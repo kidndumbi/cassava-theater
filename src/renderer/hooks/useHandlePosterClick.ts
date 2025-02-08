@@ -37,7 +37,9 @@ const useHandlePosterClick = (
     video: VideoDataModel,
     startFromBeginning = false
   ) => {
-    setLoadingItems((prev) => ({ ...prev, [video.filePath!]: true }));
+    if (video.filePath) {
+      setLoadingItems((prev) => ({ ...prev, [video.filePath]: true }));
+    }
     try {
       const selectedVideo = await getSelectedVideo(videoType, video);
       const resumeId = videoType === "tvShow" ? "tvShow" : "movie";
@@ -53,7 +55,9 @@ const useHandlePosterClick = (
     } catch (err) {
       log.error("Error handling poster click:", err);
     } finally {
-      setLoadingItems((prev) => ({ ...prev, [video.filePath!]: false }));
+      if (video.filePath) {
+        setLoadingItems((prev) => ({ ...prev, [video.filePath]: false }));
+      }
     }
   };
 

@@ -69,16 +69,16 @@ export const SettingsPage: React.FC = () => {
 
   const handleUpdateSetting = async (
     settingName: keyof SettingsModel,
-    value: any
+    value: string | boolean | CustomFolderModel[]
   ) => {
     try {
       if (settingName === "port") {
-        const portNumber = parseInt(value, 10);
+        const portNumber = parseInt(value as string, 10);
         if (isNaN(portNumber) || portNumber < 1024 || portNumber > 65535) {
           showSnackbar("Port number must be between 1024 and 65535", "error");
           return;
         }
-        await setSetting(settingName, value);
+        await setSetting(settingName, value as string);
         showSnackbar(
           "Port updated successfully. Please restart for change to take effect",
           "success",
@@ -86,7 +86,7 @@ export const SettingsPage: React.FC = () => {
           () => window.mainUtilAPI.restart()
         );
       } else {
-        await setSetting(settingName, value);
+        await setSetting(settingName, value as string | boolean | CustomFolderModel[]);
         showSnackbar("Setting updated successfully", "success");
       }
     } catch (error) {

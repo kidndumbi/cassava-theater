@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import { Box } from "@mui/material";
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 
@@ -17,7 +17,7 @@ export const PosterCard: React.FC<PosterCardProps> = ({
 }) => {
   const [hasError, setHasError] = useState(false);
 
-  const handleError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  const handleError = () => {
     setHasError(true);
     log.error("Image failed to load. Video: " + altText);
   };

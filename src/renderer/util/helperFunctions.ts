@@ -26,7 +26,7 @@ const getFilename = (filePath: string): string => {
   return parts[parts.length - 1];
 };
 
-const trimFileName = (fileName: string, maxLength: number = 20) => {
+const trimFileName = (fileName: string, maxLength = 20) => {
   const nameWithoutExtension = fileName.replace(/\.(mp4|mkv)$/i, "");
   return nameWithoutExtension.length > maxLength
     ? `${nameWithoutExtension.substring(0, maxLength)}...`
@@ -56,7 +56,6 @@ const removeLastSegments = (filePath: string, count: number) => {
   }
   return parts?.slice(0, -count).join("/");
 };
-
 
 export {
   secondsTohhmmss,

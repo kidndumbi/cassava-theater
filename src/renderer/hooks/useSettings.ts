@@ -2,6 +2,7 @@ import { rendererLoggingService as log } from "../util/renderer-logging.service"
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
 import { selSettings, settingsActions } from "../store/settingsSlice";
+import { SettingsModel } from "../../models/settings.model";
 
 export const useSettings = () => {
   const dispatch = useAppDispatch();
@@ -30,7 +31,7 @@ export const useSettings = () => {
     );
   };
 
-  const setSetting = async (key: keyof typeof settings, value: any) => {
+  const setSetting = async <K extends keyof SettingsModel>(key: K, value: SettingsModel[K]) => {
     return dispatchAsync(
       settingsActions.setSetting({ key, value }),
       "Failed to set setting"

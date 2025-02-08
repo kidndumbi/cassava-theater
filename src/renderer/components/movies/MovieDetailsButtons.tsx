@@ -3,9 +3,10 @@ import { Box, Button } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import "./MovieDetailsButtons.css";
+import { VideoDataModel } from "../../../models/videoData.model";
 
 interface MovieDetailsButtonsProps {
-  videoDetails: any;
+  videoDetails: VideoDataModel;
   handlePlay: (startFromBeginning?: boolean) => void;
   resumeText?: string;
   playText?: string;

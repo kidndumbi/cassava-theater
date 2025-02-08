@@ -6,7 +6,6 @@ import Button from "@mui/material/Button";
 import React from "react";
 import theme from "../../theme";
 
-
 type ConfirmationDialogProps = {
   open: boolean;
   message: string;
@@ -22,8 +21,10 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     <Dialog
       open={open}
       onClose={() => handleClose("Cancel")}
-      PaperProps={{
-        style: { backgroundColor: theme.customVariables.appDarker },
+      slotProps={{
+        paper: {
+          style: { backgroundColor: theme.customVariables.appDarker },
+        },
       }}
     >
       <DialogContent>

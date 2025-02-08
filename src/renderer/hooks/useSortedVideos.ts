@@ -9,8 +9,8 @@ const useSortedVideos = (movies: VideoDataModel[], tvShows: VideoDataModel[]) =>
     return filtered
       .sort(
         (a, b) =>
-          new Date(b.lastVideoPlayedDate!).getTime() -
-          new Date(a.lastVideoPlayedDate!).getTime()
+          new Date(b.lastVideoPlayedDate ? b.lastVideoPlayedDate : 0).getTime() -
+          new Date(a.lastVideoPlayedDate ?? 0).getTime()
       )
       .slice(0, 20);
   }, [movies]);
@@ -22,8 +22,8 @@ const useSortedVideos = (movies: VideoDataModel[], tvShows: VideoDataModel[]) =>
     return filtered
       .sort(
         (a, b) =>
-          new Date(b.lastVideoPlayedDate!).getTime() -
-          new Date(a.lastVideoPlayedDate!).getTime()
+          new Date(b.lastVideoPlayedDate ?? 0).getTime() -
+          new Date(a.lastVideoPlayedDate ?? 0).getTime()
       )
       .slice(0, 20);
   }, [tvShows]);

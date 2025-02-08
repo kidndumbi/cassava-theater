@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  Box,
-  useTheme,
-} from "@mui/material";
+import { Box } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import LoadingIndicator from "../common/LoadingIndicator";
@@ -11,9 +8,11 @@ import ResumeTvShow from "./ResumeTvShow";
 
 interface ResumeTvShowListsProps {
   sortedTvShows: VideoDataModel[];
-  handlePosterClick: (    videoType: string,
+  handlePosterClick: (
+    videoType: string,
     video: VideoDataModel,
-    startFromBeginning: boolean) => void;
+    startFromBeginning: boolean
+  ) => void;
   loadingItems: { [key: string]: boolean };
   loadingTvShows: boolean;
 }
@@ -24,7 +23,6 @@ const ResumeTvShowLists: React.FC<ResumeTvShowListsProps> = ({
   loadingItems,
   loadingTvShows,
 }) => {
-  const theme = useTheme();
   const { getTmdbImageUrl, defaultImageUrl } = useTmdbImageUrl();
 
   const renderTvShow = (tvShow: VideoDataModel) => (

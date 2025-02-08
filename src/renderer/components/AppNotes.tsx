@@ -3,7 +3,6 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import { NoteList } from "./noteList/NoteList";
-import { useAppDispatch } from "../store";
 import { Overview } from "./overview/Overview";
 import theme from "../theme";
 import { VideoDataModel } from "../../models/videoData.model";
@@ -21,7 +20,7 @@ const AppNotes: React.FC<AppNotesProps> = ({
   videoData,
   handleVideoSeek,
 }) => {
-  const dispatch = useAppDispatch();
+
 
   const [currentTabValue, setCurrentTabValue] = useState(1);
   const { getNotesAndOverview } = useNoteListLogic();
@@ -39,8 +38,13 @@ const AppNotes: React.FC<AppNotesProps> = ({
   };
 
   const onUpdate = async () => {
-    const notesAndOverview = await getNotesAndOverview(videoData?.filePath!);
-    setVideoDetails({ ...videoData!, ...notesAndOverview });
+    if (!videoData || !videoData.filePath) {
+      return;
+    }
+    const notesAndOverview = await getNotesAndOverview(videoData.filePath);
+    if (videoData) {
+      setVideoDetails({ ...videoData, ...notesAndOverview });
+    }
   };
 
   return (
@@ -82,10 +86,12 @@ const AppNotes: React.FC<AppNotesProps> = ({
       </Box>
       <CustomTabPanel value={currentTabValue} index={0}>
         <Box padding={2}>
-          <Overview
-            videoData={videoDetails!}
-            updateComplete={onUpdate}
-          ></Overview>
+          {videoDetails && (
+            <Overview
+              videoData={videoDetails}
+              updateComplete={onUpdate}
+            ></Overview>
+          )}
         </Box>
       </CustomTabPanel>
       <CustomTabPanel value={currentTabValue} index={1}>

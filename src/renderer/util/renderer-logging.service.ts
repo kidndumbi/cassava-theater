@@ -2,7 +2,7 @@ import log from "electron-log/renderer";
 
 class RendererLoggingService {
   private isProduction: boolean | undefined;
-  private context: string = " [Renderer] ";
+  private context = " [Renderer] ";
 
   constructor() {
     window.mainUtilAPI.isPackaged().then((isPackaged: boolean) => {
@@ -38,7 +38,7 @@ class RendererLoggingService {
     return "";
   }
 
-  log(message: string, ...args: any[]) {
+  log(message: string, ...args: unknown[]) {
     this.ensureIsProductionSet(() => {
       const file = this.getCallerFile();
       const logMessage = `${file}${this.context}${message}`;
@@ -50,7 +50,7 @@ class RendererLoggingService {
     });
   }
 
-  info(message: string, ...args: any[]) {
+  info(message: string, ...args: unknown[]) {
     this.ensureIsProductionSet(() => {
       const file = this.getCallerFile();
       const logMessage = `${file}${this.context}${message}`;
@@ -62,7 +62,7 @@ class RendererLoggingService {
     });
   }
 
-  warn(message: string, ...args: any[]) {
+  warn(message: string, ...args: unknown[]) {
     this.ensureIsProductionSet(() => {
       const file = this.getCallerFile();
       const logMessage = `${file}${this.context}${message}`;
@@ -74,7 +74,7 @@ class RendererLoggingService {
     });
   }
 
-  error(message: string, ...args: any[]) {
+  error(message: string, ...args: unknown[]) {
     this.ensureIsProductionSet(() => {
       const file = this.getCallerFile();
       const logMessage = `${file}${this.context}${message}`;
@@ -86,7 +86,7 @@ class RendererLoggingService {
     });
   }
 
-  debug(message: string, ...args: any[]) {
+  debug(message: string, ...args: unknown[]) {
     this.ensureIsProductionSet(() => {
       const file = this.getCallerFile();
       const logMessage = `${file}${this.context}${message}`;

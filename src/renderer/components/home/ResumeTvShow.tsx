@@ -1,10 +1,9 @@
-import React, { use, useEffect } from "react";
+import React from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { PosterCard } from "../common/PosterCard";
-import MovieDetailsButtons from "../movies/MovieDetailsButtons";
 import TvShowDetailsButtons from "../tv-shows/TvShowDetailsButtons";
 
 interface ResumeTvShowProps {
@@ -61,7 +60,7 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
               align="center"
               sx={{ wordBreak: "break-all" }}
             >
-              {trimFileName(tvShow.fileName!)}/
+              {trimFileName(tvShow.fileName ?? "Unknown")}/
               {tvShow.lastVideoPlayed
                 ?.split("/")
                 .pop()
@@ -70,7 +69,7 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
           </Box>
         }
       />
-      {loadingItems[tvShow.filePath!] && (
+      {loadingItems[tvShow.filePath] && (
         <Box
           sx={{
             position: "absolute",

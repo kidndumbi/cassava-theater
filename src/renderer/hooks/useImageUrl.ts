@@ -11,7 +11,7 @@ const defaultBackdropImageUrl =
 export const useTmdbImageUrl = () => {
   const defaultImageUrl = defaultPosterImageUrl;
   const getTmdbImageUrl = useCallback(
-    (imgPath: string, size: string = "w500") => {
+    (imgPath: string, size = "w500") => {
       if (!imgPath) return defaultPosterImageUrl;
       return `${baseImageUrl}${size}${imgPath}`;
     },

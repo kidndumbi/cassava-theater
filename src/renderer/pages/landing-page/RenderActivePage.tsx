@@ -11,19 +11,19 @@ export interface RenderActivePageProps {
   loadingMovies: boolean;
   movies: VideoDataModel[];
   loadingTvShows: boolean;
-  tvShows: any[];
+  tvShows: VideoDataModel[];
   refreshData: () => void;
   getMovies: () => void;
   getTvShows: () => void;
   loadingCustomFolderData: boolean;
-  customFolderData: any[];
+  customFolderData: VideoDataModel[];
   loadCustomFolder: (path: string) => void;
   selectedCustomFolder: CustomFolderModel | null;
 }
 
 const renderMoviesPage = (
   loadingMovies: boolean,
-  movies: any[],
+  movies: VideoDataModel[],
   getMovies: () => void,
   menuId: string
 ) => {
@@ -39,7 +39,7 @@ const renderMoviesPage = (
 
 const renderTvShowsPage = (
   loadingTvShows: boolean,
-  tvShows: any[],
+  tvShows: VideoDataModel[],
   getTvShows: () => void,
   menuId: string
 ) => {

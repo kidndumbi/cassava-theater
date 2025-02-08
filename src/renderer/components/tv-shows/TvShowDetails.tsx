@@ -18,6 +18,7 @@ import MovieIcon from "@mui/icons-material/Movie";
 import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import TvShowDetailsButtons from "./TvShowDetailsButtons";
+import { Season } from "../../../models/tv-show-details.model";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -76,19 +77,19 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     }
   }, [videoPath]);
 
-  const getFirstChildFolderPath = (tvShowDetails: any) => {
+  const getFirstChildFolderPath = (tvShowDetails: VideoDataModel) => {
     if (tvShowDetails?.childFolders && tvShowDetails.childFolders.length > 0) {
       return tvShowDetails.childFolders[0].folderPath;
     }
     return "";
   };
 
-  const initializeSeason = async (path: string, details: any) => {
+  const initializeSeason = async (path: string, details: VideoDataModel) => {
     const seasonName = getFilename(path);
     const selectedSeasonDetails =
       details?.tv_show_details?.seasons?.find(
-        (season: any) => season.name.toLowerCase() === seasonName.toLowerCase()
-      ) || {};
+        (season: Season) => season.name.toLowerCase() === seasonName.toLowerCase()
+      ) as Season || {} as Season;
 
     setSeasonOverview(selectedSeasonDetails?.overview || "");
     setSeasonAirDate(selectedSeasonDetails?.air_date || "");
@@ -152,9 +153,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   const onSeasonChange = (event: SelectChangeEvent<string>) => {
     const newSeasonFullPath = event.target.value as string;
     setSelectedSeason(newSeasonFullPath);
-    const season_id = tvShowDetails?.childFolders?.find(
-      (f) => f.folderPath === newSeasonFullPath
-    )?.season_id;
 
     initializeSeason(newSeasonFullPath, tvShowDetails);
   };
