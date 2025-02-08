@@ -2,6 +2,7 @@ import { readFile, access, writeFile } from "fs/promises";
 import { Stats } from "fs";
 import { loggingService as log } from "./main-logging.service";
 import { VideoDataModel } from "../../models/videoData.model";
+import * as lockFile from "proper-lockfile";
 
 export const filterByCategory = (
   videos: VideoDataModel[],
@@ -99,6 +100,22 @@ export const writeJsonToFile = async (
   filePath: string,
   jsonData: VideoDataModel
 ): Promise<VideoDataModel> => {
-  await writeFile(filePath, JSON.stringify(jsonData, null, 2));
-  return jsonData;
+  // Acquire a lock on the file (or its directory if file may not exist)
+  let release: (() => Promise<void>) | null = null;
+  try {
+    // Ensure the file exists to lock it; if not, create an empty file.
+    try {
+      await access(filePath);
+    } catch {
+      await writeFile(filePath, "{}");
+    }
+    release = await lockFile.lock(filePath, { retries: 3 });
+
+    await writeFile(filePath, JSON.stringify(jsonData, null, 2));
+    return jsonData;
+  } finally {
+    if (release) {
+      await release();
+    }
+  }
 };
