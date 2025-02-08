@@ -47,7 +47,6 @@ export const WatchLater: FC<WatchLaterProps> = ({
               ? getTmdbImageUrl(movie.movie_details.poster_path)
               : defaultImageUrl
           }
-          fallbackUrl={defaultImageUrl}
           altText={movie.fileName}
           onClick={() => handlePosterClick("movie", movie)}
           footer={

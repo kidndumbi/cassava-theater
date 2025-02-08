@@ -38,7 +38,6 @@ const ResumeTvShowLists: React.FC<ResumeTvShowListsProps> = ({
             ? getTmdbImageUrl(tvShow.tv_show_details.poster_path)
             : defaultImageUrl
         }
-        fallbackUrl={defaultImageUrl}
         altText={tvShow.fileName}
         onClick={() => handlePosterClick("tvShow", tvShow)}
         footer={
