@@ -13,7 +13,7 @@ export const videosIpcHandlers = () => {
   ipcMain.handle(
     VideoIPCChannels.FetchVideoData,
     (
-      _event: any,
+      _event: Electron.IpcMainInvokeEvent,
       args: {
         filePath: string;
         searchText: string | undefined;
@@ -27,14 +27,14 @@ export const videosIpcHandlers = () => {
 
   ipcMain.handle(
     VideoIPCChannels.FetchVideoDetails,
-    (_event: any, args: { path: string }) => {
+    (_event: Electron.IpcMainInvokeEvent, args: { path: string }) => {
       return fetchVideoDetails(args.path);
     }
   );
 
   ipcMain.handle(
     VideoIPCChannels.FetchFolderDetails,
-    (_event: any, args: { path: string }) => {
+    (_event: Electron.IpcMainInvokeEvent, args: { path: string }) => {
       return fetchFolderDetails(args.path.replace("/", "\\"));
     }
   );

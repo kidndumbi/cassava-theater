@@ -1,6 +1,6 @@
 import { dialog } from "electron";
 
-export const openFolderDialog = async (_event: any) => {
+export const openFolderDialog = async () => {
   const result = await dialog.showOpenDialog({
     properties: ["openDirectory"],
   });
@@ -13,7 +13,7 @@ export const openFolderDialog = async (_event: any) => {
 };
 
 export const openFileDialog = async (
-  _event: any,
+  _event: Electron.IpcMainInvokeEvent,
   filters?: { name: string; extensions: string[] }[]
 ) => {
   const result = await dialog.showOpenDialog({

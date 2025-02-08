@@ -90,7 +90,7 @@ export const fetchVideosData = async ({
     writeThumbnailCache(cache, thumbnailCacheFilePath);
 
     const sorted = updatedVideoData.sort((a, b) =>
-      a.fileName!.localeCompare(b.fileName!)
+      (a.fileName ?? "").localeCompare(b.fileName ?? "")
     );
 
     return filterByCategory(sorted, category);
@@ -184,7 +184,7 @@ export const fetchFolderDetails = async (
 };
 
 export const saveLastWatch = async (
-  event: any,
+  event: Electron.IpcMainInvokeEvent,
   {
     currentVideo,
     lastWatched,
@@ -192,9 +192,12 @@ export const saveLastWatch = async (
   }: { currentVideo: VideoDataModel; lastWatched: number; isEpisode?: boolean }
 ) => {
   try {
-    const jsonFilePath = getJsonFilePath(currentVideo.filePath!);
+    if (!currentVideo.filePath) {
+      throw new Error("currentVideo.filePath is undefined");
+    }
+    const jsonFilePath = getJsonFilePath(currentVideo.filePath);
 
-    let jsonFileContents = (await readJsonFile(jsonFilePath)) || {
+    const jsonFileContents = (await readJsonFile(jsonFilePath)) || {
       notes: [],
       overview: {},
     };
@@ -206,11 +209,14 @@ export const saveLastWatch = async (
     await writeJsonToFile(jsonFilePath, jsonFileContents);
 
     if (isEpisode) {
-      const parentFilePath = path.dirname(currentVideo.filePath!);
+      if (!currentVideo.filePath) {
+        throw new Error("currentVideo.filePath is undefined");
+      }
+      const parentFilePath = path.dirname(currentVideo.filePath);
       const grandParentFilePath = path.dirname(parentFilePath);
       const grandParentJsonFilePath = getJsonFilePath(grandParentFilePath);
 
-      let grandParentJsonFileContents = (await readJsonFile(
+      const grandParentJsonFileContents = (await readJsonFile(
         grandParentJsonFilePath
       )) || {
         notes: [],
@@ -241,7 +247,7 @@ export const saveLastWatch = async (
 };
 
 export const getVideoJsonData = async (
-  event: any,
+  event: Electron.IpcMainInvokeEvent,
   currentVideo: VideoDataModel
 ) => {
   try {
@@ -256,7 +262,7 @@ export const getVideoJsonData = async (
 
     const newFilePath = currentVideo.filePath.replace(/\.(mp4|mkv)$/i, ".json");
 
-    return await readOrDefaultJson(newFilePath);
+    return await readOrDefaultJson(newFilePath) as VideoDataModel;
   } catch (error) {
     console.error("An error occurred:", error);
     return null;
@@ -264,7 +270,7 @@ export const getVideoJsonData = async (
 };
 
 export const saveVideoJsonData = async (
-  event: any,
+  event: Electron.IpcMainInvokeEvent,
   {
     currentVideo,
     newVideoJsonData,
@@ -273,7 +279,7 @@ export const saveVideoJsonData = async (
   try {
     const newFilePath = getJsonFilePath(currentVideo.filePath || "");
     const existingData = (await readJsonFile(newFilePath)) || {};
-    const mergedData = { ...existingData, ...newVideoJsonData };
+    const mergedData = { ...existingData, ...newVideoJsonData } as VideoDataModel;
     await writeJsonToFile(newFilePath, mergedData);
     return mergedData;
   } catch (error: unknown) {
@@ -292,14 +298,17 @@ async function processVideoData(
   includeThumbnail = true
 ): Promise<VideoDataModel> {
   if (!video.isDirectory) {
-    const cacheKey = video.filePath!;
+    if (!video.filePath) {
+      throw new Error("Video file path is undefined");
+    }
+    const cacheKey = video.filePath;
     let videoProgressScreenshot = cache[cacheKey]?.image;
 
     const thumbnailPromise =
       includeThumbnail &&
       (!videoProgressScreenshot ||
         cache[cacheKey].currentTime !== (video.currentTime ?? 30))
-        ? generateThumbnail(video.filePath!, video.currentTime ?? 30, ffmpeg)
+        ? video.filePath ? generateThumbnail(video.filePath, video.currentTime ?? 30, ffmpeg) : Promise.resolve(undefined)
         : Promise.resolve(videoProgressScreenshot);
 
     try {
@@ -330,7 +339,7 @@ async function processVideoData(
 }
 
 export const getRootVideoData = async (
-  event: any,
+  event: Electron.IpcMainInvokeEvent,
   filePath: string,
   searchText: string
 ) => {
@@ -365,7 +374,10 @@ export const getRootVideoData = async (
 
       // If both are either directories or files, sort by createdAt
       if (directoryDifference === 0) {
-        return b.createdAt! - a.createdAt!;
+        if (b.createdAt !== undefined && a.createdAt !== undefined) {
+          return b.createdAt - a.createdAt;
+        }
+        return 0;
       }
 
       return directoryDifference;
@@ -399,7 +411,7 @@ export const populateVideoData = async (
       duration,
       jsonFileContents
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     log.error("Error populating video data:", error);
     return null;
   }
@@ -485,7 +497,12 @@ export const createFolderDataObject = (
 });
 
 export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
-  const url = new URL(req.url!, `http://${req.headers.host}`);
+  if (!req.url) {
+    res.writeHead(400, { "Content-Type": "text/plain" });
+    res.end("Bad Request: URL is missing.");
+    return;
+  }
+  const url = new URL(req.url, `http://${req.headers.host}`);
   const videoPath = decodeURIComponent(url.searchParams.get("path") as string);
   const fileExt = path.extname(videoPath).toLowerCase();
 

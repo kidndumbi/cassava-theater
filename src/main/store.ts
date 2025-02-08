@@ -30,11 +30,16 @@ export const initializeStore = (): void => {
   store = new Store<SettingsModel>({ schema });
 };
 
-export const getValue = (key: keyof SettingsModel): any => {
+export const getValue = (
+  key: keyof SettingsModel
+): SettingsModel[keyof SettingsModel] => {
   return store.get(key);
 };
 
-export const setValue = (key: keyof SettingsModel, value: any): any => {
+export const setValue = (
+  key: keyof SettingsModel,
+  value: SettingsModel[keyof SettingsModel]
+): SettingsModel[keyof SettingsModel] => {
   store.set(key, value);
   return value;
 };

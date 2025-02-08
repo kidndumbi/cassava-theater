@@ -54,7 +54,7 @@ const createWindow = (): void => {
   });
 };
 
-const rawPort = getValue("port");
+const rawPort = getValue("port") as string;
 const settingsPort = rawPort || "5000";
 const port: number = parseInt(settingsPort, 10);
 // This method will be called when Electron has finished

@@ -12,6 +12,8 @@ import { MainUtilIPCChannels } from "./enums/main-util-IPC-channels";
 import { VideoDataModel } from "./models/videoData.model";
 import { TheMovieDbIPCChannels } from "./enums/TheMovieDbIPCChannels";
 import { SetPlayingModel } from "./models/set-playing.model";
+import { MovieDetails } from "./models/movie-detail.model";
+import { TvShowDetails } from "./models/tv-show-details.model";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -34,12 +36,15 @@ contextBridge.exposeInMainWorld("settingsAPI", {
       SettingsModel[keyof SettingsModel]
     >;
   },
-  setSetting: (key: keyof SettingsModel, value: any) => {
+  setSetting: (
+    key: keyof SettingsModel,
+    value: SettingsModel[keyof SettingsModel]
+  ) => {
     return ipcRenderer.invoke(
       SettingsIpcChannels.SET_SETTING,
       key,
       value
-    ) as Promise<any>;
+    ) as Promise<SettingsModel[keyof SettingsModel]>;
   },
 });
 
@@ -129,13 +134,13 @@ contextBridge.exposeInMainWorld("theMovieDbAPI", {
       TheMovieDbIPCChannels.Search,
       query,
       queryType
-    ) as Promise<any>;
+    ) as Promise<MovieDetails[] | TvShowDetails[]>;
   },
   movieOrTvShow: (id: string, queryType: "movie" | "tv") => {
     return ipcRenderer.invoke(
       TheMovieDbIPCChannels.MovieOrTvShow,
       id,
       queryType
-    ) as Promise<any>;
+    ) as Promise<MovieDetails | TvShowDetails>;
   },
 });
