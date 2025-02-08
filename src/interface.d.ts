@@ -1,4 +1,3 @@
-import { isPackaged } from "./interface.d";
 import { SettingsModel } from "./main/store";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoDataModel } from "./models/videoData.model";
@@ -11,11 +10,19 @@ export interface settingsAPI {
   getSetting: (
     key: keyof SettingsModel
   ) => Promise<SettingsModel[keyof SettingsModel]>;
-  setSetting: (key: keyof SettingsModel, value: any) => Promise<any>;
+  setSetting: (
+    key: keyof SettingsModel,
+    value: SettingsModel[keyof SettingsModel]
+  ) => Promise<SettingsModel[keyof SettingsModel]>;
 }
 
 export interface OpenDialogAPI {
-  openFileDialog: (options: any) => Promise<string | null>;
+  openFileDialog: (
+    options: {
+      name: string;
+      extensions: string[];
+    }[]
+  ) => Promise<string | null>;
   openFolderDialog: () => Promise<string | null>;
 }
 
@@ -40,24 +47,24 @@ export interface VideoAPI {
     searchText?: string;
     includeThumbnail: boolean;
     category: string;
-  }) => Promise<any>;
-  fetchVideoDetails: (args: { path: string }) => Promise<any>;
-  fetchFolderDetails: (args: { path: string }) => Promise<any>;
+  }) => Promise<VideoDataModel[]>;
+  fetchVideoDetails: (args: { path: string }) => Promise<VideoDataModel>;
+  fetchFolderDetails: (args: { path: string }) => Promise<VideoDataModel>;
   saveLastWatch: (args: {
     currentVideo: VideoDataModel;
     lastWatched: number;
     isEpisode?: boolean;
-  }) => Promise<any>;
-  getVideoJsonData: (currentVideo: VideoDataModel) => Promise<any>;
+  }) => Promise<VideoDataModel>;
+  getVideoJsonData: (currentVideo: VideoDataModel) => Promise<VideoDataModel>;
   saveVideoJsonData: (args: {
     currentVideo: VideoDataModel;
     newVideoJsonData: VideoDataModel;
-  }) => Promise<any>;
+  }) => Promise<saveVideoJsonData>;
 }
 
 export interface TheMovieDbAPI {
-  search: (query: string, queryType: "movie" | "tv") => Promise<any>;
-  movieOrTvShow: (id: string, queryType: "movie" | "tv") => Promise<any>;
+  search: (query: string, queryType: "movie" | "tv") => Promise<MovieDetails[] | TvShowDetails[]>;
+  movieOrTvShow: (id: string, queryType: "movie" | "tv") => Promise<MovieDetails | TvShowDetails>;
 }
 
 declare global {
