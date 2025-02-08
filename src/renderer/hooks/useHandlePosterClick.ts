@@ -38,18 +38,23 @@ const useHandlePosterClick = (
     startFromBeginning = false
   ) => {
     setLoadingItems((prev) => ({ ...prev, [video.filePath!]: true }));
-    const selectedVideo = await getSelectedVideo(videoType, video);
-    const resumeId = videoType === "tvShow" ? "tvShow" : "movie";
-    const seasonPath =
-      videoType === "tvShow"
-        ? removeLastSegments(video.lastVideoPlayed || "", 1)
-        : "";
-    resetEpisodes();
-    getEpisodeDetails(seasonPath);
-    setCurrentVideo(selectedVideo);
-    const path = `/video-player?menuId=${menuId}&resumeId=${resumeId}&startFromBeginning=${startFromBeginning}`;
-    navigate(path);
-    setLoadingItems((prev) => ({ ...prev, [video.filePath!]: false }));
+    try {
+      const selectedVideo = await getSelectedVideo(videoType, video);
+      const resumeId = videoType === "tvShow" ? "tvShow" : "movie";
+      const seasonPath =
+        videoType === "tvShow"
+          ? removeLastSegments(video.lastVideoPlayed || "", 1)
+          : "";
+      resetEpisodes();
+      getEpisodeDetails(seasonPath);
+      setCurrentVideo(selectedVideo);
+      const path = `/video-player?menuId=${menuId}&resumeId=${resumeId}&startFromBeginning=${startFromBeginning}`;
+      navigate(path);
+    } catch (err) {
+      log.error("Error handling poster click:", err);
+    } finally {
+      setLoadingItems((prev) => ({ ...prev, [video.filePath!]: false }));
+    }
   };
 
   return { handlePosterClick, loadingItems };
