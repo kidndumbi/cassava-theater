@@ -122,10 +122,10 @@ const folderVideosInfoSlice = createSlice({
       .addCase(fetchFolderDetails.rejected, (state) => {
         state.loadingFolderDetails = false;
       })
-      .addCase(postVideoJason.pending, (state, action) => {
+      .addCase(postVideoJason.pending, (state) => {
         state.loadingPostVideoJson = true;
       })
-      .addCase(postVideoJason.fulfilled, (state, action) => {
+      .addCase(postVideoJason.fulfilled, (state) => {
         state.loadingPostVideoJson = false;
       });
   },

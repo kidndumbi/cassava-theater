@@ -51,7 +51,7 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
               total={movie.duration || 0}
             />
             <Typography variant="subtitle1" align="center">
-              {trimFileName(movie.fileName!)}
+              {trimFileName(movie.fileName ?? "Unknown Title")}
             </Typography>
           </Box>
         }

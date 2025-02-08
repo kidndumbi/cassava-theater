@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { Box, IconButton, Theme, Tooltip } from "@mui/material";
 
 import {
   getPlayedPercentage,
@@ -15,7 +15,7 @@ import { NotesModal } from "../common/NotesModal";
 
 interface EpisodeProps {
   episode: VideoDataModel;
-  theme: any;
+  theme: Theme;
   onEpisodeClick: (episode: VideoDataModel) => void;
   handleFilepathChange: (
     newSubtitleFilePath: string,
@@ -72,7 +72,7 @@ export const Episode: React.FC<EpisodeProps> = ({
         sx={{ color: theme.customVariables.appWhiteSmoke }}
       >
         <h3 className="episode-title">
-          {episode.fileName!.replace(/\.(mp4|mkv)$/i, "")}
+          {episode.fileName?.replace(/\.(mp4|mkv)$/i, "") || "Unknown Title"}
         </h3>
         <p className="episode-duration">
           {secondsTohhmmss(episode.duration || 0)}

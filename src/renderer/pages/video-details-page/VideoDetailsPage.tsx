@@ -10,7 +10,7 @@ const isTvShow = (menuId: string, resumeId: string): boolean => {
 };
 
 export const VideoDetailsPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const videoPath = searchParams.get("videoPath") || "";
   const menuId = searchParams.get("menuId") || "";
   const resumeId = searchParams.get("resumeId") || "";

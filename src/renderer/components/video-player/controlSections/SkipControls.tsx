@@ -1,4 +1,4 @@
-import React, { JSX } from "react";
+import React, { JSX, ElementType } from "react";
 import { Forward30, Forward10, Forward5 } from "@mui/icons-material";
 import Replay5Icon from "@mui/icons-material/Replay5";
 import Replay10Icon from "@mui/icons-material/Replay10";
@@ -8,7 +8,7 @@ import { Box } from "@mui/material";
 interface SkipControlsProps {
   renderSkipButton: (
     seconds: number,
-    IconComponent: any,
+    IconComponent: ElementType,
     label: string
   ) => JSX.Element;
 }

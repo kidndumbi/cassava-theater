@@ -11,7 +11,6 @@ export const useVideoListLogic = () => {
   const dispatch = useAppDispatch();
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-  const [selectedVideos, setSelectedVideos] = useState<VideoDataModel[]>([]);
   const player = useSelector(selVideoPlayer);
   const folderVideosInfo = useSelector(selFoldersVideosInfo);
   const { updateLastWatched } = useVideoPlayerLogic();
@@ -24,7 +23,6 @@ export const useVideoListLogic = () => {
     updateLastWatched();
     if (!video.isDirectory) {
       dispatch(currentVideoActions.setCurrentVideo(video));
-    } else {
     }
   };
 
@@ -41,7 +39,6 @@ export const useVideoListLogic = () => {
     setShowSettingsDialog,
     showDialog,
     setShowDialog,
-    selectedVideos,
     folderVideosInfo,
     handleVideoSelect,
     player,

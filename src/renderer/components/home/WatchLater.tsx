@@ -46,7 +46,7 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
         footer={
           <Box sx={{ marginTop: "5px" }}>
             <Typography variant="subtitle1" align="center">
-              {trimFileName(movie.fileName!)}
+              {trimFileName(movie.fileName ?? "Unknown Title")}
             </Typography>
           </Box>
         }

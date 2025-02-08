@@ -1,4 +1,4 @@
-import React, { use, useEffect } from "react";
+import React from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MovieIcon from "@mui/icons-material/Movie";
@@ -33,7 +33,9 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
     await updateSubtitle(filePath === "None" ? "" : filePath, {
       filePath: videoPath || "",
     });
-    getVideoDetails(videoPath!);
+    if (videoPath) {
+      getVideoDetails(videoPath);
+    }
   };
 
   return (
@@ -63,11 +65,11 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
           }
         >
           <IconButton
-            onClick={updateWatchLater.bind(
-              null,
-              videoPath!,
-              !videoDetails?.watchLater
-            )}
+            onClick={() => {
+              if (videoPath) {
+                updateWatchLater(videoPath, !videoDetails?.watchLater);
+              }
+            }}
             style={{
               color: theme.customVariables.appWhite,
             }}

@@ -41,7 +41,7 @@ export const Movies: React.FC<MoviesProps> = ({
   };
 
   const filteredMovies = movies.filter((movie) => {
-    const fileNameWithoutExtension = movie.fileName!.replace(/\.(mp4|mkv)$/i, "");
+    const fileNameWithoutExtension = movie.fileName?.replace(/\.(mp4|mkv)$/i, "") || "";
     return fileNameWithoutExtension
       .toLowerCase()
       .includes(filter.toLowerCase());

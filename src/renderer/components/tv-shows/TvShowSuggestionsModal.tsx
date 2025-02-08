@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Modal, Typography, Paper, Box, Button } from "@mui/material";
 import theme from "../../theme";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
-import { Season, TvShowDetails } from "../../../models/tv-show-details.model";
+import { TvShowDetails } from "../../../models/tv-show-details.model";
 import { getFilename } from "../../util/helperFunctions";
 
 interface TvShowSuggestionsModalProps {
@@ -21,25 +21,15 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
   id,
   handleSelectTvShow,
 }) => {
-  const {
-    tvShowSuggestions,
-    getTvShowSuggestions,
-    resetTvShowSuggestions,
-    getTvShowById,
-  } = useTvShows();
+  const { tvShowSuggestions, getTvShowSuggestions, resetTvShowSuggestions } =
+    useTvShows();
 
   const { getTmdbImageUrl } = useTmdbImageUrl();
-  const [seasons, setSeasons] = useState<Season[]>([]);
 
   useEffect(() => {
     if (fileName && open) {
       resetTvShowSuggestions();
       getTvShowSuggestions(getFilename(fileName));
-      if (id) {
-        getTvShowById(id, (data) => {
-          setSeasons(data.seasons);
-        });
-      }
     }
   }, [fileName, open, id]);
 

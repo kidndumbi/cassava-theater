@@ -1,11 +1,11 @@
-import React from "react";
+import React, { ElementType } from "react";
 import IconButton from "@mui/material/IconButton";
 import theme from "../../theme";
 
 type SkipButtonProps = {
   skip: (seconds: number) => void;
   seconds: number;
-  IconComponent: any;
+  IconComponent: ElementType ;
   label: string;
 };
 

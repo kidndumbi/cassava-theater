@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { trimFileName } from "../../util/helperFunctions";
 import { PosterCard } from "../common/PosterCard";
@@ -15,7 +15,7 @@ const MovieList: React.FC<MovieListProps> = ({
   movies,
   handlePosterClick,
   getImageUrl,
-  defaultImageUrl
+  defaultImageUrl,
 }) => {
   const getPosterUrl = (movie: VideoDataModel) => {
     return movie.movie_details?.poster_path

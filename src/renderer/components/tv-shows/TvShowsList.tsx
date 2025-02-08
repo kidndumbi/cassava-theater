@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, useTheme } from "@mui/material";
+import { Box } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { trimFileName } from "../../util/helperFunctions";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
@@ -14,7 +14,6 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   shows,
   handlePosterClick,
 }) => {
-  const theme = useTheme();
   const { getTmdbImageUrl, defaultImageUrl } = useTmdbImageUrl();
 
   return (
@@ -29,8 +28,8 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
                 : defaultImageUrl
             }
             altText={show.fileName || ""}
-            onClick={() => handlePosterClick(show.filePath!)}
-            footer={trimFileName(show.fileName!)}
+            onClick={() => show.filePath && handlePosterClick(show.filePath)}
+            footer={trimFileName(show.fileName ?? "")}
           />
         ))}
       </Box>

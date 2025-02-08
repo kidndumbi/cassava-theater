@@ -14,12 +14,9 @@ export const renderTextField = (
     value={value}
     onChange={onChange}
     margin="normal"
-    InputLabelProps={{
-      style: { color: theme.customVariables.appWhiteSmoke },
-    }}
-    InputProps={{
-      style: { color: theme.customVariables.appWhiteSmoke },
-      readOnly: false,
+    slotProps={{
+      inputLabel: { style: { color: theme.customVariables.appWhiteSmoke } },
+      input: { style: { color: theme.customVariables.appWhiteSmoke }, readOnly: false },
     }}
     sx={{
       "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {

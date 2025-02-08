@@ -24,7 +24,7 @@ export const VideoPlayerPage = ({
   const { setVideoEnded, updateLastWatched, currentVideo, player, resetVideo } =
     useVideoPlayerLogic();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { episodes, resetEpisodes, findNextEpisode } = useTvShows();
   const { settings } = useSettings();
 
@@ -34,11 +34,7 @@ export const VideoPlayerPage = ({
   const [isTvShow, setIsTvShow] = useState(false);
 
   useEffect(() => {
-    const {
-      menuId,
-      startFromBeginning: start,
-      resumeId,
-    } = parseSearchParams(location.search, location.hash);
+    const { menuId, startFromBeginning: start, resumeId } = parseSearchParams();
 
     setMenuId(menuId);
     setResumeId(resumeId);
@@ -46,7 +42,7 @@ export const VideoPlayerPage = ({
     setIsTvShow(menuId === "app-tv-shows" || resumeId === "tvShow");
   }, [location.search, location.hash, player, episodes, currentVideo]);
 
-  const parseSearchParams = (search: string, hash: string) => {
+  const parseSearchParams = () => {
     return {
       menuId: searchParams.get("menuId") || "",
       startFromBeginning: searchParams.get("startFromBeginning"),

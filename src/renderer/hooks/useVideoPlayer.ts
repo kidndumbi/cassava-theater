@@ -224,7 +224,7 @@ export const useVideoPlayer = (
     globalVideoPlayer.addEventListener("ended", onEnded);
     globalVideoPlayer.addEventListener("timeupdate", onTimeUpdate);
     globalVideoPlayer.addEventListener("loadedmetadata", onLoadedMetadata);
-    globalVideoPlayer.addEventListener("volumechange", (ev) => {
+    globalVideoPlayer.addEventListener("volumechange", () => {
       setVolume(globalVideoPlayer.volume);
     });
     globalVideoPlayer.addEventListener("play", onPlay);

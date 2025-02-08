@@ -191,16 +191,18 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             />
           </>
         )}
-        <NotesModal
-          open={openNotesModal}
-          handleClose={handleCloseNotesModal}
-          videoData={videoData!}
-          currentVideoTime={currentTime}
-          handleVideoSeek={(seekTime) => {
-            handleCloseNotesModal();
-            startPlayingAt(seekTime);
-          }}
-        />
+        {videoData && (
+          <NotesModal
+            open={openNotesModal}
+            handleClose={handleCloseNotesModal}
+            videoData={videoData}
+            currentVideoTime={currentTime}
+            handleVideoSeek={(seekTime) => {
+              handleCloseNotesModal();
+              startPlayingAt(seekTime);
+            }}
+          />
+        )}
         {videoData.isMkv && isMouseActive && (
           <>
             <span

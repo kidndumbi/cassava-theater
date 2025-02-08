@@ -21,7 +21,7 @@ import { useSearchParams } from "react-router-dom";
 export const LandingPage = () => {
   const theme = useTheme();
   const { settings, fetchAllSettings } = useSettings();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { movies, getMovies, loadingMovies } = useMovies();
   const { tvShows, getTvShows, loadingTvShows } = useTvShows();
   const { customFolderData, loadCustomFolder, loadingCustomFolderData } =
@@ -54,7 +54,7 @@ export const LandingPage = () => {
       label: "Home",
       icon: <Home />,
       handler: handleMenuClick,
-      menuType: "default" as "default",
+      menuType: "default" as const,
     },
     {
       id: "app-movies",
@@ -90,7 +90,7 @@ export const LandingPage = () => {
         label: folder.name,
         icon: <FolderIcon></FolderIcon>,
         handler: handleCustomMenuClick,
-        menuType: "custom" as "custom",
+        menuType: "custom" as const,
       }));
       setMenuItems((prevMenuItems) => [
         ...prevMenuItems.filter((item) => item.menuType !== "custom"),

@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, Theme } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { renderTextField } from "./RenderTextField";
 
@@ -8,7 +8,7 @@ interface SearchHeaderProps {
   onRefresh: () => void;
   filter: string;
   onFilterChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  theme: any;
+  theme: Theme;
 }
 
 export const SearchHeader: React.FC<SearchHeaderProps> = ({

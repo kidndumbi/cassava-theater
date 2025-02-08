@@ -28,7 +28,7 @@ export const useVideoPlayerLogic = () => {
     dispatch(videoPlayerActions.setMkvCurrentTime(currentTime));
   };
 
-  const updateLastWatched = async (isEpisode: boolean = false) => {
+  const updateLastWatched = async (isEpisode = false) => {
     if (
       isEmptyObject(currentVideo) ||
       !player ||

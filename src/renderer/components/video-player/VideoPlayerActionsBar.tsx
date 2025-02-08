@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import React, { JSX } from "react";
+import React, { ElementType, JSX } from "react";
 
 import { SkipControls } from "./controlSections/SkipControls";
 import { PlayPauseControls } from "./controlSections/PlayPauseControls";
@@ -11,7 +11,7 @@ interface VideoPlayerActionsBarProps {
   subtitleFilePath: string | null;
   renderSkipButton: (
     seconds: number,
-    IconComponent: any,
+    IconComponent: ElementType ,
     label: string
   ) => JSX.Element;
   isPlaying: boolean;

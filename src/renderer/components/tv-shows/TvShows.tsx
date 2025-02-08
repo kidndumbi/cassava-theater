@@ -33,7 +33,7 @@ export const TvShows: React.FC<TvShowsProps> = ({
   };
 
   const filteredTvShows = tvShows.filter((show) => {
-    return show.fileName!.toLowerCase().includes(filter.toLowerCase());
+    return show.fileName?.toLowerCase().includes(filter.toLowerCase()) ?? false;
   });
 
   const handlePosterClick = ( videoPath: string) => {

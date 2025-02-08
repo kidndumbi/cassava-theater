@@ -27,14 +27,14 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
             : defaultImageUrl
         }
         altText={item.fileName}
-        onClick={() => handlePosterClick(item.filePath!)}
+        onClick={() => item.filePath && handlePosterClick(item.filePath)}
         footer={renderFolderIcon(item)}
       ></PosterCard>
     </>
   );
 
   const renderFolderIcon = (item: VideoDataModel) =>
-    !hasExtension(item.fileName!) && (
+    item.fileName && !hasExtension(item.fileName) && (
       <Box position="absolute" top="4px" right="4px">
         <FolderIcon color="primary" />
       </Box>
@@ -50,7 +50,7 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
             align="center"
             sx={{ wordBreak: "break-all" }}
           >
-            {item.fileName!.replace(/\.(mp4|mkv)$/i, "")}
+            {(item.fileName ?? "").replace(/\.(mp4|mkv)$/i, "")}
           </Typography>
         </Box>
       ))}

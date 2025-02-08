@@ -1,4 +1,4 @@
-import { createTheme, Theme } from "@mui/material/styles";
+import { createTheme } from "@mui/material/styles";
 
 // Extend the Theme interface to include custom properties
 declare module "@mui/material/styles" {
@@ -17,7 +17,7 @@ declare module "@mui/material/styles" {
       appDark?: string;
       appDarker?: string;
       appWhite?: string;
-      appWhiteSmoke?: string; 
+      appWhiteSmoke?: string;
     };
   }
 }
@@ -81,7 +81,7 @@ const theme = createTheme({
     appDark: "#303233",
     appDarker: "#171818",
     appWhite: "white",
-    appWhiteSmoke: "whitesmoke"
+    appWhiteSmoke: "whitesmoke",
   },
 });
 
