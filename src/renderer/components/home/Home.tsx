@@ -8,7 +8,7 @@ import useHandlePosterClick from "../../hooks/useHandlePosterClick";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import ResumeTvShowLists from "./ResumeTvShowLists";
 import ResumeMovieList from "./ResumeMovieList";
-import { WatchLater } from "./WatchLater";
+import { WatchLaterList } from "./WatchLaterList";
 
 interface HomePageProps {
   style?: React.CSSProperties;
@@ -84,7 +84,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </Box>
       <Box sx={{ marginTop: "20px" }}>{title("Watch Later")}</Box>
       <Box>
-        <WatchLater
+        <WatchLaterList
           handlePosterClick={handlePosterClick}
           loadingMovies={loadingMovies}
           movies={movies}
