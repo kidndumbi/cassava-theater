@@ -14,6 +14,7 @@ import { TheMovieDbIPCChannels } from "./enums/TheMovieDbIPCChannels";
 import { SetPlayingModel } from "./models/set-playing.model";
 import { MovieDetails } from "./models/movie-detail.model";
 import { TvShowDetails } from "./models/tv-show-details.model";
+import { FileIPCChannels } from "./enums/fileIPCChannels";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -142,5 +143,11 @@ contextBridge.exposeInMainWorld("theMovieDbAPI", {
       id,
       queryType
     ) as Promise<MovieDetails | TvShowDetails>;
+  },
+});
+
+contextBridge.exposeInMainWorld("fileManagerAPI", {
+  convertSrtToVtt: (path: string) => {
+    return ipcRenderer.invoke(FileIPCChannels.CONVERT_SRT_TO_VTT, path) as Promise<string>;
   },
 });
