@@ -16,11 +16,9 @@ import {
 import { generateThumbnail } from "./thumbnail.service";
 import { TvShowDetails } from "../../models/tv-show-details.model";
 import {
-  readOrDefaultJson,
   readJsonData,
   shouldProcessFile,
   getJsonFilePath,
-  readJsonFile,
   writeJsonToFile,
   filterByCategory,
 } from "./video.helpers";
@@ -197,11 +195,7 @@ export const saveLastWatch = async (
     }
     const jsonFilePath = getJsonFilePath(currentVideo.filePath);
 
-    const jsonFileContents = (await readJsonFile(jsonFilePath)) || {
-      notes: [],
-      overview: {},
-    };
-
+    const jsonFileContents = await readJsonData(jsonFilePath);
     jsonFileContents.lastWatched = lastWatched;
     jsonFileContents.watched = lastWatched !== 0;
     jsonFileContents.lastVideoPlayedDate = new Date().toISOString();
@@ -216,13 +210,9 @@ export const saveLastWatch = async (
       const grandParentFilePath = path.dirname(parentFilePath);
       const grandParentJsonFilePath = getJsonFilePath(grandParentFilePath);
 
-      const grandParentJsonFileContents = (await readJsonFile(
+      const grandParentJsonFileContents = await readJsonData(
         grandParentJsonFilePath
-      )) || {
-        notes: [],
-        overview: {},
-      };
-
+      );
       grandParentJsonFileContents.lastVideoPlayed = currentVideo.filePath;
       grandParentJsonFileContents.lastVideoPlayedTime = lastWatched;
       grandParentJsonFileContents.lastVideoPlayedDate =
@@ -262,7 +252,7 @@ export const getVideoJsonData = async (
 
     const newFilePath = currentVideo.filePath.replace(/\.(mp4|mkv)$/i, ".json");
 
-    return await readOrDefaultJson(newFilePath) as VideoDataModel;
+    return await readJsonData(newFilePath) as VideoDataModel;
   } catch (error) {
     console.error("An error occurred:", error);
     return null;
@@ -278,7 +268,7 @@ export const saveVideoJsonData = async (
 ) => {
   try {
     const newFilePath = getJsonFilePath(currentVideo.filePath || "");
-    const existingData = (await readJsonFile(newFilePath)) || {};
+    const existingData = await readJsonData(newFilePath, {} as VideoDataModel);
     const mergedData = { ...existingData, ...newVideoJsonData } as VideoDataModel;
     await writeJsonToFile(newFilePath, mergedData);
     return mergedData;
@@ -397,7 +387,7 @@ export const populateVideoData = async (
 ) => {
   try {
     const fullFilePath = `${filePath}/${file}`;
-    const jsonFileContents = await readOrDefaultJson(
+    const jsonFileContents = await readJsonData(
       `${filePath}/${path.parse(file).name}.json`
     );
 

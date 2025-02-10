@@ -1,4 +1,5 @@
 import React from "react";
+import styles from "./MovieDetailsContent.module.css"; // switched to module.css
 import { Box, Tabs, Tab } from "@mui/material";
 import { getYearFromDate } from "../../util/helperFunctions";
 
@@ -21,7 +22,7 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
   onTabChange,
 }) => {
   return (
-    <div className="movie-details-content">
+    <div className={styles.movieDetailsContent}>
       <h1>
         {videoDetails?.movie_details?.title ||
           videoDetails?.fileName?.replace(/\.(mp4|mkv)$/i, "")}
