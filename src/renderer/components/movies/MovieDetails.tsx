@@ -9,7 +9,7 @@ import { useSubtitle } from "../../hooks/useSubtitle";
 import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
 import { CustomTabPanel } from "../common/TabPanel";
 import { AppNotes } from "../AppNotes";
-import "./MovieDetails.css";
+import styles from "./MovieDetails.module.css";
 import MovieDetailsHeader from "./MovieDetailsHeader";
 import MovieDetailsContent from "./MovieDetailsContent";
 
@@ -81,7 +81,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         }}
       >
         {loadingVideoDetails ? (
-          <div className="loading-container">
+          <div className={styles.loadingContainer}>
             <LoadingIndicator message="Loading..." />
           </div>
         ) : (

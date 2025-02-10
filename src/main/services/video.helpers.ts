@@ -9,35 +9,25 @@ export const filterByCategory = (
   category: string
 ) => {
   if (["movies", "episodes"].includes(category)) {
-    return videos.filter((vid) => /\.[^.]+$/.test(vid.fileName!));
+    return videos.filter(
+      (vid) => vid.fileName && /\.[^.]+$/.test(vid.fileName)
+    );
   }
   return videos;
 };
 
-export async function readOrDefaultJson(
+export async function readJsonData(
   filePath: string,
-  defaultData: any = { notes: [], overview: {} }
+  defaultData: VideoDataModel = {
+    notes: [],
+    overview: {},
+  }
 ) {
   if (await fileExists(filePath)) {
     const file = await readFileData(filePath);
     return file ? JSON.parse(file) : defaultData;
   }
   return defaultData;
-}
-
-export async function readJsonData(jsonPath: string) {
-  try {
-    const exists = await fileExists(jsonPath);
-    if (exists) {
-      const jsonFile = await readFileData(jsonPath);
-      const parsedData = JSON.parse(jsonFile || "");
-      return parsedData;
-    }
-    return null;
-  } catch (error) {
-    log.error("Error in readJsonData:", error);
-    throw error;
-  }
 }
 
 export async function fileExists(filePath: string): Promise<boolean> {
@@ -77,7 +67,10 @@ export const getJsonFilePath = (filePath: string): string => {
     throw new Error("filePath is undefined!");
   }
 
-  if (filePath.toLowerCase().endsWith(".mp4") || filePath.toLowerCase().endsWith(".mkv")) {
+  if (
+    filePath.toLowerCase().endsWith(".mp4") ||
+    filePath.toLowerCase().endsWith(".mkv")
+  ) {
     return filePath.replace(/\.(mp4|mkv)$/i, ".json");
   }
 
@@ -87,13 +80,6 @@ export const getJsonFilePath = (filePath: string): string => {
   }
 
   return filePath;
-};
-
-export const readJsonFile = async (
-  filePath: string
-): Promise<VideoDataModel | null> => {
-  const jsonFile = await readFileData(filePath);
-  return jsonFile ? (JSON.parse(jsonFile) as VideoDataModel) : null;
 };
 
 export const writeJsonToFile = async (

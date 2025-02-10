@@ -19,6 +19,7 @@ import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import TvShowDetailsButtons from "./TvShowDetailsButtons";
 import { Season } from "../../../models/tv-show-details.model";
+import styles from "./TvShowDetails.module.css";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -185,70 +186,35 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   return (
     <>
       <Box
-        style={{
-          position: "relative",
-          backgroundSize: "cover",
-          backgroundImage: getBackgroundGradient(tvShowBackgroundUrl),
-          height: "100vh",
-          width: "100vw",
-        }}
+        className={styles.tvShowDetailsContainer}
+        style={{ backgroundImage: getBackgroundGradient(tvShowBackgroundUrl) }}        
       >
         {loadingFolderDetails ? (
-          <Box
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100vh",
-            }}
-          >
+          <Box className={styles.loadingContainer}>
             <LoadingIndicator message="Loading..." />
           </Box>
         ) : (
           <>
-            <Box
-              sx={{
-                position: "absolute",
-                top: "20px",
-                left: "20px",
-                display: "flex",
-                justifyContent: "space-between",
-                width: "calc(100vw - 40px)",
-              }}
-            >
+            <Box className={styles.headerButtons}>
               <IconButton
                 onClick={onBackClick}
-                style={{
-                  color: theme.customVariables.appWhite,
-                }}
+                style={{ color: theme.customVariables.appWhite }}
               >
                 <ArrowBackIcon />
               </IconButton>
-
               <Tooltip title="theMovieDb data">
                 <IconButton
                   onClick={handleOpenModal}
-                  style={{
-                    color: theme.customVariables.appWhite,
-                  }}
+                  style={{ color: theme.customVariables.appWhite }}
                 >
                   <MovieIcon />
                 </IconButton>
               </Tooltip>
             </Box>
-
-            <Box
-              style={{
-                position: "absolute",
-                bottom: "20px",
-                left: "20px",
-                color: "white",
-                textShadow: "2px 2px 4px rgba(0, 0, 0, 0.7)",
-              }}
-            >
+            <Box className={styles.infoBox}>
               <h1>
                 {tvShowDetails?.tv_show_details?.name ||
-                  tvShowDetails?.filePath?.split("/").pop()}
+                  tvShowDetails?.filePath?.split("\\").pop()}
                 {tvShowDetails?.tv_show_details?.first_air_date &&
                   "(" +
                     getYearFromDate(
