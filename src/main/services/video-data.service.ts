@@ -75,17 +75,22 @@ export const fetchVideosData = async ({
       searchText || ""
     );
 
-    const thumbnailCacheFilePath = path.join(filePath, "thumbnailCache.json");
+    let updatedVideoData: VideoDataModel[];
 
-    const cache = readThumbnailCache(thumbnailCacheFilePath);
+    if (includeThumbnail) {
+      const thumbnailCacheFilePath = path.join(filePath, "thumbnailCache.json");
+      const cache = readThumbnailCache(thumbnailCacheFilePath);
 
-    const updatedVideoDataPromises = videoData.map((video) =>
-      processVideoData(video, cache, includeThumbnail)
-    );
+      const getVideoThumbnailsPromises = videoData.map((video) =>
+        getVideoThumbnails(video, cache)
+      );
 
-    const updatedVideoData = await Promise.all(updatedVideoDataPromises);
+      updatedVideoData = await Promise.all(getVideoThumbnailsPromises);
 
-    writeThumbnailCache(cache, thumbnailCacheFilePath);
+      writeThumbnailCache(cache, thumbnailCacheFilePath);
+    } else {
+      updatedVideoData = videoData;
+    }
 
     const sorted = updatedVideoData.sort((a, b) =>
       (a.fileName ?? "").localeCompare(b.fileName ?? "")
@@ -127,7 +132,7 @@ export const fetchVideoDetails = async (
       "thumbnailCache.json"
     );
     const cache = readThumbnailCache(thumbnailCacheFilePath);
-    const processedVideoData = await processVideoData(videoDetails, cache);
+    const processedVideoData = await getVideoThumbnails(videoDetails, cache);
 
     writeThumbnailCache(cache, thumbnailCacheFilePath);
 
@@ -252,7 +257,7 @@ export const getVideoJsonData = async (
 
     const newFilePath = currentVideo.filePath.replace(/\.(mp4|mkv)$/i, ".json");
 
-    return await readJsonData(newFilePath) as VideoDataModel;
+    return (await readJsonData(newFilePath)) as VideoDataModel;
   } catch (error) {
     console.error("An error occurred:", error);
     return null;
@@ -269,7 +274,10 @@ export const saveVideoJsonData = async (
   try {
     const newFilePath = getJsonFilePath(currentVideo.filePath || "");
     const existingData = await readJsonData(newFilePath, {} as VideoDataModel);
-    const mergedData = { ...existingData, ...newVideoJsonData } as VideoDataModel;
+    const mergedData = {
+      ...existingData,
+      ...newVideoJsonData,
+    } as VideoDataModel;
     await writeJsonToFile(newFilePath, mergedData);
     return mergedData;
   } catch (error: unknown) {
@@ -282,10 +290,9 @@ export const saveVideoJsonData = async (
   }
 };
 
-async function processVideoData(
+async function getVideoThumbnails(
   video: VideoDataModel,
-  cache: ThumbnailCache,
-  includeThumbnail = true
+  cache: ThumbnailCache
 ): Promise<VideoDataModel> {
   if (!video.isDirectory) {
     if (!video.filePath) {
@@ -295,26 +302,25 @@ async function processVideoData(
     let videoProgressScreenshot = cache[cacheKey]?.image;
 
     const thumbnailPromise =
-      includeThumbnail &&
-      (!videoProgressScreenshot ||
-        cache[cacheKey].currentTime !== (video.currentTime ?? 30))
-        ? video.filePath ? generateThumbnail(video.filePath, video.currentTime ?? 30, ffmpeg) : Promise.resolve(undefined)
+      !videoProgressScreenshot ||
+      cache[cacheKey].currentTime !== (video.currentTime ?? 30)
+        ? video.filePath
+          ? generateThumbnail(video.filePath, video.currentTime ?? 30, ffmpeg)
+          : Promise.resolve(undefined)
         : Promise.resolve(videoProgressScreenshot);
 
     try {
-      if (includeThumbnail) {
-        videoProgressScreenshot = await thumbnailPromise;
-        if (
-          !cache[cacheKey] ||
-          cache[cacheKey].currentTime !== (video.currentTime ?? 30)
-        ) {
-          cache[cacheKey] = {
-            image: videoProgressScreenshot,
-            currentTime: video.currentTime ?? 30,
-          };
-        }
-        video.videoProgressScreenshot = videoProgressScreenshot;
+      videoProgressScreenshot = await thumbnailPromise;
+      if (
+        !cache[cacheKey] ||
+        cache[cacheKey].currentTime !== (video.currentTime ?? 30)
+      ) {
+        cache[cacheKey] = {
+          image: videoProgressScreenshot,
+          currentTime: video.currentTime ?? 30,
+        };
       }
+      video.videoProgressScreenshot = videoProgressScreenshot;
     } catch (error) {
       log.error(
         `Error generating thumbnail for video ${video.filePath}:`,
@@ -508,7 +514,6 @@ export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
       res.end("MKV file not found.");
       return;
     }
-    console.log("MKV file found, converting to MP4...");
 
     res.writeHead(200, { "Content-Type": "video/mp4" });
     const command = ffmpeg(videoPath)
