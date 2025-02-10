@@ -236,6 +236,15 @@ const postVideoJason = createAsyncThunk(
   }
 );
 
+const convertSrtToVtt = async (srt: string) => {
+  try {
+    return await window.fileManagerAPI.convertSrtToVtt(srt);
+  } catch (error) {
+    log.error("Error converting SRT to VTT:", error);
+    throw error;
+  }
+};
+
 const selFoldersVideosInfo = (state: RootState) =>
   state.folderVideosInfo.folderVideosInfo;
 
@@ -294,4 +303,5 @@ export {
   selCustomFolder,
   selLoadingCustomFolder,
   fetchVideoDetailsApi,
+  convertSrtToVtt,
 };

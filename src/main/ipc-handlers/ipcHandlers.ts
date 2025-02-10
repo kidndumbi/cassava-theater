@@ -1,3 +1,4 @@
+import { fileIpcHandlers } from "./fileIpcHandlers";
 import { mainUtilIpcHandlers } from "./mainUtilIpcHandlers";
 import { openDialogIpcHandlers } from "./openDialogIpcHandlers";
 import { settingsIpcHandlers } from "./settingsIpcHandlers";
@@ -10,4 +11,5 @@ export function registerIpcHandlers() {
   openDialogIpcHandlers();
   mainUtilIpcHandlers();
   theMovieDbIpcHandlers();
+  fileIpcHandlers();
 }

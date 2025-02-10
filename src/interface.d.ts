@@ -67,6 +67,10 @@ export interface TheMovieDbAPI {
   movieOrTvShow: (id: string, queryType: "movie" | "tv") => Promise<MovieDetails | TvShowDetails>;
 }
 
+export interface FileManagerAPI {
+  convertSrtToVtt: (path: string) => Promise<string>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -77,5 +81,6 @@ declare global {
     videoAPI: VideoAPI;
     mainUtilAPI: MainUtilAPI;
     theMovieDbAPI: TheMovieDbAPI;
+    fileManagerAPI: FileManagerAPI;
   }
 }

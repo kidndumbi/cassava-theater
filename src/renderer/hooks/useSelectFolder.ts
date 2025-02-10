@@ -4,7 +4,7 @@ const useSelectFolder = () => {
   };
 
   const selectFile = async (
-    fileDialogOptions = [{ name: ".vtt files", extensions: ["vtt"] }]
+    fileDialogOptions = [{ name: ".vtt and .srt files", extensions: ["vtt", "srt"] }]
   ): Promise<string | null> => {
     return window.openDialogAPI.openFileDialog(fileDialogOptions);
   };

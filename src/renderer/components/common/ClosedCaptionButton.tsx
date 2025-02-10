@@ -3,6 +3,7 @@ import { Tooltip, IconButton, Menu, MenuItem } from "@mui/material";
 import ClosedCaptionIcon from "@mui/icons-material/ClosedCaption";
 import theme from "../../theme";
 import useSelectFolder from "../../hooks/useSelectFolder";
+import { convertSrtToVtt } from "../../store/folderVideosInfo.slice";
 
 interface ClosedCaptionButtonProps {
   handleFilepathChange: (folderPath: string) => void;
@@ -35,7 +36,13 @@ const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
     setAnchorEl(null);
     const selectedFilePath = await selectFile();
     if (selectedFilePath) {
-      handleFilepathChange(selectedFilePath);
+      if (selectedFilePath.endsWith(".srt")) {
+        const convertedFilePath = await convertSrtToVtt(selectedFilePath);
+
+        handleFilepathChange(convertedFilePath);
+      } else {
+        handleFilepathChange(selectedFilePath);
+      }
     }
   };
 
