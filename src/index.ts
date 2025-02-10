@@ -69,20 +69,20 @@ app.on("ready", () => {
   }
 });
 
-app.whenReady().then(() => {
-  if (app.isPackaged) {
-    return;
-  }
-  installExtension([REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS])
-    .then(([redux, react]) =>
-      console.log(`Added Extensions:  ${redux.name}, ${react.name}`)
-    )
-    .catch((err) => console.log("An error occurred: ", err));
+// app.whenReady().then(() => {
+//   if (app.isPackaged) {
+//     return;
+//   }
+//   installExtension([REDUX_DEVTOOLS, REACT_DEVELOPER_TOOLS])
+//     .then(([redux, react]) =>
+//       console.log(`Added Extensions:  ${redux.name}, ${react.name}`)
+//     )
+//     .catch((err) => console.log("An error occurred: ", err));
 
-  installExtension("fmkadmapgofadopljbjfkapdkoienihi")
-    .then((name) => console.log(`Added Extension:  ${name}`))
-    .catch((err) => console.log("An error occurred: ", err));
-});
+//   installExtension("fmkadmapgofadopljbjfkapdkoienihi")
+//     .then((name) => console.log(`Added Extension:  ${name}`))
+//     .catch((err) => console.log("An error occurred: ", err));
+// });
 
 ipcMain.on("restart-app", () => {
   log.info("Restarting app...");
