@@ -21,7 +21,7 @@ export const VideoPlayerPage = ({
   const { updateSubtitle, subtitleFilePath, setSubtitleFilePath } =
     useSubtitle();
   const { setCurrentVideo } = useVideoListLogic();
-  const { setVideoEnded, updateLastWatched, currentVideo, player, resetVideo } =
+  const { setVideoEnded, updateVideoDBCurrentTime, currentVideo, player, resetVideo } =
     useVideoPlayerLogic();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -95,12 +95,12 @@ export const VideoPlayerPage = ({
   };
 
   const handleCancel = async (filePath: string) => {
-    await saveLastWatched();
+    await saveVideoDBCurrentTime();
     navigateToVideoDetails(filePath);
   };
 
-  const saveLastWatched = async () => {
-    await updateLastWatched(
+  const saveVideoDBCurrentTime = async () => {
+    await updateVideoDBCurrentTime(
       menuId === "app-tv-shows" ||
         (menuId === "app-home" && resumeId === "tvShow")
     );
@@ -118,10 +118,10 @@ export const VideoPlayerPage = ({
       episodes={episodes}
       startFromBeginning={startFromBeginning}
       handleCancel={handleCancel}
-      triggeredOnPlayInterval={saveLastWatched}
+      triggeredOnPlayInterval={saveVideoDBCurrentTime}
       onSubtitleChange={onSubtitleChange}
       subtitleFilePath={subtitleFilePath}
-      onVideoPaused={saveLastWatched}
+      onVideoPaused={saveVideoDBCurrentTime}
       videoData={currentVideo}
       onVideoEnded={onVideoEnded}
       playNextEpisode={playNextEpisode}

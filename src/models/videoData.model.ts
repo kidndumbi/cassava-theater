@@ -27,7 +27,7 @@ export interface VideoDataModel {
   lastVideoPlayedDuration?: number | null;
   overview?: OverviewModel;
   notes?: NoteModel[];
-  lastWatched?: number;
+  // lastWatched?: number;
   basePath?: string;
   childFolders?: {
     folderPath: string;

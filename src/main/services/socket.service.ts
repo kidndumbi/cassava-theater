@@ -5,7 +5,7 @@ import {
   fetchFolderDetails,
   fetchVideosData,
   handleVideoRequest,
-  saveLastWatch,
+  saveLCurrentTime,
 } from "./video-data.service";
 import { getAllValues, setValue } from "../store";
 import { loggingService as log } from "./main-logging.service";
@@ -105,7 +105,7 @@ export async function initializeSocket(
 
     socket.on(
       AppSocketEvents.GET_SETTINGS,
-      async (_: {}, callback: (response: any) => void) => {
+      async (_event: any, callback: (response: any) => void) => {
         try {
           const settings = getAllValues();
           callback({ success: true, data: settings });
@@ -181,9 +181,9 @@ export async function initializeSocket(
         try {
           console.log("set-currenttime::: ", requestData);
           // Replace with actual logic to set current time
-          const updatedVideoData = await saveLastWatch(null, {
+          const updatedVideoData = await saveLCurrentTime(null, {
             currentVideo: requestData?.data?.currentVideo,
-            lastWatched: requestData?.data?.currentTime,
+            currentTime: requestData?.data?.currentTime,
             isEpisode: requestData?.data?.isEpisode,
           });
           callback({ success: true, data: updatedVideoData });

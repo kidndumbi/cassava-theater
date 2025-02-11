@@ -2,7 +2,7 @@ export enum VideoIPCChannels {
   FetchVideoData = "video:fetchVideosData",
   FetchVideoDetails = "video:fetchVideoDetails",
   FetchFolderDetails = "video:fetchFolderDetails",
-  SaveLastWatch = "video:saveLastWatch",
+  SaveCurrentTime = "video:saveCurrentTime",
   GetVideoJsonData = "video:getVideoJsonData",
   SaveVideoJsonData = "video:saveVideoJsonData",
 }

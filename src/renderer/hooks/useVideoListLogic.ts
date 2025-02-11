@@ -13,14 +13,14 @@ export const useVideoListLogic = () => {
   const [showDialog, setShowDialog] = useState(false);
   const player = useSelector(selVideoPlayer);
   const folderVideosInfo = useSelector(selFoldersVideosInfo);
-  const { updateLastWatched } = useVideoPlayerLogic();
+  const { updateVideoDBCurrentTime } = useVideoPlayerLogic();
 
   const setCurrentVideo = (video: VideoDataModel) => {
     dispatch(currentVideoActions.setCurrentVideo(video));
   };
 
   const handleVideoSelect = (video: VideoDataModel) => {
-    updateLastWatched();
+    updateVideoDBCurrentTime();
     if (!video.isDirectory) {
       dispatch(currentVideoActions.setCurrentVideo(video));
     }
