@@ -111,12 +111,12 @@ contextBridge.exposeInMainWorld("videoAPI", {
   fetchFolderDetails: (args: { path: string }): Promise<string> => {
     return ipcRenderer.invoke(VideoIPCChannels.FetchFolderDetails, args);
   },
-  saveLastWatch: (args: {
+  saveVideoDbCurrentTime: (args: {
     currentVideo: VideoDataModel;
-    lastWatched: number;
+    currentTime: number;
     isEpisode?: boolean;
   }) => {
-    return ipcRenderer.invoke(VideoIPCChannels.SaveLastWatch, args);
+    return ipcRenderer.invoke(VideoIPCChannels.SaveCurrentTime, args);
   },
   getVideoJsonData: (currentVideo: VideoDataModel) => {
     return ipcRenderer.invoke(VideoIPCChannels.GetVideoJsonData, currentVideo);

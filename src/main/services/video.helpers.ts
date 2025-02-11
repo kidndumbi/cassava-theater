@@ -41,7 +41,7 @@ export async function readJsonData(
   if (await fileExists(videoMetaDataFilePath)) {
     const file = await readFileData(videoMetaDataFilePath);
     const fileJson = JSON.parse(file);
-    const videoData = fileJson[normalizeFilePath(filePath)] || defaultData;
+    const videoData = (fileJson[normalizeFilePath(filePath)] || defaultData) as VideoDataModel;
     return videoData;
   }
   return defaultData;

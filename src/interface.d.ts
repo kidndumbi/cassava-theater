@@ -50,9 +50,9 @@ export interface VideoAPI {
   }) => Promise<VideoDataModel[]>;
   fetchVideoDetails: (args: { path: string }) => Promise<VideoDataModel>;
   fetchFolderDetails: (args: { path: string }) => Promise<VideoDataModel>;
-  saveLastWatch: (args: {
+  saveVideoDbCurrentTime: (args: {
     currentVideo: VideoDataModel;
-    lastWatched: number;
+    currentTime: number;
     isEpisode?: boolean;
   }) => Promise<VideoDataModel>;
   getVideoJsonData: (currentVideo: VideoDataModel) => Promise<VideoDataModel>;

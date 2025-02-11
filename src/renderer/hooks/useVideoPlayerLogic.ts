@@ -28,7 +28,7 @@ export const useVideoPlayerLogic = () => {
     dispatch(videoPlayerActions.setMkvCurrentTime(currentTime));
   };
 
-  const updateLastWatched = async (isEpisode = false) => {
+  const updateVideoDBCurrentTime = async (isEpisode = false) => {
     if (
       isEmptyObject(currentVideo) ||
       !player ||
@@ -37,15 +37,12 @@ export const useVideoPlayerLogic = () => {
       return;
     }
 
-    const currentTime = currentVideo.isMkv
-      ? mkvCurrentTime
-      : player.currentTime;
-    const lastWatchedTime =
-      currentTime === currentVideo.duration ? 1 : currentTime;
+    let currentTime = currentVideo.isMkv ? mkvCurrentTime : player.currentTime;
+    currentTime = currentTime === currentVideo.duration ? 1 : currentTime;
 
-    await window.videoAPI.saveLastWatch({
+    await window.videoAPI.saveVideoDbCurrentTime({
       currentVideo,
-      lastWatched: lastWatchedTime,
+      currentTime,
       isEpisode,
     });
   };
@@ -53,7 +50,7 @@ export const useVideoPlayerLogic = () => {
   const resetVideo = () => {
     const newVideoJsonData: VideoDataModel = {
       ...currentVideo,
-      lastWatched: 1,
+      currentTime: 1,
     };
 
     return dispatch(
@@ -69,7 +66,7 @@ export const useVideoPlayerLogic = () => {
     setVideoEnded,
     videoEnded,
     currentVideo,
-    updateLastWatched,
+    updateVideoDBCurrentTime,
     isTheaterMode,
     setIsTheaterMode,
     resetVideo,

@@ -186,13 +186,13 @@ export const fetchFolderDetails = async (
   }
 };
 
-export const saveLastWatch = async (
+export const saveLCurrentTime = async (
   event: Electron.IpcMainInvokeEvent,
   {
     currentVideo,
-    lastWatched,
+    currentTime,
     isEpisode,
-  }: { currentVideo: VideoDataModel; lastWatched: number; isEpisode?: boolean }
+  }: { currentVideo: VideoDataModel; currentTime: number; isEpisode?: boolean }
 ) => {
   try {
     if (!currentVideo.filePath) {
@@ -201,8 +201,8 @@ export const saveLastWatch = async (
     const jsonFilePath = getJsonFilePath(currentVideo.filePath);
 
     const jsonFileContents = await readJsonData(jsonFilePath);
-    jsonFileContents.lastWatched = lastWatched;
-    jsonFileContents.watched = lastWatched !== 0;
+    jsonFileContents.currentTime = currentTime;
+    jsonFileContents.watched = currentTime !== 0;
     jsonFileContents.lastVideoPlayedDate = new Date().toISOString();
 
     await writeJsonToFile(jsonFilePath, jsonFileContents);
@@ -219,7 +219,7 @@ export const saveLastWatch = async (
         grandParentJsonFilePath
       );
       grandParentJsonFileContents.lastVideoPlayed = currentVideo.filePath;
-      grandParentJsonFileContents.lastVideoPlayedTime = lastWatched;
+      grandParentJsonFileContents.lastVideoPlayedTime = currentTime;
       grandParentJsonFileContents.lastVideoPlayedDate =
         new Date().toISOString();
       grandParentJsonFileContents.lastVideoPlayedDuration =
@@ -234,7 +234,7 @@ export const saveLastWatch = async (
     return jsonFileContents;
   } catch (error: unknown) {
     if (error instanceof Error) {
-      log.error("save:lastWatch error ", error);
+      log.error("save:saveLCurrentTime error ", error);
     } else {
       log.error("An unknown error occurred:", error);
     }
@@ -460,7 +460,7 @@ export const createVideoDataObject = (
   notesCount: jsonFileContents?.notes?.length || 0,
   watched: jsonFileContents?.watched || false,
   like: jsonFileContents?.like || false,
-  currentTime: jsonFileContents?.lastWatched || 0,
+  currentTime: jsonFileContents?.currentTime || 0,
   season_id: jsonFileContents?.season_id || null,
   subtitlePath: jsonFileContents?.subtitlePath || null,
   lastVideoPlayedDate: jsonFileContents?.lastVideoPlayedDate || null,
