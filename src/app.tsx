@@ -27,15 +27,18 @@ import {
 } from "./renderer/contexts/SnackbarContext";
 import { AppVideoPlayerHandle } from "./renderer/components/video-player/AppVideoPlayer";
 import { ConfirmationProvider } from "./renderer/contexts/ConfirmationContext";
+import { useMovies } from "./renderer/hooks/useMovies";
 
 const App = () => {
   const { fetchAllSettings } = useSettings();
   const { showSnackbar } = useSnackbar();
+  const { getMovies } = useMovies();
 
   const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
 
   useEffect(() => {
     fetchAllSettings();
+    getMovies();
 
     window.videoCommandsAPI.videoCommand((command: VideoCommands) => {
       videoCommandsHandler(command, appVideoPlayerRef.current);

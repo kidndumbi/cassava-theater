@@ -11,7 +11,7 @@ const currentVideoSlice = createSlice({
   initialState,
   reducers: {
     setCurrentVideo: (state, action: PayloadAction<VideoDataModel>) => {
-      state.currentVideo = action.payload;
+      state.currentVideo = { ...state.currentVideo, ...action.payload };
     },
   },
 });

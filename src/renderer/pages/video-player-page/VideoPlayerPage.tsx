@@ -20,9 +20,14 @@ export const VideoPlayerPage = ({
 }: VideoPlayerPageProps) => {
   const { updateSubtitle, subtitleFilePath, setSubtitleFilePath } =
     useSubtitle();
-  const { setCurrentVideo } = useVideoListLogic();
-  const { setVideoEnded, updateVideoDBCurrentTime, currentVideo, player, resetVideo } =
-    useVideoPlayerLogic();
+  const { setCurrentVideo, clearPlayer } = useVideoListLogic();
+  const {
+    setVideoEnded,
+    updateVideoDBCurrentTime,
+    currentVideo,
+    player,
+    resetVideo,
+  } = useVideoPlayerLogic();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { episodes, resetEpisodes, findNextEpisode } = useTvShows();
@@ -32,6 +37,13 @@ export const VideoPlayerPage = ({
   const [resumeId, setResumeId] = useState("");
   const [startFromBeginning, setStartFromBeginning] = useState(false);
   const [isTvShow, setIsTvShow] = useState(false);
+
+  useEffect(() => {
+    console.log("AppVideoPlayer mounted");
+    return () => {
+      clearPlayer();
+    };
+  }, []);
 
   useEffect(() => {
     const { menuId, startFromBeginning: start, resumeId } = parseSearchParams();
@@ -122,7 +134,6 @@ export const VideoPlayerPage = ({
       onSubtitleChange={onSubtitleChange}
       subtitleFilePath={subtitleFilePath}
       onVideoPaused={saveVideoDBCurrentTime}
-      videoData={currentVideo}
       onVideoEnded={onVideoEnded}
       playNextEpisode={playNextEpisode}
       findNextEpisode={findNextEpisode}

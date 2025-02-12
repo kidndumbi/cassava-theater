@@ -13,6 +13,7 @@ import {
   theMovieDbActions,
 } from "../store/theMovieDb.slice";
 import { MovieDetails } from "../../models/movie-detail.model";
+import { VideoDataModel } from "../../models/videoData.model";
 
 export const useMovies = () => {
   const dispatch = useAppDispatch();
@@ -60,14 +61,14 @@ export const useMovies = () => {
     );
   };
 
-  const updateWatchLater = async (filePath: string, watchLater: boolean) => { 
+  const updateWatchLater = async (filePath: string, watchLater: boolean) => {
     await dispatch(
       folderVideosInfoActions.postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: { watchLater },
       })
     );
-  }
+  };
 
   const getVideoDetails = async (path: string) => {
     dispatch(
@@ -76,6 +77,9 @@ export const useMovies = () => {
       })
     );
   };
+
+  const updateMovie = (movie: VideoDataModel) =>
+    dispatch(folderVideosInfoActions.updateMovie(movie));
 
   return {
     movies,
@@ -88,6 +92,7 @@ export const useMovies = () => {
     getMovieSuggestions,
     resetMovieSuggestions,
     updateTMDBId,
-    updateWatchLater
+    updateWatchLater,
+    updateMovie
   };
 };
