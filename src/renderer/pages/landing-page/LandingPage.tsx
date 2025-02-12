@@ -17,24 +17,32 @@ import { renderActivePage } from "./RenderActivePage";
 import { useMovies } from "../../hooks/useMovies";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useSearchParams } from "react-router-dom";
+import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
+import { isEmptyObject } from "../../util/helperFunctions";
 
 export const LandingPage = () => {
   const theme = useTheme();
-  const { settings, fetchAllSettings } = useSettings();
+  const { settings } = useSettings();
   const [searchParams] = useSearchParams();
-  const { movies, getMovies, loadingMovies } = useMovies();
+  const { movies, getMovies, loadingMovies, updateMovie } = useMovies();
   const { tvShows, getTvShows, loadingTvShows } = useTvShows();
   const { customFolderData, loadCustomFolder, loadingCustomFolderData } =
     useCustomFolder();
+  const { currentTime, currentVideo } = useVideoPlayerLogic();
 
   useEffect(() => {
-    fetchAllSettings();
-    refreshData();
+    getTvShows();
   }, []);
 
   const handleMenuClick = (menuItem: MenuItem) => {
     setActiveMenu(menuItem);
   };
+
+  useEffect(() => {
+    if (currentTime > 0 && !isEmptyObject(currentVideo)) {
+      updateMovie({ ...currentVideo, currentTime });
+    }
+  }, [currentTime, currentVideo, searchParams]);
 
   const [selectedCustomFolder, setSelectedCustomFolder] =
     useState<CustomFolderModel | null>(null);
@@ -131,7 +139,7 @@ export const LandingPage = () => {
 
   function syncActiveMenuFromUrl(
     menuItems: MenuItem[],
-    setActiveMenu: React.Dispatch<React.SetStateAction<MenuItem>>,
+    setActiveMenu: React.Dispatch<React.SetStateAction<MenuItem>>
   ) {
     const menuId = searchParams.get("menuId");
     const menuItem = menuItems.find((item) => item.id === menuId);

@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "./index";
 import { VideoDataModel } from "../../models/videoData.model";
 import { rendererLoggingService as log } from "../util/renderer-logging.service";
@@ -56,6 +56,13 @@ const folderVideosInfoSlice = createSlice({
     },
     resetCustomFolder: (state) => {
       state.customFolderData = [];
+    },
+    updateMovie: (state, action: PayloadAction<VideoDataModel>) => {
+      const movie = action.payload;
+      const idx = state.movies.findIndex((m) => m.filePath === movie.filePath);
+      if (idx !== -1) {
+        state.movies[idx] = { ...state.movies[idx], ...movie };
+      }
     },
   },
   extraReducers: (builder) => {
@@ -276,12 +283,7 @@ const folderVideosInfoActions = {
   fetchVideoData,
   fetchVideoDetails,
   fetchFolderDetails,
-  resetFolderVideosInfo: folderVideosInfoSlice.actions.resetFolderVideosInfo,
-  resetMovies: folderVideosInfoSlice.actions.resetMovies,
-  resetTvShows: folderVideosInfoSlice.actions.resetTvShows,
-  resetEpisodes: folderVideosInfoSlice.actions.resetEpisodes,
-  resetFolderDetails: folderVideosInfoSlice.actions.resetFolderDetails,
-  resetCustomFolder: folderVideosInfoSlice.actions.resetCustomFolder,
+  ...folderVideosInfoSlice.actions,
   postVideoJason,
 };
 

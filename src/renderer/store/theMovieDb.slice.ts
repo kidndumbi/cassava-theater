@@ -100,8 +100,7 @@ const selTvShowSuggestionsLoading = (state: RootState) =>
 const theMovieDbActions = {
   fetchMovieSuggestions,
   fetchTvShowSuggestions,
-  resetMovieSuggestions: theMovieDbSlice.actions.resetMovieSuggestions,
-  resetTvShowSuggestions: theMovieDbSlice.actions.resetTvShowSuggestions,
+  ...theMovieDbSlice.actions,
 };
 
 export {

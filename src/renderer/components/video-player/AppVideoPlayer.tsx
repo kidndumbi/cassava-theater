@@ -31,7 +31,6 @@ export type AppVideoPlayerHandle = {
 };
 
 type AppVideoPlayerProps = {
-  videoData: VideoDataModel | undefined;
   onVideoEnded: (filePath: string, episode: VideoDataModel | null) => void;
   subtitleFilePath: string | null;
   onVideoPaused: () => void;
@@ -49,7 +48,6 @@ type AppVideoPlayerProps = {
 const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
   (
     {
-      videoData,
       onVideoEnded,
       subtitleFilePath,
       onVideoPaused,
@@ -65,23 +63,20 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     },
     ref
   ) => {
-    const { setPlayer, clearPlayer } = useVideoListLogic();
-    const { mkvCurrentTime } = useVideoPlayerLogic();
+    const { setPlayer } = useVideoListLogic();
+    const { mkvCurrentTime, currentVideo } = useVideoPlayerLogic();
     const videoPlayerRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
       console.log("AppVideoPlayer mounted");
-      return () => {
-        clearPlayer();
-      };
     }, []);
 
     useEffect(() => {
       if (videoPlayerRef.current) {
         setPlayer(videoPlayerRef.current);
       }
-    }, [videoData]);
+    }, [currentVideo]);
 
     const [sliderValue, setSliderValue] = useState<number | null>(null);
     const debouncedSliderValue = useDebounce(sliderValue, 300);
@@ -103,7 +98,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     };
 
     const getVideoUrl = () =>
-      getUrl("video", videoData?.filePath, videoData?.currentTime);
+      getUrl("video", currentVideo?.filePath, currentVideo?.currentTime);
     const getSubtitleUrl = () => getUrl("file", subtitleFilePath);
 
     const {
@@ -118,8 +113,8 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       setVolume,
       isFullScreen,
     } = useVideoPlayer(
-      () => onVideoEnded(videoData?.filePath || "", nextEpisode),
-      videoData,
+      () => onVideoEnded(currentVideo?.filePath || "", nextEpisode),
+      currentVideo,
       startFromBeginning,
       triggeredOnPlayInterval
     );
@@ -134,8 +129,8 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
 
     const isMouseActive = useMouseActivity();
     const nextEpisode = useMemo(
-      () => findNextEpisode(videoData?.filePath || ""),
-      [videoData, episodes, isTvShow]
+      () => findNextEpisode(currentVideo?.filePath || ""),
+      [currentVideo, episodes, isTvShow]
     );
 
     useEffect(() => {
@@ -159,7 +154,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     return (
       <div ref={containerRef} className="video-container">
         <Video
-          isMkv={videoData.isMkv}
+          isMkv={currentVideo.isMkv}
           videoPlayerRef={videoPlayerRef}
           getVideoUrl={getVideoUrl}
           getSubtitleUrl={getSubtitleUrl}
@@ -178,7 +173,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               skip={skipBy}
               onToggleFullscreen={() => toggleFullscreen(containerRef)}
             />
-            <TitleOverlay fileName={videoData?.fileName} />
+            <TitleOverlay fileName={currentVideo?.fileName} />
             <SideControlsOverlay
               handleCancel={handleCancel}
               handleNext={
@@ -186,16 +181,16 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
                   ? () => playNextEpisode(nextEpisode)
                   : undefined
               }
-              filePath={videoData?.filePath}
+              filePath={currentVideo?.filePath}
               handleOpenNotesModal={handleOpenNotesModal}
             />
           </>
         )}
-        {videoData && (
+        {currentVideo && (
           <NotesModal
             open={openNotesModal}
             handleClose={handleCloseNotesModal}
-            videoData={videoData}
+            videoData={currentVideo}
             currentVideoTime={currentTime}
             handleVideoSeek={(seekTime) => {
               handleCloseNotesModal();
@@ -203,7 +198,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             }}
           />
         )}
-        {videoData.isMkv && isMouseActive && (
+        {currentVideo.isMkv && isMouseActive && (
           <>
             <span
               style={{
@@ -216,7 +211,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             >
               {formattedTime +
                 " / " +
-                (secondsTohhmmss(videoData?.duration) || "")}
+                (secondsTohhmmss(currentVideo?.duration) || "")}
             </span>
             <Box
               style={{
@@ -231,7 +226,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               }}
             >
               <AppSlider
-                max={videoData.duration}
+                max={currentVideo.duration}
                 value={mkvCurrentTime}
                 onChange={(event, newValue) => {
                   setSliderValue(newValue as number);
