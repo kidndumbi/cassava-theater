@@ -17,6 +17,7 @@ import {
   theMovieDbActions,
 } from "../store/theMovieDb.slice";
 import { TvShowDetails } from "../../models/tv-show-details.model";
+import { VideoDataModel } from "../../models/videoData.model";
 
 export const useTvShows = () => {
   const dispatch = useAppDispatch();
@@ -111,8 +112,8 @@ export const useTvShows = () => {
     );
   };
 
-  const getSingleEpisodeDetails = (path: string) => {
-    return fetchVideoDetailsApi({ path });
+  const getSingleEpisodeDetails = (path: string, category: string ) => {
+    return fetchVideoDetailsApi({ path, category });
   };
 
   const resetTvShows = () => {
@@ -126,6 +127,10 @@ export const useTvShows = () => {
   const resetTvShowDetails = () => {
     dispatch(folderVideosInfoActions.resetFolderDetails());
   };
+
+  const updateTvShow = (tvShow: VideoDataModel) => {
+    dispatch(folderVideosInfoActions.updateTvShow(tvShow));
+  }
 
   return {
     tvShows,
@@ -148,5 +153,6 @@ export const useTvShows = () => {
     getTvShowById,
     updateSeasonTMDBId,
     findNextEpisode,
+    updateTvShow
   };
 };

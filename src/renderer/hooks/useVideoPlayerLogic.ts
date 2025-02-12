@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 import {
   selCurrentTime,
+  selLastVideoPlayedDate,
   selMkvCurrentTime,
   selVideoEnded,
   selVideoPlayer,
@@ -20,6 +21,7 @@ export const useVideoPlayerLogic = () => {
   const currentVideo = useSelector(selCurrentVideo);
   const mkvCurrentTime = useSelector(selMkvCurrentTime);
   const currentTime = useSelector(selCurrentTime);
+  const lastVideoPlayedDate = useSelector(selLastVideoPlayedDate);
   const [isTheaterMode, setIsTheaterMode] = useState(true);
 
   const setVideoEnded = (isVideoEnded: boolean) => {
@@ -39,6 +41,9 @@ export const useVideoPlayerLogic = () => {
     const currentTime = time === currentVideo.duration ? 1 : time;
 
     dispatch(videoPlayerActions.setCurrentTime(currentTime));
+    dispatch(
+      videoPlayerActions.setLastVideoPlayedDate(new Date().toISOString())
+    );
 
     await window.videoAPI.saveVideoDbCurrentTime({
       currentVideo,
@@ -73,5 +78,6 @@ export const useVideoPlayerLogic = () => {
     mkvCurrentTime,
     setMkvCurrentTime,
     currentTime,
+    lastVideoPlayedDate,
   };
 };

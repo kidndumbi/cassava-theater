@@ -64,6 +64,15 @@ const folderVideosInfoSlice = createSlice({
         state.movies[idx] = { ...state.movies[idx], ...movie };
       }
     },
+    updateTvShow: (state, action: PayloadAction<VideoDataModel>) => {
+      const tvShow = action.payload;
+      const idx = state.tvShows.findIndex(
+        (m) => m.filePath.replace(/\\/g, "/") === tvShow.filePath
+      );
+      if (idx !== -1) {
+        state.tvShows[idx] = { ...state.tvShows[idx], ...tvShow };
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -180,14 +189,20 @@ const fetchVideoData = createAsyncThunk(
   }
 );
 
-const fetchVideoDetailsApi = async ({ path }: { path: string }) => {
+const fetchVideoDetailsApi = async ({
+  path,
+  category,
+}: {
+  path: string;
+  category: string;
+}) => {
   try {
     if (!path) {
       log.error("Path is undefined");
       return {};
     }
 
-    const response = window.videoAPI.fetchVideoDetails({ path });
+    const response = window.videoAPI.fetchVideoDetails({ path, category });
 
     return response;
   } catch (error) {
@@ -198,7 +213,7 @@ const fetchVideoDetailsApi = async ({ path }: { path: string }) => {
 
 const fetchVideoDetails = createAsyncThunk(
   "folderVideosInfo/fetchVideoDetails",
-  async (args: { path: string }, { rejectWithValue }) => {
+  async (args: { path: string; category: string }, { rejectWithValue }) => {
     try {
       const data = await fetchVideoDetailsApi(args);
       return data;

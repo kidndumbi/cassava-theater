@@ -7,7 +7,10 @@ import { rendererLoggingService as log } from "../util/renderer-logging.service"
 const useHandlePosterClick = (
   menuId: string,
   setCurrentVideo: (video: VideoDataModel) => void,
-  getSingleEpisodeDetails: (id: string) => Promise<VideoDataModel | null>,
+  getSingleEpisodeDetails: (
+    path: string,
+    category: string
+  ) => Promise<VideoDataModel | null>,
   resetEpisodes: () => void,
   getEpisodeDetails: (path: string) => void
 ) => {
@@ -20,7 +23,8 @@ const useHandlePosterClick = (
     if (videoType === "tvShow") {
       try {
         const episode = await getSingleEpisodeDetails(
-          video.lastVideoPlayed || ""
+          video.lastVideoPlayed || "",
+          "episodes"
         );
         if (episode) {
           return episode;

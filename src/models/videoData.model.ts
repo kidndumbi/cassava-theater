@@ -36,4 +36,5 @@ export interface VideoDataModel {
   }[];
   isMkv?: boolean;
   watchLater?: boolean;
+  videoDataType?: "movie" | "episode" | null;
 }
