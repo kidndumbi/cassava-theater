@@ -105,7 +105,7 @@ contextBridge.exposeInMainWorld("videoAPI", {
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.FetchVideoData, args);
   },
-  fetchVideoDetails: (args: { path: string }) => {
+  fetchVideoDetails: (args: { path: string, category: string  }) => {
     return ipcRenderer.invoke(VideoIPCChannels.FetchVideoDetails, args);
   },
   fetchFolderDetails: (args: { path: string }): Promise<string> => {

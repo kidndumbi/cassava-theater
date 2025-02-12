@@ -6,6 +6,7 @@ interface VideoPlayerState {
   videoEnded: boolean;
   mkvCurrentTime: number;
   currentTime: number;
+  lastVideoPlayedDate: string;
 }
 
 const initialState: VideoPlayerState = {
@@ -13,6 +14,7 @@ const initialState: VideoPlayerState = {
   videoEnded: false,
   mkvCurrentTime: 0,
   currentTime: 0,
+  lastVideoPlayedDate: "",
 };
 
 const videoPlayerSlice = createSlice({
@@ -34,6 +36,9 @@ const videoPlayerSlice = createSlice({
     setCurrentTime: (state, action: PayloadAction<number>) => {
       state.currentTime = action.payload;
     },
+    setLastVideoPlayedDate: (state, action: PayloadAction<string>) => {
+      state.lastVideoPlayedDate = action.payload;
+    },
   },
 });
 
@@ -44,6 +49,8 @@ const selVideoEnded = (state: RootState) => state.videoPlayer.videoEnded;
 const selMkvCurrentTime = (state: RootState) =>
   state.videoPlayer.mkvCurrentTime;
 const selCurrentTime = (state: RootState) => state.videoPlayer.currentTime;
+const selLastVideoPlayedDate = (state: RootState) =>
+  state.videoPlayer.lastVideoPlayedDate;
 
 export {
   videoPlayerSlice,
@@ -52,4 +59,5 @@ export {
   selVideoEnded,
   selMkvCurrentTime,
   selCurrentTime,
+  selLastVideoPlayedDate,
 };

@@ -19,30 +19,49 @@ import { useTvShows } from "../../hooks/useTvShows";
 import { useSearchParams } from "react-router-dom";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import { isEmptyObject } from "../../util/helperFunctions";
+import { VideoDataModel } from "../../../models/videoData.model";
 
 export const LandingPage = () => {
   const theme = useTheme();
   const { settings } = useSettings();
   const [searchParams] = useSearchParams();
   const { movies, getMovies, loadingMovies, updateMovie } = useMovies();
-  const { tvShows, getTvShows, loadingTvShows } = useTvShows();
+  const { tvShows, getTvShows, loadingTvShows, updateTvShow } = useTvShows();
   const { customFolderData, loadCustomFolder, loadingCustomFolderData } =
     useCustomFolder();
-  const { currentTime, currentVideo } = useVideoPlayerLogic();
-
-  useEffect(() => {
-    getTvShows();
-  }, []);
+  const { currentTime, currentVideo, lastVideoPlayedDate } =
+    useVideoPlayerLogic();
 
   const handleMenuClick = (menuItem: MenuItem) => {
     setActiveMenu(menuItem);
   };
 
-  useEffect(() => {
+  function handleVideoUpdate() {
     if (currentTime > 0 && !isEmptyObject(currentVideo)) {
-      updateMovie({ ...currentVideo, currentTime });
+      if (currentVideo.videoDataType === "movie") {
+        updateMovie({ ...currentVideo, currentTime });
+      } else if (
+        currentVideo.videoDataType === "episode" &&
+        lastVideoPlayedDate
+      ) {
+        const pathArray = currentVideo.filePath.split("/");
+        pathArray.pop();
+        pathArray.pop();
+        const filePath = pathArray.join("/");
+        const updatedVideo: VideoDataModel = {
+          filePath,
+          lastVideoPlayedTime: currentTime,
+          lastVideoPlayedDate,
+          lastVideoPlayed: currentVideo.filePath,
+        };
+        updateTvShow(updatedVideo);
+      }
     }
-  }, [currentTime, currentVideo, searchParams]);
+  }
+
+  useEffect(() => {
+    handleVideoUpdate();
+  }, [currentTime, currentVideo]);
 
   const [selectedCustomFolder, setSelectedCustomFolder] =
     useState<CustomFolderModel | null>(null);

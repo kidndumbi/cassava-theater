@@ -39,7 +39,6 @@ export const VideoPlayerPage = ({
   const [isTvShow, setIsTvShow] = useState(false);
 
   useEffect(() => {
-    console.log("AppVideoPlayer mounted");
     return () => {
       clearPlayer();
     };

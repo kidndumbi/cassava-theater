@@ -28,17 +28,20 @@ import {
 import { AppVideoPlayerHandle } from "./renderer/components/video-player/AppVideoPlayer";
 import { ConfirmationProvider } from "./renderer/contexts/ConfirmationContext";
 import { useMovies } from "./renderer/hooks/useMovies";
+import { useTvShows } from "./renderer/hooks/useTvShows";
 
 const App = () => {
   const { fetchAllSettings } = useSettings();
   const { showSnackbar } = useSnackbar();
   const { getMovies } = useMovies();
+  const { getTvShows } = useTvShows();
 
   const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
 
   useEffect(() => {
     fetchAllSettings();
     getMovies();
+    getTvShows();
 
     window.videoCommandsAPI.videoCommand((command: VideoCommands) => {
       videoCommandsHandler(command, appVideoPlayerRef.current);

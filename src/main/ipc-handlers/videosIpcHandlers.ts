@@ -5,7 +5,7 @@ import {
   fetchVideoDetails,
   fetchVideosData,
   getVideoJsonData,
-  saveLCurrentTime,
+  saveCurrentTime,
   saveVideoJsonData,
 } from "../services/video-data.service";
 
@@ -27,8 +27,11 @@ export const videosIpcHandlers = () => {
 
   ipcMain.handle(
     VideoIPCChannels.FetchVideoDetails,
-    (_event: Electron.IpcMainInvokeEvent, args: { path: string }) => {
-      return fetchVideoDetails(args.path);
+    (
+      _event: Electron.IpcMainInvokeEvent,
+      args: { path: string; category: string }
+    ) => {
+      return fetchVideoDetails(args.path, args.category);
     }
   );
 
@@ -39,7 +42,7 @@ export const videosIpcHandlers = () => {
     }
   );
 
-  ipcMain.handle(VideoIPCChannels.SaveCurrentTime, saveLCurrentTime);
+  ipcMain.handle(VideoIPCChannels.SaveCurrentTime, saveCurrentTime);
 
   ipcMain.handle(VideoIPCChannels.GetVideoJsonData, getVideoJsonData);
   ipcMain.handle(VideoIPCChannels.SaveVideoJsonData, saveVideoJsonData);

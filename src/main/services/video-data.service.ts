@@ -72,7 +72,8 @@ export const fetchVideosData = async ({
     const videoData: VideoDataModel[] = await getRootVideoData(
       null,
       filePath,
-      searchText || ""
+      searchText || "",
+      category
     );
 
     let updatedVideoData: VideoDataModel[];
@@ -104,7 +105,8 @@ export const fetchVideosData = async ({
 };
 
 export const fetchVideoDetails = async (
-  filePath: string
+  filePath: string,
+  category: string
 ): Promise<VideoDataModel> => {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Path does not exist: ${filePath}`);
@@ -124,7 +126,8 @@ export const fetchVideoDetails = async (
       stats.birthtimeMs,
       "",
       duration,
-      jsonFileContents
+      jsonFileContents,
+      category
     );
 
     const thumbnailCacheFilePath = path.join(
@@ -186,7 +189,7 @@ export const fetchFolderDetails = async (
   }
 };
 
-export const saveLCurrentTime = async (
+export const saveCurrentTime = async (
   event: Electron.IpcMainInvokeEvent,
   {
     currentVideo,
@@ -337,7 +340,8 @@ async function getVideoThumbnails(
 export const getRootVideoData = async (
   event: Electron.IpcMainInvokeEvent,
   filePath: string,
-  searchText: string
+  searchText: string,
+  category: string
 ) => {
   // Your code
   const videoData: VideoDataModel[] = [];
@@ -355,7 +359,7 @@ export const getRootVideoData = async (
         [".mp4", ".mkv"].includes(path.extname(file).toLowerCase()) ||
         stats.isDirectory()
       ) {
-        const data = await populateVideoData(file, filePath, stats);
+        const data = await populateVideoData(file, filePath, stats, category);
         if (data) {
           videoData.push(data);
         }
@@ -389,7 +393,8 @@ export const getRootVideoData = async (
 export const populateVideoData = async (
   file: string,
   filePath: string,
-  stats: Stats
+  stats: Stats,
+  category: string
 ) => {
   try {
     const fullFilePath = `${filePath}/${file}`;
@@ -405,7 +410,8 @@ export const populateVideoData = async (
       stats.birthtimeMs,
       filePath,
       duration,
-      jsonFileContents
+      jsonFileContents,
+      category
     );
   } catch (error: unknown) {
     log.error("Error populating video data:", error);
@@ -448,32 +454,47 @@ export const createVideoDataObject = (
   createdAt: number,
   rootPath: string,
   duration: number,
-  jsonFileContents: VideoDataModel | null
-): VideoDataModel => ({
-  fileName,
-  filePath,
-  isDirectory,
-  createdAt,
-  rootPath,
-  duration,
-  mustWatch: jsonFileContents?.mustWatch || false,
-  notesCount: jsonFileContents?.notes?.length || 0,
-  watched: jsonFileContents?.watched || false,
-  like: jsonFileContents?.like || false,
-  currentTime: jsonFileContents?.currentTime || 0,
-  season_id: jsonFileContents?.season_id || null,
-  subtitlePath: jsonFileContents?.subtitlePath || null,
-  lastVideoPlayedDate: jsonFileContents?.lastVideoPlayedDate || null,
-  lastVideoPlayedTime: jsonFileContents?.lastVideoPlayedTime || 0,
-  lastVideoPlayed: jsonFileContents?.lastVideoPlayed || null,
-  lastVideoPlayedDuration: jsonFileContents?.lastVideoPlayedDuration || null,
-  notes: jsonFileContents?.notes || [],
-  overview: jsonFileContents?.overview || {},
-  movie_details: jsonFileContents?.movie_details || null,
-  tv_show_details: jsonFileContents?.tv_show_details || null,
-  isMkv: filePath.toLowerCase().endsWith(".mkv"),
-  watchLater: jsonFileContents?.watchLater || false,
-});
+  jsonFileContents: VideoDataModel | null,
+  category?: string
+): VideoDataModel => {
+  let videoDataType: "movie" | "episode" | null = null;
+
+  switch (category) {
+    case "movies":
+      videoDataType = "movie";
+      break;
+    case "episodes":
+      videoDataType = "episode";
+      break;
+  }
+
+  return {
+    fileName,
+    filePath,
+    isDirectory,
+    createdAt,
+    rootPath,
+    duration,
+    mustWatch: jsonFileContents?.mustWatch || false,
+    notesCount: jsonFileContents?.notes?.length || 0,
+    watched: jsonFileContents?.watched || false,
+    like: jsonFileContents?.like || false,
+    currentTime: jsonFileContents?.currentTime || 0,
+    season_id: jsonFileContents?.season_id || null,
+    subtitlePath: jsonFileContents?.subtitlePath || null,
+    lastVideoPlayedDate: jsonFileContents?.lastVideoPlayedDate || null,
+    lastVideoPlayedTime: jsonFileContents?.lastVideoPlayedTime || 0,
+    lastVideoPlayed: jsonFileContents?.lastVideoPlayed || null,
+    lastVideoPlayedDuration: jsonFileContents?.lastVideoPlayedDuration || null,
+    notes: jsonFileContents?.notes || [],
+    overview: jsonFileContents?.overview || {},
+    movie_details: jsonFileContents?.movie_details || null,
+    tv_show_details: jsonFileContents?.tv_show_details || null,
+    isMkv: filePath.toLowerCase().endsWith(".mkv"),
+    watchLater: jsonFileContents?.watchLater || false,
+    videoDataType
+  };
+};
 
 export const createFolderDataObject = (
   basePath: string,

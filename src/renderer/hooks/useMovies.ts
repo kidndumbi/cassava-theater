@@ -74,6 +74,7 @@ export const useMovies = () => {
     dispatch(
       folderVideosInfoActions.fetchVideoDetails({
         path,
+        category: "movies",
       })
     );
   };
@@ -93,6 +94,6 @@ export const useMovies = () => {
     resetMovieSuggestions,
     updateTMDBId,
     updateWatchLater,
-    updateMovie
+    updateMovie,
   };
 };
