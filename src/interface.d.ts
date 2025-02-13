@@ -48,7 +48,10 @@ export interface VideoAPI {
     includeThumbnail: boolean;
     category: string;
   }) => Promise<VideoDataModel[]>;
-  fetchVideoDetails: (args: { path: string, category: string }) => Promise<VideoDataModel>;
+  fetchVideoDetails: (args: {
+    path: string;
+    category: string;
+  }) => Promise<VideoDataModel>;
   fetchFolderDetails: (args: { path: string }) => Promise<VideoDataModel>;
   saveVideoDbCurrentTime: (args: {
     currentVideo: VideoDataModel;
@@ -63,8 +66,16 @@ export interface VideoAPI {
 }
 
 export interface TheMovieDbAPI {
-  search: (query: string, queryType: "movie" | "tv") => Promise<MovieDetails[] | TvShowDetails[]>;
-  movieOrTvShow: (id: string, queryType: "movie" | "tv") => Promise<MovieDetails | TvShowDetails>;
+  search: (
+    query: string,
+    queryType: "movie" | "tv",
+    authorization: string
+  ) => Promise<MovieDetails[] | TvShowDetails[]>;
+  movieOrTvShow: (
+    id: string,
+    queryType: "movie" | "tv",
+    authorization: string
+  ) => Promise<MovieDetails | TvShowDetails>;
 }
 
 export interface FileManagerAPI {

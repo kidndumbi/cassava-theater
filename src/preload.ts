@@ -105,7 +105,7 @@ contextBridge.exposeInMainWorld("videoAPI", {
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.FetchVideoData, args);
   },
-  fetchVideoDetails: (args: { path: string, category: string  }) => {
+  fetchVideoDetails: (args: { path: string; category: string }) => {
     return ipcRenderer.invoke(VideoIPCChannels.FetchVideoDetails, args);
   },
   fetchFolderDetails: (args: { path: string }): Promise<string> => {
@@ -130,24 +130,33 @@ contextBridge.exposeInMainWorld("videoAPI", {
 });
 
 contextBridge.exposeInMainWorld("theMovieDbAPI", {
-  search: (query: string, queryType: "movie" | "tv") => {
+  search: (query: string, queryType: "movie" | "tv", authorization: string) => {
     return ipcRenderer.invoke(
       TheMovieDbIPCChannels.Search,
       query,
-      queryType
+      queryType,
+      authorization
     ) as Promise<MovieDetails[] | TvShowDetails[]>;
   },
-  movieOrTvShow: (id: string, queryType: "movie" | "tv") => {
+  movieOrTvShow: (
+    id: string,
+    queryType: "movie" | "tv",
+    authorization: string
+  ) => {
     return ipcRenderer.invoke(
       TheMovieDbIPCChannels.MovieOrTvShow,
       id,
-      queryType
+      queryType,
+      authorization
     ) as Promise<MovieDetails | TvShowDetails>;
   },
 });
 
 contextBridge.exposeInMainWorld("fileManagerAPI", {
   convertSrtToVtt: (path: string) => {
-    return ipcRenderer.invoke(FileIPCChannels.CONVERT_SRT_TO_VTT, path) as Promise<string>;
+    return ipcRenderer.invoke(
+      FileIPCChannels.CONVERT_SRT_TO_VTT,
+      path
+    ) as Promise<string>;
   },
 });

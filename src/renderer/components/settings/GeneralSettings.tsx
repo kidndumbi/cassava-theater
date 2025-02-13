@@ -10,14 +10,19 @@ import {
 } from "@mui/material";
 import { Folder as FolderIcon, Save } from "@mui/icons-material";
 import { renderTextField } from "../../components/common/RenderTextField";
+import { SettingsModel } from "../../../models/settings.model";
 
 interface GeneralSettingsProps {
   movieFolderPath: string;
   tvShowsFolderPath: string;
   continuousPlay: boolean;
   port: string;
+  theMovieDbApiKey: string;
   handleFolderSelection: (settingName: string) => Promise<void>;
-  handleUpdateSetting: (settingName: string, value: any) => Promise<void>;
+  handleUpdateSetting: (
+    settingName: string,
+    value: SettingsModel[keyof SettingsModel]
+  ) => Promise<void>;
   handleContinuousPlayChange: (value: boolean) => void;
 }
 
@@ -25,6 +30,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   movieFolderPath,
   tvShowsFolderPath,
   port,
+  theMovieDbApiKey,
   handleFolderSelection,
   handleUpdateSetting,
   continuousPlay,
@@ -33,10 +39,15 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   const theme = useTheme();
 
   const [componentPort, setComponentPort] = useState(port);
+  const [localApiKey, setLocalApiKey] = useState(theMovieDbApiKey);
 
   useEffect(() => {
     setComponentPort(port);
   }, [port]);
+
+  useEffect(() => {
+    setLocalApiKey(theMovieDbApiKey);
+  }, [theMovieDbApiKey]);
 
   const renderFolderSetting = (
     label: string,
@@ -44,8 +55,9 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
     settingName: string
   ) => (
     <div style={{ display: "flex", alignItems: "center" }}>
-      {renderTextField(label, value, () => {}, theme)}
+      {renderTextField(label, value, null, theme)}
       <Button
+        sx={{ marginLeft: "8px" }}
         variant="contained"
         color="primary"
         style={{ marginRight: "8px" }}
@@ -83,10 +95,29 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
               theme
             )}
             <Button
+              sx={{ marginLeft: "8px" }}
               variant="contained"
               color="primary"
               onClick={() => handleUpdateSetting("port", componentPort)}
               disabled={port === componentPort ? true : false}
+            >
+              <Save />
+            </Button>
+          </Box>
+          <Box style={{ display: "flex", alignItems: "center" }}>
+            {renderTextField(
+              "themoviedb API Key",
+              localApiKey,
+              (e) => setLocalApiKey(e.target.value),
+              theme
+            )}
+            <Button
+              sx={{ marginLeft: "8px" }}
+              variant="contained"
+              color="primary"
+              onClick={() =>
+                handleUpdateSetting("theMovieDbApiKey", localApiKey)
+              }
             >
               <Save />
             </Button>

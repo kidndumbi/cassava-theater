@@ -20,6 +20,7 @@ export const SettingsPage: React.FC = () => {
   const [tvShowsFolderPath, setTvShowsFolderPath] = useState("");
   const [continuousPlay, setContinuousPlay] = useState(false);
   const [port, setPort] = useState("");
+  const [theMovieDbApiKey, setTheMovieDbApiKey] = useState("");
   const [customFolders, setCustomFolders] = useState<CustomFolderModel[]>([]);
   const [currentTabValue, setCurrentTabValue] = useState(0);
   const { selectFolder } = useSelectFolder();
@@ -36,6 +37,8 @@ export const SettingsPage: React.FC = () => {
     if (settings.folders)
       setCustomFolders(settings.folders as CustomFolderModel[]);
     if (settings.continuousPlay) setContinuousPlay(settings.continuousPlay);
+    if (settings.theMovieDbApiKey)
+      setTheMovieDbApiKey(settings.theMovieDbApiKey);
   }, [settings]);
 
   const handleFolderUpdate = async (
@@ -86,7 +89,10 @@ export const SettingsPage: React.FC = () => {
           () => window.mainUtilAPI.restart()
         );
       } else {
-        await setSetting(settingName, value as string | boolean | CustomFolderModel[]);
+        await setSetting(
+          settingName,
+          value as string | boolean | CustomFolderModel[]
+        );
         showSnackbar("Setting updated successfully", "success");
       }
     } catch (error) {
@@ -154,6 +160,7 @@ export const SettingsPage: React.FC = () => {
             continuousPlay={continuousPlay}
             movieFolderPath={movieFolderPath}
             tvShowsFolderPath={tvShowsFolderPath}
+            theMovieDbApiKey={theMovieDbApiKey}
             port={port}
             handleFolderSelection={handleFolderSelection}
             handleUpdateSetting={handleUpdateSetting}

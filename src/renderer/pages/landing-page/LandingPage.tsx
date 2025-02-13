@@ -174,6 +174,7 @@ export const LandingPage = () => {
   return (
     <Grid
       container
+      className="custom-scrollbar"
       sx={{
         height: "100vh",
         width: "100vw",
