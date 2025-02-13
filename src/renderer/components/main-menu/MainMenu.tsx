@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, List, useTheme } from "@mui/material";
+import { Box, Button, List, useTheme } from "@mui/material";
 
 import SettingsIcon from "@mui/icons-material/Settings";
 import { MenuItem } from "../../../models/menu-item.model";
@@ -15,7 +15,7 @@ const MainMenu: React.FC<MainMenuProps> = ({
   menuItems,
   activeMenuItem,
   onActiveMenuItemChange,
-  onSettingsClick
+  onSettingsClick,
 }) => {
   const theme = useTheme();
 
@@ -27,11 +27,9 @@ const MainMenu: React.FC<MainMenuProps> = ({
     marginBottom: "10px",
     display: "flex",
     alignItems: "center",
-    justifyContent: "flex-start",
+    justifyContent: "center",
     width: "100%",
   };
-
-  const labelStyle = { marginLeft: "10px" };
 
   const handleButtonClick = (item: MenuItem) => {
     onActiveMenuItemChange(item);
@@ -39,7 +37,7 @@ const MainMenu: React.FC<MainMenuProps> = ({
   };
 
   return (
-    <List>
+    <List sx={{width: "130px", borderRight: "1px solid #ccc",  }}>
       {menuItems.map((item) => {
         const isActive = item.label === activeMenuItem.label;
         const activeStyle = isActive
@@ -48,17 +46,33 @@ const MainMenu: React.FC<MainMenuProps> = ({
         return (
           <Button
             key={item.label}
-            style={{ ...buttonStyle, ...activeStyle }}
+            style={{ ...buttonStyle, ...activeStyle, borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }}
             onClick={() => handleButtonClick(item)}
           >
-            {item.icon && item.icon}
-            <span style={labelStyle}>{item.label}</span>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                flexDirection: "column",
+              }}
+            >
+              {item.icon && item.icon}
+              <span>{item.label}</span>
+            </Box>
           </Button>
         );
       })}
       <Button style={{ ...buttonStyle }} onClick={onSettingsClick}>
-        <SettingsIcon />
-        <span style={labelStyle}>Settings</span>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "column",
+          }}
+        >
+          <SettingsIcon />
+          <span>Settings</span>
+        </Box>
       </Button>
     </List>
   );
