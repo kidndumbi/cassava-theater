@@ -22,6 +22,10 @@ const schema: Schema<SettingsModel> = {
     type: "boolean",
     default: false,
   },
+  theMovieDbApiKey: {
+    type: "string",
+    default: "",
+  },
 };
 
 let store: Store<SettingsModel>;

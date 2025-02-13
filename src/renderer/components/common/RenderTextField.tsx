@@ -14,6 +14,7 @@ export const renderTextField = (
     value={value}
     onChange={onChange}
     margin="normal"
+    fullWidth
     slotProps={{
       inputLabel: { style: { color: theme.customVariables.appWhiteSmoke } },
       input: { style: { color: theme.customVariables.appWhiteSmoke }, readOnly: false },

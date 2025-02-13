@@ -36,7 +36,7 @@ export const TvShows: React.FC<TvShowsProps> = ({
     return show.fileName?.toLowerCase().includes(filter.toLowerCase()) ?? false;
   });
 
-  const handlePosterClick = ( videoPath: string) => {
+  const handlePosterClick = (videoPath: string) => {
     navigate(`/video-details?videoPath=${videoPath}&menuId=${menuId}`);
   };
 
@@ -52,6 +52,7 @@ export const TvShows: React.FC<TvShowsProps> = ({
         onFilterChange={handleFilterChange}
         theme={theme}
       />
+
       {loadingTvShows ? (
         <LoadingIndicator message="Loading TV Shows..." />
       ) : filteredTvShows.length === 0 ? (

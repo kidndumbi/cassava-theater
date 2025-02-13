@@ -62,11 +62,16 @@ export async function generateThumbnail(
               const image = await Jimp.read(imagePath);
               image.resize({ w: thumbnailWidth, h: thumbnailHeight });
               const base64Image = await image.getBase64("image/png");
-              loggingService.info("Thumbnail generated successfully:", imagePath);
+              loggingService.info(
+                "Thumbnail generated successfully:",
+                imagePath
+              );
               resolve(base64Image);
               fs.unlinkSync(imagePath); // Clean up the generated thumbnail file
             } else {
-              const error = new Error(`Thumbnail image not found at path: ${imagePath}`);
+              const error = new Error(
+                `Thumbnail image not found at path: ${imagePath}`
+              );
               loggingService.error(error.message);
               reject(error);
             }

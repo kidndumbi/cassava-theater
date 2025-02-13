@@ -3,12 +3,12 @@ import { Box, IconButton, Theme } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { renderTextField } from "./RenderTextField";
 
-
 interface SearchHeaderProps {
   onRefresh: () => void;
   filter: string;
   onFilterChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   theme: Theme;
+  styles?: React.CSSProperties;
 }
 
 export const SearchHeader: React.FC<SearchHeaderProps> = ({
@@ -16,20 +16,19 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
   filter,
   onFilterChange,
   theme,
+  styles,
 }) => {
   return (
     <Box
       sx={{
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
+        justifyContent: "space-between",
+        ...styles,
       }}
     >
       <IconButton
         sx={{
-          position: "absolute",
-          left: 0,
           color: theme.customVariables.appWhite,
           width: 48,
           height: 48,
@@ -38,10 +37,9 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
       >
         <RefreshIcon />
       </IconButton>
-      <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+      <Box sx={{ width: "30%" }}>
         {renderTextField("Search", filter, onFilterChange, theme)}
       </Box>
-
     </Box>
   );
 };
