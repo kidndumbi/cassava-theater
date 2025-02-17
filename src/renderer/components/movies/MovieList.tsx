@@ -1,8 +1,9 @@
 import React from "react";
 import { Box } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { trimFileName } from "../../util/helperFunctions";
+import { getUrl, trimFileName } from "../../util/helperFunctions";
 import { PosterCard } from "../common/PosterCard";
+import { useSettings } from "../../hooks/useSettings";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -15,10 +16,15 @@ const MovieList: React.FC<MovieListProps> = ({
   handlePosterClick,
   getImageUrl,
 }) => {
-  const getPosterUrl = (movie: VideoDataModel) => {
-    return movie.movie_details?.poster_path
-      && getImageUrl(movie.movie_details.poster_path)
-    
+  const { settings } = useSettings();
+
+  const getImageUlr = (movie: VideoDataModel) => {
+    if (movie.poster) {
+      return getUrl("file", movie.poster, null, settings?.port);
+    }
+    if (movie?.movie_details?.poster_path) {
+      return getImageUrl(movie.movie_details.poster_path);
+    }
   };
 
   return (
@@ -26,7 +32,7 @@ const MovieList: React.FC<MovieListProps> = ({
       {movies.map((movie) => (
         <PosterCard
           key={movie.filePath}
-          imageUrl={getPosterUrl(movie)}
+          imageUrl={getImageUlr(movie)}
           altText={movie.fileName || ""}
           onClick={() => handlePosterClick(movie.filePath || "")}
           footer={trimFileName(movie.fileName || "")}

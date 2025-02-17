@@ -3,8 +3,9 @@ import { Box, Typography } from "@mui/material";
 import { PosterCard } from "../common/PosterCard";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { trimFileName } from "../../util/helperFunctions";
+import { getUrl, trimFileName } from "../../util/helperFunctions";
 import MovieDetailsButtons from "../movies/MovieDetailsButtons";
+import { useSettings } from "../../hooks/useSettings";
 
 interface WatchLaterMovieCardProps {
   movie: VideoDataModel;
@@ -21,9 +22,19 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
 }) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [showActionButtons, setShowActions] = useState(false);
+  const { settings } = useSettings();
 
   const handlePlay = (startFromBeginning = false) => {
     handlePosterClick("movie", movie, startFromBeginning);
+  };
+
+  const getImageUlr = () => {
+    if (movie.poster) {
+      return getUrl("file", movie.poster, null, settings?.port);
+    }
+    if (movie?.movie_details?.poster_path) {
+      return getTmdbImageUrl(movie.movie_details.poster_path);
+    }
   };
 
   return (
@@ -37,10 +48,7 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
       }}
     >
       <PosterCard
-        imageUrl={
-          movie?.movie_details?.poster_path &&
-          getTmdbImageUrl(movie.movie_details.poster_path)
-        }
+        imageUrl={getImageUlr()}
         altText={movie.fileName}
         footer={
           <Box sx={{ marginTop: "5px" }}>

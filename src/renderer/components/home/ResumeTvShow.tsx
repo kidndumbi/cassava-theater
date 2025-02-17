@@ -1,10 +1,11 @@
 import React from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { trimFileName } from "../../util/helperFunctions";
+import { getUrl, trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { PosterCard } from "../common/PosterCard";
 import TvShowDetailsButtons from "../tv-shows/TvShowDetailsButtons";
+import { useSettings } from "../../hooks/useSettings";
 
 interface ResumeTvShowProps {
   tvShow: VideoDataModel;
@@ -24,6 +25,16 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
   loadingItems,
 }) => {
   const [showActionButtons, setShowActions] = React.useState(false);
+  const { settings } = useSettings();
+
+  const getImageUlr = () => {
+    if (tvShow.poster) {
+      return getUrl("file", tvShow.poster, null, settings?.port);
+    }
+    if (tvShow?.tv_show_details?.poster_path) {
+      return getTmdbImageUrl(tvShow.tv_show_details.poster_path);
+    }
+  };
 
   const handlePlay = (startFromBeginning = false) => {
     handlePosterClick("tvShow", tvShow, startFromBeginning);
@@ -41,11 +52,7 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
       }}
     >
       <PosterCard
-        imageUrl={
-          tvShow?.tv_show_details?.poster_path
-            && getTmdbImageUrl(tvShow.tv_show_details.poster_path)
-           
-        }
+        imageUrl={getImageUlr()}
         altText={tvShow.fileName}
         footer={
           <Box sx={{ marginTop: "5px" }}>

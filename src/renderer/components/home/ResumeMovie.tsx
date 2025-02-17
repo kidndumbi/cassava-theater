@@ -2,10 +2,11 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
-import { trimFileName } from "../../util/helperFunctions";
+import { getUrl, trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { PosterCard } from "../common/PosterCard";
 import MovieDetailsButtons from "../movies/MovieDetailsButtons";
+import { useSettings } from "../../hooks/useSettings";
 
 interface ResumeMovieProps {
   movie: VideoDataModel;
@@ -21,10 +22,20 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
   handlePosterClick,
 }) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
+  const { settings } = useSettings();
   const [showActionButtons, setShowActions] = React.useState(false);
 
   const handlePlay = (startFromBeginning = false) => {
     handlePosterClick("movie", movie, startFromBeginning);
+  };
+
+  const getImageUlr = () => {
+    if (movie.poster) {
+      return getUrl("file", movie.poster, null, settings?.port);
+    }
+    if (movie?.movie_details?.poster_path) {
+      return getTmdbImageUrl(movie.movie_details.poster_path);
+    }
   };
 
   return (
@@ -38,11 +49,7 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
       }}
     >
       <PosterCard
-        imageUrl={
-          movie?.movie_details?.poster_path
-            && getTmdbImageUrl(movie.movie_details.poster_path)
-         
-        }
+        imageUrl={getImageUlr()}
         altText={movie.fileName}
         footer={
           <Box sx={{ marginTop: "5px" }}>

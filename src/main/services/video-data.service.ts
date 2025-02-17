@@ -492,7 +492,8 @@ export const createVideoDataObject = (
     tv_show_details: jsonFileContents?.tv_show_details || null,
     isMkv: filePath.toLowerCase().endsWith(".mkv"),
     watchLater: jsonFileContents?.watchLater || false,
-    videoDataType
+    videoDataType,
+    poster: jsonFileContents?.poster || null,
   };
 };
 
@@ -511,6 +512,8 @@ export const createFolderDataObject = (
   lastVideoPlayed: jsonFileContents?.lastVideoPlayed,
   lastVideoPlayedTime: jsonFileContents?.lastVideoPlayedTime || 0,
   lastVideoPlayedDate: jsonFileContents?.lastVideoPlayedDate || null,
+  poster: jsonFileContents?.poster || null,
+  backdrop: jsonFileContents?.backdrop || null,
 });
 
 export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {

@@ -17,7 +17,7 @@ import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import Video from "./video";
 import { NotesModal } from "../common/NotesModal";
 import Box from "@mui/material/Box";
-import { secondsTohhmmss } from "../../util/helperFunctions";
+import { getUrl, secondsTohhmmss } from "../../util/helperFunctions";
 import { AppSlider } from "../common/AppSlider";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -87,19 +87,9 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       }
     }, [debouncedSliderValue]);
 
-    const getUrl = (
-      type: "video" | "file",
-      filePath: string | null | undefined,
-      start: number | null = null
-    ) => {
-      return `http://localhost:${port}/${type}?path=${encodeURIComponent(
-        filePath || ""
-      )}&start=${start || 0}`;
-    };
-
     const getVideoUrl = () =>
-      getUrl("video", currentVideo?.filePath, currentVideo?.currentTime);
-    const getSubtitleUrl = () => getUrl("file", subtitleFilePath);
+      getUrl("video", currentVideo?.filePath, currentVideo?.currentTime, port);
+    const getSubtitleUrl = () => getUrl("file", subtitleFilePath, null, port);
 
     const {
       skipBy,
