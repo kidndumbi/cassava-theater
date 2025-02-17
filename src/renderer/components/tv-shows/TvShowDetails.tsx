@@ -6,7 +6,11 @@ import { SelectChangeEvent } from "@mui/material/Select";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
-import { getFilename, getYearFromDate } from "../../util/helperFunctions";
+import {
+  getFilename,
+  getUrl,
+  getYearFromDate,
+} from "../../util/helperFunctions";
 import { Episodes } from "./episodes";
 import { VideoDataModel } from "../../../models/videoData.model";
 import RenderSelect from "./RenderSelect";
@@ -20,6 +24,7 @@ import { VideoProgressBar } from "../common/VideoProgressBar";
 import TvShowDetailsButtons from "./TvShowDetailsButtons";
 import { Season } from "../../../models/tv-show-details.model";
 import styles from "./TvShowDetails.module.css";
+import { useSettings } from "../../hooks/useSettings";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -78,6 +83,17 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     }
   }, [videoPath]);
 
+  const { settings } = useSettings();
+
+  const getImageUrl = (show: VideoDataModel) => {
+    if (show.backdrop) {
+      return getUrl("file", show.backdrop, null, settings?.port);
+    }
+    if (show?.tv_show_details?.backdrop_path) {
+      return getTmdbImageUrl(show.tv_show_details.backdrop_path, "original");
+    }
+  };
+
   const getFirstChildFolderPath = (tvShowDetails: VideoDataModel) =>
     tvShowDetails?.childFolders?.[0]?.folderPath ?? "";
 
@@ -97,10 +113,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   };
 
   function updateBackgroundAndSeason(tvShowDetails: VideoDataModel) {
-    // Compute background URL based on backdrop_path
-    const backdropPath = tvShowDetails?.tv_show_details?.backdrop_path;
-    const backgroundUrl =
-      backdropPath && getTmdbImageUrl(backdropPath, "original");
+    const backgroundUrl = getImageUrl(tvShowDetails);
 
     setTvShowBackgroundUrl(backgroundUrl);
 
@@ -187,7 +200,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     <>
       <Box
         className={styles.tvShowDetailsContainer}
-        style={{ backgroundImage: getBackgroundGradient(tvShowBackgroundUrl) }}        
+        style={{ backgroundImage: getBackgroundGradient(tvShowBackgroundUrl) }}
       >
         {loadingFolderDetails ? (
           <Box className={styles.loadingContainer}>

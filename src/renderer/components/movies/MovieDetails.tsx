@@ -12,6 +12,9 @@ import { AppNotes } from "../AppNotes";
 import styles from "./MovieDetails.module.css";
 import MovieDetailsHeader from "./MovieDetailsHeader";
 import MovieDetailsContent from "./MovieDetailsContent";
+import { useSettings } from "../../hooks/useSettings";
+import { getUrl } from "../../util/helperFunctions";
+import { VideoDataModel } from "../../../models/videoData.model";
 
 interface MovieDetailsProps {
   videoPath: string | null;
@@ -33,6 +36,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const { updateSubtitle } = useSubtitle();
   const [openModal, setOpenModal] = useState(false);
   const [currentTabValue, setCurrentTabValue] = useState(0);
+  const { settings } = useSettings();
 
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
@@ -43,11 +47,19 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     }
   }, [videoPath]);
 
+  const getImageUlr = (movie: VideoDataModel) => {
+    if (movie.backdrop) {
+      return getUrl("file", movie.backdrop, null, settings?.port);
+    }
+    if (movie?.movie_details?.backdrop_path) {
+      return getTmdbImageUrl(movie.movie_details.backdrop_path, "original");
+    }
+  };
+
   useEffect(() => {
-    setImageUrl(
-      videoDetails?.movie_details?.backdrop_path &&
-        getTmdbImageUrl(videoDetails.movie_details.backdrop_path, "original")
-    );
+    if (videoDetails) {
+      setImageUrl(getImageUlr(videoDetails));
+    }
   }, [videoDetails, getTmdbImageUrl]);
 
   const handleBackClick = () => {
