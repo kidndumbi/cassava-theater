@@ -68,9 +68,15 @@ const getUrl = (
   start: number | null = null,
   port: string
 ) => {
+  if (isExternalUrl(filePath)) return filePath;
+
   return `http://localhost:${port}/${type}?path=${encodeURIComponent(
     filePath || ""
   )}&start=${start || 0}`;
+};
+
+const isExternalUrl = (url: string) => {
+  return url.startsWith("http://") || url.startsWith("https://");
 };
 
 export {
@@ -84,5 +90,5 @@ export {
   sec,
   getFilename,
   formatDate,
-  getUrl
+  getUrl,
 };
