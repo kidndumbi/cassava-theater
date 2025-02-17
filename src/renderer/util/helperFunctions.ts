@@ -62,6 +62,17 @@ const formatDate = (dateString: string) => {
   return `${day}/${month}/${year}`;
 };
 
+const getUrl = (
+  type: "video" | "file",
+  filePath: string | null | undefined,
+  start: number | null = null,
+  port: string
+) => {
+  return `http://localhost:${port}/${type}?path=${encodeURIComponent(
+    filePath || ""
+  )}&start=${start || 0}`;
+};
+
 export {
   secondsTohhmmss,
   isEmptyObject,
@@ -73,4 +84,5 @@ export {
   sec,
   getFilename,
   formatDate,
+  getUrl
 };

@@ -1,4 +1,4 @@
-import React, {  useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Box } from "@mui/material";
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 
@@ -7,6 +7,8 @@ interface PosterCardProps {
   altText: string;
   onClick?: () => void;
   footer?: React.ReactNode;
+  width?: string;
+  height?: string;
 }
 
 export const PosterCard: React.FC<PosterCardProps> = ({
@@ -14,6 +16,8 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   altText,
   onClick,
   footer,
+  width = "200px",
+  height = "300px",
 }) => {
   const [hasError, setHasError] = useState(false);
 
@@ -31,9 +35,9 @@ export const PosterCard: React.FC<PosterCardProps> = ({
           onError={handleError}
           onClick={onClick}
           style={{
-            width: "200px",
+            width,
+            height,
             borderRadius: "10px",
-            height: "auto",
             cursor: "pointer",
           }}
         />
@@ -42,8 +46,8 @@ export const PosterCard: React.FC<PosterCardProps> = ({
           onClick={onClick}
           sx={{
             cursor: "pointer",
-            width: "200px",
-            height: "300px",
+            width,
+            height,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

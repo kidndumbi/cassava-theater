@@ -1,10 +1,13 @@
-import React, { useEffect } from "react";
-import { Modal, Typography, Paper, Box, Button } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Modal, Paper, Tabs, Tab } from "@mui/material";
 import theme from "../../theme";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { TvShowDetails } from "../../../models/tv-show-details.model";
 import { getFilename } from "../../util/helperFunctions";
+import { a11yProps, CustomTabPanel } from "../common/TabPanel";
+import TvShowSuggestions from "./TvShowSuggestions";
+import { TvShowCustomize } from "./TvShowCustomize";
 
 interface TvShowSuggestionsModalProps {
   open: boolean;
@@ -25,6 +28,11 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
     useTvShows();
 
   const { getTmdbImageUrl } = useTmdbImageUrl();
+  const [currentTabValue, setCurrentTabValue] = useState(0);
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setCurrentTabValue(newValue);
+  };
 
   useEffect(() => {
     if (fileName && open) {
@@ -36,8 +44,9 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
   return (
     <Modal open={open} onClose={handleClose}>
       <Paper
+        className="custom-scrollbar"
         sx={{
-          maxHeight: "80%",
+          height: "80%",
           overflowY: "auto",
           position: "absolute",
           top: "50%",
@@ -50,55 +59,50 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
           p: 4,
         }}
       >
-        <Typography variant="h6" component="h2" color="primary">
-          TV Show Suggestions
-        </Typography>
-        <Typography sx={{ mt: 2, color: theme.customVariables.appWhiteSmoke }}>
-          {fileName}
-        </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 2,
-            mt: 2,
+        <Tabs
+          value={currentTabValue}
+          onChange={handleChange}
+          aria-label="basic tabs example"
+          TabIndicatorProps={{
+            style: {
+              backgroundColor: "primary",
+            },
           }}
         >
-          {tvShowSuggestions.map((tvShow) => (
-            <Box
-              key={tvShow.id}
-              sx={{
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                gap: 1,
-              }}
-            >
-              <img
-                src={getTmdbImageUrl(tvShow.poster_path, "w300")}
-                alt={tvShow.name}
-                style={{ width: 150, height: 225 }}
-              />
-              {tvShow.id.toString() === id ? (
-                <Typography
-                  variant="body2"
-                  sx={{ color: theme.customVariables.appWhiteSmoke }}
-                >
-                  Selected
-                </Typography>
-              ) : (
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    handleSelectTvShow(tvShow);
-                  }}
-                >
-                  Select
-                </Button>
-              )}
-            </Box>
-          ))}
-        </Box>
+          <Tab
+            label="TheMovieDb"
+            {...a11yProps(0)}
+            sx={{
+              color:
+                currentTabValue === 0
+                  ? "primary.main"
+                  : theme.customVariables.appWhiteSmoke,
+            }}
+          />
+          <Tab
+            label="Customize"
+            {...a11yProps(1)}
+            sx={{
+              color:
+                currentTabValue === 1
+                  ? "primary.main"
+                  : theme.customVariables.appWhiteSmoke,
+            }}
+          />
+        </Tabs>
+        <CustomTabPanel value={currentTabValue} index={0}>
+          <TvShowSuggestions
+            fileName={fileName}
+            tvShowSuggestions={tvShowSuggestions}
+            id={id}
+            handleSelectTvShow={handleSelectTvShow}
+            getTmdbImageUrl={getTmdbImageUrl}
+            theme={theme}
+          />
+        </CustomTabPanel>
+        <CustomTabPanel value={currentTabValue} index={1}>
+          <TvShowCustomize></TvShowCustomize>
+        </CustomTabPanel>
       </Paper>
     </Modal>
   );

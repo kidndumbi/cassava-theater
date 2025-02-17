@@ -54,41 +54,51 @@ const theMovieDbSlice = createSlice({
     tvShowSuggestions: [],
     movieSuggestionsLoading: false,
     tvShowSuggestionsLoading: false,
+    movieSuggestionsError: null,
+    tvShowSuggestionsError: null,
   } as {
     movieSuggestions: MovieDetails[];
     tvShowSuggestions: TvShowDetails[];
     movieSuggestionsLoading: boolean;
     tvShowSuggestionsLoading: boolean;
+    movieSuggestionsError: string | null; 
+    tvShowSuggestionsError: string | null;
   },
   reducers: {
     resetMovieSuggestions: (state) => {
       state.movieSuggestions = [];
+      state.movieSuggestionsError = null;
     },
     resetTvShowSuggestions: (state) => {
       state.tvShowSuggestions = [];
+      state.tvShowSuggestionsError = null;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchMovieSuggestions.pending, (state) => {
         state.movieSuggestionsLoading = true;
+        state.movieSuggestionsError = null;
       })
       .addCase(fetchMovieSuggestions.fulfilled, (state, action) => {
         state.movieSuggestions = action.payload;
         state.movieSuggestionsLoading = false;
       })
-      .addCase(fetchMovieSuggestions.rejected, (state) => {
+      .addCase(fetchMovieSuggestions.rejected, (state, action) => {
         state.movieSuggestionsLoading = false;
+        state.movieSuggestionsError = action.error.message || "Failed to fetch movie suggestions";
       })
       .addCase(fetchTvShowSuggestions.pending, (state) => {
         state.tvShowSuggestionsLoading = true;
+        state.tvShowSuggestionsError = null;
       })
       .addCase(fetchTvShowSuggestions.fulfilled, (state, action) => {
         state.tvShowSuggestions = action.payload;
         state.tvShowSuggestionsLoading = false;
       })
-      .addCase(fetchTvShowSuggestions.rejected, (state) => {
+      .addCase(fetchTvShowSuggestions.rejected, (state, action) => {
         state.tvShowSuggestionsLoading = false;
+        state.tvShowSuggestionsError = action.error.message || "Failed to fetch TV show suggestions";
       });
   },
 });

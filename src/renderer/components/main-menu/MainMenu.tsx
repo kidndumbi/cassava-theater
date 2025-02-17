@@ -37,7 +37,7 @@ const MainMenu: React.FC<MainMenuProps> = ({
   };
 
   return (
-    <List sx={{width: "130px", borderRight: "1px solid #ccc",  }}>
+    <List sx={{ width: "130px", borderRight: "1px solid #ccc" }}>
       {menuItems.map((item) => {
         const isActive = item.label === activeMenuItem.label;
         const activeStyle = isActive
@@ -46,7 +46,12 @@ const MainMenu: React.FC<MainMenuProps> = ({
         return (
           <Button
             key={item.label}
-            style={{ ...buttonStyle, ...activeStyle, borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }}
+            style={{
+              ...buttonStyle,
+              ...activeStyle,
+              borderTopRightRadius: "0px",
+              borderBottomRightRadius: "0px",
+            }}
             onClick={() => handleButtonClick(item)}
           >
             <Box

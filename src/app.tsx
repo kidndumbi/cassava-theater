@@ -117,7 +117,7 @@ function AppRoutes({
           path="video-player"
           element={<VideoPlayerPage appVideoPlayerRef={appVideoPlayerRef} />}
         />
-        <Route path="video-details" element={<VideoDetailsPage />} />
+        <Route  path="video-details" element={<VideoDetailsPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
     </Routes>

@@ -27,7 +27,6 @@ export interface VideoDataModel {
   lastVideoPlayedDuration?: number | null;
   overview?: OverviewModel;
   notes?: NoteModel[];
-  // lastWatched?: number;
   basePath?: string;
   childFolders?: {
     folderPath: string;
@@ -37,4 +36,6 @@ export interface VideoDataModel {
   isMkv?: boolean;
   watchLater?: boolean;
   videoDataType?: "movie" | "episode" | null;
+  poster?: string | null;
+  backdrop?: string | null;
 }

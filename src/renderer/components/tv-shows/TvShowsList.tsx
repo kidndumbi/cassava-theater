@@ -1,9 +1,10 @@
 import React from "react";
 import { Box } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { trimFileName } from "../../util/helperFunctions";
+import { getUrl, trimFileName } from "../../util/helperFunctions";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { PosterCard } from "../common/PosterCard";
+import { useSettings } from "../../hooks/useSettings";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
@@ -15,6 +16,16 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   handlePosterClick,
 }) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
+  const { settings } = useSettings();
+
+  const getImageUlr = (show: VideoDataModel) => {
+    if (show.poster) {
+      return getUrl("file", show.poster, null, settings?.port);
+    }
+    if (show?.tv_show_details?.poster_path) {
+      return getTmdbImageUrl(show.tv_show_details.poster_path);
+    }
+  };
 
   return (
     <>
@@ -22,11 +33,7 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
         {shows.map((show: VideoDataModel, index: number) => (
           <PosterCard
             key={index}
-            imageUrl={
-              show.tv_show_details?.poster_path
-                && getTmdbImageUrl(show.tv_show_details.poster_path)
-             
-            }
+            imageUrl={getImageUlr(show)}
             altText={show.fileName || ""}
             onClick={() => show.filePath && handlePosterClick(show.filePath)}
             footer={trimFileName(show.fileName ?? "")}

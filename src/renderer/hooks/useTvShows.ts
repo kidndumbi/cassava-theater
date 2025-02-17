@@ -83,6 +83,15 @@ export const useTvShows = () => {
     );
   };
 
+  const updateTvShowDbData = async (filePath: string, data: VideoDataModel) => {
+    await dispatch(
+      folderVideosInfoActions.postVideoJason({
+        currentVideo: { filePath },
+        newVideoJsonData: data,
+      })
+    );
+  };
+
   const updateSeasonTMDBId = (season_id: string, filePath: string) => {
     dispatch(
       folderVideosInfoActions.postVideoJason({
@@ -112,7 +121,7 @@ export const useTvShows = () => {
     );
   };
 
-  const getSingleEpisodeDetails = (path: string, category: string ) => {
+  const getSingleEpisodeDetails = (path: string, category: string) => {
     return fetchVideoDetailsApi({ path, category });
   };
 
@@ -130,7 +139,7 @@ export const useTvShows = () => {
 
   const updateTvShow = (tvShow: VideoDataModel) => {
     dispatch(folderVideosInfoActions.updateTvShow(tvShow));
-  }
+  };
 
   return {
     tvShows,
@@ -153,6 +162,7 @@ export const useTvShows = () => {
     getTvShowById,
     updateSeasonTMDBId,
     findNextEpisode,
-    updateTvShow
+    updateTvShow,
+    updateTvShowDbData,
   };
 };
