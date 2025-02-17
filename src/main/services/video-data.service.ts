@@ -494,6 +494,7 @@ export const createVideoDataObject = (
     watchLater: jsonFileContents?.watchLater || false,
     videoDataType,
     poster: jsonFileContents?.poster || null,
+    backdrop: jsonFileContents?.backdrop || null,
   };
 };
 
