@@ -9,6 +9,7 @@ import {
   Route,
   Navigate,
   useNavigate,
+  useLocation,
 } from "react-router-dom";
 import theme from "./renderer/theme";
 import { useSettings } from "./renderer/hooks/useSettings";
@@ -32,7 +33,7 @@ import { useTvShows } from "./renderer/hooks/useTvShows";
 import { StatusDisplay } from "./renderer/components/StatusDisplay";
 
 const App = () => {
-  const { fetchAllSettings, settings } = useSettings();
+  const { fetchAllSettings } = useSettings();
   const { showSnackbar } = useSnackbar();
   const { getMovies } = useMovies();
   const { getTvShows } = useTvShows();
@@ -67,7 +68,6 @@ const App = () => {
       >
         <main>
           <AppRoutes appVideoPlayerRef={appVideoPlayerRef} />
-          <StatusDisplay port={settings?.port} />
         </main>
       </Box>
     </HashRouter>
@@ -96,6 +96,12 @@ function AppRoutes({
 }) {
   const navigate = useNavigate();
   const { handleVideoSelect } = useVideoListLogic();
+  const { settings } = useSettings();
+
+  const location = useLocation();
+  const showStatusDisplay = !["/video-player", "/video-details"].includes(
+    location.pathname
+  );
 
   useEffect(() => {
     window.videoCommandsAPI.setCurrentVideo((data: SetPlayingModel) => {
@@ -112,16 +118,19 @@ function AppRoutes({
   }, []);
 
   return (
-    <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<LandingPage />} />
-        <Route
-          path="video-player"
-          element={<VideoPlayerPage appVideoPlayerRef={appVideoPlayerRef} />}
-        />
-        <Route path="video-details" element={<VideoDetailsPage />} />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Route>
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<LandingPage />} />
+          <Route
+            path="video-player"
+            element={<VideoPlayerPage appVideoPlayerRef={appVideoPlayerRef} />}
+          />
+          <Route path="video-details" element={<VideoDetailsPage />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Route>
+      </Routes>
+      {showStatusDisplay && <StatusDisplay port={settings?.port} />}
+    </>
   );
 }

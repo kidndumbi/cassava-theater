@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box } from "@mui/material";
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
+import theme from "../../theme";
 
 interface PosterCardProps {
   imageUrl: string;
@@ -52,6 +53,8 @@ export const PosterCard: React.FC<PosterCardProps> = ({
             alignItems: "center",
             justifyContent: "center",
             color: "gray",
+            borderRadius: "10px",
+            backgroundColor: theme.palette.secondary.light,
           }}
         >
           Poster Not Available
