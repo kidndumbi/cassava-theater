@@ -86,16 +86,17 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   const { settings } = useSettings();
 
   const getImageUrl = (show: VideoDataModel) => {
-    if (show.backdrop) {
-      return getUrl("file", show.backdrop, null, settings?.port);
+    const { backdrop, tv_show_details } = show;
+    if (backdrop) {
+      return getUrl("file", backdrop, null, settings?.port);
+    } else if (tv_show_details?.backdrop_path) {
+      return getTmdbImageUrl(tv_show_details.backdrop_path, "original");
     }
-    if (show?.tv_show_details?.backdrop_path) {
-      return getTmdbImageUrl(show.tv_show_details.backdrop_path, "original");
-    }
+    return "//";
   };
 
   const getFirstChildFolderPath = (tvShowDetails: VideoDataModel) =>
-    tvShowDetails?.childFolders?.[0]?.folderPath ?? "";
+    tvShowDetails?.childFolders?.at(0)?.folderPath ?? "";
 
   const setSeasonDetails = async (path: string, details: VideoDataModel) => {
     const seasonName = getFilename(path);

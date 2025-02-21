@@ -7,7 +7,9 @@ import { TvShowDetails } from "../../../models/tv-show-details.model";
 import { getFilename } from "../../util/helperFunctions";
 import { a11yProps, CustomTabPanel } from "../common/TabPanel";
 import TvShowSuggestions from "./TvShowSuggestions";
-import { TvShowCustomize } from "./TvShowCustomize";
+import { CustomImages } from "./CustomImages";
+import { VideoDataModel } from "../../../models/videoData.model";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 interface TvShowSuggestionsModalProps {
   open: boolean;
@@ -24,8 +26,15 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
   id,
   handleSelectTvShow,
 }) => {
-  const { tvShowSuggestions, getTvShowSuggestions, resetTvShowSuggestions } =
-    useTvShows();
+  const {
+    tvShowSuggestions,
+    getTvShowSuggestions,
+    resetTvShowSuggestions,
+    tvShowDetails,
+    updateTvShowDbData,
+  } = useTvShows();
+
+  const { showSnackbar } = useSnackbar();
 
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [currentTabValue, setCurrentTabValue] = useState(0);
@@ -101,7 +110,14 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
           />
         </CustomTabPanel>
         <CustomTabPanel value={currentTabValue} index={1}>
-          <TvShowCustomize></TvShowCustomize>
+          <CustomImages
+            posterUrl={tvShowDetails?.poster}
+            backdropUrl={tvShowDetails?.backdrop}
+            updateImage={async (data: VideoDataModel) => {
+              await updateTvShowDbData(tvShowDetails.filePath, data);
+              showSnackbar("Custom image updated successfully", "success");
+            }}
+          ></CustomImages>
         </CustomTabPanel>
       </Paper>
     </Modal>

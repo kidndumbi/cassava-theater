@@ -1,16 +1,28 @@
-import React, { useEffect } from "react";
-import { Modal, Typography, Paper, Box, Button } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  Modal,
+  Typography,
+  Paper,
+  Box,
+  Button,
+  Tabs,
+  Tab,
+} from "@mui/material";
 import theme from "../../theme";
 import { useMovies } from "../../hooks/useMovies";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { MovieDetails } from "../../../models/movie-detail.model";
+import { a11yProps, CustomTabPanel } from "../common/TabPanel";
+import { CustomImages } from "../tv-shows/CustomImages";
+import { VideoDataModel } from "../../../models/videoData.model";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 interface MovieSuggestionsModalProps {
   open: boolean;
   handleClose: () => void;
   fileName: string;
   id?: string;
-  handleSelectMovie: ( movie_details: MovieDetails) => void;
+  handleSelectMovie: (movie_details: MovieDetails) => void;
 }
 
 const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
@@ -20,9 +32,16 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
   id,
   handleSelectMovie,
 }) => {
-  const { movieSuggestions, getMovieSuggestions, resetMovieSuggestions } =
-    useMovies();
+  const {
+    movieSuggestions,
+    getMovieSuggestions,
+    resetMovieSuggestions,
+    videoDetails,
+    updateMovieDbData,
+  } = useMovies();
+  const { showSnackbar } = useSnackbar();
   const { getTmdbImageUrl } = useTmdbImageUrl();
+  const [currentTabValue, setCurrentTabValue] = useState(0);
 
   useEffect(() => {
     if (fileName && open) {
@@ -30,6 +49,10 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
       getMovieSuggestions(fileName);
     }
   }, [fileName, open]);
+
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setCurrentTabValue(newValue);
+  };
 
   const renderMovie = (movie: MovieDetails) => (
     <Box
@@ -57,7 +80,7 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
         <Button
           variant="contained"
           onClick={() => {
-            handleSelectMovie( movie);
+            handleSelectMovie(movie);
           }}
         >
           Select
@@ -70,7 +93,7 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
     <Modal open={open} onClose={handleClose}>
       <Paper
         sx={{
-          maxHeight: "80%",
+          height: "80%",
           overflowY: "auto",
           position: "absolute",
           top: "50%",
@@ -83,22 +106,67 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
           p: 4,
         }}
       >
-        <Typography variant="h6" component="h2" color="primary">
-          Movie Suggestions
-        </Typography>
-        <Typography sx={{ mt: 2, color: theme.customVariables.appWhiteSmoke }}>
-          {fileName}
-        </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 2,
-            mt: 2,
+        <Tabs
+          value={currentTabValue}
+          onChange={handleChange}
+          aria-label="basic tabs example"
+          TabIndicatorProps={{
+            style: {
+              backgroundColor: "primary",
+            },
           }}
         >
-          {movieSuggestions.map(renderMovie)}
-        </Box>
+          <Tab
+            label="TheMovieDb"
+            {...a11yProps(0)}
+            sx={{
+              color:
+                currentTabValue === 0
+                  ? "primary.main"
+                  : theme.customVariables.appWhiteSmoke,
+            }}
+          />
+          <Tab
+            label="Customize"
+            {...a11yProps(1)}
+            sx={{
+              color:
+                currentTabValue === 1
+                  ? "primary.main"
+                  : theme.customVariables.appWhiteSmoke,
+            }}
+          />
+        </Tabs>
+        <CustomTabPanel value={currentTabValue} index={0}>
+          <Typography variant="h6" component="h2" color="primary">
+            Movie Suggestions
+          </Typography>
+          <Typography
+            sx={{ mt: 2, color: theme.customVariables.appWhiteSmoke }}
+          >
+            {fileName}
+          </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 2,
+              mt: 2,
+            }}
+          >
+            {movieSuggestions.map(renderMovie)}
+          </Box>
+        </CustomTabPanel>
+        <CustomTabPanel value={currentTabValue} index={1}>
+          <CustomImages
+            posterUrl={videoDetails?.poster}
+            backdropUrl={videoDetails?.backdrop}
+            updateImage={async (data: VideoDataModel) => {
+              await updateMovieDbData(videoDetails.filePath, data);
+              showSnackbar("Custom image updated successfully", "success");
+            }}
+          />
+        </CustomTabPanel>
       </Paper>
     </Modal>
   );

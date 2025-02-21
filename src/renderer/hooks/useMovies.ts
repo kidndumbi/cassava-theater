@@ -79,6 +79,15 @@ export const useMovies = () => {
     );
   };
 
+  const updateMovieDbData = async (filePath: string, data: VideoDataModel) => {
+    await dispatch(
+      folderVideosInfoActions.postVideoJason({
+        currentVideo: { filePath },
+        newVideoJsonData: data,
+      })
+    );
+  };
+
   const updateMovie = (movie: VideoDataModel) =>
     dispatch(folderVideosInfoActions.updateMovie(movie));
 
@@ -95,5 +104,6 @@ export const useMovies = () => {
     updateTMDBId,
     updateWatchLater,
     updateMovie,
+    updateMovieDbData
   };
 };

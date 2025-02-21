@@ -1,9 +1,9 @@
 import { Box, Button, useTheme } from "@mui/material";
 import { renderTextField } from "../common/RenderTextField";
 import { Save, Folder as FolderIcon } from "@mui/icons-material";
-import { useEffect, useState } from "react";
-import { useTvShows } from "../../hooks/useTvShows";
+import React, { useState } from "react";
 import useSelectFolder from "../../hooks/useSelectFolder";
+import { VideoDataModel } from "../../../models/videoData.model";
 
 interface ImageSelectorProps {
   label: string;
@@ -21,6 +21,7 @@ const ImageSelector = ({
   onSave,
 }: ImageSelectorProps) => {
   const theme = useTheme();
+
   return (
     <Box style={{ display: "flex", alignItems: "center" }}>
       {renderTextField(label, value, onChange, theme)}
@@ -45,50 +46,56 @@ const ImageSelector = ({
   );
 };
 
-export const TvShowCustomize = () => {
-  const [posterUrl, setPosterUrl] = useState<string>("");
-  const [backdropUrl, setBackdropUrl] = useState<string>("");
+interface CustomImagesProps {
+  posterUrl: string;
+  backdropUrl: string;
+  updateImage: (data: VideoDataModel) => void;
+}
 
-  const { updateTvShowDbData, tvShowDetails } = useTvShows();
+export const CustomImages: React.FC<CustomImagesProps> = ({
+  posterUrl,
+  backdropUrl,
+  updateImage,
+}) => {
+  const [componentPosterUrl, setPosterUrl] = useState<string>(posterUrl);
+  const [componentBackdropUrl, setBackdropUrl] = useState<string>(backdropUrl);
+
   const { selectFile } = useSelectFolder();
-
-  useEffect(() => {
-    if (tvShowDetails) {
-      setPosterUrl(tvShowDetails.poster);
-      setBackdropUrl(tvShowDetails.backdrop);
-    }
-  }, [tvShowDetails]);
 
   return (
     <Box>
       <ImageSelector
         label="Poster"
-        value={posterUrl}
+        value={componentPosterUrl}
         onChange={(e) => setPosterUrl(e.target.value)}
         onBrowse={async () => {
           const filePath = await selectFile([
             { name: "image files", extensions: ["png", "jpg"] },
           ]);
           setPosterUrl(filePath);
-          updateTvShowDbData(tvShowDetails.filePath, { poster: filePath });
+          updateImage({ poster: filePath });
         }}
         onSave={() =>
-          updateTvShowDbData(tvShowDetails.filePath, { poster: posterUrl })
+          updateImage({
+            poster: componentPosterUrl,
+          })
         }
       />
       <ImageSelector
         label="Backdrop"
-        value={backdropUrl}
+        value={componentBackdropUrl}
         onChange={(e) => setBackdropUrl(e.target.value)}
         onBrowse={async () => {
           const filePath = await selectFile([
             { name: "image files", extensions: ["png", "jpg"] },
           ]);
           setBackdropUrl(filePath);
-          updateTvShowDbData(tvShowDetails.filePath, { backdrop: filePath });
+          updateImage({ backdrop: filePath });
         }}
         onSave={() =>
-          updateTvShowDbData(tvShowDetails.filePath, { backdrop: backdropUrl })
+          updateImage({
+            backdrop: componentBackdropUrl,
+          })
         }
       />
     </Box>
