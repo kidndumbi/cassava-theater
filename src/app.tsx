@@ -29,9 +29,10 @@ import { AppVideoPlayerHandle } from "./renderer/components/video-player/AppVide
 import { ConfirmationProvider } from "./renderer/contexts/ConfirmationContext";
 import { useMovies } from "./renderer/hooks/useMovies";
 import { useTvShows } from "./renderer/hooks/useTvShows";
+import { StatusDisplay } from "./renderer/components/StatusDisplay";
 
 const App = () => {
-  const { fetchAllSettings } = useSettings();
+  const { fetchAllSettings, settings } = useSettings();
   const { showSnackbar } = useSnackbar();
   const { getMovies } = useMovies();
   const { getTvShows } = useTvShows();
@@ -66,6 +67,7 @@ const App = () => {
       >
         <main>
           <AppRoutes appVideoPlayerRef={appVideoPlayerRef} />
+          <StatusDisplay port={settings?.port} />
         </main>
       </Box>
     </HashRouter>
@@ -117,7 +119,7 @@ function AppRoutes({
           path="video-player"
           element={<VideoPlayerPage appVideoPlayerRef={appVideoPlayerRef} />}
         />
-        <Route  path="video-details" element={<VideoDetailsPage />} />
+        <Route path="video-details" element={<VideoDetailsPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
     </Routes>
