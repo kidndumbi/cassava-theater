@@ -35,13 +35,13 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         left: 0,
         right: 0,
         height: "30px",
-        backgroundColor: theme.palette.primary.main,
+        backgroundColor: theme.customVariables.appDarker,
         color: theme.customVariables.appWhiteSmoke,
         display: "flex",
         alignItems: "center",
         fontSize: "1rem",
         padding: "0",
-        borderTop: `1px solid ${theme.palette.primary.dark}`,
+        borderTop: `1px solid ${theme.palette.secondary.dark}`,
       }}
     >
       <StatusDisplayItem>PORT: {port} </StatusDisplayItem>
