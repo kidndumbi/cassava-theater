@@ -66,7 +66,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       >
         <RefreshIcon />
       </IconButton>
-      {title("Resume Watching")}
+      {title("Resume")}
       <Box>
         <ResumeMovieList
           loadingMovies={loadingMovies}

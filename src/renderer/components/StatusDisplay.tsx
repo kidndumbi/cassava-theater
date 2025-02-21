@@ -41,6 +41,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         alignItems: "center",
         fontSize: "1rem",
         padding: "0",
+        borderTop: `1px solid ${theme.palette.primary.dark}`,
       }}
     >
       <StatusDisplayItem>PORT: {port} </StatusDisplayItem>
