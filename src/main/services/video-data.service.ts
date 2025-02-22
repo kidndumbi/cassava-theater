@@ -78,8 +78,7 @@ export const fetchVideosData = async ({
     let updatedVideoData: VideoDataModel[];
 
     if (includeThumbnail) {
-      const thumbnailCacheFilePath =
-        app.getPath("userData") + "/thumbnailCache.json";
+      const thumbnailCacheFilePath = getThumbnailCacheFilePath();
       const cache = readThumbnailCache(thumbnailCacheFilePath);
 
       const getVideoThumbnailsPromises = videoData.map((video) =>
@@ -102,6 +101,10 @@ export const fetchVideosData = async ({
     log.error("Error fetching video list: ", error);
     throw new Error("Error fetching video list: " + error);
   }
+};
+
+const getThumbnailCacheFilePath = () => {
+  return app.getPath("userData") + "/thumbnailCache.json";
 };
 
 export const fetchVideoDetails = async (
@@ -129,10 +132,7 @@ export const fetchVideoDetails = async (
       category
     );
 
-    const thumbnailCacheFilePath = path.join(
-      path.dirname(filePath),
-      "thumbnailCache.json"
-    );
+    const thumbnailCacheFilePath = getThumbnailCacheFilePath();
     const cache = readThumbnailCache(thumbnailCacheFilePath);
     const processedVideoData = await getVideoThumbnails(videoDetails, cache);
 
