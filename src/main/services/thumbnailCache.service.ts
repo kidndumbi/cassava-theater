@@ -3,13 +3,13 @@
 import * as fs from "fs";
 
 export interface ThumbnailCache {
-    [key: string]: { image: string; currentTime: number };
-  }
+  [key: string]: { image: string; currentTime: number };
+}
 
 export const readThumbnailCache = (cacheFilePath: string): ThumbnailCache => {
   if (fs.existsSync(cacheFilePath)) {
     const data = fs.readFileSync(cacheFilePath, "utf-8");
-    return JSON.parse(data);
+    return !data ? {} : JSON.parse(data);
   }
   return {};
 };
