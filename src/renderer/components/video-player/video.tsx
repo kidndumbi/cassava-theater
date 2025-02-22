@@ -7,6 +7,7 @@ type VideoProps = {
   getSubtitleUrl: () => string;
   subtitleFilePath: string | null;
   isMkv: boolean;
+  onClick?: () => void;
 };
 
 const Video: React.FC<VideoProps> = ({
@@ -15,8 +16,8 @@ const Video: React.FC<VideoProps> = ({
   getSubtitleUrl,
   subtitleFilePath,
   isMkv,
+  onClick,
 }) => {
-
   return (
     <video
       ref={videoPlayerRef}
@@ -30,6 +31,7 @@ const Video: React.FC<VideoProps> = ({
         height: "100%",
         objectFit: "contain",
       }}
+      onClick={onClick}
     >
       {subtitleFilePath && subtitleFilePath !== "None" && (
         <track

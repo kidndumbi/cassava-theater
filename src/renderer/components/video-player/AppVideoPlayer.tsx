@@ -149,6 +149,15 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           getVideoUrl={getVideoUrl}
           getSubtitleUrl={getSubtitleUrl}
           subtitleFilePath={subtitleFilePath}
+          onClick={() => {
+            if (currentVideo.isMkv) {
+              if (!paused) {
+                pause();
+              } else {
+                play();
+              }
+            }
+          }}
         />
 
         {isMouseActive && (
