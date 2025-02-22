@@ -4,7 +4,7 @@ import { app } from "electron";
 import { Jimp } from "jimp";
 import path from "path";
 import ffmpeg from "fluent-ffmpeg";
-import { loggingService } from "./main-logging.service";
+import { loggingService as log } from "./main-logging.service";
 
 export async function generateThumbnail(
   videoPath: string,
@@ -12,7 +12,7 @@ export async function generateThumbnail(
   ffmpegInstance: typeof ffmpeg
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const tempDir = `${app.getPath("userData")}/temp`; // Ensure this directory exists and is writable
+    const tempDir = `${app.getPath("userData")}/temp`;
 
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
@@ -23,15 +23,17 @@ export async function generateThumbnail(
     // Extract video dimensions
     ffmpegInstance.ffprobe(videoPath, (err, metadata) => {
       if (err) {
-        loggingService.error("FFprobe error:", err);
+        log.error("FFprobe error:", err);
         reject(err);
         return;
       }
 
-      const stream = metadata.streams.find((s: any) => s.width && s.height);
+      const stream = metadata.streams.find(
+        (s: ffmpeg.FfprobeStream) => s.width && s.height
+      );
       if (!stream) {
         const error = new Error("Unable to retrieve video dimensions.");
-        loggingService.error(error.message);
+        log.error(error.message);
         reject(error);
         return;
       }
@@ -41,7 +43,7 @@ export async function generateThumbnail(
 
       if (!width || !height) {
         const error = new Error("Unable to retrieve video dimensions.");
-        loggingService.error(error.message);
+        log.error(error.message);
         reject(error);
         return;
       }
@@ -63,26 +65,23 @@ export async function generateThumbnail(
               const image = await Jimp.read(imagePath);
               image.resize({ w: thumbnailWidth, h: thumbnailHeight });
               const base64Image = await image.getBase64("image/png");
-              loggingService.info(
-                "Thumbnail generated successfully:",
-                imagePath
-              );
+              log.info("Thumbnail generated successfully:", imagePath);
               resolve(base64Image);
               fs.unlinkSync(imagePath); // Clean up the generated thumbnail file
             } else {
               const error = new Error(
                 `Thumbnail image not found at path: ${imagePath}`
               );
-              loggingService.error(error.message);
+              log.error(error.message);
               reject(error);
             }
           } catch (error) {
-            loggingService.error("Error processing thumbnail:", error);
+            log.error("Error processing thumbnail:", error);
             reject(error);
           }
         })
         .on("error", (error) => {
-          loggingService.error("FFmpeg error:", error);
+          log.error("FFmpeg error:", error);
           reject(error);
         });
     });

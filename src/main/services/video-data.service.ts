@@ -18,7 +18,6 @@ import { TvShowDetails } from "../../models/tv-show-details.model";
 import {
   readJsonData,
   shouldProcessFile,
-  getJsonFilePath,
   writeJsonToFile,
   filterByCategory,
 } from "./video.helpers";
@@ -79,7 +78,8 @@ export const fetchVideosData = async ({
     let updatedVideoData: VideoDataModel[];
 
     if (includeThumbnail) {
-      const thumbnailCacheFilePath = path.join(filePath, "thumbnailCache.json");
+      const thumbnailCacheFilePath =
+        app.getPath("userData") + "/thumbnailCache.json";
       const cache = readThumbnailCache(thumbnailCacheFilePath);
 
       const getVideoThumbnailsPromises = videoData.map((video) =>
@@ -113,9 +113,8 @@ export const fetchVideoDetails = async (
   }
 
   try {
-    const jsonFilePath = filePath.replace(/\.(mp4|mkv)$/i, ".json");
     const stats = await stat(filePath);
-    const jsonFileContents = await readJsonData(jsonFilePath);
+    const jsonFileContents = await readJsonData(filePath);
     const duration = await calculateDuration(filePath);
     const fileName = path.basename(filePath);
 
@@ -154,8 +153,7 @@ export const fetchFolderDetails = async (
   }
 
   try {
-    const jsonFilePath = `${dirPath}.json`;
-    const jsonFileContents = await readJsonData(jsonFilePath);
+    const jsonFileContents = await readJsonData(dirPath);
     const basename = path.basename(dirPath);
 
     const childFoldersPromises = fs
@@ -163,8 +161,7 @@ export const fetchFolderDetails = async (
       .filter((dirent) => dirent.isDirectory())
       .map(async (dirent) => {
         const folderPath = path.join(dirPath, dirent.name).replace(/\\/g, "/");
-        const jsonFilePath = `${folderPath}.json`;
-        const jsonFileContents = await readJsonData(jsonFilePath);
+        const jsonFileContents = await readJsonData(folderPath);
         return {
           folderPath,
           basename: dirent.name,
@@ -201,14 +198,13 @@ export const saveCurrentTime = async (
     if (!currentVideo.filePath) {
       throw new Error("currentVideo.filePath is undefined");
     }
-    const jsonFilePath = getJsonFilePath(currentVideo.filePath);
 
-    const jsonFileContents = await readJsonData(jsonFilePath);
+    const jsonFileContents = await readJsonData(currentVideo.filePath);
     jsonFileContents.currentTime = currentTime;
     jsonFileContents.watched = currentTime !== 0;
     jsonFileContents.lastVideoPlayedDate = new Date().toISOString();
 
-    await writeJsonToFile(jsonFilePath, jsonFileContents);
+    await writeJsonToFile(currentVideo.filePath, jsonFileContents);
 
     if (isEpisode) {
       if (!currentVideo.filePath) {
@@ -216,7 +212,7 @@ export const saveCurrentTime = async (
       }
       const parentFilePath = path.dirname(currentVideo.filePath);
       const grandParentFilePath = path.dirname(parentFilePath);
-      const grandParentJsonFilePath = getJsonFilePath(grandParentFilePath);
+      const grandParentJsonFilePath = grandParentFilePath;
 
       const grandParentJsonFileContents = await readJsonData(
         grandParentJsonFilePath
@@ -258,9 +254,7 @@ export const getVideoJsonData = async (
       return EMPTY_JSON_RESPONSE;
     }
 
-    const newFilePath = currentVideo.filePath.replace(/\.(mp4|mkv)$/i, ".json");
-
-    return (await readJsonData(newFilePath)) as VideoDataModel;
+    return (await readJsonData(currentVideo.filePath)) as VideoDataModel;
   } catch (error) {
     console.error("An error occurred:", error);
     return null;
@@ -275,7 +269,7 @@ export const saveVideoJsonData = async (
   }: { currentVideo: VideoDataModel; newVideoJsonData: VideoDataModel }
 ) => {
   try {
-    const newFilePath = getJsonFilePath(currentVideo.filePath || "");
+    const newFilePath = currentVideo.filePath || "";
     const existingData = await readJsonData(newFilePath, {} as VideoDataModel);
     const mergedData = {
       ...existingData,
@@ -398,9 +392,7 @@ export const populateVideoData = async (
 ) => {
   try {
     const fullFilePath = `${filePath}/${file}`;
-    const jsonFileContents = await readJsonData(
-      `${filePath}/${path.parse(file).name}.json`
-    );
+    const jsonFileContents = await readJsonData(fullFilePath);
 
     const duration = await calculateDuration(fullFilePath);
     return createVideoDataObject(
