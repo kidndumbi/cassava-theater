@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import { v4 as uuidv4 } from "uuid";
+import { app } from "electron";
 import { Jimp } from "jimp";
 import path from "path";
 import ffmpeg from "fluent-ffmpeg";
@@ -11,7 +12,7 @@ export async function generateThumbnail(
   ffmpegInstance: typeof ffmpeg
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const tempDir = "D:/temp"; // Ensure this directory exists and is writable
+    const tempDir = `${app.getPath("userData")}/temp`; // Ensure this directory exists and is writable
 
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
