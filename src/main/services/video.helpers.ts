@@ -3,9 +3,9 @@ import { Stats } from "fs";
 import { loggingService as log } from "./main-logging.service";
 import { VideoDataModel } from "../../models/videoData.model";
 import * as lockFile from "proper-lockfile";
-import * as path from "path";
+import { app } from "electron";
 
-const VIDEO_META_DATA_FILE_NAME = "videoData.json";
+const VIDEO_META_DATA_FILE_NAME = app.getPath("userData") + "/videoData.json";
 
 export const filterByCategory = (
   videos: VideoDataModel[],
@@ -19,15 +19,6 @@ export const filterByCategory = (
   return videos;
 };
 
-function getVideoDataFilepath(filePath: string): string {
-  const normalizedFilePath = filePath.replace(/\\/g, "/");
-  const videoMetaDataFilePath = path.join(
-    path.dirname(normalizedFilePath),
-    VIDEO_META_DATA_FILE_NAME
-  );
-
-  return videoMetaDataFilePath;
-}
 
 export async function readJsonData(
   filePath: string,
@@ -36,12 +27,12 @@ export async function readJsonData(
     overview: {},
   }
 ) {
-  const videoMetaDataFilePath = getVideoDataFilepath(filePath);
 
-  if (await fileExists(videoMetaDataFilePath)) {
-    const file = await readFileData(videoMetaDataFilePath);
+  if (await fileExists(VIDEO_META_DATA_FILE_NAME)) {
+    const file = await readFileData(VIDEO_META_DATA_FILE_NAME);
     const fileJson = JSON.parse(file);
-    const videoData = (fileJson[normalizeFilePath(filePath)] || defaultData) as VideoDataModel;
+    const videoData = (fileJson[normalizeFilePath(filePath)] ||
+      defaultData) as VideoDataModel;
     return videoData;
   }
   return defaultData;
@@ -53,20 +44,15 @@ export const writeJsonToFile = async (
 ): Promise<VideoDataModel> => {
   let release: (() => Promise<void>) | null = null;
   try {
-    const normalizedFilePath = normalizeFilePath(filePath);
-    const videoMetaDataFilePath = path.join(
-      path.dirname(normalizedFilePath),
-      VIDEO_META_DATA_FILE_NAME
-    );
     try {
-      await access(videoMetaDataFilePath);
+      await access(VIDEO_META_DATA_FILE_NAME);
     } catch {
-      await writeFile(videoMetaDataFilePath, "{}");
+      await writeFile(VIDEO_META_DATA_FILE_NAME, "{}");
     }
-    release = await lockFile.lock(videoMetaDataFilePath, { retries: 3 });
+    release = await lockFile.lock(VIDEO_META_DATA_FILE_NAME, { retries: 3 });
 
     let currentData: Record<string, VideoDataModel> = {};
-    const content = await readFileData(videoMetaDataFilePath);
+    const content = await readFileData(VIDEO_META_DATA_FILE_NAME);
     if (content) {
       try {
         currentData = JSON.parse(content);
@@ -78,7 +64,7 @@ export const writeJsonToFile = async (
     currentData[normalizeFilePath(filePath)] = jsonData;
 
     await writeFile(
-      videoMetaDataFilePath,
+      VIDEO_META_DATA_FILE_NAME,
       JSON.stringify(currentData, null, 2)
     );
     return jsonData;
@@ -124,23 +110,3 @@ export function shouldProcessFile(
     ? false
     : true;
 }
-
-export const getJsonFilePath = (filePath: string): string => {
-  if (!filePath) {
-    throw new Error("filePath is undefined!");
-  }
-
-  if (
-    filePath.toLowerCase().endsWith(".mp4") ||
-    filePath.toLowerCase().endsWith(".mkv")
-  ) {
-    return filePath.replace(/\.(mp4|mkv)$/i, ".json");
-  }
-
-  // Check if the filePath has no extension and append .json
-  if (!filePath.includes(".")) {
-    return `${filePath}.json`;
-  }
-
-  return filePath;
-};
