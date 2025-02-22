@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 import {
   selCurrentTime,
+  selCurrentVideo,
   selLastVideoPlayedDate,
   selMkvCurrentTime,
   selVideoEnded,
@@ -8,7 +9,6 @@ import {
   videoPlayerActions,
 } from "../store/videoPlayer.slice";
 import { useAppDispatch } from "../store";
-import { selCurrentVideo } from "../store/currentVideo.slice";
 import { isEmptyObject } from "../util/helperFunctions";
 import { useState } from "react";
 import { VideoDataModel } from "../../models/videoData.model";

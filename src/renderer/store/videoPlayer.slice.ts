@@ -1,3 +1,4 @@
+import { VideoDataModel } from "../../models/videoData.model";
 import { RootState } from "./index";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
@@ -7,10 +8,12 @@ interface VideoPlayerState {
   mkvCurrentTime: number;
   currentTime: number;
   lastVideoPlayedDate: string;
+  currentVideo: VideoDataModel
 }
 
 const initialState: VideoPlayerState = {
   videoPlayer: {} as HTMLVideoElement,
+  currentVideo: {} as VideoDataModel,
   videoEnded: false,
   mkvCurrentTime: 0,
   currentTime: 0,
@@ -21,6 +24,9 @@ const videoPlayerSlice = createSlice({
   name: "videoPlayer",
   initialState,
   reducers: {
+    setCurrentVideo: (state, action: PayloadAction<VideoDataModel>) => {
+      state.currentVideo = { ...state.currentVideo, ...action.payload };
+    },
     setVideoPlayer: (state, action) => {
       state.videoPlayer = action.payload;
     },
@@ -51,6 +57,8 @@ const selMkvCurrentTime = (state: RootState) =>
 const selCurrentTime = (state: RootState) => state.videoPlayer.currentTime;
 const selLastVideoPlayedDate = (state: RootState) =>
   state.videoPlayer.lastVideoPlayedDate;
+const selCurrentVideo = (state: RootState) => state.videoPlayer.currentVideo;
+
 
 export {
   videoPlayerSlice,
@@ -60,4 +68,5 @@ export {
   selMkvCurrentTime,
   selCurrentTime,
   selLastVideoPlayedDate,
+  selCurrentVideo
 };
