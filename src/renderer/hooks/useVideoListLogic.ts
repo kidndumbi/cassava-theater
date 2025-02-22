@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
 import { selFoldersVideosInfo } from "../store/folderVideosInfo.slice";
-import { currentVideoActions } from "../store/currentVideo.slice";
 import { selVideoPlayer, videoPlayerActions } from "../store/videoPlayer.slice";
 import { VideoDataModel } from "../../models/videoData.model";
 import { useVideoPlayerLogic } from "./useVideoPlayerLogic";
@@ -16,13 +15,13 @@ export const useVideoListLogic = () => {
   const { updateVideoDBCurrentTime } = useVideoPlayerLogic();
 
   const setCurrentVideo = (video: VideoDataModel) => {
-    dispatch(currentVideoActions.setCurrentVideo(video));
+    dispatch(videoPlayerActions.setCurrentVideo(video));
   };
 
   const handleVideoSelect = (video: VideoDataModel) => {
     updateVideoDBCurrentTime();
     if (!video.isDirectory) {
-      dispatch(currentVideoActions.setCurrentVideo(video));
+      dispatch(videoPlayerActions.setCurrentVideo(video));
     }
   };
 
