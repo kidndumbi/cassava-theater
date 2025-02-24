@@ -302,7 +302,7 @@ async function getVideoThumbnails(
       !videoProgressScreenshot ||
       cache[cacheKey].currentTime !== (video.currentTime ?? 30)
         ? video.filePath
-          ? generateThumbnail(video.filePath, video.currentTime ?? 30, ffmpeg)
+          ? await generateThumbnail(video.filePath, video.currentTime ?? 30, ffmpeg)
           : Promise.resolve(undefined)
         : Promise.resolve(videoProgressScreenshot);
 
