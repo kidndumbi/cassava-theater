@@ -79,6 +79,18 @@ const isExternalUrl = (url: string) => {
   return url.startsWith("http://") || url.startsWith("https://");
 };
 
+const selectFolder = async (): Promise<string | null> => {
+  return window.openDialogAPI.openFolderDialog();
+};
+
+const selectFile = async (
+  fileDialogOptions = [
+    { name: ".vtt and .srt files", extensions: ["vtt", "srt"] },
+  ]
+): Promise<string | null> => {
+  return window.openDialogAPI.openFileDialog(fileDialogOptions);
+};
+
 export {
   secondsTohhmmss,
   isEmptyObject,
@@ -91,4 +103,6 @@ export {
   getFilename,
   formatDate,
   getUrl,
+  selectFolder,
+  selectFile,
 };
