@@ -65,7 +65,6 @@ export async function generateThumbnail(
               const image = await Jimp.read(imagePath);
               image.resize({ w: thumbnailWidth, h: thumbnailHeight });
               const base64Image = await image.getBase64("image/png");
-              log.info("Thumbnail generated successfully:", imagePath);
               resolve(base64Image);
               fs.unlinkSync(imagePath); // Clean up the generated thumbnail file
             } else {

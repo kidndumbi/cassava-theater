@@ -57,6 +57,9 @@ const folderVideosInfoSlice = createSlice({
     resetCustomFolder: (state) => {
       state.customFolderData = [];
     },
+    resetVideoDetails: (state) => {
+      state.VideoDetails = null;
+    },
     updateMovie: (state, action: PayloadAction<VideoDataModel>) => {
       const movie = action.payload;
       const idx = state.movies.findIndex((m) => m.filePath === movie.filePath);
