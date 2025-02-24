@@ -28,6 +28,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     loadingVideoDetails,
     updateTMDBId,
     updateWatchLater,
+    resetMovieDetails,
   } = useMovies();
   const [imageUrl, setImageUrl] = useState("");
   const { getTmdbImageUrl, getBackgroundGradient } = useTmdbImageUrl();
@@ -40,6 +41,12 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
 
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
+
+  useEffect(() => {
+    return () => {
+      resetMovieDetails();
+    };
+  }, []);
 
   useEffect(() => {
     if (videoPath) {

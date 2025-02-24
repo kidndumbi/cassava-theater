@@ -49,6 +49,10 @@ export const useMovies = () => {
     dispatch(theMovieDbActions.resetMovieSuggestions());
   };
 
+  const resetMovieDetails = () => {
+    dispatch(folderVideosInfoActions.resetVideoDetails());
+  };
+
   const updateTMDBId = async (
     filePath: string,
     movie_details: MovieDetails
@@ -104,6 +108,7 @@ export const useMovies = () => {
     updateTMDBId,
     updateWatchLater,
     updateMovie,
-    updateMovieDbData
+    updateMovieDbData,
+    resetMovieDetails
   };
 };
