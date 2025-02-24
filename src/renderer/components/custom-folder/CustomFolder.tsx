@@ -66,7 +66,7 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
 
   const getFilteredCustomFolderData = () => {
     return customFolderData.filter((data) => {
-      const fileNameWithoutExtension = data.fileName ? data.fileName.replace(/\.(mp4|mkv)$/i, "") : "";
+      const fileNameWithoutExtension = data.fileName ? data.fileName.replace(/\.(mp4|mkv|avi)$/i, "") : "";
       return fileNameWithoutExtension
         .toLowerCase()
         .includes(filter.toLowerCase());

@@ -144,13 +144,13 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     return (
       <div ref={containerRef} className="video-container">
         <Video
-          isMkv={currentVideo.isMkv}
+          isMkv={currentVideo.isMkv || currentVideo.isAvi}
           videoPlayerRef={videoPlayerRef}
           getVideoUrl={getVideoUrl}
           getSubtitleUrl={getSubtitleUrl}
           subtitleFilePath={subtitleFilePath}
           onClick={() => {
-            if (currentVideo.isMkv) {
+            if (currentVideo.isMkv || currentVideo.isAvi) {
               if (!paused) {
                 pause();
               } else {
@@ -197,7 +197,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             }}
           />
         )}
-        {currentVideo.isMkv && isMouseActive && (
+        {(currentVideo.isMkv || currentVideo.isAvi)  && isMouseActive && (
           <>
             <span
               style={{

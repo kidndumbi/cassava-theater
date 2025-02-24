@@ -69,7 +69,7 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
               {tvShow.lastVideoPlayed
                 ?.split("/")
                 .pop()
-                ?.replace(/\.(mp4|mkv)$/i, "")}
+                ?.replace(/\.(mp4|mkv|avi)$/i, "")}
             </Typography>
           </Box>
         }

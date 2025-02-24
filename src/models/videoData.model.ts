@@ -34,6 +34,7 @@ export interface VideoDataModel {
     season_id?: string | null;
   }[];
   isMkv?: boolean;
+  isAvi?: boolean;
   watchLater?: boolean;
   videoDataType?: "movie" | "episode" | null;
   poster?: string | null;

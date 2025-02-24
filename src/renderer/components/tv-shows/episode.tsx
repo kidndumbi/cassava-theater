@@ -72,7 +72,7 @@ export const Episode: React.FC<EpisodeProps> = ({
         sx={{ color: theme.customVariables.appWhiteSmoke }}
       >
         <h3 className="episode-title">
-          {episode.fileName?.replace(/\.(mp4|mkv)$/i, "") || "Unknown Title"}
+          {episode.fileName?.replace(/\.(mp4|mkv|avi)$/i, "") || "Unknown Title"}
         </h3>
         <p className="episode-duration">
           {secondsTohhmmss(episode.duration || 0)}
