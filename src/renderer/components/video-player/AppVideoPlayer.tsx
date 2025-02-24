@@ -21,6 +21,9 @@ import { getUrl, secondsTohhmmss } from "../../util/helperFunctions";
 import { AppSlider } from "../common/AppSlider";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import { useDebounce } from "@uidotdev/usehooks";
+import theme from "../../theme";
+import IconButton from "@mui/material/IconButton";
+import { Clear } from "@mui/icons-material";
 
 export type AppVideoPlayerHandle = {
   skipBy?: (seconds: number) => void;
@@ -67,6 +70,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const { mkvCurrentTime, currentVideo } = useVideoPlayerLogic();
     const videoPlayerRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
       console.log("AppVideoPlayer mounted");
@@ -141,6 +145,28 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       play?.();
     };
 
+    if (error) {
+      return (
+        <Box
+          sx={{
+            display: "flex",
+            height: "100vh",
+            padding: "30%",
+            color: theme.customVariables.appWhiteSmoke,
+            flexDirection: "column",
+          }}
+        >
+          <p>{error}</p>
+          <IconButton
+            sx={{ color: theme.customVariables.appWhite }}
+            onClick={handleCancel.bind(null, currentVideo?.filePath || "")}
+          >
+            <Clear />
+          </IconButton>
+        </Box>
+      );
+    }
+
     return (
       <div ref={containerRef} className="video-container">
         <Video
@@ -157,6 +183,13 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
                 play();
               }
             }
+          }}
+          onError={(error) => {
+            setError(
+              `An error occurred while loading the video: ${
+                error || "Unknown error"
+              }`
+            );
           }}
         />
 
@@ -197,7 +230,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             }}
           />
         )}
-        {(currentVideo.isMkv || currentVideo.isAvi)  && isMouseActive && (
+        {(currentVideo.isMkv || currentVideo.isAvi) && isMouseActive && (
           <>
             <span
               style={{

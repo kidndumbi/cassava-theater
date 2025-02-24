@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styles from "./video.module.css";
 
 type VideoProps = {
@@ -8,6 +8,7 @@ type VideoProps = {
   subtitleFilePath: string | null;
   isMkv: boolean;
   onClick?: () => void;
+  onError: (error: string) => void;
 };
 
 const Video: React.FC<VideoProps> = ({
@@ -17,7 +18,24 @@ const Video: React.FC<VideoProps> = ({
   subtitleFilePath,
   isMkv,
   onClick,
+  onError,
 }) => {
+  useEffect(() => {
+    const fetchVideoUrl = async () => {
+      try {
+        const response = await fetch(getVideoUrl());
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          onError(errorMessage);
+        }
+      } catch (err) {
+        onError(err);
+      }
+    };
+
+    fetchVideoUrl();
+  }, []);
+
   return (
     <video
       ref={videoPlayerRef}

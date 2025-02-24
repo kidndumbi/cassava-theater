@@ -76,7 +76,7 @@ const getUrl = (
 };
 
 const isExternalUrl = (url: string) => {
-  return url.startsWith("http://") || url.startsWith("https://");
+  return url?.startsWith("http://") || url?.startsWith("https://");
 };
 
 const selectFolder = async (): Promise<string | null> => {

@@ -520,8 +520,40 @@ export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
     res.end("Bad Request: URL is missing.");
     return;
   }
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const videoPath = decodeURIComponent(url.searchParams.get("path") as string);
+
+  let url: URL;
+  try {
+    url = new URL(req.url, `http://${req.headers.host}`);
+  } catch (error) {
+    res.writeHead(400, { "Content-Type": "text/plain" });
+    res.end("Bad Request: Invalid URL.");
+    return;
+  }
+
+  const videoPathParam = url.searchParams.get("path");
+  if (!videoPathParam) {
+    res.writeHead(400, { "Content-Type": "text/plain" });
+    res.end("Bad Request: 'path' parameter is missing.");
+    return;
+  }
+
+  let videoPath: string;
+  try {
+    videoPath = decodeURIComponent(videoPathParam);
+  } catch (error) {
+    if (error instanceof URIError) {
+      log.error("Error decoding video path:", error);
+      const problematicCharacters = "%";
+      res.writeHead(400, { "Content-Type": "text/plain" });
+      res.end(
+        `Bad Request: Invalid 'path' parameter. The path contains characters that cannot be decoded: ${problematicCharacters}`
+      );
+      return;
+    } else {
+      throw error;
+    }
+  }
+
   const fileExt = path.extname(videoPath).toLowerCase();
 
   if (fileExt === ".mkv" || fileExt === ".avi") {

@@ -58,13 +58,13 @@ export async function initializeSocket(
       } else if (
         req.method === "GET" &&
         req.url &&
-        req.url.startsWith("/video")
+        req.url?.startsWith("/video")
       ) {
         handleVideoRequest(req, res);
       } else if (
         req.method === "GET" &&
         req.url &&
-        req.url.startsWith("/file")
+        req.url?.startsWith("/file")
       ) {
         serveLocalFile(req, res);
       } else {
