@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Tooltip, IconButton, Menu, MenuItem } from "@mui/material";
 import ClosedCaptionIcon from "@mui/icons-material/ClosedCaption";
 import theme from "../../theme";
-import useSelectFolder from "../../hooks/useSelectFolder";
 import { convertSrtToVtt } from "../../store/folderVideosInfo.slice";
+import { selectFile } from "../../util/helperFunctions";
 
 interface ClosedCaptionButtonProps {
   handleFilepathChange: (folderPath: string) => void;
@@ -17,7 +17,6 @@ const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
   showTooltip = false, // Set default value
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { selectFile } = useSelectFolder();
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

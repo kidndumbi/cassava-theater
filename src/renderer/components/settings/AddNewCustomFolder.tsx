@@ -5,7 +5,7 @@ import { CustomFolderModel } from "../../../models/custom-folder";
 import { renderTextField } from "../../components/common/RenderTextField";
 import { v4 as uuidv4 } from "uuid";
 import { useForm, Controller } from "react-hook-form";
-import useSelectFolder from "../../hooks/useSelectFolder";
+import { selectFolder } from "../../util/helperFunctions";
 
 interface AddNewCustomFolderProps {
   onSave: (customFolder: CustomFolderModel) => void;
@@ -26,7 +26,6 @@ const AddNewCustomFolder: React.FC<AddNewCustomFolderProps> = ({
   });
 
   const newFolder = watch();
-  const { selectFolder } = useSelectFolder();
 
   const handleFolderPathButtonClick = async () => {
     const selectedFolderPath = await selectFolder();
@@ -64,7 +63,7 @@ const AddNewCustomFolder: React.FC<AddNewCustomFolderProps> = ({
                 name="folderPath"
                 control={control}
                 render={({ field }) =>
-                  renderTextField("Folder Path", field.value, () => {}, theme)
+                  renderTextField("Folder Path", field.value, null, theme)
                 }
               />
               <Button

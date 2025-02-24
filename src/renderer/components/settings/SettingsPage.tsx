@@ -6,11 +6,11 @@ import { SettingsModel } from "../../../models/settings.model";
 import { CustomFoldersSettings } from "./CustomFoldersSettings";
 import { GeneralSettings } from "./GeneralSettings";
 import { a11yProps, CustomTabPanel } from "../common/TabPanel";
-import useSelectFolder from "../../hooks/useSelectFolder";
 import { useMovies } from "../../hooks/useMovies";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
+import { selectFolder } from "../../util/helperFunctions";
 
 export const SettingsPage: React.FC = () => {
   const { settings, setSetting } = useSettings();
@@ -23,7 +23,6 @@ export const SettingsPage: React.FC = () => {
   const [theMovieDbApiKey, setTheMovieDbApiKey] = useState("");
   const [customFolders, setCustomFolders] = useState<CustomFolderModel[]>([]);
   const [currentTabValue, setCurrentTabValue] = useState(0);
-  const { selectFolder } = useSelectFolder();
 
   const { openDialog, setMessage } = useConfirmation();
 

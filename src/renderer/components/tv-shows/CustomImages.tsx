@@ -2,8 +2,8 @@ import { Box, Button, useTheme } from "@mui/material";
 import { renderTextField } from "../common/RenderTextField";
 import { Save, Folder as FolderIcon } from "@mui/icons-material";
 import React, { useState } from "react";
-import useSelectFolder from "../../hooks/useSelectFolder";
 import { VideoDataModel } from "../../../models/videoData.model";
+import { selectFile } from "../../util/helperFunctions";
 
 interface ImageSelectorProps {
   label: string;
@@ -59,8 +59,6 @@ export const CustomImages: React.FC<CustomImagesProps> = ({
 }) => {
   const [componentPosterUrl, setPosterUrl] = useState<string>(posterUrl);
   const [componentBackdropUrl, setBackdropUrl] = useState<string>(backdropUrl);
-
-  const { selectFile } = useSelectFolder();
 
   return (
     <Box>
