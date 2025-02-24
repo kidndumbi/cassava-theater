@@ -25,7 +25,7 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
     <div className={styles.movieDetailsContent}>
       <h1>
         {videoDetails?.movie_details?.title ||
-          videoDetails?.fileName?.replace(/\.(mp4|mkv)$/i, "")}
+          videoDetails?.fileName?.replace(/\.(mp4|mkv|avi)$/i, "")}
         {videoDetails?.movie_details?.release_date &&
           "(" +
             getYearFromDate(videoDetails?.movie_details?.release_date) +

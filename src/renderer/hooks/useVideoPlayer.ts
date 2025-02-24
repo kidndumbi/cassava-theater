@@ -106,7 +106,7 @@ export const useVideoPlayer = (
   const skipBy = (seconds: number) => {
     if (!globalVideoPlayer) return;
 
-    if (videoData.isMkv) {
+    if (videoData.isMkv || videoData.isAvi) {
       const newSrc = updateSourceWithStart(seconds);
       changeSource(newSrc);
       const newOffset = new Date();
@@ -133,7 +133,7 @@ export const useVideoPlayer = (
   const startPlayingAt = (time: number) => {
     if (!globalVideoPlayer) return;
 
-    if (videoData?.isMkv) {
+    if (videoData?.isMkv || videoData?.isAvi) {
       // Calculate additional seconds relative to current time
       const additionalSeconds = time - globalVideoPlayer.currentTime;
       const newSrc = updateSourceWithStart(additionalSeconds);

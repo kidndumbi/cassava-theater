@@ -302,7 +302,11 @@ async function getVideoThumbnails(
       !videoProgressScreenshot ||
       cache[cacheKey].currentTime !== (video.currentTime ?? 30)
         ? video.filePath
-          ? await generateThumbnail(video.filePath, video.currentTime ?? 30, ffmpeg)
+          ? await generateThumbnail(
+              video.filePath,
+              video.currentTime ?? 30,
+              ffmpeg
+            )
           : Promise.resolve(undefined)
         : Promise.resolve(videoProgressScreenshot);
 
@@ -350,7 +354,7 @@ export const getRootVideoData = async (
         return;
       }
       if (
-        [".mp4", ".mkv"].includes(path.extname(file).toLowerCase()) ||
+        [".mp4", ".mkv", ".avi"].includes(path.extname(file).toLowerCase()) ||
         stats.isDirectory()
       ) {
         const data = await populateVideoData(file, filePath, stats, category);
@@ -415,7 +419,7 @@ export const calculateDuration = async (file: string) => {
   let duration = 0;
 
   const ext = path.extname(file).toLowerCase();
-  if ([".mp4", ".mkv"].includes(ext)) {
+  if ([".mp4", ".mkv", ".avi"].includes(ext)) {
     const maybeDuration = await getVideoDuration(file);
     if (typeof maybeDuration === "number") {
       duration = maybeDuration;
@@ -483,6 +487,7 @@ export const createVideoDataObject = (
     movie_details: jsonFileContents?.movie_details || null,
     tv_show_details: jsonFileContents?.tv_show_details || null,
     isMkv: filePath.toLowerCase().endsWith(".mkv"),
+    isAvi: filePath.toLowerCase().endsWith(".avi"),
     watchLater: jsonFileContents?.watchLater || false,
     videoDataType,
     poster: jsonFileContents?.poster || null,
@@ -519,7 +524,7 @@ export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
   const videoPath = decodeURIComponent(url.searchParams.get("path") as string);
   const fileExt = path.extname(videoPath).toLowerCase();
 
-  if (fileExt === ".mkv") {
+  if (fileExt === ".mkv" || fileExt === ".avi") {
     // Optional: extract start time from query parameter (in seconds)
     const startParam = url.searchParams.get("start");
     const startTime = startParam ? Number(startParam) : 0;
@@ -528,7 +533,7 @@ export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
 
     if (!fs.existsSync(videoPath)) {
       res.writeHead(404, { "Content-Type": "text/plain" });
-      res.end("MKV file not found.");
+      res.end(`${fileExt.toUpperCase()} file not found.`);
       return;
     }
 
@@ -547,7 +552,7 @@ export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
         if (!res.headersSent) {
           res.writeHead(500, { "Content-Type": "text/plain" });
         }
-        res.end("Error processing MKV to MP4 stream.");
+        res.end(`Error processing ${fileExt.toUpperCase()} to MP4 stream.`);
       })
       .pipe(res, { end: true });
     return;

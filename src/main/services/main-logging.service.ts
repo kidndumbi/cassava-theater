@@ -3,13 +3,13 @@ import { app } from "electron";
 
 class LoggingService {
   private isProduction: boolean;
-  private context: string = " [Main] ";
+  private context = " [Main] ";
 
   constructor() {
     this.isProduction = app.isPackaged;
   }
 
-  info(message: string, ...args: any[]) {
+  info(message: string, ...args: unknown[]) {
     if (this.isProduction) {
       log.info(this.context + message, ...args);
     } else {
@@ -17,7 +17,7 @@ class LoggingService {
     }
   }
 
-  warn(message: string, ...args: any[]) {
+  warn(message: string, ...args: unknown[]) {
     if (this.isProduction) {
       log.warn(this.context + message, ...args);
     } else {
@@ -25,7 +25,7 @@ class LoggingService {
     }
   }
 
-  error(message: string, ...args: any[]) {
+  error(message: string, ...args: unknown[]) {
     if (this.isProduction) {
       log.error(this.context + message, ...args);
     } else {
@@ -33,7 +33,7 @@ class LoggingService {
     }
   }
 
-  debug(message: string, ...args: any[]) {
+  debug(message: string, ...args: unknown[]) {
     if (this.isProduction) {
       log.debug(this.context + message, ...args);
     } else {
