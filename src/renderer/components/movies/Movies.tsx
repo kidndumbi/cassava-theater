@@ -56,8 +56,8 @@ export const Movies: React.FC<MoviesProps> = ({
 
   const getRandomMovie = () => {
     const intervalId = setInterval(() => {
-      const randomIndex = Math.floor(Math.random() * filteredMovies.length);
-      setRandomMovie(filteredMovies[randomIndex]);
+      const randomIndex = Math.floor(Math.random() * movies.length);
+      setRandomMovie(movies[randomIndex]);
     }, 100);
 
     setTimeout(() => {
