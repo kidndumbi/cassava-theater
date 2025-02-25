@@ -26,7 +26,7 @@ const getFilename = (filePath: string): string => {
   return parts[parts.length - 1];
 };
 
-const trimFileName = (fileName: string, maxLength = 20) => {
+const trimFileName = (fileName: string, maxLength = 15) => {
   const nameWithoutExtension = fileName.replace(/\.(mp4|mkv|avi)$/i, "");
   return nameWithoutExtension.length > maxLength
     ? `${nameWithoutExtension.substring(0, maxLength)}...`
