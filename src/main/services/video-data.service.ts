@@ -82,7 +82,7 @@ export const fetchVideosData = async ({
       const cache = readThumbnailCache(thumbnailCacheFilePath);
 
       const getVideoThumbnailsPromises = videoData.map((video) =>
-        getVideoThumbnails(video, cache)
+        getVideoThumbnails(video, cache, video.duration)
       );
 
       updatedVideoData = await Promise.all(getVideoThumbnailsPromises);
@@ -134,7 +134,11 @@ export const fetchVideoDetails = async (
 
     const thumbnailCacheFilePath = getThumbnailCacheFilePath();
     const cache = readThumbnailCache(thumbnailCacheFilePath);
-    const processedVideoData = await getVideoThumbnails(videoDetails, cache);
+    const processedVideoData = await getVideoThumbnails(
+      videoDetails,
+      cache,
+      duration
+    );
 
     writeThumbnailCache(cache, thumbnailCacheFilePath);
 
@@ -289,7 +293,8 @@ export const saveVideoJsonData = async (
 
 async function getVideoThumbnails(
   video: VideoDataModel,
-  cache: ThumbnailCache
+  cache: ThumbnailCache,
+  duration: number
 ): Promise<VideoDataModel> {
   if (!video.isDirectory) {
     if (!video.filePath) {
@@ -305,7 +310,8 @@ async function getVideoThumbnails(
           ? await generateThumbnail(
               video.filePath,
               video.currentTime ?? 30,
-              ffmpeg
+              ffmpeg,
+              duration
             )
           : Promise.resolve(undefined)
         : Promise.resolve(videoProgressScreenshot);

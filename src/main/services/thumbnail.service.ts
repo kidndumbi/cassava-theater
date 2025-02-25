@@ -1,5 +1,4 @@
 import * as fs from "fs";
-import { v4 as uuidv4 } from "uuid";
 import { app } from "electron";
 import { Jimp } from "jimp";
 import path from "path";
@@ -9,7 +8,8 @@ import { loggingService as log } from "./main-logging.service";
 export async function generateThumbnail(
   videoPath: string,
   currentTime: number,
-  ffmpegInstance: typeof ffmpeg
+  ffmpegInstance: typeof ffmpeg,
+  duration: number
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const tempDir = `${app.getPath("userData")}/temp`;
@@ -18,7 +18,10 @@ export async function generateThumbnail(
       fs.mkdirSync(tempDir, { recursive: true });
     }
 
-    const filename = `thumbnail-at-${uuidv4()}-seconds.png`;
+    const filename = `thumbnail-at-${path.basename(
+      videoPath,
+      path.extname(videoPath)
+    )}.png`;
 
     // Extract video dimensions
     ffmpegInstance.ffprobe(videoPath, (err, metadata) => {
@@ -52,9 +55,13 @@ export async function generateThumbnail(
       const thumbnailWidth = width / 5; // Adjust this value to control the thumbnail size
       const thumbnailHeight = height / 5; // Maintain aspect ratio
 
+      const normalizedCurrentTime = Math.min(currentTime, duration - 3);
+
       ffmpegInstance(videoPath)
         .screenshots({
-          timestamps: [currentTime === 0 ? 5 : currentTime],
+          timestamps: [
+            currentTime === 0 ? 5 : Math.floor(normalizedCurrentTime),
+          ],
           filename,
           folder: tempDir,
         })

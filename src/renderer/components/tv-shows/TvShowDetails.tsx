@@ -46,6 +46,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     loadingEpisodes,
     resetTvShowDetails,
     updateTvShowTMDBId,
+    resetEpisodes
   } = useTvShows();
   const { updateSubtitle } = useSubtitle();
   const [tvShowBackgroundUrl, setTvShowBackgroundUrl] = useState("");
@@ -74,6 +75,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   useEffect(() => {
     return () => {
       resetTvShowDetails();
+      resetEpisodes();
     };
   }, []);
 
@@ -99,6 +101,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     tvShowDetails?.childFolders?.at(0)?.folderPath ?? "";
 
   const setSeasonDetails = async (path: string, details: VideoDataModel) => {
+    resetEpisodes();
     const seasonName = getFilename(path);
     const selectedSeason = details?.tv_show_details?.seasons?.find(
       (season: Season) => season.name.toLowerCase() === seasonName.toLowerCase()
