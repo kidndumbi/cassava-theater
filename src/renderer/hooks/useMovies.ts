@@ -95,6 +95,9 @@ export const useMovies = () => {
   const updateMovie = (movie: VideoDataModel) =>
     dispatch(folderVideosInfoActions.updateMovie(movie));
 
+  const removeMovie = (filePath: string) =>
+    dispatch(folderVideosInfoActions.removeMovie(filePath));
+
   return {
     movies,
     getMovies,
@@ -109,6 +112,7 @@ export const useMovies = () => {
     updateWatchLater,
     updateMovie,
     updateMovieDbData,
-    resetMovieDetails
+    resetMovieDetails,
+    removeMovie
   };
 };

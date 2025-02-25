@@ -80,6 +80,7 @@ export interface TheMovieDbAPI {
 
 export interface FileManagerAPI {
   convertSrtToVtt: (path: string) => Promise<string>;
+  deleteFile: (path: string) => Promise<{ success: boolean; message: string }>;
 }
 
 declare global {
