@@ -4,6 +4,7 @@ import { loggingService as log } from "./main-logging.service";
 import { VideoDataModel } from "../../models/videoData.model";
 import * as lockFile from "proper-lockfile";
 import { app } from "electron";
+import { normalizeFilePath } from "./helpers";
 
 const VIDEO_META_DATA_FILE_NAME = app.getPath("userData") + "/videoData.json";
 
@@ -74,10 +75,6 @@ export const writeJsonToFile = async (
     }
   }
 };
-
-function normalizeFilePath(filePath: string): string {
-  return filePath.replace(/\\/g, "/");
-}
 
 export async function fileExists(filePath: string): Promise<boolean> {
   try {

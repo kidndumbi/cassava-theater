@@ -67,6 +67,12 @@ const folderVideosInfoSlice = createSlice({
         state.movies[idx] = { ...state.movies[idx], ...movie };
       }
     },
+    removeMovie: (state, action: PayloadAction<string>) => {
+      const filePath = action.payload;
+      state.movies = state.movies.filter(
+        (movie) => movie.filePath !== filePath
+      );
+    },
     updateTvShow: (state, action: PayloadAction<VideoDataModel>) => {
       const tvShow = action.payload;
       const idx = state.tvShows.findIndex(

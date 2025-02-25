@@ -159,4 +159,10 @@ contextBridge.exposeInMainWorld("fileManagerAPI", {
       path
     ) as Promise<string>;
   },
+  deleteFile: (path: string) => {
+    return ipcRenderer.invoke(
+      FileIPCChannels.DELETE,
+      path
+    ) as Promise<{ success: boolean; message: string }>;
+  },
 });
