@@ -25,8 +25,8 @@ const HoverBox = styled(Box)({
 
 const HoverContent = styled(Box)({
   position: "absolute",
-  top: 0,
-  right: 0,
+  top: 9,
+  right: 9,
   display: "none",
 });
 

@@ -25,8 +25,12 @@ export const AppMore: React.FC<AppMoreProps> = ({ handleDelete }) => {
           sx={{
             left: 0,
             color: theme.customVariables.appWhiteSmoke,
-            width: 48,
-            height: 48,
+            width: 30,
+            height: 30,
+            backgroundColor: theme.customVariables.appDark,
+            "&:hover": {
+              backgroundColor: theme.customVariables.appDark,
+            },
           }}
           onClick={handleClick}
         >
