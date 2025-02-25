@@ -41,8 +41,8 @@ export async function generateThumbnail(
         return;
       }
 
-      const width = stream.width;
-      const height = stream.height;
+      const width = !isNaN(stream.width) ? stream.width : 1920; // Default width
+      const height = !isNaN(stream.height) ? stream.height : 1080;
 
       if (!width || !height) {
         const error = new Error("Unable to retrieve video dimensions.");
