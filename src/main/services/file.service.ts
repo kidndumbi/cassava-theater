@@ -5,7 +5,12 @@ import * as fs from "fs";
 import fsPromise from "fs/promises";
 import { app } from "electron";
 import { VideoDataModel } from "../../models/videoData.model";
-import { getThumbnailCacheFilePath, normalizeFilePath } from "./helpers";
+import {
+  fileExistsAsync,
+  getThumbnailCacheFilePath,
+  normalizeFilePath,
+  readFileDataAsync,
+} from "./helpers";
 const VIDEO_META_DATA_FILE_NAME = app.getPath("userData") + "/videoData.json";
 const VIDEO_EXTENSIONS = [".mp4", ".mkv", ".avi"]; // Allowed video file extensions
 
@@ -136,8 +141,8 @@ export const deleteFile = async (
     const ext = path.extname(normalizedPath).toLowerCase();
     const isFile = fs.lstatSync(normalizedPath).isFile();
 
-    if (await fileExists(VIDEO_META_DATA_FILE_NAME)) {
-      const file = await readFileData(VIDEO_META_DATA_FILE_NAME);
+    if (await fileExistsAsync(VIDEO_META_DATA_FILE_NAME)) {
+      const file = await readFileDataAsync(VIDEO_META_DATA_FILE_NAME);
       const fileJson = JSON.parse(file) as { [key: string]: VideoDataModel };
 
       const updatedFileJson = { ...fileJson };
@@ -150,26 +155,33 @@ export const deleteFile = async (
       );
     }
 
-    if (isFile && VIDEO_EXTENSIONS.includes(ext)) {
-      // Update metadata if the file is a video
+    if (isFile) {
+      if (VIDEO_EXTENSIONS.includes(ext)) {
+        if (await fileExistsAsync(getThumbnailCacheFilePath())) {
+          const thumbnailCache = await readFileDataAsync(
+            getThumbnailCacheFilePath()
+          );
+          const thumbnailCacheJson = JSON.parse(thumbnailCache) as {
+            [key: string]: string;
+          };
 
-      if (await fileExists(getThumbnailCacheFilePath())) {
-        const thumbnailCache = await readFileData(getThumbnailCacheFilePath());
-        const thumbnailCacheJson = JSON.parse(thumbnailCache) as {
-          [key: string]: string;
-        };
-
-        const updatedThumbnailCache = { ...thumbnailCacheJson };
-        delete updatedThumbnailCache[normalizedPath];
-        await fsPromise.writeFile(
-          getThumbnailCacheFilePath(),
-          JSON.stringify(updatedThumbnailCache, null, 2)
-        );
+          const updatedThumbnailCache = { ...thumbnailCacheJson };
+          delete updatedThumbnailCache[normalizedPath];
+          await fsPromise.writeFile(
+            getThumbnailCacheFilePath(),
+            JSON.stringify(updatedThumbnailCache, null, 2)
+          );
+        }
       }
+    } else {
+      console.log("logic for Deleting folder:", normalizedPath);
     }
 
-    // Permanently delete the file or folder
-    await fsPromise.unlink(normalizedPath);
+    if (isFile) {
+      await fsPromise.unlink(normalizedPath);
+    } else {
+      await fsPromise.rm(normalizedPath, { recursive: true, force: true });
+    }
     log.info(normalizedPath, " File or folder permanently deleted:");
 
     return {
@@ -189,18 +201,3 @@ export const deleteFile = async (
     return { success: false, message: errorMessage };
   }
 };
-
-// Helper function to check if a file exists
-async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await fsPromise.access(filePath, fsPromise.constants.F_OK);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// Helper function to read file data
-async function readFileData(filePath: string): Promise<string> {
-  return await fsPromise.readFile(filePath, { encoding: "utf-8" });
-}

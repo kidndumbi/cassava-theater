@@ -1,10 +1,10 @@
-import { readFile, access, writeFile } from "fs/promises";
+import { access, writeFile } from "fs/promises";
 import { Stats } from "fs";
-import { loggingService as log } from "./main-logging.service";
+
 import { VideoDataModel } from "../../models/videoData.model";
 import * as lockFile from "proper-lockfile";
 import { app } from "electron";
-import { normalizeFilePath } from "./helpers";
+import { fileExists, normalizeFilePath, readFileData } from "./helpers";
 
 const VIDEO_META_DATA_FILE_NAME = app.getPath("userData") + "/videoData.json";
 
@@ -20,7 +20,6 @@ export const filterByCategory = (
   return videos;
 };
 
-
 export async function readJsonData(
   filePath: string,
   defaultData: VideoDataModel = {
@@ -28,7 +27,6 @@ export async function readJsonData(
     overview: {},
   }
 ) {
-
   if (await fileExists(VIDEO_META_DATA_FILE_NAME)) {
     const file = await readFileData(VIDEO_META_DATA_FILE_NAME);
     const fileJson = JSON.parse(file);
@@ -75,26 +73,6 @@ export const writeJsonToFile = async (
     }
   }
 };
-
-export async function fileExists(filePath: string): Promise<boolean> {
-  try {
-    await access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export async function readFileData(
-  filePath: string
-): Promise<string | undefined> {
-  try {
-    const jsonFile = await readFile(filePath);
-    return jsonFile?.toString();
-  } catch (error) {
-    log.error("Error in readFileData:", error);
-  }
-}
 
 export function shouldProcessFile(
   file: string,
