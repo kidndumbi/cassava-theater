@@ -1,5 +1,7 @@
 import { app } from "electron";
 import fsPromise, { readFile, access } from "fs/promises";
+import * as fs from "fs";
+import * as path from "path";
 
 import { loggingService as log } from "./main-logging.service";
 
@@ -44,4 +46,21 @@ export async function fileExistsAsync(filePath: string): Promise<boolean> {
 // Helper function to read file data
 export async function readFileDataAsync(filePath: string): Promise<string> {
   return await fsPromise.readFile(filePath, { encoding: "utf-8" });
+}
+
+// Helper functions
+export async function verifyFileAccess(path: string): Promise<void> {
+  await fsPromise.access(
+    path,
+    fs.constants.F_OK | fs.constants.R_OK | fs.constants.W_OK
+  );
+}
+
+export async function getFileInfo(
+  filePath: string
+): Promise<{ isFile: boolean; ext: string }> {
+  const stats = await fs.promises.lstat(filePath);
+  const isFile = stats.isFile();
+  const ext = isFile ? path.extname(filePath).toLowerCase() : "";
+  return { isFile, ext };
 }

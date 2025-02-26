@@ -141,6 +141,10 @@ export const useTvShows = () => {
     dispatch(folderVideosInfoActions.updateTvShow(tvShow));
   };
 
+  const removeTvShow = (filePath: string) => {
+    dispatch(folderVideosInfoActions.removeTvShow(filePath));
+  };
+
   return {
     tvShows,
     episodes,
@@ -164,5 +168,6 @@ export const useTvShows = () => {
     findNextEpisode,
     updateTvShow,
     updateTvShowDbData,
+    removeTvShow
   };
 };
