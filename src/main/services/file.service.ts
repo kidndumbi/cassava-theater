@@ -7,12 +7,14 @@ import { app } from "electron";
 import { VideoDataModel } from "../../models/videoData.model";
 import {
   fileExistsAsync,
+  getFileInfo,
   getThumbnailCacheFilePath,
   normalizeFilePath,
   readFileDataAsync,
+  verifyFileAccess,
 } from "./helpers";
 const VIDEO_META_DATA_FILE_NAME = app.getPath("userData") + "/videoData.json";
-const VIDEO_EXTENSIONS = [".mp4", ".mkv", ".avi"]; // Allowed video file extensions
+// const VIDEO_EXTENSIONS = [".mp4", ".mkv", ".avi"]; // Allowed video file extensions
 
 export function serveLocalFile(req: IncomingMessage, res: ServerResponse) {
   if (!req.url) {
@@ -129,75 +131,137 @@ export function convertSrtToVtt(srtFilePath: string): string {
 export const deleteFile = async (
   filePath: string
 ): Promise<{ success: boolean; message: string }> => {
-  const normalizedPath = normalizeFilePath(filePath); // Use forward slashes
+  const normalizedPath = normalizeFilePath(filePath);
 
   try {
-    // Check if the file or folder exists and is accessible
-    await fsPromise.access(
-      normalizedPath,
-      fs.constants.F_OK | fs.constants.R_OK | fs.constants.W_OK
+    await verifyFileAccess(normalizedPath);
+    const { isFile } = await getFileInfo(normalizedPath);
+
+    await updateMetadataFile(normalizedPath);
+    await handleThumbnailCache(
+      isFile
+        ? normalizedPath
+        : await getVideoFilesInChildFolders(normalizedPath)
     );
+    await deleteFileOrFolder(normalizedPath, isFile);
 
-    const ext = path.extname(normalizedPath).toLowerCase();
-    const isFile = fs.lstatSync(normalizedPath).isFile();
-
-    if (await fileExistsAsync(VIDEO_META_DATA_FILE_NAME)) {
-      const file = await readFileDataAsync(VIDEO_META_DATA_FILE_NAME);
-      const fileJson = JSON.parse(file) as { [key: string]: VideoDataModel };
-
-      const updatedFileJson = { ...fileJson };
-
-      delete updatedFileJson[normalizedPath];
-
-      await fsPromise.writeFile(
-        VIDEO_META_DATA_FILE_NAME,
-        JSON.stringify(updatedFileJson, null, 2) // Pretty-print JSON for readability
-      );
-    }
-
-    if (isFile) {
-      if (VIDEO_EXTENSIONS.includes(ext)) {
-        if (await fileExistsAsync(getThumbnailCacheFilePath())) {
-          const thumbnailCache = await readFileDataAsync(
-            getThumbnailCacheFilePath()
-          );
-          const thumbnailCacheJson = JSON.parse(thumbnailCache) as {
-            [key: string]: string;
-          };
-
-          const updatedThumbnailCache = { ...thumbnailCacheJson };
-          delete updatedThumbnailCache[normalizedPath];
-          await fsPromise.writeFile(
-            getThumbnailCacheFilePath(),
-            JSON.stringify(updatedThumbnailCache, null, 2)
-          );
-        }
-      }
-    } else {
-      console.log("logic for Deleting folder:", normalizedPath);
-    }
-
-    if (isFile) {
-      await fsPromise.unlink(normalizedPath);
-    } else {
-      await fsPromise.rm(normalizedPath, { recursive: true, force: true });
-    }
-    log.info(normalizedPath, " File or folder permanently deleted:");
-
-    return {
-      success: true,
-      message: `File or folder permanently deleted: ${normalizedPath}`,
-    };
+    log.info(normalizedPath, "File or folder permanently deleted:");
+    return successResponse(normalizedPath);
   } catch (error: unknown) {
-    let errorMessage = `Error deleting file or folder ${normalizedPath}: `;
-
-    if (error instanceof Error) {
-      errorMessage += error.message;
-    } else {
-      errorMessage += "Unknown error";
-    }
-
-    log.error(errorMessage);
-    return { success: false, message: errorMessage };
+    return handleError(error, normalizedPath);
   }
 };
+
+async function updateMetadataFile(filePath: string): Promise<void> {
+  if (!(await fileExistsAsync(VIDEO_META_DATA_FILE_NAME))) return;
+
+  const file = await readFileDataAsync(VIDEO_META_DATA_FILE_NAME);
+  const fileJson = JSON.parse(file) as { [key: string]: VideoDataModel };
+
+  const updatedFileJson = { ...fileJson };
+
+  delete updatedFileJson[filePath];
+
+  await fsPromise.writeFile(
+    VIDEO_META_DATA_FILE_NAME,
+    JSON.stringify(updatedFileJson, null, 2)
+  );
+}
+
+async function getVideoFilesInChildFolders(
+  folderPath: string
+): Promise<string[]> {
+  const allowedExtensions = new Set([".mp4", ".avi", ".mkv"]);
+  const videoFiles: string[] = [];
+
+  try {
+    // Read the contents of the parent folder
+    const childItems = await fs.promises.readdir(folderPath, {
+      withFileTypes: true,
+    });
+
+    for (const item of childItems) {
+      // Only process child folders (not files or deeper subfolders)
+      if (item.isDirectory()) {
+        const childFolderPath = path.join(folderPath, item.name);
+
+        // Read the contents of the child folder
+        const childFolderItems = await fs.promises.readdir(childFolderPath, {
+          withFileTypes: true,
+        });
+
+        for (const childItem of childFolderItems) {
+          // Only process files (not subfolders)
+          if (childItem.isFile()) {
+            const fileExtension = path.extname(childItem.name).toLowerCase();
+
+            // Check if the file has one of the allowed extensions
+            if (allowedExtensions.has(fileExtension)) {
+              videoFiles.push(
+                normalizeFilePath(path.join(childFolderPath, childItem.name))
+              );
+            }
+          }
+        }
+      }
+    }
+
+    return videoFiles;
+  } catch (error) {
+    console.error(`Error reading folder ${folderPath}:`, error);
+    throw error;
+  }
+}
+
+async function handleThumbnailCache(
+  filePath: string | string[]
+): Promise<void> {
+  const cachePath = getThumbnailCacheFilePath();
+  if (!(await fileExistsAsync(cachePath))) return;
+
+  const thumbnailCache = await readFileDataAsync(cachePath);
+  const cacheJson = JSON.parse(thumbnailCache) as { [key: string]: string };
+
+  const updatedCache = { ...cacheJson };
+
+  if (Array.isArray(filePath)) {
+    filePath.forEach((path) => {
+      delete updatedCache[path];
+    });
+  } else {
+    log.info("Deleting path:", filePath);
+    delete updatedCache[filePath];
+  }
+
+  await fsPromise.writeFile(cachePath, JSON.stringify(updatedCache, null, 2));
+}
+
+async function deleteFileOrFolder(
+  path: string,
+  isFile: boolean
+): Promise<void> {
+  if (isFile) {
+    await fsPromise.unlink(path);
+  } else {
+    log.info("Deleting folder:", path);
+    await fsPromise.rm(path, { recursive: true, force: true });
+  }
+}
+
+function successResponse(path: string): { success: true; message: string } {
+  return {
+    success: true,
+    message: `File or folder permanently deleted: ${path}`,
+  };
+}
+
+function handleError(
+  error: unknown,
+  path: string
+): { success: false; message: string } {
+  const errorMessage = error instanceof Error ? error.message : "Unknown error";
+  const fullMessage = `Error deleting ${path}: ${errorMessage}`;
+
+  log.error(fullMessage);
+  return { success: false, message: fullMessage };
+}

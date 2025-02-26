@@ -43,12 +43,12 @@ const MovieList: React.FC<MovieListProps> = ({
       const del = await window.fileManagerAPI.deleteFile(filePath);
       if (del.success) {
         removeMovie(filePath);
-        showSnackbar("File deleted successfully", "success");
+        showSnackbar("Movie deleted successfully", "success");
       } else {
-        showSnackbar("Failed to delete file: " + del.message, "error");
+        showSnackbar("Failed to delete Movie: " + del.message, "error");
       }
     } catch (error) {
-      showSnackbar("Error deleting movie: " + error, "error");
+      showSnackbar("Error deleting Movie: " + error, "error");
     }
   };
 

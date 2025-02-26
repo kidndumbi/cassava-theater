@@ -82,6 +82,12 @@ const folderVideosInfoSlice = createSlice({
         state.tvShows[idx] = { ...state.tvShows[idx], ...tvShow };
       }
     },
+    removeTvShow: (state, action: PayloadAction<string>) => {
+      const filePath = action.payload;
+      state.tvShows = state.tvShows.filter(
+        (tvShow) => tvShow.filePath !== filePath
+      );
+    },
   },
   extraReducers: (builder) => {
     builder
