@@ -9,7 +9,7 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 
 interface MovieDetailsContentProps {
-  videoDetails: VideoDataModel | null
+  videoDetails: VideoDataModel | null;
   handlePlay: (startFromBeginning?: boolean) => void;
   currentTabValue: number;
   onTabChange: (event: React.SyntheticEvent, newValue: number) => void;
@@ -31,9 +31,7 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
             getYearFromDate(videoDetails?.movie_details?.release_date) +
             ")"}
       </h1>
-      <p style={{ maxWidth: "50%" }}>
-        {videoDetails?.movie_details?.overview}
-      </p>
+      <p style={{ maxWidth: "50%" }}>{videoDetails?.movie_details?.overview}</p>
       <MovieDetailsButtons
         videoDetails={videoDetails}
         handlePlay={handlePlay}
