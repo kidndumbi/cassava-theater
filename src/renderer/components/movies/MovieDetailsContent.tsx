@@ -1,5 +1,4 @@
 import React from "react";
-import styles from "./MovieDetailsContent.module.css"; // switched to module.css
 import { Box, Tabs, Tab } from "@mui/material";
 import { getYearFromDate } from "../../util/helperFunctions";
 
@@ -22,23 +21,23 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
   onTabChange,
 }) => {
   return (
-    <div className={styles.movieDetailsContent}>
-      <h1>
+    <div className="absolute bottom-5 left-5 text-white drop-shadow-md">
+      <h2 className="text-4xl font-extrabold mb-4">
         {videoDetails?.movie_details?.title ||
           videoDetails?.fileName?.replace(/\.(mp4|mkv|avi)$/i, "")}
         {videoDetails?.movie_details?.release_date &&
           "(" +
             getYearFromDate(videoDetails?.movie_details?.release_date) +
             ")"}
-      </h1>
-      <p style={{ maxWidth: "50%" }}>{videoDetails?.movie_details?.overview}</p>
+      </h2>
+      <p className="max-w-[50%]">{videoDetails?.movie_details?.overview}</p>
       <MovieDetailsButtons
         videoDetails={videoDetails}
         handlePlay={handlePlay}
       />
       {videoDetails?.currentTime !== undefined &&
         videoDetails?.currentTime > 0 && (
-          <Box sx={{ paddingRight: "20px" }}>
+          <Box className="pr-5">
             <VideoProgressBar
               current={videoDetails?.currentTime || 0}
               total={videoDetails?.duration || 0}
@@ -46,7 +45,7 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
           </Box>
         )}
 
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+      <Box>
         <Tabs
           value={currentTabValue}
           onChange={onTabChange}

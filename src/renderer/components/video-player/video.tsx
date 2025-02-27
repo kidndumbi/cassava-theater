@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import styles from "./video.module.css";
 
 type VideoProps = {
   videoPlayerRef: React.RefObject<HTMLVideoElement>;
@@ -40,15 +39,10 @@ const Video: React.FC<VideoProps> = ({
     <video
       ref={videoPlayerRef}
       crossOrigin="anonymous"
-      className={styles.customVideoPlayer}
+      className="w-full h-full object-contain"
       controls={!isMkv}
       playsInline
       src={getVideoUrl()}
-      style={{
-        width: "100%",
-        height: "100%",
-        objectFit: "contain",
-      }}
       onClick={onClick}
     >
       {subtitleFilePath && subtitleFilePath !== "None" && (

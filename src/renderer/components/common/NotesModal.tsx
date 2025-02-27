@@ -3,7 +3,6 @@ import { Modal, Paper, Box } from "@mui/material";
 import theme from "../../theme";
 import { AppNotes } from "../AppNotes";
 import { VideoDataModel } from "../../../models/videoData.model";
-import styles from "./NotesModal.module.css";
 
 interface NotesModalProps {
   open: boolean;
@@ -22,14 +21,15 @@ const NotesModal: React.FC<NotesModalProps> = ({
 }) => {
   return (
     <Modal open={open} onClose={handleClose}>
-      <Paper className={styles.notesModalPaper}
+      <Paper
+        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5 max-h-[80%] overflow-y-auto p-4"
         sx={{
           bgcolor: theme.customVariables.appDark,
           color: theme.customVariables.appWhiteSmoke,
           boxShadow: 24,
         }}
       >
-        <Box className={styles.notesModalBox}>
+        <Box className="mx-auto">
           <AppNotes
             handleVideoSeek={handleVideoSeek}
             currentVideoTime={currentVideoTime}
