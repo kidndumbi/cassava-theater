@@ -45,7 +45,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     loadingEpisodes,
     resetTvShowDetails,
     updateTvShowTMDBId,
-    resetEpisodes
+    resetEpisodes,
   } = useTvShows();
   const { updateSubtitle } = useSubtitle();
   const [tvShowBackgroundUrl, setTvShowBackgroundUrl] = useState("");
@@ -228,7 +228,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
               </Tooltip>
             </Box>
             <Box className="absolute bottom-5 left-5 text-white drop-shadow-md">
-              <h1>
+              <h2 className="text-4xl font-extrabold mb-4">
                 {tvShowDetails?.tv_show_details?.name ||
                   tvShowDetails?.filePath?.split("\\").pop()}
                 {tvShowDetails?.tv_show_details?.first_air_date &&
@@ -237,8 +237,8 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                       tvShowDetails?.tv_show_details?.first_air_date
                     ) +
                     ")"}
-              </h1>
-              <p style={{ maxWidth: "50%" }}>
+              </h2>
+              <p className="max-w-[50%]">
                 {tvShowDetails?.tv_show_details?.overview}
               </p>
 

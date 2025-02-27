@@ -1,3 +1,5 @@
+/* CSS module deprecated in favor of Tailwind utilities */
+/* 
 .customVideoPlayer {
   width: 100%;
   height: 100%;
@@ -9,3 +11,4 @@
 .customVideoPlayer::-webkit-media-controls-enclosure {
   overflow: hidden;
 }
+*/
