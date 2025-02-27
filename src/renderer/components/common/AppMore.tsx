@@ -22,11 +22,9 @@ export const AppMore: React.FC<AppMoreProps> = ({ handleDelete }) => {
     <>
       <Tooltip title="more options">
         <IconButton
+          className="left-0 w-[30px] h-[30px]"
           sx={{
-            left: 0,
             color: theme.customVariables.appWhiteSmoke,
-            width: 30,
-            height: 30,
             backgroundColor: theme.customVariables.appDark,
             "&:hover": {
               backgroundColor: theme.customVariables.appDark,

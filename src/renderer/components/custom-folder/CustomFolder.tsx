@@ -96,9 +96,9 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
     const filteredData = getFilteredCustomFolderData();
     if (filteredData.length === 0) {
       return (
-        <Box display="flex" justifyContent="center" height="100vh" paddingTop="3rem">
-          <Box fontSize="2rem">No Videos to display</Box>
-        </Box>
+        <div className="flex justify-center h-screen pt-12">
+          <div className="text-2xl">No Videos to display</div>
+        </div>
       );
     }
 
