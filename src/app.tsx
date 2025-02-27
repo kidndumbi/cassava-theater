@@ -88,7 +88,6 @@ root.render(
   </SnackbarProvider>
 );
 
-// Pass appVideoPlayerRef as a prop to VideoPlayerPage.
 function AppRoutes({
   appVideoPlayerRef,
 }: {

@@ -21,7 +21,8 @@ import {
   writeJsonToFile,
   filterByCategory,
 } from "./video.helpers";
-import { getThumbnailCacheFilePath, normalizeFilePath } from "./helpers";
+// import { getThumbnailCacheFilePath, normalizeFilePath } from "./helpers";
+import  * as helpers from "./helpers";
 
 let ffprobePath = path.join(
   app.getAppPath(),
@@ -79,7 +80,7 @@ export const fetchVideosData = async ({
     let updatedVideoData: VideoDataModel[];
 
     if (includeThumbnail) {
-      const thumbnailCacheFilePath = getThumbnailCacheFilePath();
+      const thumbnailCacheFilePath = helpers.getThumbnailCacheFilePath();
       const cache = readThumbnailCache(thumbnailCacheFilePath);
 
       const getVideoThumbnailsPromises = videoData.map((video) =>
@@ -129,7 +130,7 @@ export const fetchVideoDetails = async (
       category
     );
 
-    const thumbnailCacheFilePath = getThumbnailCacheFilePath();
+    const thumbnailCacheFilePath = helpers.getThumbnailCacheFilePath();
     const cache = readThumbnailCache(thumbnailCacheFilePath);
     const processedVideoData = await getVideoThumbnails(
       videoDetails,
@@ -297,7 +298,7 @@ async function getVideoThumbnails(
     if (!video.filePath) {
       throw new Error("Video file path is undefined");
     }
-    const cacheKey = normalizeFilePath(video.filePath);
+    const cacheKey = helpers.normalizeFilePath(video.filePath);
     let videoProgressScreenshot = cache[cacheKey]?.image;
 
     const thumbnailPromise =
