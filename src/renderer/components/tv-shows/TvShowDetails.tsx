@@ -23,7 +23,6 @@ import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import TvShowDetailsButtons from "./TvShowDetailsButtons";
 import { Season } from "../../../models/tv-show-details.model";
-import styles from "./TvShowDetails.module.css";
 import { useSettings } from "../../hooks/useSettings";
 
 interface TvShowDetailsProps {
@@ -203,16 +202,16 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   return (
     <>
       <Box
-        className={styles.tvShowDetailsContainer}
+        className="relative bg-cover h-screen w-screen"
         style={{ backgroundImage: getBackgroundGradient(tvShowBackgroundUrl) }}
       >
         {loadingFolderDetails ? (
-          <Box className={styles.loadingContainer}>
+          <Box className="flex justify-center items-center h-screen">
             <LoadingIndicator message="Loading..." />
           </Box>
         ) : (
           <>
-            <Box className={styles.headerButtons}>
+            <Box className="absolute top-5 left-5 flex justify-between w-[calc(100vw-40px)]">
               <IconButton
                 onClick={onBackClick}
                 style={{ color: theme.customVariables.appWhite }}
@@ -228,7 +227,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 </IconButton>
               </Tooltip>
             </Box>
-            <Box className={styles.infoBox}>
+            <Box className="absolute bottom-5 left-5 text-white drop-shadow-md">
               <h1>
                 {tvShowDetails?.tv_show_details?.name ||
                   tvShowDetails?.filePath?.split("\\").pop()}
@@ -260,7 +259,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
               )}
               {(tvShowDetails?.lastVideoPlayedTime || 0) > 0 &&
                 episodeLastWatched && (
-                  <Box sx={{ paddingBottom: "20px" }}>
+                  <Box className="pb-5">
                     <VideoProgressBar
                       current={episodeLastWatched?.currentTime || 0}
                       total={episodeLastWatched?.duration || 0}
@@ -268,7 +267,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                   </Box>
                 )}
               {childFolders.length > 0 && (
-                <Box sx={{ display: "flex", gap: 2 }}>
+                <Box className="flex gap-2">
                   <RenderSelect
                     value={selectedSeason}
                     onChange={onSeasonChange}
@@ -280,7 +279,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 </Box>
               )}
 
-              <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+              <Box>
                 <Tabs
                   value={currentTabValue}
                   onChange={onTabChange}
@@ -294,7 +293,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
           </>
         )}
       </Box>
-      <Box sx={{ flexGrow: 1 }}>
+      <Box className="flex-grow">
         <CustomTabPanel value={currentTabValue} index={0}>
           <Episodes
             seasonAirDate={seasonAirDate}

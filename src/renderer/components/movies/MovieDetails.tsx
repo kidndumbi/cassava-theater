@@ -9,7 +9,6 @@ import { useSubtitle } from "../../hooks/useSubtitle";
 import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
 import { CustomTabPanel } from "../common/TabPanel";
 import { AppNotes } from "../AppNotes";
-import styles from "./MovieDetails.module.css";
 import MovieDetailsHeader from "./MovieDetailsHeader";
 import MovieDetailsContent from "./MovieDetailsContent";
 import { useSettings } from "../../hooks/useSettings";
@@ -100,7 +99,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         }}
       >
         {loadingVideoDetails ? (
-          <div className={styles.loadingContainer}>
+          <div className="flex justify-center items-center h-screen">
             <LoadingIndicator message="Loading..." />
           </div>
         ) : (

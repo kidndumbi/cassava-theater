@@ -1,5 +1,4 @@
 import React from "react";
-import styles from "./MovieDetailsHeader.module.css"; // switched to module.css
 import { Box, IconButton, Tooltip } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MovieIcon from "@mui/icons-material/Movie";
@@ -40,7 +39,7 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
   };
 
   return (
-    <Box className={styles.movieDetailsHeader}>
+    <Box className="absolute top-[20px] left-[20px] flex justify-between w-[calc(100vw-30px)]">
       <Tooltip title="Back">
         <IconButton
           onClick={handleBackClick}
