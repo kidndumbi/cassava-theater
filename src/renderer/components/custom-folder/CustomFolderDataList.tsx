@@ -42,20 +42,20 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
   const renderFolderIcon = (item: VideoDataModel) =>
     item.fileName &&
     !hasExtension(item.fileName) && (
-      <Box position="absolute" top="4px" right="4px">
+      <Box className="absolute top-1 right-1">
         <FolderIcon color="primary" />
       </Box>
     );
 
   return (
-    <Box display="flex" flexWrap="wrap" gap="4px">
+    <Box className="flex flex-wrap gap-1">
       {customFolderData.map((item, idx) => (
-        <Box key={idx} m={1} flex="1 1 200px" maxWidth="200px">
-          <Box position="relative">{renderPosterImage(item)}</Box>
+        <Box key={idx} className="m-1 flex-[1_1_200px] max-w-[200px]">
+          <Box className="relative">{renderPosterImage(item)}</Box>
           <Typography
             variant="subtitle1"
             align="center"
-            sx={{ wordBreak: "break-all" }}
+            className="break-all"
           >
             {(item.fileName ?? "").replace(/\.(mp4|mkv|avi)$/i, "")}
           </Typography>

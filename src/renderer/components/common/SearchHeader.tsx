@@ -20,12 +20,8 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
 }) => {
   return (
     <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        ...styles,
-      }}
+      className="flex items-center justify-between"
+      style={styles}
     >
       <IconButton
         sx={{
@@ -37,7 +33,7 @@ export const SearchHeader: React.FC<SearchHeaderProps> = ({
       >
         <RefreshIcon />
       </IconButton>
-      <Box sx={{ width: "30%" }}>
+      <Box className="w-[30%]">
         {renderTextField("Search", filter, onFilterChange, theme)}
       </Box>
     </Box>

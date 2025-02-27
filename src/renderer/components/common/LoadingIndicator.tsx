@@ -12,17 +12,12 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
 }) => {
   const theme = useTheme();
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      width="100%"
-    >
+    <Box className="flex flex-col items-center w-full">
       {showCircularProgress && <CircularProgress />}
       <Typography
         variant="h6"
+        className="mt-4"
         sx={{
-          marginTop: "16px",
           color: theme.customVariables.appWhiteSmoke,
         }}
       >

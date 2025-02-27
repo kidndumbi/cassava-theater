@@ -47,12 +47,8 @@ const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
 
   const iconButton = (
     <IconButton
-      sx={{
-        left: 0,
-        color: theme.customVariables.appWhiteSmoke,
-        width: 48,
-        height: 48,
-      }}
+      sx={{ color: theme.customVariables.appWhiteSmoke }} // retained for color
+      className="left-0 w-12 h-12"
       onClick={handleMenuClick}
     >
       <ClosedCaptionIcon />
