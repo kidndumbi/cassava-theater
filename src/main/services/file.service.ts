@@ -128,10 +128,17 @@ export const deleteFile = async (
     await helpers.verifyFileAccess(normalizedPath);
     const { isFile } = await helpers.getFileInfo(normalizedPath);
 
-    await updateMetadataFile(normalizedPath);
+    const filesToProcess = isFile
+      ? [normalizedPath]
+      : [
+          ...(await helpers.getVideoFilesInChildFolders(normalizedPath)),
+          normalizedPath,
+        ];
+
+    await updateMetadataFile(filesToProcess);
     await handleThumbnailCache(
       isFile
-        ? normalizedPath
+        ? [normalizedPath]
         : await helpers.getVideoFilesInChildFolders(normalizedPath),
     );
     await helpers.deleteFileOrFolder(normalizedPath, isFile);
@@ -143,12 +150,16 @@ export const deleteFile = async (
   }
 };
 
-async function updateMetadataFile(filePath: string): Promise<void> {
+async function updateMetadataFile(filePaths: string[]): Promise<void> {
   const fileJson = await helpers.getVideoMetaData();
 
   const updatedFileJson = { ...fileJson };
 
-  delete updatedFileJson[filePath];
+  if (Array.isArray(filePaths)) {
+    filePaths.forEach((filePath) => {
+      delete updatedFileJson[filePath];
+    });
+  }
 
   await fsPromise.writeFile(
     VIDEO_META_DATA_FILE_NAME,
@@ -156,9 +167,7 @@ async function updateMetadataFile(filePath: string): Promise<void> {
   );
 }
 
-async function handleThumbnailCache(
-  filePath: string | string[],
-): Promise<void> {
+async function handleThumbnailCache(filePath: string[]): Promise<void> {
   const cachePath = helpers.getThumbnailCacheFilePath();
   if (!(await helpers.fileExistsAsync(cachePath))) return;
 
@@ -171,9 +180,6 @@ async function handleThumbnailCache(
     filePath.forEach((path) => {
       delete updatedCache[path];
     });
-  } else {
-    log.info("Deleting path:", filePath);
-    delete updatedCache[filePath];
   }
 
   await fsPromise.writeFile(cachePath, JSON.stringify(updatedCache, null, 2));
