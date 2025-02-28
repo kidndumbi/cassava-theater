@@ -4,7 +4,7 @@ import { Server } from "socket.io";
 import {
   fetchFolderDetails,
   fetchVideosData,
-  handleVideoRequest,
+  // handleVideoRequest,
   saveCurrentTime,
 } from "./video-data.service";
 import { getAllValues, setValue } from "../store";
@@ -14,6 +14,7 @@ import { VideoCommands } from "../../models/video-commands.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import * as net from "net";
 import { serveLocalFile } from "./file.service";
+import { handleVideoRequest } from "./video-streaming.service";
 
 // Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {

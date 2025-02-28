@@ -7,7 +7,8 @@ import { registerIpcHandlers } from "./main/ipc-handlers/ipcHandlers";
 import { initializeStore, getValue } from "./main/store";
 import { loggingService as log } from "./main/services/main-logging.service";
 import { initializeSocket } from "./main/services/socket.service";
-import { deleteMarkedForDeletion } from "./main/services/cleanUp.service";
+import * as cleanUp from "./main/services/cleanUp.service";
+import * as appSetup from "./main/services/setup.service";
 
 // import {
 //   installExtension,
@@ -28,7 +29,8 @@ if (require("electron-squirrel-startup")) {
 }
 
 initializeStore();
-deleteMarkedForDeletion();
+appSetup.initializeFfmpeg();
+cleanUp.runAppOpeningCleanup();
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -71,6 +73,10 @@ app.on("ready", () => {
   if (mainWindow) {
     initializeSocket(mainWindow, port);
   }
+});
+
+app.on("will-quit", () => {
+  cleanUp.runAppClosingCleanup();
 });
 
 // app.whenReady().then(() => {

@@ -3,20 +3,9 @@ import { loggingService as log } from "./main-logging.service";
 import * as path from "path";
 import * as fs from "fs";
 import fsPromise from "fs/promises";
-import { VideoDataModel } from "../../models/videoData.model";
-import {
-  deleteFileOrFolder,
-  fileExistsAsync,
-  getFileInfo,
-  getThumbnailCacheFilePath,
-  getVideoDataFilePath,
-  getVideoFilesInChildFolders,
-  normalizeFilePath,
-  readFileDataAsync,
-  verifyFileAccess,
-} from "./helpers";
+import * as helpers from "./helpers";
 
-const VIDEO_META_DATA_FILE_NAME = getVideoDataFilePath();
+const VIDEO_META_DATA_FILE_NAME = helpers.getVideoDataFilePath();
 
 export function serveLocalFile(req: IncomingMessage, res: ServerResponse) {
   if (!req.url) {
@@ -119,7 +108,7 @@ export function convertSrtToVtt(srtFilePath: string): string {
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error(
-        `Error converting ${srtFilePath} to VTT: ${error.message}`
+        `Error converting ${srtFilePath} to VTT: ${error.message}`,
       );
     } else {
       throw new Error(`Error converting ${srtFilePath} to VTT: Unknown error`);
@@ -131,21 +120,28 @@ export function convertSrtToVtt(srtFilePath: string): string {
 }
 
 export const deleteFile = async (
-  filePath: string
+  filePath: string,
 ): Promise<{ success: boolean; message: string }> => {
-  const normalizedPath = normalizeFilePath(filePath);
+  const normalizedPath = helpers.normalizeFilePath(filePath);
 
   try {
-    await verifyFileAccess(normalizedPath);
-    const { isFile } = await getFileInfo(normalizedPath);
+    await helpers.verifyFileAccess(normalizedPath);
+    const { isFile } = await helpers.getFileInfo(normalizedPath);
 
-    await updateMetadataFile(normalizedPath);
+    const filesToProcess = isFile
+      ? [normalizedPath]
+      : [
+          ...(await helpers.getVideoFilesInChildFolders(normalizedPath)),
+          normalizedPath,
+        ];
+
+    await updateMetadataFile(filesToProcess);
     await handleThumbnailCache(
       isFile
-        ? normalizedPath
-        : await getVideoFilesInChildFolders(normalizedPath)
+        ? [normalizedPath]
+        : await helpers.getVideoFilesInChildFolders(normalizedPath),
     );
-    await deleteFileOrFolder(normalizedPath, isFile);
+    await helpers.deleteFileOrFolder(normalizedPath, isFile);
 
     log.info(normalizedPath, "File or folder permanently deleted:");
     return successResponse(normalizedPath);
@@ -154,29 +150,28 @@ export const deleteFile = async (
   }
 };
 
-async function updateMetadataFile(filePath: string): Promise<void> {
-  if (!(await fileExistsAsync(VIDEO_META_DATA_FILE_NAME))) return;
-
-  const file = await readFileDataAsync(VIDEO_META_DATA_FILE_NAME);
-  const fileJson = JSON.parse(file) as { [key: string]: VideoDataModel };
+async function updateMetadataFile(filePaths: string[]): Promise<void> {
+  const fileJson = await helpers.getVideoMetaData();
 
   const updatedFileJson = { ...fileJson };
 
-  delete updatedFileJson[filePath];
+  if (Array.isArray(filePaths)) {
+    filePaths.forEach((filePath) => {
+      delete updatedFileJson[filePath];
+    });
+  }
 
   await fsPromise.writeFile(
     VIDEO_META_DATA_FILE_NAME,
-    JSON.stringify(updatedFileJson, null, 2)
+    JSON.stringify(updatedFileJson, null, 2),
   );
 }
 
-async function handleThumbnailCache(
-  filePath: string | string[]
-): Promise<void> {
-  const cachePath = getThumbnailCacheFilePath();
-  if (!(await fileExistsAsync(cachePath))) return;
+async function handleThumbnailCache(filePath: string[]): Promise<void> {
+  const cachePath = helpers.getThumbnailCacheFilePath();
+  if (!(await helpers.fileExistsAsync(cachePath))) return;
 
-  const thumbnailCache = await readFileDataAsync(cachePath);
+  const thumbnailCache = await helpers.readFileDataAsync(cachePath);
   const cacheJson = JSON.parse(thumbnailCache) as { [key: string]: string };
 
   const updatedCache = { ...cacheJson };
@@ -185,9 +180,6 @@ async function handleThumbnailCache(
     filePath.forEach((path) => {
       delete updatedCache[path];
     });
-  } else {
-    log.info("Deleting path:", filePath);
-    delete updatedCache[filePath];
   }
 
   await fsPromise.writeFile(cachePath, JSON.stringify(updatedCache, null, 2));
@@ -202,7 +194,7 @@ function successResponse(path: string): { success: true; message: string } {
 
 function handleError(
   error: unknown,
-  path: string
+  path: string,
 ): { success: false; message: string } {
   const errorMessage = error instanceof Error ? error.message : "Unknown error";
   const fullMessage = `Error deleting ${path}: ${errorMessage}`;

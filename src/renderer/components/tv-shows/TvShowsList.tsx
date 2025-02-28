@@ -1,5 +1,5 @@
 import React from "react";
-import { Box } from "@mui/material";
+import { Alert, Box } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, trimFileName } from "../../util/helperFunctions";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
@@ -9,6 +9,8 @@ import { styled } from "@mui/system";
 import { AppMore } from "../common/AppMore";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useTvShows } from "../../hooks/useTvShows";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
+import WarningIcon from "@mui/icons-material/Warning";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
@@ -37,6 +39,7 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   const { settings } = useSettings();
   const { showSnackbar } = useSnackbar();
   const { removeTvShow } = useTvShows();
+  const { openDialog, setMessage } = useConfirmation();
 
   const getImageUlr = (show: VideoDataModel) => {
     if (show.poster) {
@@ -48,16 +51,27 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   };
 
   const handleDelete = async (filePath: string) => {
-    try {
-      const del = await window.fileManagerAPI.deleteFile(filePath);
-      if (del.success) {
-        removeTvShow(filePath);
-        showSnackbar("Tv Show deleted successfully", "success");
-      } else {
-        showSnackbar("Failed to delete Tv Show: " + del.message, "error");
+    // Updated warning message with additional recovery information
+    setMessage(
+      <Alert icon={<WarningIcon fontSize="inherit" />} severity="error">
+        Deleting this TV show folder will permanently remove all its contents, and it won't be able to be recovered from the recycle bin.
+        Make sure it doesn't contain any important information.
+      </Alert>,
+    );
+    const dialogDecision = await openDialog("Delete");
+
+    if (dialogDecision === "Ok") {
+      try {
+        const del = await window.fileManagerAPI.deleteFile(filePath);
+        if (del.success) {
+          removeTvShow(filePath);
+          showSnackbar("Tv Show deleted successfully", "success");
+        } else {
+          showSnackbar("Failed to delete Tv Show: " + del.message, "error");
+        }
+      } catch (error) {
+        showSnackbar("Error deleting Tv Show: " + error, "error");
       }
-    } catch (error) {
-      showSnackbar("Error deleting Tv Show: " + error, "error");
     }
   };
 

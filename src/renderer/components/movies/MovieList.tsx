@@ -7,14 +7,13 @@ import { PosterCard } from "../common/PosterCard";
 import { AppMore } from "../common/AppMore";
 import { useMovies } from "../../hooks/useMovies";
 import { useSnackbar } from "../../contexts/SnackbarContext";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 
 interface MovieListProps {
   movies: VideoDataModel[];
   handlePosterClick: (videoPath: string) => void;
   getImageUrl: (movie: VideoDataModel) => string;
 }
-
-
 
 const HoverBox = styled(Box)({
   position: "relative",
@@ -37,18 +36,24 @@ const MovieList: React.FC<MovieListProps> = ({
 }) => {
   const { removeMovie } = useMovies();
   const { showSnackbar } = useSnackbar();
+  const { openDialog, setMessage } = useConfirmation();
 
   const handleDelete = async (filePath: string) => {
-    try {
-      const del = await window.fileManagerAPI.deleteFile(filePath);
-      if (del.success) {
-        removeMovie(filePath);
-        showSnackbar("Movie deleted successfully", "success");
-      } else {
-        showSnackbar("Failed to delete Movie: " + del.message, "error");
+    setMessage("Are you sure you want to delete this Movie?");
+    const dialogDecision = await openDialog("Delete");
+
+    if (dialogDecision === "Ok") {
+      try {
+        const del = await window.fileManagerAPI.deleteFile(filePath);
+        if (del.success) {
+          removeMovie(filePath);
+          showSnackbar("Movie deleted successfully", "success");
+        } else {
+          showSnackbar("Failed to delete Movie: " + del.message, "error");
+        }
+      } catch (error) {
+        showSnackbar("Error deleting Movie: " + error, "error");
       }
-    } catch (error) {
-      showSnackbar("Error deleting Movie: " + error, "error");
     }
   };
 
