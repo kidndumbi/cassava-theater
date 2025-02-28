@@ -345,35 +345,35 @@ export const getRootVideoData = async (
   searchText: string,
   category: string
 ) => {
-  // Your code
   const videoData: VideoDataModel[] = [];
-
   try {
     const files = await readdir(filePath);
     const fileProcessingPromises = files.map(async (file) => {
-      const fullPath = `${filePath}/${file}`;
-      const stats = await stat(fullPath);
+      try {
+        const fullPath = `${filePath}/${file}`;
+        const stats = await stat(fullPath);
 
-      if (!shouldProcessFile(file, stats, searchText)) {
-        return;
-      }
-      if (
-        [".mp4", ".mkv", ".avi"].includes(path.extname(file).toLowerCase()) ||
-        stats.isDirectory()
-      ) {
-        const data = await populateVideoData(file, filePath, stats, category);
-        if (data) {
-          videoData.push(data);
+        if (!shouldProcessFile(file, stats, searchText)) {
+          return;
         }
+        if (
+          [".mp4", ".mkv", ".avi"].includes(path.extname(file).toLowerCase()) ||
+          stats.isDirectory()
+        ) {
+          const data = await populateVideoData(file, filePath, stats, category);
+          if (data) {
+            videoData.push(data);
+          }
+        }
+      } catch (error) {
+        log.error(`Skipping file ${file} due to error:`, error);
       }
     });
-
     await Promise.all(fileProcessingPromises);
 
     return videoData.sort((a, b) => {
       // Sort by directory first
       const directoryDifference = Number(b.isDirectory) - Number(a.isDirectory);
-
       // If both are either directories or files, sort by createdAt
       if (directoryDifference === 0) {
         if (b.createdAt !== undefined && a.createdAt !== undefined) {
@@ -381,14 +381,12 @@ export const getRootVideoData = async (
         }
         return 0;
       }
-
       return directoryDifference;
     });
   } catch (error) {
     log.error("An error occurred while fetching root video data: ", error);
-    throw new Error(
-      "An error occurred while fetching root video data." + error
-    );
+    // Return the successfully processed videoData even if a global error occurred.
+    return videoData;
   }
 };
 
