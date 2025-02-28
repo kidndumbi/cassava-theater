@@ -21,8 +21,7 @@ import {
   writeJsonToFile,
   filterByCategory,
 } from "./video.helpers";
-// import { getThumbnailCacheFilePath, normalizeFilePath } from "./helpers";
-import  * as helpers from "./helpers";
+import * as helpers from "./helpers";
 
 let ffprobePath = path.join(
   app.getAppPath(),
@@ -31,7 +30,7 @@ let ffprobePath = path.join(
   "bin",
   "win32",
   "x64",
-  "ffprobe.exe"
+  "ffprobe.exe",
 );
 
 if (app.isPackaged) {
@@ -43,7 +42,7 @@ if (fs.existsSync(ffprobePath)) {
 } else {
   log.error("ffprobe.exe does not exist at the resolved path.");
   throw new Error(
-    "ffprobe binary not found. Please ensure ffprobe-static is installed correctly."
+    "ffprobe binary not found. Please ensure ffprobe-static is installed correctly.",
   );
 }
 
@@ -74,7 +73,7 @@ export const fetchVideosData = async ({
       null,
       filePath,
       searchText || "",
-      category
+      category,
     );
 
     let updatedVideoData: VideoDataModel[];
@@ -84,7 +83,7 @@ export const fetchVideosData = async ({
       const cache = readThumbnailCache(thumbnailCacheFilePath);
 
       const getVideoThumbnailsPromises = videoData.map((video) =>
-        getVideoThumbnails(video, cache, video.duration)
+        getVideoThumbnails(video, cache, video.duration),
       );
 
       updatedVideoData = await Promise.all(getVideoThumbnailsPromises);
@@ -95,7 +94,7 @@ export const fetchVideosData = async ({
     }
 
     const sorted = updatedVideoData.sort((a, b) =>
-      (a.fileName ?? "").localeCompare(b.fileName ?? "")
+      (a.fileName ?? "").localeCompare(b.fileName ?? ""),
     );
 
     return filterByCategory(sorted, category);
@@ -107,7 +106,7 @@ export const fetchVideosData = async ({
 
 export const fetchVideoDetails = async (
   filePath: string,
-  category: string
+  category: string,
 ): Promise<VideoDataModel> => {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Path does not exist: ${filePath}`);
@@ -127,7 +126,7 @@ export const fetchVideoDetails = async (
       "",
       duration,
       jsonFileContents,
-      category
+      category,
     );
 
     const thumbnailCacheFilePath = helpers.getThumbnailCacheFilePath();
@@ -135,7 +134,7 @@ export const fetchVideoDetails = async (
     const processedVideoData = await getVideoThumbnails(
       videoDetails,
       cache,
-      duration
+      duration,
     );
 
     writeThumbnailCache(cache, thumbnailCacheFilePath);
@@ -148,7 +147,7 @@ export const fetchVideoDetails = async (
 };
 
 export const fetchFolderDetails = async (
-  dirPath: string
+  dirPath: string,
 ): Promise<VideoDataModel> => {
   if (!fs.existsSync(dirPath)) {
     throw new Error(`Path does not exist: ${dirPath}`);
@@ -178,7 +177,7 @@ export const fetchFolderDetails = async (
       dirPath,
       jsonFileContents,
       jsonFileContents?.tv_show_details,
-      childFolders
+      childFolders,
     );
 
     return videoDetails;
@@ -194,7 +193,7 @@ export const saveCurrentTime = async (
     currentVideo,
     currentTime,
     isEpisode,
-  }: { currentVideo: VideoDataModel; currentTime: number; isEpisode?: boolean }
+  }: { currentVideo: VideoDataModel; currentTime: number; isEpisode?: boolean },
 ) => {
   try {
     if (!currentVideo.filePath) {
@@ -217,7 +216,7 @@ export const saveCurrentTime = async (
       const grandParentJsonFilePath = grandParentFilePath;
 
       const grandParentJsonFileContents = await readJsonData(
-        grandParentJsonFilePath
+        grandParentJsonFilePath,
       );
       grandParentJsonFileContents.lastVideoPlayed = currentVideo.filePath;
       grandParentJsonFileContents.lastVideoPlayedTime = currentTime;
@@ -228,7 +227,7 @@ export const saveCurrentTime = async (
 
       await writeJsonToFile(
         grandParentJsonFilePath,
-        grandParentJsonFileContents
+        grandParentJsonFileContents,
       );
     }
 
@@ -244,14 +243,14 @@ export const saveCurrentTime = async (
 
 export const getVideoJsonData = async (
   event: Electron.IpcMainInvokeEvent,
-  currentVideo: VideoDataModel
+  currentVideo: VideoDataModel,
 ) => {
   try {
     const EMPTY_JSON_RESPONSE: VideoDataModel = { notes: [], overview: {} };
 
     if (!currentVideo || !currentVideo.filePath) {
       console.warn(
-        "Warning: Received undefined or invalid currentVideo.filepath."
+        "Warning: Received undefined or invalid currentVideo.filepath.",
       );
       return EMPTY_JSON_RESPONSE;
     }
@@ -268,7 +267,7 @@ export const saveVideoJsonData = async (
   {
     currentVideo,
     newVideoJsonData,
-  }: { currentVideo: VideoDataModel; newVideoJsonData: VideoDataModel }
+  }: { currentVideo: VideoDataModel; newVideoJsonData: VideoDataModel },
 ) => {
   try {
     const newFilePath = currentVideo.filePath || "";
@@ -292,7 +291,7 @@ export const saveVideoJsonData = async (
 async function getVideoThumbnails(
   video: VideoDataModel,
   cache: ThumbnailCache,
-  duration: number
+  duration: number,
 ): Promise<VideoDataModel> {
   if (!video.isDirectory) {
     if (!video.filePath) {
@@ -309,7 +308,7 @@ async function getVideoThumbnails(
               video.filePath,
               video.currentTime ?? 30,
               ffmpeg,
-              duration
+              duration,
             )
           : Promise.resolve(undefined)
         : Promise.resolve(videoProgressScreenshot);
@@ -329,7 +328,7 @@ async function getVideoThumbnails(
     } catch (error) {
       log.error(
         `Error generating thumbnail for video ${video.filePath}:`,
-        error
+        error,
       );
       video.videoProgressScreenshot = DEFAULT_THUMBNAIL_URL;
     }
@@ -343,32 +342,48 @@ export const getRootVideoData = async (
   event: Electron.IpcMainInvokeEvent,
   filePath: string,
   searchText: string,
-  category: string
+  category: string,
 ) => {
   const videoData: VideoDataModel[] = [];
   try {
-    const files = await readdir(filePath);
-    const fileProcessingPromises = files.map(async (file) => {
-      try {
-        const fullPath = `${filePath}/${file}`;
-        const stats = await stat(fullPath);
+    const markedForDeletion = await helpers.getMarkedForDeletion();
 
-        if (!shouldProcessFile(file, stats, searchText)) {
-          return;
-        }
-        if (
-          [".mp4", ".mkv", ".avi"].includes(path.extname(file).toLowerCase()) ||
-          stats.isDirectory()
-        ) {
-          const data = await populateVideoData(file, filePath, stats, category);
-          if (data) {
-            videoData.push(data);
+    const files = await readdir(filePath);
+    const fileProcessingPromises = files
+      .filter(
+        (file) =>
+          !markedForDeletion.includes(
+            helpers.normalizeFilePath(`${filePath}/${file}`),
+          ),
+      )
+      .map(async (file) => {
+        try {
+          const fullPath = `${filePath}/${file}`;
+          const stats = await stat(fullPath);
+
+          if (!shouldProcessFile(file, stats, searchText)) {
+            return;
           }
+          if (
+            [".mp4", ".mkv", ".avi"].includes(
+              path.extname(file).toLowerCase(),
+            ) ||
+            stats.isDirectory()
+          ) {
+            const data = await populateVideoData(
+              file,
+              filePath,
+              stats,
+              category,
+            );
+            if (data) {
+              videoData.push(data);
+            }
+          }
+        } catch (error) {
+          log.error(`Skipping file ${file} due to error:`, error);
         }
-      } catch (error) {
-        log.error(`Skipping file ${file} due to error:`, error);
-      }
-    });
+      });
     await Promise.all(fileProcessingPromises);
 
     return videoData.sort((a, b) => {
@@ -394,7 +409,7 @@ export const populateVideoData = async (
   file: string,
   filePath: string,
   stats: Stats,
-  category: string
+  category: string,
 ) => {
   try {
     const fullFilePath = `${filePath}/${file}`;
@@ -409,7 +424,7 @@ export const populateVideoData = async (
       filePath,
       duration,
       jsonFileContents,
-      category
+      category,
     );
   } catch (error: unknown) {
     log.error("Error populating video data:", error);
@@ -431,7 +446,7 @@ export const calculateDuration = async (file: string) => {
 };
 
 export function getVideoDuration(
-  filePath: string
+  filePath: string,
 ): Promise<number | "unknown"> {
   return new Promise((resolve, reject) => {
     ffmpeg.ffprobe(filePath, (err, metadata) => {
@@ -453,7 +468,7 @@ export const createVideoDataObject = (
   rootPath: string,
   duration: number,
   jsonFileContents: VideoDataModel | null,
-  category?: string
+  category?: string,
 ): VideoDataModel => {
   let videoDataType: "movie" | "episode" | null = null;
 
@@ -502,7 +517,7 @@ export const createFolderDataObject = (
   filePath: string,
   jsonFileContents: VideoDataModel | null,
   tv_show_details: TvShowDetails | null,
-  childFolders: { folderPath: string; basename: string }[] = []
+  childFolders: { folderPath: string; basename: string }[] = [],
 ): VideoDataModel => ({
   basePath,
   filePath,
@@ -548,7 +563,7 @@ export function handleVideoRequest(req: IncomingMessage, res: ServerResponse) {
       const problematicCharacters = "%";
       res.writeHead(400, { "Content-Type": "text/plain" });
       res.end(
-        `Bad Request: Invalid 'path' parameter. The path contains characters that cannot be decoded: ${problematicCharacters}`
+        `Bad Request: Invalid 'path' parameter. The path contains characters that cannot be decoded: ${problematicCharacters}`,
       );
       return;
     } else {

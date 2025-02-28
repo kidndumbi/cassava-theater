@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 import { loggingService as log } from "./main-logging.service";
+import { VideoDataModel } from "../../models/videoData.model";
 
 export function normalizeFilePath(filePath: string): string {
   return filePath.replace(/\\/g, "/");
@@ -17,8 +18,34 @@ export const getVideoDataFilePath = () => {
   return app.getPath("userData") + "/videoData.json";
 };
 
+export const getVideoMetaData = async () => {
+  try {
+    const file = await readFileDataAsync(getVideoDataFilePath());
+    if (!file) {
+      return {};
+    }
+    return JSON.parse(file) as { [key: string]: VideoDataModel };
+  } catch (error) {
+    log.error("Error in getVideoMetaData:", error);
+    return {};
+  }
+};
+
 export const getMarkedForDeletionFilePath = () => {
   return app.getPath("userData") + "/markedForDeletion.json";
+};
+
+export const getMarkedForDeletion = async () => {
+  try {
+    const file = await readFileDataAsync(getMarkedForDeletionFilePath());
+    if (!file) {
+      return [];
+    }
+    return JSON.parse(file) as string[];
+  } catch (error) {
+    log.error("Error in getMarkedForDeletion:", error);
+    return [];
+  }
 };
 
 export async function fileExists(filePath: string): Promise<boolean> {
@@ -31,7 +58,7 @@ export async function fileExists(filePath: string): Promise<boolean> {
 }
 
 export async function readFileData(
-  filePath: string
+  filePath: string,
 ): Promise<string | undefined> {
   try {
     const jsonFile = await readFile(filePath);
@@ -60,12 +87,12 @@ export async function readFileDataAsync(filePath: string): Promise<string> {
 export async function verifyFileAccess(path: string): Promise<void> {
   await fsPromise.access(
     path,
-    fs.constants.F_OK | fs.constants.R_OK | fs.constants.W_OK
+    fs.constants.F_OK | fs.constants.R_OK | fs.constants.W_OK,
   );
 }
 
 export async function getFileInfo(
-  filePath: string
+  filePath: string,
 ): Promise<{ isFile: boolean; ext: string }> {
   const stats = await fs.promises.lstat(filePath);
   const isFile = stats.isFile();
@@ -74,7 +101,7 @@ export async function getFileInfo(
 }
 
 export async function getVideoFilesInChildFolders(
-  folderPath: string
+  folderPath: string,
 ): Promise<string[]> {
   const allowedExtensions = new Set([".mp4", ".avi", ".mkv"]);
   const videoFiles: string[] = [];
@@ -103,7 +130,7 @@ export async function getVideoFilesInChildFolders(
             // Check if the file has one of the allowed extensions
             if (allowedExtensions.has(fileExtension)) {
               videoFiles.push(
-                normalizeFilePath(path.join(childFolderPath, childItem.name))
+                normalizeFilePath(path.join(childFolderPath, childItem.name)),
               );
             }
           }
@@ -120,85 +147,88 @@ export async function getVideoFilesInChildFolders(
 
 // Add helper to mark files for deletion
 export async function addToMarkedForDeletion(filePath: string): Promise<void> {
-	// Get the path to markedForDeletion.json
-	const markedFilePath = getMarkedForDeletionFilePath();
-	let list: string[] = [];
-	// Check if file exists and read its array, else start with []
-	if (await fileExists(markedFilePath)) {
-		try {
-			const content = await readFileDataAsync(markedFilePath);
-			list = JSON.parse(content);
-		} catch {
-			list = [];
-		}
-	}
-	// Add file path if not already present
-	if (!list.includes(filePath)) {
-		list.push(filePath);
-	}
-	// Write back the updated array
-	try {
-		await fsPromise.writeFile(markedFilePath, JSON.stringify(list, null, 2));
-	} catch (e) {
-		log.error("Error updating markedForDeletion.json for", filePath, e);
-	}
+  // Get the path to markedForDeletion.json
+  const markedFilePath = getMarkedForDeletionFilePath();
+  let list: string[] = [];
+  // Check if file exists and read its array, else start with []
+  if (await fileExists(markedFilePath)) {
+    try {
+      const content = await readFileDataAsync(markedFilePath);
+      list = JSON.parse(content);
+    } catch {
+      list = [];
+    }
+  }
+  // Add file path if not already present
+  if (!list.includes(filePath)) {
+    list.push(filePath);
+  }
+  // Write back the updated array
+  try {
+    await fsPromise.writeFile(markedFilePath, JSON.stringify(list, null, 2));
+  } catch (e) {
+    log.error("Error updating markedForDeletion.json for", filePath, e);
+  }
 }
 
 // Updated deleteFileOrFolder to add paths to markedForDeletion.json on error
-export async function deleteFileOrFolder(pathStr: string, isFile: boolean): Promise<void> {
-	// For files
-	if (isFile) {
-		try {
-			await fsPromise.unlink(pathStr);
-		} catch (error) {
-			log.error("Error deleting file:", pathStr, error);
-			await addToMarkedForDeletion(pathStr);
-		}
-	} else {
-		// Process video files inside folder
-		let videoFiles: string[] = [];
-		try {
-			videoFiles = await getVideoFilesInChildFolders(pathStr);
-		} catch (error) {
-			log.error("Error getting video files for folder:", pathStr, error);
-			// Continue, no marking as error on reading folder here
-		}
-		for (const videoFile of videoFiles) {
-			try {
-				await fsPromise.unlink(videoFile);
-			} catch (error) {
-				log.error("Error deleting video file:", videoFile, error);
-				await addToMarkedForDeletion(videoFile);
-			}
-		}
+export async function deleteFileOrFolder(
+  pathStr: string,
+  isFile: boolean,
+): Promise<void> {
+  // For files
+  if (isFile) {
+    try {
+      await fsPromise.unlink(pathStr);
+    } catch (error) {
+      log.error("Error deleting file:", pathStr, error);
+      await addToMarkedForDeletion(pathStr);
+    }
+  } else {
+    // Process video files inside folder
+    let videoFiles: string[] = [];
+    try {
+      videoFiles = await getVideoFilesInChildFolders(pathStr);
+    } catch (error) {
+      log.error("Error getting video files for folder:", pathStr, error);
+      // Continue, no marking as error on reading folder here
+    }
+    for (const videoFile of videoFiles) {
+      try {
+        await fsPromise.unlink(videoFile);
+      } catch (error) {
+        log.error("Error deleting video file:", videoFile, error);
+        await addToMarkedForDeletion(videoFile);
+      }
+    }
 
-		// Process child folders
-		let childFolders: string[] = [];
-		try {
-			childFolders = await getChildFolderPaths(pathStr);
-		} catch (error) {
-			log.error("Error getting child folders for:", pathStr, error);
-		}
-		for (const childFolder of childFolders) {
-			try {
-				await fsPromise.rm(childFolder, { recursive: true, force: true });
-			} catch (error) {
-				log.error("Error deleting child folder:", childFolder, error);
-				await addToMarkedForDeletion(childFolder);
-			}
-		}
-		// Finally, delete the parent folder
-		try {
-			await fsPromise.rm(pathStr, { recursive: true, force: true });
-		} catch (error) {
-			log.error("Error deleting folder:", pathStr, error);
-			await addToMarkedForDeletion(pathStr);
-		}
-	}
+    // Process child folders
+    let childFolders: string[] = [];
+    try {
+      childFolders = await getChildFolderPaths(pathStr);
+    } catch (error) {
+      log.error("Error getting child folders for:", pathStr, error);
+    }
+    for (const childFolder of childFolders) {
+      try {
+        await fsPromise.rm(childFolder, { recursive: true, force: true });
+      } catch (error) {
+        log.error("Error deleting child folder:", childFolder, error);
+        await addToMarkedForDeletion(childFolder);
+      }
+    }
+    // Finally, delete the parent folder
+    try {
+      await fsPromise.rm(pathStr, { recursive: true, force: true });
+    } catch (error) {
+      log.error("Error deleting folder:", pathStr, error);
+      await addToMarkedForDeletion(pathStr);
+    }
+  }
 }
 
 export async function getChildFolderPaths(
-  parentFolderPath: string
+  parentFolderPath: string,
 ): Promise<string[]> {
   try {
     const items = await fs.promises.readdir(parentFolderPath, {
