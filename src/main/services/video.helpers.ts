@@ -5,7 +5,6 @@ import * as path from "path";
 import ffmpeg from "fluent-ffmpeg";
 import { loggingService as log } from "./main-logging.service";
 
-
 import { ThumbnailCache } from "./thumbnailCache.service";
 import { generateThumbnail } from "./thumbnail.service";
 
@@ -355,3 +354,37 @@ export function getVideoDuration(
     });
   });
 }
+
+export const updateVideoData = async (
+  filePath: string,
+  currentTime: number,
+) => {
+  const jsonFileContents = await readJsonData(filePath);
+  jsonFileContents.currentTime = currentTime;
+  jsonFileContents.watched = currentTime !== 0;
+  jsonFileContents.lastVideoPlayedDate = new Date().toISOString();
+  return jsonFileContents;
+};
+
+export const updateParentVideoData = async (
+  currentVideo: VideoDataModel,
+  currentTime: number,
+) => {
+  if (!currentVideo.filePath) {
+    throw new Error("currentVideo.filePath is undefined");
+  }
+
+  const parentFilePath = path.dirname(currentVideo.filePath);
+  const grandParentFilePath = path.dirname(parentFilePath);
+  const grandParentJsonFilePath = grandParentFilePath;
+
+  const grandParentJsonFileContents = await readJsonData(
+    grandParentJsonFilePath,
+  );
+  grandParentJsonFileContents.lastVideoPlayed = currentVideo.filePath;
+  grandParentJsonFileContents.lastVideoPlayedTime = currentTime;
+  grandParentJsonFileContents.lastVideoPlayedDate = new Date().toISOString();
+  grandParentJsonFileContents.lastVideoPlayedDuration = currentVideo.duration;
+
+  await writeJsonToFile(grandParentJsonFilePath, grandParentJsonFileContents);
+};

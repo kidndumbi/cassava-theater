@@ -151,64 +151,6 @@ export const fetchFolderDetails = async (
   }
 };
 
-export const saveCurrentTime = async (
-  event: Electron.IpcMainInvokeEvent,
-  {
-    currentVideo,
-    currentTime,
-    isEpisode,
-  }: { currentVideo: VideoDataModel; currentTime: number; isEpisode?: boolean },
-) => {
-  try {
-    if (!currentVideo.filePath) {
-      throw new Error("currentVideo.filePath is undefined");
-    }
-
-    const jsonFileContents = await videoDataHelpers.readJsonData(
-      currentVideo.filePath,
-    );
-    jsonFileContents.currentTime = currentTime;
-    jsonFileContents.watched = currentTime !== 0;
-    jsonFileContents.lastVideoPlayedDate = new Date().toISOString();
-
-    await videoDataHelpers.writeJsonToFile(
-      currentVideo.filePath,
-      jsonFileContents,
-    );
-
-    if (isEpisode) {
-      if (!currentVideo.filePath) {
-        throw new Error("currentVideo.filePath is undefined");
-      }
-      const parentFilePath = path.dirname(currentVideo.filePath);
-      const grandParentFilePath = path.dirname(parentFilePath);
-      const grandParentJsonFilePath = grandParentFilePath;
-
-      const grandParentJsonFileContents = await videoDataHelpers.readJsonData(
-        grandParentJsonFilePath,
-      );
-      grandParentJsonFileContents.lastVideoPlayed = currentVideo.filePath;
-      grandParentJsonFileContents.lastVideoPlayedTime = currentTime;
-      grandParentJsonFileContents.lastVideoPlayedDate =
-        new Date().toISOString();
-      grandParentJsonFileContents.lastVideoPlayedDuration =
-        currentVideo.duration;
-
-      await videoDataHelpers.writeJsonToFile(
-        grandParentJsonFilePath,
-        grandParentJsonFileContents,
-      );
-    }
-
-    return jsonFileContents;
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      log.error("save:saveLCurrentTime error ", error);
-    } else {
-      log.error("An unknown error occurred:", error);
-    }
-  }
-};
 
 export const getVideoJsonData = async (
   event: Electron.IpcMainInvokeEvent,
@@ -240,8 +182,18 @@ export const saveVideoJsonData = async (
     newVideoJsonData,
   }: { currentVideo: VideoDataModel; newVideoJsonData: VideoDataModel },
 ) => {
+  const newFilePath = currentVideo.filePath || "";
+
+  const handleError = (error: unknown) => {
+    if (error instanceof Error) {
+      console.error("An error occurred:", error.message);
+    } else {
+      console.error("An unknown error occurred:", error);
+    }
+    throw new Error("Failed to save video JSON data");
+  };
+
   try {
-    const newFilePath = currentVideo.filePath || "";
     const existingData = await videoDataHelpers.readJsonData(
       newFilePath,
       {} as VideoDataModel,
@@ -250,14 +202,46 @@ export const saveVideoJsonData = async (
       ...existingData,
       ...newVideoJsonData,
     } as VideoDataModel;
+
     await videoDataHelpers.writeJsonToFile(newFilePath, mergedData);
     return mergedData;
+  } catch (error) {
+    handleError(error);
+  }
+};
+
+export const saveCurrentTime = async (
+  event: Electron.IpcMainInvokeEvent,
+  {
+    currentVideo,
+    currentTime,
+    isEpisode,
+  }: { currentVideo: VideoDataModel; currentTime: number; isEpisode?: boolean },
+) => {
+  try {
+    if (!currentVideo.filePath) {
+      throw new Error("currentVideo.filePath is undefined");
+    }
+
+    const jsonFileContents = await videoDataHelpers.updateVideoData(
+      currentVideo.filePath,
+      currentTime,
+    );
+    await videoDataHelpers.writeJsonToFile(
+      currentVideo.filePath,
+      jsonFileContents,
+    );
+
+    if (isEpisode) {
+      await videoDataHelpers.updateParentVideoData(currentVideo, currentTime);
+    }
+
+    return jsonFileContents;
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error("An error occurred:", error.message);
+      log.error("save:saveCurrentTime error ", error);
     } else {
-      console.error("An unknown error occurred:", error);
+      log.error("An unknown error occurred:", error);
     }
-    throw new Error("Failed to save video JSON data");
   }
 };
