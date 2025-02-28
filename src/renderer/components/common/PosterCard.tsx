@@ -28,7 +28,7 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   };
 
   return (
-    <Box m={1} flex="1 1 200px" maxWidth="200px">
+    <Box m={1} flex="1 1 200px" maxWidth={width} minWidth={width}>
       {!hasError && imageUrl ? (
         <img
           src={imageUrl}

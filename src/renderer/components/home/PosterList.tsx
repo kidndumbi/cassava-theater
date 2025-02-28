@@ -7,11 +7,7 @@ interface ListProps {
 
 export const PosterList = ({ children }: ListProps) => {
   return (
-    <Box
-      display="flex"
-      gap="8px"
-      sx={{ maxWidth: "calc(100vw - 30px)", overflowY: "auto" }}
-    >
+    <Box className="flex gap-2 overflow-x-auto whitespace-nowrap">
       {children}
     </Box>
   );

@@ -36,7 +36,11 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
     ));
   };
 
-  return <PosterList>{renderMovies()}</PosterList>;
+  return (
+    <PosterList>
+      {renderMovies()}
+    </PosterList>
+  );
 };
 
 export default ResumeMovieList;
