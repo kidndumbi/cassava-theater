@@ -33,6 +33,10 @@ const Video: React.FC<VideoProps> = ({
     };
 
     fetchVideoUrl();
+
+    if (videoPlayerRef.current) {
+      videoPlayerRef.current.src = getVideoUrl();
+    }
   }, []);
 
   return (
@@ -42,7 +46,6 @@ const Video: React.FC<VideoProps> = ({
       className="w-full h-full object-contain"
       controls={!isMkv}
       playsInline
-      src={getVideoUrl()}
       onClick={onClick}
     >
       {subtitleFilePath && subtitleFilePath !== "None" && (

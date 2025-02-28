@@ -3,18 +3,20 @@ import { loggingService as log } from "./main-logging.service";
 import * as path from "path";
 import * as fs from "fs";
 import fsPromise from "fs/promises";
-import { app } from "electron";
 import { VideoDataModel } from "../../models/videoData.model";
 import {
+  deleteFileOrFolder,
   fileExistsAsync,
   getFileInfo,
   getThumbnailCacheFilePath,
+  getVideoDataFilePath,
+  getVideoFilesInChildFolders,
   normalizeFilePath,
   readFileDataAsync,
   verifyFileAccess,
 } from "./helpers";
-const VIDEO_META_DATA_FILE_NAME = app.getPath("userData") + "/videoData.json";
-// const VIDEO_EXTENSIONS = [".mp4", ".mkv", ".avi"]; // Allowed video file extensions
+
+const VIDEO_META_DATA_FILE_NAME = getVideoDataFilePath();
 
 export function serveLocalFile(req: IncomingMessage, res: ServerResponse) {
   if (!req.url) {
@@ -168,51 +170,6 @@ async function updateMetadataFile(filePath: string): Promise<void> {
   );
 }
 
-async function getVideoFilesInChildFolders(
-  folderPath: string
-): Promise<string[]> {
-  const allowedExtensions = new Set([".mp4", ".avi", ".mkv"]);
-  const videoFiles: string[] = [];
-
-  try {
-    // Read the contents of the parent folder
-    const childItems = await fs.promises.readdir(folderPath, {
-      withFileTypes: true,
-    });
-
-    for (const item of childItems) {
-      // Only process child folders (not files or deeper subfolders)
-      if (item.isDirectory()) {
-        const childFolderPath = path.join(folderPath, item.name);
-
-        // Read the contents of the child folder
-        const childFolderItems = await fs.promises.readdir(childFolderPath, {
-          withFileTypes: true,
-        });
-
-        for (const childItem of childFolderItems) {
-          // Only process files (not subfolders)
-          if (childItem.isFile()) {
-            const fileExtension = path.extname(childItem.name).toLowerCase();
-
-            // Check if the file has one of the allowed extensions
-            if (allowedExtensions.has(fileExtension)) {
-              videoFiles.push(
-                normalizeFilePath(path.join(childFolderPath, childItem.name))
-              );
-            }
-          }
-        }
-      }
-    }
-
-    return videoFiles;
-  } catch (error) {
-    console.error(`Error reading folder ${folderPath}:`, error);
-    throw error;
-  }
-}
-
 async function handleThumbnailCache(
   filePath: string | string[]
 ): Promise<void> {
@@ -234,18 +191,6 @@ async function handleThumbnailCache(
   }
 
   await fsPromise.writeFile(cachePath, JSON.stringify(updatedCache, null, 2));
-}
-
-async function deleteFileOrFolder(
-  path: string,
-  isFile: boolean
-): Promise<void> {
-  if (isFile) {
-    await fsPromise.unlink(path);
-  } else {
-    log.info("Deleting folder:", path);
-    await fsPromise.rm(path, { recursive: true, force: true });
-  }
 }
 
 function successResponse(path: string): { success: true; message: string } {

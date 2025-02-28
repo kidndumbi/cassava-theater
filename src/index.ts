@@ -7,6 +7,8 @@ import { registerIpcHandlers } from "./main/ipc-handlers/ipcHandlers";
 import { initializeStore, getValue } from "./main/store";
 import { loggingService as log } from "./main/services/main-logging.service";
 import { initializeSocket } from "./main/services/socket.service";
+import { deleteMarkedForDeletion } from "./main/services/cleanUp.service";
+
 // import {
 //   installExtension,
 //   REDUX_DEVTOOLS,
@@ -26,6 +28,7 @@ if (require("electron-squirrel-startup")) {
 }
 
 initializeStore();
+deleteMarkedForDeletion();
 
 let mainWindow: BrowserWindow | null = null;
 
