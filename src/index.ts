@@ -8,6 +8,7 @@ import { initializeStore, getValue } from "./main/store";
 import { loggingService as log } from "./main/services/main-logging.service";
 import { initializeSocket } from "./main/services/socket.service";
 import * as cleanUp from "./main/services/cleanUp.service";
+import * as appSetup from "./main/services/setup.service";
 
 // import {
 //   installExtension,
@@ -28,6 +29,7 @@ if (require("electron-squirrel-startup")) {
 }
 
 initializeStore();
+appSetup.initializeFfmpeg();
 cleanUp.runAppOpeningCleanup();
 
 let mainWindow: BrowserWindow | null = null;

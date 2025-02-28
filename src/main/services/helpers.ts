@@ -6,6 +6,10 @@ import * as path from "path";
 import { loggingService as log } from "./main-logging.service";
 import { VideoDataModel } from "../../models/videoData.model";
 
+export const SUPPORTED_VIDEO_EXTENSIONS = [".mp4", ".mkv", ".avi"];
+export const DEFAULT_THUMBNAIL_URL =
+  "https://res.cloudinary.com/cassavacloudinary/image/upload/v1718668161/LBFilmReel_991x.progressive.jpg";
+
 export function normalizeFilePath(filePath: string): string {
   return filePath.replace(/\\/g, "/");
 }
@@ -16,6 +20,11 @@ export const getThumbnailCacheFilePath = () => {
 
 export const getVideoDataFilePath = () => {
   return app.getPath("userData") + "/videoData.json";
+};
+
+export const isVideoFile = (file: string): boolean => {
+  const extension = path.extname(file).toLowerCase();
+  return SUPPORTED_VIDEO_EXTENSIONS.includes(extension);
 };
 
 export const getVideoMetaData = async () => {
