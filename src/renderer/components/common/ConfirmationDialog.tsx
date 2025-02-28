@@ -8,14 +8,16 @@ import theme from "../../theme";
 
 type ConfirmationDialogProps = {
   open: boolean;
-  message: string;
+  message: React.ReactNode;
   handleClose: (choice: string) => void;
+  procedButtonText?: string;
 };
 
 const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   open,
   message,
   handleClose,
+  procedButtonText = "Ok",
 }) => {
   return (
     <Dialog
@@ -29,6 +31,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
     >
       <DialogContent>
         <DialogContentText
+          component="div" // fixed to avoid <div> nested within <p>
           style={{ color: theme.customVariables.appWhiteSmoke }}
         >
           {message}
@@ -39,7 +42,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
           Cancel
         </Button>
         <Button onClick={() => handleClose("Ok")} color="primary">
-          Ok
+          {procedButtonText}
         </Button>
       </DialogActions>
     </Dialog>
