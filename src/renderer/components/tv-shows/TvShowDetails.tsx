@@ -103,14 +103,15 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     resetEpisodes();
     const seasonName = getFilename(path);
     const selectedSeason = details?.tv_show_details?.seasons?.find(
-      (season: Season) => season.name.toLowerCase() === seasonName.toLowerCase()
+      (season: Season) =>
+        season.name.toLowerCase() === seasonName.toLowerCase(),
     );
 
     setSeasonOverview(selectedSeason?.overview ?? "");
     setSeasonAirDate(selectedSeason?.air_date ?? "");
     setSeasonPosterPath(
       selectedSeason?.poster_path &&
-        getTmdbImageUrl(selectedSeason.poster_path, "original")
+        getTmdbImageUrl(selectedSeason.poster_path, "original"),
     );
     getEpisodeDetails(path);
   };
@@ -152,10 +153,10 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       return;
     const normalizedLastPlayed = tvShowDetails.lastVideoPlayed.replace(
       /\\/g,
-      "/"
+      "/",
     );
     const lastWatchedEpisode = episodes.find(
-      (episode) => episode.filePath === normalizedLastPlayed
+      (episode) => episode.filePath === normalizedLastPlayed,
     );
     if (lastWatchedEpisode) {
       setEpisodeLastWatched(lastWatchedEpisode);
@@ -192,7 +193,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
         "/video-player?startFromBeginning=true&menuId=" +
           menuId +
           "&resumeId=" +
-          resumeId
+          resumeId,
       );
     }
   };
@@ -202,39 +203,45 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   return (
     <>
       <Box
-        className="relative bg-cover h-screen w-screen"
-        style={{ backgroundImage: getBackgroundGradient(tvShowBackgroundUrl) }}
+        className="relative h-screen w-screen bg-cover"
+        style={{
+          backgroundImage: getBackgroundGradient(tvShowBackgroundUrl),
+        }}
       >
         {loadingFolderDetails ? (
-          <Box className="flex justify-center items-center h-screen">
+          <Box className="flex h-screen items-center justify-center">
             <LoadingIndicator message="Loading..." />
           </Box>
         ) : (
           <>
-            <Box className="absolute top-5 left-5 flex justify-between w-[calc(100vw-40px)]">
+            <Box className="absolute left-5 top-5 flex w-[calc(100vw-40px)] justify-between">
               <IconButton
                 onClick={onBackClick}
-                style={{ color: theme.customVariables.appWhite }}
+                style={{
+                  color: theme.customVariables.appWhite,
+                }}
               >
                 <ArrowBackIcon />
               </IconButton>
               <Tooltip title="theMovieDb data">
                 <IconButton
                   onClick={handleOpenModal}
-                  style={{ color: theme.customVariables.appWhite }}
+                  style={{
+                    color: theme.customVariables.appWhite,
+                  }}
                 >
                   <MovieIcon />
                 </IconButton>
               </Tooltip>
             </Box>
             <Box className="absolute bottom-5 left-5 text-white drop-shadow-md">
-              <h2 className="text-4xl font-extrabold mb-4">
+              <h2 className="mb-4 text-4xl font-extrabold">
                 {tvShowDetails?.tv_show_details?.name ||
                   tvShowDetails?.filePath?.split("\\").pop()}
                 {tvShowDetails?.tv_show_details?.first_air_date &&
                   "(" +
                     getYearFromDate(
-                      tvShowDetails?.tv_show_details?.first_air_date
+                      tvShowDetails?.tv_show_details?.first_air_date,
                     ) +
                     ")"}
               </h2>
@@ -253,7 +260,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 <Box>
                   {getFilename(tvShowDetails?.lastVideoPlayed).replace(
                     /\.(mp4|mkv)$/i,
-                    ""
+                    "",
                   )}
                 </Box>
               )}
@@ -305,7 +312,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
             seasonPosterPath={seasonPosterPath} // Pass seasonPosterPath as a prop
             handleFilepathChange={async (
               newSubtitleFilePath: string,
-              episode: VideoDataModel
+              episode: VideoDataModel,
             ) => {
               await updateSubtitle(newSubtitleFilePath, episode);
               getEpisodeDetails(selectedSeason);
