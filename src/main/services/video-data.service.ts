@@ -1,16 +1,13 @@
 import * as fs from "fs";
-import { stat, readdir } from "fs/promises";
-import { Stats } from "fs";
+import { stat } from "fs/promises";
 import * as path from "path";
 import { VideoDataModel } from "../../models/videoData.model";
-import ffmpeg from "fluent-ffmpeg";
 import { loggingService as log } from "./main-logging.service";
 
 import {
   readThumbnailCache,
   writeThumbnailCache,
 } from "./thumbnailCache.service";
-import { TvShowDetails } from "../../models/tv-show-details.model";
 import * as videoDataHelpers from "./video.helpers";
 import * as helpers from "./helpers";
 
@@ -34,7 +31,7 @@ export const fetchVideosData = async ({
   }
 
   try {
-    const videoData: VideoDataModel[] = await getRootVideoData(
+    const videoData: VideoDataModel[] = await videoDataHelpers.getRootVideoData(
       null,
       filePath,
       searchText || "",
@@ -80,10 +77,10 @@ export const fetchVideoDetails = async (
   try {
     const stats = await stat(filePath);
     const jsonFileContents = await videoDataHelpers.readJsonData(filePath);
-    const duration = await calculateDuration(filePath);
+    const duration = await videoDataHelpers.calculateDuration(filePath);
     const fileName = path.basename(filePath);
 
-    const videoDetails: VideoDataModel = createVideoDataObject(
+    const videoDetails: VideoDataModel = videoDataHelpers.createVideoDataObject(
       fileName,
       filePath,
       false,
@@ -138,13 +135,14 @@ export const fetchFolderDetails = async (
 
     const childFolders = await Promise.all(childFoldersPromises);
 
-    const videoDetails: VideoDataModel = createFolderDataObject(
-      basename,
-      dirPath,
-      jsonFileContents,
-      jsonFileContents?.tv_show_details,
-      childFolders,
-    );
+    const videoDetails: VideoDataModel =
+      videoDataHelpers.createFolderDataObject(
+        basename,
+        dirPath,
+        jsonFileContents,
+        jsonFileContents?.tv_show_details,
+        childFolders,
+      );
 
     return videoDetails;
   } catch (error) {
@@ -263,191 +261,3 @@ export const saveVideoJsonData = async (
     throw new Error("Failed to save video JSON data");
   }
 };
-
-export const getRootVideoData = async (
-  event: Electron.IpcMainInvokeEvent,
-  filePath: string,
-  searchText: string,
-  category: string,
-): Promise<VideoDataModel[]> => {
-  const videoData: VideoDataModel[] = [];
-
-  try {
-    const markedForDeletion = await helpers.getMarkedForDeletion();
-    const files = await readdir(filePath);
-
-    const filteredFiles = videoDataHelpers.filterFilesNotMarkedForDeletion(
-      files,
-      filePath,
-      markedForDeletion,
-    );
-    await processFiles(
-      filteredFiles,
-      filePath,
-      searchText,
-      category,
-      videoData,
-    );
-
-    return videoDataHelpers.sortVideoData(videoData);
-  } catch (error) {
-    log.error("An error occurred while fetching root video data: ", error);
-    return videoData; // Return successfully processed data even if an error occurs
-  }
-};
-
-const processFiles = async (
-  files: string[],
-  filePath: string,
-  searchText: string,
-  category: string,
-  videoData: VideoDataModel[],
-): Promise<void> => {
-  const fileProcessingPromises = files.map(async (file) => {
-    try {
-      const fullPath = path.join(filePath, file);
-      const stats = await stat(fullPath);
-
-      if (!videoDataHelpers.shouldProcessFile(file, stats, searchText)) {
-        return;
-      }
-
-      if (helpers.isVideoFile(file) || stats.isDirectory()) {
-        const data = await populateVideoData(file, filePath, stats, category);
-        if (data) {
-          videoData.push(data);
-        }
-      }
-    } catch (error) {
-      log.error(`Skipping file ${file} due to error:`, error);
-    }
-  });
-
-  await Promise.all(fileProcessingPromises);
-};
-
-export const populateVideoData = async (
-  file: string,
-  filePath: string,
-  stats: Stats,
-  category: string,
-) => {
-  try {
-    const fullFilePath = `${filePath}/${file}`;
-    const jsonFileContents = await videoDataHelpers.readJsonData(fullFilePath);
-
-    const duration = await calculateDuration(fullFilePath);
-    return createVideoDataObject(
-      file,
-      fullFilePath,
-      stats.isDirectory(),
-      stats.birthtimeMs,
-      filePath,
-      duration,
-      jsonFileContents,
-      category,
-    );
-  } catch (error: unknown) {
-    log.error("Error populating video data:", error);
-    return null;
-  }
-};
-
-export const calculateDuration = async (file: string) => {
-  let duration = 0;
-
-  const ext = path.extname(file).toLowerCase();
-  if ([".mp4", ".mkv", ".avi"].includes(ext)) {
-    const maybeDuration = await getVideoDuration(file);
-    if (typeof maybeDuration === "number") {
-      duration = maybeDuration;
-    }
-  }
-  return duration;
-};
-
-export function getVideoDuration(
-  filePath: string,
-): Promise<number | "unknown"> {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, (err, metadata) => {
-      if (err) {
-        log.error("Error getting video duration: ", err);
-        return reject(err);
-      }
-      const duration = metadata.format.duration;
-      resolve(duration !== undefined ? duration : "unknown");
-    });
-  });
-}
-
-export const createVideoDataObject = (
-  fileName: string,
-  filePath: string,
-  isDirectory: boolean,
-  createdAt: number,
-  rootPath: string,
-  duration: number,
-  jsonFileContents: VideoDataModel | null,
-  category?: string,
-): VideoDataModel => {
-  let videoDataType: "movie" | "episode" | null = null;
-
-  switch (category) {
-    case "movies":
-      videoDataType = "movie";
-      break;
-    case "episodes":
-      videoDataType = "episode";
-      break;
-  }
-
-  return {
-    fileName,
-    filePath,
-    isDirectory,
-    createdAt,
-    rootPath,
-    duration,
-    mustWatch: jsonFileContents?.mustWatch || false,
-    notesCount: jsonFileContents?.notes?.length || 0,
-    watched: jsonFileContents?.watched || false,
-    like: jsonFileContents?.like || false,
-    currentTime: jsonFileContents?.currentTime || 0,
-    season_id: jsonFileContents?.season_id || null,
-    subtitlePath: jsonFileContents?.subtitlePath || null,
-    lastVideoPlayedDate: jsonFileContents?.lastVideoPlayedDate || null,
-    lastVideoPlayedTime: jsonFileContents?.lastVideoPlayedTime || 0,
-    lastVideoPlayed: jsonFileContents?.lastVideoPlayed || null,
-    lastVideoPlayedDuration: jsonFileContents?.lastVideoPlayedDuration || null,
-    notes: jsonFileContents?.notes || [],
-    overview: jsonFileContents?.overview || {},
-    movie_details: jsonFileContents?.movie_details || null,
-    tv_show_details: jsonFileContents?.tv_show_details || null,
-    isMkv: filePath.toLowerCase().endsWith(".mkv"),
-    isAvi: filePath.toLowerCase().endsWith(".avi"),
-    watchLater: jsonFileContents?.watchLater || false,
-    videoDataType,
-    poster: jsonFileContents?.poster || null,
-    backdrop: jsonFileContents?.backdrop || null,
-  };
-};
-
-export const createFolderDataObject = (
-  basePath: string,
-  filePath: string,
-  jsonFileContents: VideoDataModel | null,
-  tv_show_details: TvShowDetails | null,
-  childFolders: { folderPath: string; basename: string }[] = [],
-): VideoDataModel => ({
-  basePath,
-  filePath,
-  season_id: jsonFileContents?.season_id || null,
-  tv_show_details,
-  childFolders,
-  lastVideoPlayed: jsonFileContents?.lastVideoPlayed,
-  lastVideoPlayedTime: jsonFileContents?.lastVideoPlayedTime || 0,
-  lastVideoPlayedDate: jsonFileContents?.lastVideoPlayedDate || null,
-  poster: jsonFileContents?.poster || null,
-  backdrop: jsonFileContents?.backdrop || null,
-});
