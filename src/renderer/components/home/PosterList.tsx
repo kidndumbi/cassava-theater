@@ -10,9 +10,7 @@ interface ListProps {
 
 export const PosterList = ({ children }: ListProps) => {
   const [scrollPosition, setScrollPosition] = useState("beginning");
-  const boxRef = useRef<HTMLDivElement>(null); 
-
-
+  const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (
@@ -20,9 +18,6 @@ export const PosterList = ({ children }: ListProps) => {
       boxRef.current.scrollWidth <= boxRef.current.clientWidth
     ) {
       setScrollPosition("no-scroll");
-      console.log("scrollPosition: no-scroll");  
-    } else {
-      console.log("scrollPosition: ", scrollPosition);
     }
   }, [scrollPosition]);
 
@@ -41,7 +36,6 @@ export const PosterList = ({ children }: ListProps) => {
       position = "end";
     }
     setScrollPosition(position);
-    console.log(position);
   }, []);
 
   const scrollLeft = () => {
