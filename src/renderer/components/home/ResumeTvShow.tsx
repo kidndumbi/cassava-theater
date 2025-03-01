@@ -55,7 +55,7 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
         imageUrl={getImageUlr()}
         altText={tvShow.fileName}
         footer={
-          <Box className="mt-[5px]">
+          <Box className="mt-2">
             <VideoProgressBar
               current={tvShow.lastVideoPlayedTime || 0}
               total={tvShow.lastVideoPlayedDuration || 0}
