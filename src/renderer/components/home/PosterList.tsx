@@ -71,7 +71,7 @@ export const PosterList = ({ children }: ListProps) => {
       )}
       <Box
         ref={boxRef}
-        className="flex gap-2 overflow-x-auto whitespace-nowrap"
+        className="flex gap-2 overflow-hidden  whitespace-nowrap"
         onScroll={handleScroll}
       >
         {children}

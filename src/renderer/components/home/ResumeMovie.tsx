@@ -67,7 +67,7 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
         <Box
           sx={{
             position: "absolute",
-            top: "50%",
+            top: "65%",
             left: "50%",
             transform: "translate(-50%, -50%)",
           }}
