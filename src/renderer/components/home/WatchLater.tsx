@@ -12,7 +12,7 @@ interface WatchLaterMovieCardProps {
   handlePosterClick: (
     videoType: string,
     video: VideoDataModel,
-    startFromBeginning: boolean
+    startFromBeginning: boolean,
   ) => void;
 }
 
@@ -39,7 +39,7 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
 
   return (
     <Box
-      sx={{ position: "relative", maxWidth: "200px" }}
+      className="relative max-w-[200px]"
       onMouseEnter={() => {
         setShowActions(true);
       }}
@@ -51,7 +51,7 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
         imageUrl={getImageUlr()}
         altText={movie.fileName}
         footer={
-          <Box sx={{ marginTop: "5px" }}>
+          <Box className="mt-2">
             <Typography variant="subtitle1" align="center">
               {trimFileName(movie.fileName ?? "Unknown Title")}
             </Typography>
@@ -60,12 +60,7 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
       />
       {showActionButtons && (
         <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
+          className="absolute top-[65%] left-1/2 transform -translate-x-1/2 -translate-y-1/2"
         >
           <MovieDetailsButtons
             playText=""
