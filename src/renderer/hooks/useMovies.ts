@@ -1,11 +1,4 @@
 import { useSelector } from "react-redux";
-import {
-  folderVideosInfoActions,
-  selLoadingMovies,
-  selLoadingVideoDetails,
-  selMovies,
-  selVideoDetails,
-} from "../store/folderVideosInfo.slice";
 import { useAppDispatch } from "../store";
 import { settingsActions } from "../store/settingsSlice";
 import {
@@ -14,6 +7,9 @@ import {
 } from "../store/theMovieDb.slice";
 import { MovieDetails } from "../../models/movie-detail.model";
 import { VideoDataModel } from "../../models/videoData.model";
+import { selLoadingMovies, selLoadingVideoDetails, selMovies, selVideoDetails } from "../store/videoInfo/folderVideosInfoSelectors";
+import { fetchVideoData, fetchVideoDetails, postVideoJason } from "../store/videoInfo/folderVideosInfoActions";
+import { videosInfoActions } from "../store/videoInfo/folderVideosInfo.slice";
 
 export const useMovies = () => {
   const dispatch = useAppDispatch();
@@ -25,7 +21,7 @@ export const useMovies = () => {
 
   const fetchMovies = async (path: string) => {
     dispatch(
-      folderVideosInfoActions.fetchVideoData({
+      fetchVideoData({
         path,
         category: "movies",
         includeThumbnail: false,
@@ -50,7 +46,7 @@ export const useMovies = () => {
   };
 
   const resetMovieDetails = () => {
-    dispatch(folderVideosInfoActions.resetVideoDetails());
+    dispatch(videosInfoActions.resetVideoDetails());
   };
 
   const updateTMDBId = async (
@@ -58,7 +54,7 @@ export const useMovies = () => {
     movie_details: MovieDetails
   ) => {
     await dispatch(
-      folderVideosInfoActions.postVideoJason({
+      postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: { movie_details },
       })
@@ -67,7 +63,7 @@ export const useMovies = () => {
 
   const updateWatchLater = async (filePath: string, watchLater: boolean) => {
     await dispatch(
-      folderVideosInfoActions.postVideoJason({
+      postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: { watchLater },
       })
@@ -76,7 +72,7 @@ export const useMovies = () => {
 
   const getVideoDetails = async (path: string) => {
     dispatch(
-      folderVideosInfoActions.fetchVideoDetails({
+      fetchVideoDetails({
         path,
         category: "movies",
       })
@@ -85,7 +81,7 @@ export const useMovies = () => {
 
   const updateMovieDbData = async (filePath: string, data: VideoDataModel) => {
     await dispatch(
-      folderVideosInfoActions.postVideoJason({
+      postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: data,
       })
@@ -93,10 +89,10 @@ export const useMovies = () => {
   };
 
   const updateMovie = (movie: VideoDataModel) =>
-    dispatch(folderVideosInfoActions.updateMovie(movie));
+    dispatch(videosInfoActions.updateMovie(movie));
 
   const removeMovie = (filePath: string) =>
-    dispatch(folderVideosInfoActions.removeMovie(filePath));
+    dispatch(videosInfoActions.removeMovie(filePath));
 
   return {
     movies,

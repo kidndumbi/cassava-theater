@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { useDispatch } from "react-redux";
-import { folderVideosInfoSlice } from "./folderVideosInfo.slice";
+import { folderVideosInfoSlice } from "./videoInfo/folderVideosInfo.slice";
 
 import { settingsSlice } from "./settingsSlice";
 import { theMovieDbSlice } from "./theMovieDb.slice";
