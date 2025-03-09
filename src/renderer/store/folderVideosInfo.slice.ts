@@ -70,13 +70,13 @@ const folderVideosInfoSlice = createSlice({
     removeMovie: (state, action: PayloadAction<string>) => {
       const filePath = action.payload;
       state.movies = state.movies.filter(
-        (movie) => movie.filePath !== filePath
+        (movie) => movie.filePath !== filePath,
       );
     },
     updateTvShow: (state, action: PayloadAction<VideoDataModel>) => {
       const tvShow = action.payload;
       const idx = state.tvShows.findIndex(
-        (m) => m.filePath.replace(/\\/g, "/") === tvShow.filePath
+        (m) => m.filePath.replace(/\\/g, "/") === tvShow.filePath,
       );
       if (idx !== -1) {
         state.tvShows[idx] = { ...state.tvShows[idx], ...tvShow };
@@ -85,8 +85,17 @@ const folderVideosInfoSlice = createSlice({
     removeTvShow: (state, action: PayloadAction<string>) => {
       const filePath = action.payload;
       state.tvShows = state.tvShows.filter(
-        (tvShow) => tvShow.filePath !== filePath
+        (tvShow) => tvShow.filePath !== filePath,
       );
+    },
+    updateEpisode: (state, action: PayloadAction<VideoDataModel>) => {
+      const episode = action.payload;
+      const idx = state.episodes.findIndex(
+        (m) => m.filePath.replace(/\\/g, "/") === episode.filePath,
+      );
+      if (idx !== -1) {
+        state.episodes[idx] = { ...state.episodes[idx], ...episode };
+      }
     },
   },
   extraReducers: (builder) => {
@@ -176,7 +185,7 @@ const fetchVideoData = createAsyncThunk(
       searchText?: string;
       includeThumbnail?: boolean;
     },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       if (!path) {
@@ -201,7 +210,7 @@ const fetchVideoData = createAsyncThunk(
       log.error("Error fetching video data:", error);
       return rejectWithValue(error);
     }
-  }
+  },
 );
 
 const fetchVideoDetailsApi = async ({
@@ -236,7 +245,7 @@ const fetchVideoDetails = createAsyncThunk(
       log.error("Error fetching video details:", error);
       return rejectWithValue(error);
     }
-  }
+  },
 );
 
 const fetchFolderDetails = createAsyncThunk(
@@ -249,7 +258,7 @@ const fetchFolderDetails = createAsyncThunk(
       log.error("Error fetching folder details:", error);
       return rejectWithValue(error);
     }
-  }
+  },
 );
 
 const postVideoJason = createAsyncThunk(
@@ -270,7 +279,7 @@ const postVideoJason = createAsyncThunk(
       log.error("Failed to post video JSON data:", error);
       throw error;
     }
-  }
+  },
 );
 
 const convertSrtToVtt = async (srt: string) => {

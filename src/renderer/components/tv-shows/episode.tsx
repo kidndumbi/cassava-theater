@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, IconButton, Theme, Tooltip } from "@mui/material";
 
 import {
@@ -12,6 +12,7 @@ import NotesIcon from "@mui/icons-material/Notes";
 import "./episode.css";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { NotesModal } from "../common/NotesModal";
+import { useTvShows } from "../../hooks/useTvShows";
 
 interface EpisodeProps {
   episode: VideoDataModel;
@@ -19,7 +20,7 @@ interface EpisodeProps {
   onEpisodeClick: (episode: VideoDataModel) => void;
   handleFilepathChange: (
     newSubtitleFilePath: string,
-    episode: VideoDataModel
+    episode: VideoDataModel,
   ) => void;
 }
 
@@ -32,11 +33,23 @@ export const Episode: React.FC<EpisodeProps> = ({
   const [hover, setHover] = useState(false);
   const [openNotesModal, setOpenNotesModal] = useState(false);
   const handleCloseNotesModal = () => setOpenNotesModal(false);
+  const [hasError, setHasError] = useState(false);
+  const { updateEpisodeThumbnail } = useTvShows();
 
   const handleMouseEnter = () => setHover(true);
   const handleMouseLeave = () => setHover(false);
   const handlePlayClick = () => onEpisodeClick(episode);
   const handleNotesClick = () => setOpenNotesModal(true);
+
+  const handleError = () => {
+    setHasError(true);
+  };
+
+  useEffect(() => {
+    updateEpisodeThumbnail(episode);
+  }, []);
+
+  const showThumbnail = episode?.videoProgressScreenshot && !hasError;
 
   return (
     <Box key={episode.filePath} className="episode-container">
@@ -45,12 +58,20 @@ export const Episode: React.FC<EpisodeProps> = ({
         onMouseLeave={handleMouseLeave}
         className="episode-thumbnail-container"
       >
-        <img
-          src={episode.videoProgressScreenshot}
-          alt="Progress"
-          className="episode-thumbnail"
-          onClick={handlePlayClick}
-        />
+        {showThumbnail ? (
+          <img
+            src={episode.videoProgressScreenshot}
+            alt="Progress"
+            className="episode-thumbnail"
+            onClick={handlePlayClick}
+            onError={handleError}
+          />
+        ) : (
+          <Box className="flex h-[200px] w-[300px] items-center justify-center">
+            Loading Image
+          </Box>
+        )}
+
         {hover && (
           <PlayArrowIcon className="play-icon" onClick={handlePlayClick} />
         )}
@@ -72,7 +93,8 @@ export const Episode: React.FC<EpisodeProps> = ({
         sx={{ color: theme.customVariables.appWhiteSmoke }}
       >
         <h3 className="episode-title">
-          {episode.fileName?.replace(/\.(mp4|mkv|avi)$/i, "") || "Unknown Title"}
+          {episode.fileName?.replace(/\.(mp4|mkv|avi)$/i, "") ||
+            "Unknown Title"}
         </h3>
         <p className="episode-duration">
           {secondsTohhmmss(episode.duration || 0)}

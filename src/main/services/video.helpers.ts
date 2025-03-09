@@ -117,7 +117,7 @@ export const sortVideoData = (
   });
 };
 
-export async function getVideoThumbnails(
+export async function getVideoThumbnail(
   video: VideoDataModel,
   cache: ThumbnailCache,
   duration: number,
