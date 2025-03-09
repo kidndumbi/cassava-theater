@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
-import { selFoldersVideosInfo } from "../store/folderVideosInfo.slice";
 import { selVideoPlayer, videoPlayerActions } from "../store/videoPlayer.slice";
 import { VideoDataModel } from "../../models/videoData.model";
 import { useVideoPlayerLogic } from "./useVideoPlayerLogic";
+import { selFoldersVideosInfo } from "../store/videoInfo/folderVideosInfoSelectors";
 
 export const useVideoListLogic = () => {
   const dispatch = useAppDispatch();

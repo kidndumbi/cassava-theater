@@ -12,7 +12,7 @@ import { useAppDispatch } from "../store";
 import { isEmptyObject } from "../util/helperFunctions";
 import { useState } from "react";
 import { VideoDataModel } from "../../models/videoData.model";
-import { folderVideosInfoActions } from "../store/folderVideosInfo.slice";
+import { postVideoJason } from "../store/videoInfo/folderVideosInfoActions";
 
 export const useVideoPlayerLogic = () => {
   const dispatch = useAppDispatch();
@@ -62,7 +62,7 @@ export const useVideoPlayerLogic = () => {
     };
 
     return dispatch(
-      folderVideosInfoActions.postVideoJason({
+      postVideoJason({
         currentVideo,
         newVideoJsonData,
       })

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useVideoPlayerLogic } from "./useVideoPlayerLogic";
 import { useAppDispatch } from "../store";
 import { VideoDataModel } from "../../models/videoData.model";
-import { folderVideosInfoActions } from "../store/folderVideosInfo.slice";
+import { postVideoJason } from "../store/videoInfo/folderVideosInfoActions";
 
 const useSubtitle = () => {
   const dispatch = useAppDispatch();
@@ -16,7 +16,7 @@ const useSubtitle = () => {
 
   const updateSubtitle = async (subtitlePath: string | null, videoData: VideoDataModel) => {
     await dispatch(
-      folderVideosInfoActions.postVideoJason({
+      postVideoJason({
         currentVideo: videoData,
         newVideoJsonData: { subtitlePath },
       })

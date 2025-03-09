@@ -1,14 +1,8 @@
 import { useSelector } from "react-redux";
 import {
-  fetchVideoDetailsApi,
-  folderVideosInfoActions,
-  selEpisodes,
-  selFolderDetails,
-  selLoadingEpisodes,
-  selLoadingFolderDetails,
-  selLoadingTvShows,
-  selTvShows,
-} from "../store/folderVideosInfo.slice";
+  videosInfoActions,
+
+} from "../store/videoInfo/folderVideosInfo.slice";
 import { useAppDispatch } from "../store";
 import { settingsActions } from "../store/settingsSlice";
 import {
@@ -18,6 +12,9 @@ import {
 } from "../store/theMovieDb.slice";
 import { TvShowDetails } from "../../models/tv-show-details.model";
 import { VideoDataModel } from "../../models/videoData.model";
+import { fetchFolderDetails, fetchVideoData, postVideoJason } from "../store/videoInfo/folderVideosInfoActions";
+import { selEpisodes, selFolderDetails, selLoadingEpisodes, selLoadingFolderDetails, selLoadingTvShows, selTvShows } from "../store/videoInfo/folderVideosInfoSelectors";
+import { fetchVideoDetailsApi } from "../store/videoInfo/folderVideosInfoApi";
 
 export const useTvShows = () => {
   const dispatch = useAppDispatch();
@@ -35,7 +32,7 @@ export const useTvShows = () => {
     includeThumbnail = false,
   ) => {
     dispatch(
-      folderVideosInfoActions.fetchVideoData({
+      fetchVideoData({
         path,
         category,
         includeThumbnail,
@@ -76,7 +73,7 @@ export const useTvShows = () => {
       tv_show_details.id.toString(),
     );
     await dispatch(
-      folderVideosInfoActions.postVideoJason({
+      postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: { tv_show_details: extraTvShowDetails },
       }),
@@ -85,7 +82,7 @@ export const useTvShows = () => {
 
   const updateTvShowDbData = async (filePath: string, data: VideoDataModel) => {
     await dispatch(
-      folderVideosInfoActions.postVideoJason({
+      postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: data,
       }),
@@ -94,7 +91,7 @@ export const useTvShows = () => {
 
   const updateSeasonTMDBId = (season_id: string, filePath: string) => {
     dispatch(
-      folderVideosInfoActions.postVideoJason({
+      postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: { season_id },
       }),
@@ -115,7 +112,7 @@ export const useTvShows = () => {
 
   const getSeasonDetails = (path: string) => {
     dispatch(
-      folderVideosInfoActions.fetchFolderDetails({
+      fetchFolderDetails({
         path,
       }),
     );
@@ -126,23 +123,23 @@ export const useTvShows = () => {
   };
 
   const resetTvShows = () => {
-    dispatch(folderVideosInfoActions.resetTvShows());
+    dispatch(videosInfoActions.resetTvShows());
   };
 
   const resetEpisodes = () => {
-    dispatch(folderVideosInfoActions.resetEpisodes());
+    dispatch(videosInfoActions.resetEpisodes());
   };
 
   const resetTvShowDetails = () => {
-    dispatch(folderVideosInfoActions.resetFolderDetails());
+    dispatch(videosInfoActions.resetFolderDetails());
   };
 
   const updateTvShow = (tvShow: VideoDataModel) => {
-    dispatch(folderVideosInfoActions.updateTvShow(tvShow));
+    dispatch(videosInfoActions.updateTvShow(tvShow));
   };
 
   const removeTvShow = (filePath: string) => {
-    dispatch(folderVideosInfoActions.removeTvShow(filePath));
+    dispatch(videosInfoActions.removeTvShow(filePath));
   };
 
   const updateEpisodeThumbnail = async (episode: VideoDataModel) => {
@@ -152,7 +149,7 @@ export const useTvShows = () => {
     });
 
     dispatch(
-      folderVideosInfoActions.updateEpisode({
+      videosInfoActions.updateEpisode({
         videoProgressScreenshot,
         filePath,
       }),

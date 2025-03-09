@@ -6,7 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 import { NoteModel } from "../../models/note.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import { OverviewModel } from "../../models/overview.model";
-import { fetchVideoDetailsApi, folderVideosInfoActions } from "../store/folderVideosInfo.slice";
+import { postVideoJason } from "../store/videoInfo/folderVideosInfoActions";
+import { fetchVideoDetailsApi } from "../store/videoInfo/folderVideosInfoApi";
 
 export const useNoteListLogic = () => {
   const dispatch = useAppDispatch();
@@ -28,7 +29,7 @@ export const useNoteListLogic = () => {
     };
 
     dispatch(
-      folderVideosInfoActions.postVideoJason({
+      postVideoJason({
         currentVideo: videoData,
         newVideoJsonData,
       })

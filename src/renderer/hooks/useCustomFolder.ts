@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
-import { folderVideosInfoActions, selCustomFolder, selLoadingCustomFolder } from "../store/folderVideosInfo.slice";
+import { selCustomFolder, selLoadingCustomFolder } from "../store/videoInfo/folderVideosInfoSelectors";
+import { fetchVideoData } from "../store/videoInfo/folderVideosInfoActions";
 
 export const useCustomFolder = () => {
   const dispatch = useAppDispatch();
@@ -9,7 +10,7 @@ export const useCustomFolder = () => {
 
   const loadCustomFolder = async (path: string) => {
     dispatch(
-      folderVideosInfoActions.fetchVideoData({
+      fetchVideoData({
         path,
         category: "customFolder",
         includeThumbnail: false,
