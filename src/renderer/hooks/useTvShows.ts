@@ -32,20 +32,20 @@ export const useTvShows = () => {
   const fetchData = (
     path: string,
     category: "tvShows" | "episodes",
-    includeThumbnail = false
+    includeThumbnail = false,
   ) => {
     dispatch(
       folderVideosInfoActions.fetchVideoData({
         path,
         category,
         includeThumbnail,
-      })
+      }),
     );
   };
 
   const findNextEpisode = (currentFilePath: string) => {
     const currentIndex = episodes.findIndex(
-      (episode) => episode.filePath === currentFilePath
+      (episode) => episode.filePath === currentFilePath,
     );
     if (currentIndex !== -1 && currentIndex < episodes.length - 1) {
       return episodes[currentIndex + 1];
@@ -55,7 +55,7 @@ export const useTvShows = () => {
 
   const getTvShows = async () => {
     const tvShowsFolderPath = await dispatch(
-      settingsActions.getSetting("tvShowsFolderPath")
+      settingsActions.getSetting("tvShowsFolderPath"),
     );
     fetchData(tvShowsFolderPath.payload, "tvShows");
   };
@@ -70,16 +70,16 @@ export const useTvShows = () => {
 
   const updateTvShowTMDBId = async (
     filePath: string,
-    tv_show_details: TvShowDetails
+    tv_show_details: TvShowDetails,
   ) => {
     const extraTvShowDetails = await fetchTvShowById(
-      tv_show_details.id.toString()
+      tv_show_details.id.toString(),
     );
     await dispatch(
       folderVideosInfoActions.postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: { tv_show_details: extraTvShowDetails },
-      })
+      }),
     );
   };
 
@@ -88,7 +88,7 @@ export const useTvShows = () => {
       folderVideosInfoActions.postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: data,
-      })
+      }),
     );
   };
 
@@ -97,27 +97,27 @@ export const useTvShows = () => {
       folderVideosInfoActions.postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: { season_id },
-      })
+      }),
     );
   };
 
   const getTvShowById = async (
     id: string,
-    callback: (data: TvShowDetails) => void
+    callback: (data: TvShowDetails) => void,
   ) => {
     const tvShowTMDB = await fetchTvShowById(id);
     callback(tvShowTMDB);
   };
 
-  const getEpisodeDetails = (path: string) => {
-    fetchData(path, "episodes", true);
+  const getEpisodeDetails = async (path: string) => {
+    fetchData(path, "episodes", false);
   };
 
   const getSeasonDetails = (path: string) => {
     dispatch(
       folderVideosInfoActions.fetchFolderDetails({
         path,
-      })
+      }),
     );
   };
 
@@ -145,6 +145,20 @@ export const useTvShows = () => {
     dispatch(folderVideosInfoActions.removeTvShow(filePath));
   };
 
+  const updateEpisodeThumbnail = async (episode: VideoDataModel) => {
+    const { videoProgressScreenshot, filePath } = await fetchVideoDetailsApi({
+      path: episode.filePath,
+      category: null,
+    });
+
+    dispatch(
+      folderVideosInfoActions.updateEpisode({
+        videoProgressScreenshot,
+        filePath,
+      }),
+    );
+  };
+
   return {
     tvShows,
     episodes,
@@ -168,6 +182,7 @@ export const useTvShows = () => {
     findNextEpisode,
     updateTvShow,
     updateTvShowDbData,
-    removeTvShow
+    removeTvShow,
+    updateEpisodeThumbnail,
   };
 };

@@ -45,7 +45,7 @@ export const fetchVideosData = async ({
       const cache = readThumbnailCache(thumbnailCacheFilePath);
 
       const getVideoThumbnailsPromises = videoData.map((video) =>
-        videoDataHelpers.getVideoThumbnails(video, cache, video.duration),
+        videoDataHelpers.getVideoThumbnail(video, cache, video.duration),
       );
 
       updatedVideoData = await Promise.all(getVideoThumbnailsPromises);
@@ -93,7 +93,7 @@ export const fetchVideoDetails = async (
 
     const thumbnailCacheFilePath = helpers.getThumbnailCacheFilePath();
     const cache = readThumbnailCache(thumbnailCacheFilePath);
-    const processedVideoData = await videoDataHelpers.getVideoThumbnails(
+    const processedVideoData = await videoDataHelpers.getVideoThumbnail(
       videoDetails,
       cache,
       duration,
@@ -150,7 +150,6 @@ export const fetchFolderDetails = async (
     throw new Error("Error fetching Folder details: " + error);
   }
 };
-
 
 export const getVideoJsonData = async (
   event: Electron.IpcMainInvokeEvent,
