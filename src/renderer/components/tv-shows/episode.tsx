@@ -33,13 +33,15 @@ export const Episode: React.FC<EpisodeProps> = ({
   const [hover, setHover] = useState(false);
   const [openNotesModal, setOpenNotesModal] = useState(false);
   const handleCloseNotesModal = () => setOpenNotesModal(false);
-  const [hasError, setHasError] = useState(false);
+
   const { updateEpisodeThumbnail } = useTvShows();
 
   const handleMouseEnter = () => setHover(true);
   const handleMouseLeave = () => setHover(false);
   const handlePlayClick = () => onEpisodeClick(episode);
   const handleNotesClick = () => setOpenNotesModal(true);
+
+  const [hasError, setHasError] = useState(false);
 
   const handleError = () => {
     setHasError(true);
@@ -60,8 +62,8 @@ export const Episode: React.FC<EpisodeProps> = ({
       >
         {showThumbnail ? (
           <img
-            src={episode.videoProgressScreenshot}
-            alt="Progress"
+            src={episode?.videoProgressScreenshot}
+            alt={episode?.fileName}
             className="episode-thumbnail"
             onClick={handlePlayClick}
             onError={handleError}

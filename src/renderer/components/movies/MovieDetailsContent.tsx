@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, Tabs, Tab } from "@mui/material";
 import { getYearFromDate } from "../../util/helperFunctions";
-
 import { a11yProps } from "../common/TabPanel";
 import MovieDetailsButtons from "./MovieDetailsButtons";
 import { VideoDataModel } from "../../../models/videoData.model";
@@ -20,30 +19,48 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
   currentTabValue,
   onTabChange,
 }) => {
+  const [hasError, setHasError] = useState(false);
+
+  const title =
+    videoDetails?.movie_details?.title ||
+    videoDetails?.fileName?.replace(/\.(mp4|mkv|avi)$/i, "");
+  const releaseYear = videoDetails?.movie_details?.release_date
+    ? `(${getYearFromDate(videoDetails.movie_details.release_date)})`
+    : "";
+  const hasProgress = videoDetails?.currentTime > 0;
+  const showProgressScreenshot =
+    hasProgress && videoDetails?.videoProgressScreenshot && !hasError;
+
+  const handleImageError = () => {
+    setHasError(true);
+  };
+
   return (
-    <div className="absolute bottom-5 left-5 text-white drop-shadow-md">
-      <h2 className="text-4xl font-extrabold mb-4">
-        {videoDetails?.movie_details?.title ||
-          videoDetails?.fileName?.replace(/\.(mp4|mkv|avi)$/i, "")}
-        {videoDetails?.movie_details?.release_date &&
-          "(" +
-            getYearFromDate(videoDetails?.movie_details?.release_date) +
-            ")"}
+    <Box className="absolute bottom-5 left-5 text-white drop-shadow-md">
+      <h2 className="mb-4 text-4xl font-extrabold">
+        {title}
+        {releaseYear}
       </h2>
       <p className="max-w-[50%]">{videoDetails?.movie_details?.overview}</p>
-      <MovieDetailsButtons
-        videoDetails={videoDetails}
-        handlePlay={handlePlay}
-      />
-      {videoDetails?.currentTime !== undefined &&
-        videoDetails?.currentTime > 0 && (
+
+      <MovieDetailsButtons videoDetails={videoDetails} handlePlay={handlePlay} />
+
+      {showProgressScreenshot && (
+        <>
+          <img
+            src={videoDetails.videoProgressScreenshot}
+            alt={videoDetails.fileName}
+            className="mb-2 h-[200px] w-[300px] rounded-tl-lg rounded-tr-lg"
+            onError={handleImageError}
+          />
           <Box className="pr-5">
             <VideoProgressBar
-              current={videoDetails?.currentTime || 0}
-              total={videoDetails?.duration || 0}
+              current={videoDetails.currentTime}
+              total={videoDetails.duration || 0}
             />
           </Box>
-        )}
+        </>
+      )}
 
       <Box>
         <Tabs
@@ -54,7 +71,7 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
           <Tab label="Notes" {...a11yProps(0)} />
         </Tabs>
       </Box>
-    </div>
+    </Box>
   );
 };
 
