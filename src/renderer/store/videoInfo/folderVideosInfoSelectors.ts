@@ -1,8 +1,5 @@
 import { RootState } from "../index";
 
-export const selFoldersVideosInfo = (state: RootState) =>
-  state.folderVideosInfo.folderVideosInfo;
-
 export const selMovies = (state: RootState) => state.folderVideosInfo.movies;
 export const selTvShows = (state: RootState) => state.folderVideosInfo.tvShows;
 export const selEpisodes = (state: RootState) =>

@@ -4,14 +4,12 @@ import { useAppDispatch } from "../store";
 import { selVideoPlayer, videoPlayerActions } from "../store/videoPlayer.slice";
 import { VideoDataModel } from "../../models/videoData.model";
 import { useVideoPlayerLogic } from "./useVideoPlayerLogic";
-import { selFoldersVideosInfo } from "../store/videoInfo/folderVideosInfoSelectors";
 
 export const useVideoListLogic = () => {
   const dispatch = useAppDispatch();
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const player = useSelector(selVideoPlayer);
-  const folderVideosInfo = useSelector(selFoldersVideosInfo);
   const { updateVideoDBCurrentTime } = useVideoPlayerLogic();
 
   const setCurrentVideo = (video: VideoDataModel) => {
@@ -38,7 +36,6 @@ export const useVideoListLogic = () => {
     setShowSettingsDialog,
     showDialog,
     setShowDialog,
-    folderVideosInfo,
     handleVideoSelect,
     player,
     setPlayer,

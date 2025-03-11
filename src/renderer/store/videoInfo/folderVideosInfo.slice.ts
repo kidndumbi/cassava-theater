@@ -9,7 +9,6 @@ import {
 import { VideoDataModel } from "../../../models/videoData.model";
 
 interface FolderVideosInfoState {
-  folderVideosInfo: VideoDataModel[];
   movies: VideoDataModel[];
   tvShows: VideoDataModel[];
   customFolderData: VideoDataModel[];
@@ -27,7 +26,6 @@ interface FolderVideosInfoState {
 }
 
 const initialState: FolderVideosInfoState = {
-  folderVideosInfo: [],
   movies: [],
   tvShows: [],
   customFolderData: [],
@@ -48,9 +46,6 @@ const folderVideosInfoSlice = createSlice({
   name: "folderVideosInfo",
   initialState,
   reducers: {
-    resetFolderVideosInfo: (state) => {
-      state.folderVideosInfo = [];
-    },
     resetMovies: (state) => {
       state.movies = [];
     },
