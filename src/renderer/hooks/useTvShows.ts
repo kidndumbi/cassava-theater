@@ -1,8 +1,5 @@
 import { useSelector } from "react-redux";
-import {
-  videosInfoActions,
-
-} from "../store/videoInfo/folderVideosInfo.slice";
+import { videosInfoActions } from "../store/videoInfo/folderVideosInfo.slice";
 import { useAppDispatch } from "../store";
 import { settingsActions } from "../store/settingsSlice";
 import {
@@ -12,9 +9,24 @@ import {
 } from "../store/theMovieDb.slice";
 import { TvShowDetails } from "../../models/tv-show-details.model";
 import { VideoDataModel } from "../../models/videoData.model";
-import { fetchFolderDetails, fetchVideoData, postVideoJason } from "../store/videoInfo/folderVideosInfoActions";
-import { selEpisodes, selFolderDetails, selLoadingEpisodes, selLoadingFolderDetails, selLoadingTvShows, selTvShows } from "../store/videoInfo/folderVideosInfoSelectors";
+import {
+  fetchFolderDetails,
+  fetchVideoData,
+  postVideoJason,
+} from "../store/videoInfo/folderVideosInfoActions";
+import {
+  selEpisodes,
+  selFolderDetails,
+  selLoadingEpisodes,
+  selLoadingFolderDetails,
+  selLoadingTvShows,
+  selTvShows,
+} from "../store/videoInfo/folderVideosInfoSelectors";
 import { fetchVideoDetailsApi } from "../store/videoInfo/folderVideosInfoApi";
+import {
+  selThumbnailCache,
+  thumbnailCacheActions,
+} from "../store/thumbnailCache.slice";
 
 export const useTvShows = () => {
   const dispatch = useAppDispatch();
@@ -25,6 +37,7 @@ export const useTvShows = () => {
   const loadingFolderDetails = useSelector(selLoadingFolderDetails);
   const loadingTvShows = useSelector(selLoadingTvShows);
   const tvShowSuggestions = useSelector(selTvShowSuggestions);
+  const thumbnailCache = useSelector(selThumbnailCache);
 
   const fetchData = (
     path: string,
@@ -143,15 +156,53 @@ export const useTvShows = () => {
   };
 
   const updateEpisodeThumbnail = async (episode: VideoDataModel) => {
-    const { videoProgressScreenshot, filePath } = await fetchVideoDetailsApi({
-      path: episode.filePath,
+    const { filePath, currentTime } = episode;
+    const cacheEntry = thumbnailCache[filePath];
+
+    // Return cached thumbnail if it matches the current time
+    if (cacheEntry?.currentTime === currentTime) {
+      dispatchEpisodeUpdate(cacheEntry.image, filePath);
+      return;
+    }
+
+    // Fetch new thumbnail details from the API
+    const { videoProgressScreenshot } = await fetchVideoDetailsApi({
+      path: filePath,
       category: null,
     });
 
+    // Update the thumbnail cache
+    dispatchThumbnailCacheUpdate(
+      filePath,
+      videoProgressScreenshot,
+      currentTime,
+    );
+
+    // Dispatch the episode update with the new thumbnail
+    dispatchEpisodeUpdate(videoProgressScreenshot, filePath);
+  };
+
+  // Helper function to dispatch episode updates
+  const dispatchEpisodeUpdate = (image: string, filePath: string) => {
     dispatch(
       videosInfoActions.updateEpisode({
-        videoProgressScreenshot,
+        videoProgressScreenshot: image,
         filePath,
+      }),
+    );
+  };
+
+  // Helper function to update the thumbnail cache
+  const dispatchThumbnailCacheUpdate = (
+    key: string,
+    image: string,
+    currentTime: number,
+  ) => {
+    dispatch(
+      thumbnailCacheActions.setThumbnail({
+        key,
+        image,
+        currentTime,
       }),
     );
   };

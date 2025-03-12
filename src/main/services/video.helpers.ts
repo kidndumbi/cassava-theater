@@ -5,7 +5,6 @@ import * as path from "path";
 import ffmpeg from "fluent-ffmpeg";
 import { loggingService as log } from "./main-logging.service";
 
-import { ThumbnailCache } from "./thumbnailCache.service";
 import { generateThumbnail } from "./thumbnail.service";
 
 import { VideoDataModel } from "../../models/videoData.model";
@@ -119,40 +118,19 @@ export const sortVideoData = (
 
 export async function getVideoThumbnail(
   video: VideoDataModel,
-  cache: ThumbnailCache,
   duration: number,
 ): Promise<VideoDataModel> {
   if (!video.isDirectory) {
     if (!video.filePath) {
       throw new Error("Video file path is undefined");
     }
-    const cacheKey = helpers.normalizeFilePath(video.filePath);
-    let videoProgressScreenshot = cache[cacheKey]?.image;
-
-    const thumbnailPromise =
-      !videoProgressScreenshot ||
-      cache[cacheKey].currentTime !== (video.currentTime ?? 30)
-        ? video.filePath
-          ? await generateThumbnail(
-              video.filePath,
-              video.currentTime ?? 30,
-              ffmpeg,
-              duration,
-            )
-          : Promise.resolve(undefined)
-        : Promise.resolve(videoProgressScreenshot);
-
     try {
-      videoProgressScreenshot = await thumbnailPromise;
-      if (
-        !cache[cacheKey] ||
-        cache[cacheKey].currentTime !== (video.currentTime ?? 30)
-      ) {
-        cache[cacheKey] = {
-          image: videoProgressScreenshot,
-          currentTime: video.currentTime ?? 30,
-        };
-      }
+      const videoProgressScreenshot = await generateThumbnail(
+        video.filePath,
+        video.currentTime ?? 30,
+        ffmpeg,
+        duration,
+      );
       video.videoProgressScreenshot = videoProgressScreenshot;
     } catch (error) {
       log.error(
