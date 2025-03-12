@@ -75,9 +75,9 @@ app.on("ready", () => {
   }
 });
 
-app.on("will-quit", () => {
-  cleanUp.runAppClosingCleanup();
-});
+// app.on("will-quit", () => {
+
+// });
 
 // app.whenReady().then(() => {
 //   if (app.isPackaged) {

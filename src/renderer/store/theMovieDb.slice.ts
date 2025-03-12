@@ -121,8 +121,9 @@ const theMovieDbActions = {
   ...theMovieDbSlice.actions,
 };
 
+export const theMovieDbReducer = theMovieDbSlice.reducer;
+
 export {
-  theMovieDbSlice,
   theMovieDbActions,
   selMovieSuggestions,
   selTvShowSuggestions,

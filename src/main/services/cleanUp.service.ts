@@ -82,17 +82,6 @@ const deleteMarkedForDeletion = async (): Promise<void> => {
   await updateDeletionList(markedFilePath, remaining);
 };
 
-const clearthumbnailsMetadata = async () => {
-  const cachePath = helpers.getThumbnailCacheFilePath();
-  if (await helpers.fileExists(cachePath)) {
-    await fsPromise.writeFile(cachePath, JSON.stringify({}, null, 2));
-  }
-};
-
 export const runAppOpeningCleanup = () => {
   deleteMarkedForDeletion();
-};
-
-export const runAppClosingCleanup = () => {
-  clearthumbnailsMetadata();
 };

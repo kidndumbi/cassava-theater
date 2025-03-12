@@ -4,12 +4,7 @@ import * as path from "path";
 import { VideoDataModel } from "../../models/videoData.model";
 import { loggingService as log } from "./main-logging.service";
 
-import {
-  readThumbnailCache,
-  writeThumbnailCache,
-} from "./thumbnailCache.service";
 import * as videoDataHelpers from "./video.helpers";
-import * as helpers from "./helpers";
 
 export const fetchVideosData = async ({
   filePath,
@@ -41,16 +36,11 @@ export const fetchVideosData = async ({
     let updatedVideoData: VideoDataModel[];
 
     if (includeThumbnail) {
-      const thumbnailCacheFilePath = helpers.getThumbnailCacheFilePath();
-      const cache = readThumbnailCache(thumbnailCacheFilePath);
-
       const getVideoThumbnailsPromises = videoData.map((video) =>
-        videoDataHelpers.getVideoThumbnail(video, cache, video.duration),
+        videoDataHelpers.getVideoThumbnail(video, video.duration),
       );
 
       updatedVideoData = await Promise.all(getVideoThumbnailsPromises);
-
-      writeThumbnailCache(cache, thumbnailCacheFilePath);
     } else {
       updatedVideoData = videoData;
     }
@@ -91,15 +81,10 @@ export const fetchVideoDetails = async (
       category,
     );
 
-    const thumbnailCacheFilePath = helpers.getThumbnailCacheFilePath();
-    const cache = readThumbnailCache(thumbnailCacheFilePath);
     const processedVideoData = await videoDataHelpers.getVideoThumbnail(
       videoDetails,
-      cache,
       duration,
     );
-
-    writeThumbnailCache(cache, thumbnailCacheFilePath);
 
     return processedVideoData;
   } catch (error) {
