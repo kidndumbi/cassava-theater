@@ -64,7 +64,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       findNextEpisode,
       port,
     },
-    ref
+    ref,
   ) => {
     const { setPlayer } = useVideoListLogic();
     const { mkvCurrentTime, currentVideo } = useVideoPlayerLogic();
@@ -110,7 +110,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       () => onVideoEnded(currentVideo?.filePath || "", nextEpisode),
       currentVideo,
       startFromBeginning,
-      triggeredOnPlayInterval
+      triggeredOnPlayInterval,
     );
 
     useImperativeHandle(ref, () => ({
@@ -124,7 +124,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const isMouseActive = useMouseActivity();
     const nextEpisode = useMemo(
       () => findNextEpisode(currentVideo?.filePath || ""),
-      [currentVideo, episodes, isTvShow]
+      [currentVideo, episodes, isTvShow],
     );
 
     useEffect(() => {
@@ -188,7 +188,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             setError(
               `An error occurred while loading the video: ${
                 error || "Unknown error"
-              }`
+              }`,
             );
           }}
         />
@@ -269,7 +269,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 export default AppVideoPlayer;

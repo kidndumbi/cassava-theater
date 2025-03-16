@@ -74,7 +74,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   useEffect(() => {
     return () => {
       resetTvShowDetails();
-      resetEpisodes();
+      //resetEpisodes();
     };
   }, []);
 
