@@ -10,6 +10,9 @@ import fsPromise from "fs/promises";
 const readDeletionList = async (markedFilePath: string): Promise<string[]> => {
   try {
     const content = await helpers.readFileDataAsync(markedFilePath);
+    if (!content.trim()) { // file is empty
+      return [];
+    }
     return JSON.parse(content);
   } catch (error) {
     log.error("Error processing deletion list:", error);
