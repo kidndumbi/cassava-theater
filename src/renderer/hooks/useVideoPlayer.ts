@@ -25,10 +25,12 @@ export const useVideoPlayer = (
   const [volume, setVolume] = useLocalStorage("volume", 1);
   const globalVideoPlayer = useSelector(selVideoPlayer);
 
-  const stopwatchOffset = new Date();
-  stopwatchOffset.setSeconds(
-    stopwatchOffset.getSeconds() + (videoData?.currentTime || 0),
-  );
+  // Helper function to calculate stopwatch offset
+  const getStopwatchOffset = (currentTime = 0) => {
+    const offset = new Date();
+    offset.setSeconds(offset.getSeconds() + currentTime);
+    return offset;
+  };
 
   const {
     totalSeconds,
@@ -38,7 +40,9 @@ export const useVideoPlayer = (
     start: startTimer,
     pause: pauseTimer,
     reset: resetTimer,
-  } = useStopwatch({ offsetTimestamp: stopwatchOffset });
+  } = useStopwatch({
+    offsetTimestamp: getStopwatchOffset(videoData?.currentTime),
+  });
 
   const totalSecondsRef = useRef(totalSeconds);
   const hasValidGlobalVideoPlayer =
@@ -74,26 +78,28 @@ export const useVideoPlayer = (
     return () => clearInterval(interval);
   }, [globalVideoPlayer, volume]);
 
-  // Add new useEffect below existing ones
+  // Reset stopwatch when videoData changes
   useEffect(() => {
     if (videoData) {
-      const stopwatchOffset = new Date();
-      stopwatchOffset.setSeconds(stopwatchOffset.getSeconds() + (videoData?.currentTime || 0));
-      resetTimer(stopwatchOffset, !globalVideoPlayer?.paused);
+      const offset = getStopwatchOffset(
+        startFromBeginning ? 0 : videoData.currentTime,
+      );
+      resetTimer(offset, !globalVideoPlayer?.paused);
     }
   }, [videoData, globalVideoPlayer]);
 
-  // Helper functions
+  // Helper function to format time
   const formatTime = (hours: number, minutes: number, seconds: number) => {
     const pad = (num: number) => num.toString().padStart(2, "0");
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   };
 
+  // Helper function to update video source with start time
   const updateSourceWithStart = useCallback(
     (additionalSeconds: number): string => {
       try {
         const url = new URL(globalVideoPlayer.src, window.location.href);
-        let newStart = totalSecondsRef.current + additionalSeconds;
+        let newStart = (totalSecondsRef.current || 0) + additionalSeconds;
         if (videoData?.duration) {
           newStart = Math.max(0, Math.min(newStart, videoData.duration));
         }
@@ -107,6 +113,7 @@ export const useVideoPlayer = (
     [globalVideoPlayer, videoData],
   );
 
+  // Skip video by a specified number of seconds
   const skipBy = useCallback(
     (seconds: number) => {
       if (!globalVideoPlayer || !videoData) return;
@@ -114,45 +121,38 @@ export const useVideoPlayer = (
       if (videoData.isMkv || videoData.isAvi) {
         const newSrc = updateSourceWithStart(seconds);
         changeSource(newSrc);
-        const newOffset = new Date();
-        newOffset.setSeconds(
-          newOffset.getSeconds() + totalSecondsRef.current + seconds,
-        );
+        const newOffset = getStopwatchOffset(totalSecondsRef.current + seconds);
         resetTimer(newOffset, !globalVideoPlayer.paused);
       } else {
         globalVideoPlayer.currentTime += seconds;
-        const newOffset = new Date();
-        newOffset.setSeconds(
-          newOffset.getSeconds() + globalVideoPlayer.currentTime,
-        );
+        const newOffset = getStopwatchOffset(globalVideoPlayer.currentTime);
         resetTimer(newOffset, !globalVideoPlayer.paused);
       }
     },
     [globalVideoPlayer, videoData, updateSourceWithStart],
   );
 
+  // Start playing video at a specific time
   const startPlayingAt = useCallback(
     (time: number) => {
-      console.log("startPlayingAt", time);
       if (!globalVideoPlayer || !videoData) return;
 
       if (videoData.isMkv || videoData.isAvi) {
         const additionalSeconds = time - globalVideoPlayer.currentTime;
         const newSrc = updateSourceWithStart(additionalSeconds);
         changeSource(newSrc);
-        const newOffset = new Date();
-        newOffset.setSeconds(newOffset.getSeconds() + time);
+        const newOffset = getStopwatchOffset(time);
         resetTimer(newOffset, !globalVideoPlayer.paused);
       } else {
         globalVideoPlayer.currentTime = time;
-        const newOffset = new Date();
-        newOffset.setSeconds(newOffset.getSeconds() + time);
+        const newOffset = getStopwatchOffset(time);
         resetTimer(newOffset, !globalVideoPlayer.paused);
       }
     },
     [globalVideoPlayer, videoData, updateSourceWithStart],
   );
 
+  // Change video source
   const changeSource = useCallback(
     (newSrc: string) => {
       if (globalVideoPlayer) {
@@ -165,6 +165,7 @@ export const useVideoPlayer = (
     [globalVideoPlayer],
   );
 
+  // Toggle fullscreen mode
   const toggleFullscreen = useCallback(
     (containerRef: React.RefObject<HTMLDivElement>) => {
       if (!document.fullscreenElement) {
@@ -176,7 +177,7 @@ export const useVideoPlayer = (
     [],
   );
 
-  // Event listeners
+  // Event listeners for video player
   useEffect(() => {
     if (!hasValidGlobalVideoPlayer) return;
 
@@ -193,8 +194,6 @@ export const useVideoPlayer = (
       );
     };
     const onLoadedMetadata = () => {
-      console.log("Loaded metadata");
-      console.log("videoData?.currentTime", videoData?.currentTime);
       startTimer();
       globalVideoPlayer.currentTime = startFromBeginning
         ? 0
@@ -210,25 +209,27 @@ export const useVideoPlayer = (
     const onPlay = () => startTimer();
     const onPause = () => pauseTimer();
 
-    globalVideoPlayer.addEventListener("ended", onEnded);
-    globalVideoPlayer.addEventListener("timeupdate", onTimeUpdate);
-    globalVideoPlayer.addEventListener("loadedmetadata", onLoadedMetadata);
-    globalVideoPlayer.addEventListener("volumechange", () =>
-      setVolume(globalVideoPlayer.volume),
+    const eventListeners = [
+      { event: "ended", handler: onEnded },
+      { event: "timeupdate", handler: onTimeUpdate },
+      { event: "loadedmetadata", handler: onLoadedMetadata },
+      {
+        event: "volumechange",
+        handler: () => setVolume(globalVideoPlayer.volume),
+      },
+      { event: "play", handler: onPlay },
+      { event: "pause", handler: onPause },
+    ];
+
+    eventListeners.forEach(({ event, handler }) =>
+      globalVideoPlayer.addEventListener(event, handler),
     );
-    globalVideoPlayer.addEventListener("play", onPlay);
-    globalVideoPlayer.addEventListener("pause", onPause);
     document.addEventListener("fullscreenchange", onFullscreenChange);
 
     return () => {
-      globalVideoPlayer.removeEventListener("ended", onEnded);
-      globalVideoPlayer.removeEventListener("timeupdate", onTimeUpdate);
-      globalVideoPlayer.removeEventListener("loadedmetadata", onLoadedMetadata);
-      globalVideoPlayer.removeEventListener("volumechange", () =>
-        setVolume(globalVideoPlayer.volume),
+      eventListeners.forEach(({ event, handler }) =>
+        globalVideoPlayer.removeEventListener(event, handler),
       );
-      globalVideoPlayer.removeEventListener("play", onPlay);
-      globalVideoPlayer.removeEventListener("pause", onPause);
       document.removeEventListener("fullscreenchange", onFullscreenChange);
     };
   }, [videoEnded, globalVideoPlayer, videoData, startFromBeginning]);

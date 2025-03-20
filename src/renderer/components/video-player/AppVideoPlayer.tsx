@@ -68,6 +68,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
   ) => {
     const { setPlayer } = useVideoListLogic();
     const { mkvCurrentTime, currentVideo } = useVideoPlayerLogic();
+    const isNotMp4VideoFormat = currentVideo?.isMkv || currentVideo?.isAvi;
     const videoPlayerRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [error, setError] = useState<string | null>(null);
@@ -92,7 +93,12 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     }, [debouncedSliderValue]);
 
     const getVideoUrl = () =>
-      getUrl("video", currentVideo?.filePath, currentVideo?.currentTime, port);
+      getUrl(
+        "video",
+        currentVideo?.filePath,
+        startFromBeginning ? 0 : currentVideo?.currentTime,
+        port,
+      );
     const getSubtitleUrl = () => getUrl("file", subtitleFilePath, null, port);
 
     const {
@@ -170,13 +176,13 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     return (
       <div ref={containerRef} className="video-container">
         <Video
-          isMkv={currentVideo.isMkv || currentVideo.isAvi}
+          isMkv={isNotMp4VideoFormat}
           videoPlayerRef={videoPlayerRef}
           getVideoUrl={getVideoUrl}
           getSubtitleUrl={getSubtitleUrl}
           subtitleFilePath={subtitleFilePath}
           onClick={() => {
-            if (currentVideo.isMkv || currentVideo.isAvi) {
+            if (isNotMp4VideoFormat) {
               if (!paused) {
                 pause();
               } else {
@@ -230,7 +236,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             }}
           />
         )}
-        {(currentVideo.isMkv || currentVideo.isAvi) && isMouseActive && (
+        {isNotMp4VideoFormat && isMouseActive && (
           <>
             <span
               style={{
