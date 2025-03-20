@@ -74,6 +74,15 @@ export const useVideoPlayer = (
     return () => clearInterval(interval);
   }, [globalVideoPlayer, volume]);
 
+  // Add new useEffect below existing ones
+  useEffect(() => {
+    if (videoData) {
+      const stopwatchOffset = new Date();
+      stopwatchOffset.setSeconds(stopwatchOffset.getSeconds() + (videoData?.currentTime || 0));
+      resetTimer(stopwatchOffset, !globalVideoPlayer?.paused);
+    }
+  }, [videoData, globalVideoPlayer]);
+
   // Helper functions
   const formatTime = (hours: number, minutes: number, seconds: number) => {
     const pad = (num: number) => num.toString().padStart(2, "0");
@@ -124,6 +133,7 @@ export const useVideoPlayer = (
 
   const startPlayingAt = useCallback(
     (time: number) => {
+      console.log("startPlayingAt", time);
       if (!globalVideoPlayer || !videoData) return;
 
       if (videoData.isMkv || videoData.isAvi) {
@@ -183,11 +193,17 @@ export const useVideoPlayer = (
       );
     };
     const onLoadedMetadata = () => {
+      console.log("Loaded metadata");
+      console.log("videoData?.currentTime", videoData?.currentTime);
       startTimer();
       globalVideoPlayer.currentTime = startFromBeginning
         ? 0
         : videoData?.currentTime || 0;
       globalVideoPlayer.play();
+      console.log(
+        "globalVideoPlayer.currentTime",
+        globalVideoPlayer.currentTime,
+      );
     };
     const onFullscreenChange = () =>
       setIsFullScreen(!!document.fullscreenElement);
