@@ -210,6 +210,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               subtitleFilePath={subtitleFilePath}
               skip={skipBy}
               onToggleFullscreen={() => toggleFullscreen(containerRef)}
+              isNotMp4VideoFormat={isNotMp4VideoFormat}
             />
             <TitleOverlay fileName={currentVideo?.fileName} />
             <SideControlsOverlay

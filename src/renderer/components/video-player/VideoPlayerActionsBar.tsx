@@ -5,20 +5,22 @@ import { SkipControls } from "./controlSections/SkipControls";
 import { PlayPauseControls } from "./controlSections/PlayPauseControls";
 import { SubtitleSelect } from "./SubtitleSelect";
 import { FullscreenControl } from "./controlSections/FullscreenControl";
+import { VolumeControl } from "./controlSections/VolumeControl";
 
 interface VideoPlayerActionsBarProps {
   onSubtitleChange: (subtitleFilePath: string) => void;
   subtitleFilePath: string | null;
   renderSkipButton: (
     seconds: number,
-    IconComponent: ElementType ,
-    label: string
+    IconComponent: ElementType,
+    label: string,
   ) => JSX.Element;
   isPlaying: boolean;
   onPlayPause: (isPlaying: boolean) => void;
   paused: boolean;
   onToggleFullscreen: () => void;
   isFullScreen: boolean;
+  isNotMp4VideoFormat: boolean;
 }
 
 export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
@@ -29,6 +31,7 @@ export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
   onToggleFullscreen,
   isFullScreen,
   paused,
+  isNotMp4VideoFormat,
 }) => {
   return (
     <Box
@@ -51,6 +54,7 @@ export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
         subtitleFilePath={subtitleFilePath}
         onSubtitleChange={onSubtitleChange}
       />
+      {isNotMp4VideoFormat && <VolumeControl />}
     </Box>
   );
 };
