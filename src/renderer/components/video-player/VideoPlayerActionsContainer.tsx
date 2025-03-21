@@ -13,6 +13,7 @@ interface VideoPlayerActionsContainerProps {
   paused?: boolean;
   play: () => void;
   pause: () => void;
+  isNotMp4VideoFormat: boolean; 
 }
 
 const VideoPlayerActionsContainer: React.FC<
@@ -26,11 +27,13 @@ const VideoPlayerActionsContainer: React.FC<
   paused,
   play,
   pause,
+  isNotMp4VideoFormat,
 }) => {
 
   return (
     <Box className="video-player-actions-container">
       <VideoPlayerActionsBar
+      isNotMp4VideoFormat={isNotMp4VideoFormat}
         onSubtitleChange={onSubtitleChange}
         subtitleFilePath={subtitleFilePath}
         renderSkipButton={(seconds, IconComponent, label) => (
