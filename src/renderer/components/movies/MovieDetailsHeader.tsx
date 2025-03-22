@@ -1,11 +1,12 @@
 import React from "react";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { Box } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MovieIcon from "@mui/icons-material/Movie";
 import ClosedCaptionButton from "../common/ClosedCaptionButton";
-import theme from "../../theme";
 import { VideoDataModel } from "../../../models/videoData.model";
 import WatchLaterIcon from "@mui/icons-material/WatchLater";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import AppIconButton from "../common/AppIconButton";
 
 interface MovieDetailsHeaderProps {
   handleBackClick: () => void;
@@ -14,10 +15,11 @@ interface MovieDetailsHeaderProps {
   videoPath: string | null;
   updateSubtitle: (
     filePath: string,
-    options: { filePath: string }
+    options: { filePath: string },
   ) => Promise<void>;
   getVideoDetails: (videoPath: string) => void;
   updateWatchLater: (filePath: string, watchLater: boolean) => void;
+  onRefresh: () => void;
 }
 
 const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
@@ -28,6 +30,7 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
   updateSubtitle,
   getVideoDetails,
   updateWatchLater,
+  onRefresh,
 }) => {
   const handleSubtitleChange = async (filePath: string) => {
     await updateSubtitle(filePath === "None" ? "" : filePath, {
@@ -39,17 +42,10 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
   };
 
   return (
-    <Box className="absolute top-[20px] left-[20px] flex justify-between w-[calc(100vw-30px)]">
-      <Tooltip title="Back">
-        <IconButton
-          onClick={handleBackClick}
-          style={{
-            color: theme.customVariables.appWhite,
-          }}
-        >
-          <ArrowBackIcon />
-        </IconButton>
-      </Tooltip>
+    <Box className="absolute left-[20px] top-[20px] flex w-[calc(100vw-40px)] justify-between">
+      <AppIconButton tooltip="Back" onClick={handleBackClick}>
+        <ArrowBackIcon />
+      </AppIconButton>
 
       <Box>
         <ClosedCaptionButton
@@ -57,36 +53,26 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
           subtitlePath={videoDetails?.subtitlePath || "None"}
           handleFilepathChange={handleSubtitleChange}
         />
-        <Tooltip
-          title={
+        <AppIconButton tooltip="Refresh" onClick={onRefresh}>
+          <RefreshIcon />
+        </AppIconButton>
+        <AppIconButton
+          tooltip={
             videoDetails?.watchLater
               ? "Remove from Watch Later"
               : "Add to Watch Later"
           }
+          onClick={() => {
+            if (videoPath) {
+              updateWatchLater(videoPath, !videoDetails?.watchLater);
+            }
+          }}
         >
-          <IconButton
-            onClick={() => {
-              if (videoPath) {
-                updateWatchLater(videoPath, !videoDetails?.watchLater);
-              }
-            }}
-            style={{
-              color: theme.customVariables.appWhite,
-            }}
-          >
-            <WatchLaterIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="theMovieDb data">
-          <IconButton
-            onClick={handleOpenModal}
-            style={{
-              color: theme.customVariables.appWhite,
-            }}
-          >
-            <MovieIcon />
-          </IconButton>
-        </Tooltip>
+          <WatchLaterIcon />
+        </AppIconButton>
+        <AppIconButton tooltip="theMovieDb data" onClick={handleOpenModal}>
+          <MovieIcon />
+        </AppIconButton>
       </Box>
     </Box>
   );

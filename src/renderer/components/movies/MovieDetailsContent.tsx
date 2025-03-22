@@ -36,21 +36,24 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
   };
 
   return (
-    <Box className="absolute bottom-5 left-5 text-white drop-shadow-md">
+    <Box className="absolute bottom-5 left-5 text-white drop-shadow-md w-full">
       <h2 className="mb-4 text-4xl font-extrabold">
         {title}
         {releaseYear}
       </h2>
       <p className="max-w-[50%]">{videoDetails?.movie_details?.overview}</p>
 
-      <MovieDetailsButtons videoDetails={videoDetails} handlePlay={handlePlay} />
+      <MovieDetailsButtons
+        videoDetails={videoDetails}
+        handlePlay={handlePlay}
+      />
 
       {showProgressScreenshot && (
         <>
           <img
             src={videoDetails.videoProgressScreenshot}
             alt={videoDetails.fileName}
-            className="mb-2 h-[200px] w-[300px] rounded-tl-lg rounded-tr-lg"
+            className="m-0 mb-4 h-[200px] w-[300px] rounded-lg"
             onError={handleImageError}
           />
           <Box className="pr-5">
