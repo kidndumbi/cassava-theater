@@ -1,8 +1,8 @@
 import React from "react";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import IconButton from "@mui/material/IconButton";
-import { Tooltip, Menu, MenuItem } from "@mui/material";
+import {  Menu, MenuItem } from "@mui/material";
 import theme from "../../theme";
+import AppIconButton from "./AppIconButton";
 
 interface AppMoreProps {
   handleDelete: () => void;
@@ -20,21 +20,22 @@ export const AppMore: React.FC<AppMoreProps> = ({ handleDelete }) => {
 
   return (
     <>
-      <Tooltip title="more options">
-        <IconButton
-          className="left-0 w-[30px] h-[30px]"
-          sx={{
-            color: theme.customVariables.appWhiteSmoke,
+      <AppIconButton
+        tooltip="more options"
+        onClick={handleClick}
+        className="left-0"
+        sx={{
+          color: theme.customVariables.appWhiteSmoke,
+          width: "30px",
+          height: "30px",
+          backgroundColor: theme.customVariables.appDark,
+          "&:hover": {
             backgroundColor: theme.customVariables.appDark,
-            "&:hover": {
-              backgroundColor: theme.customVariables.appDark,
-            },
-          }}
-          onClick={handleClick}
-        >
-          <MoreVertIcon />
-        </IconButton>
-      </Tooltip>
+          },
+        }}
+      >
+        <MoreVertIcon />
+      </AppIconButton>
       <Menu
         anchorEl={anchorEl}
         open={open}

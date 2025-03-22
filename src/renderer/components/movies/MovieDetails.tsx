@@ -78,7 +78,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       navigate(
         `/video-player?${
           startFromBeginning ? "startFromBeginning=true&" : ""
-        }&menuId=${menuId}`
+        }&menuId=${menuId}`,
       );
     }
   };
@@ -90,16 +90,13 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   return (
     <>
       <Box
+        className="relative h-screen w-screen bg-cover "
         style={{
-          position: "relative",
-          backgroundSize: "cover",
           backgroundImage: getBackgroundGradient(imageUrl),
-          height: "100vh",
-          width: "100vw",
         }}
       >
         {loadingVideoDetails ? (
-          <div className="flex justify-center items-center h-screen">
+          <div className="flex h-screen items-center justify-center">
             <LoadingIndicator message="Loading..." />
           </div>
         ) : (
@@ -113,10 +110,16 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
               getVideoDetails={getVideoDetails}
               updateWatchLater={async (
                 filePath: string,
-                watchLater: boolean
+                watchLater: boolean,
               ) => {
                 await updateWatchLater(filePath, watchLater);
                 getVideoDetails(filePath);
+              }}
+
+              onRefresh={() => {
+                if (videoPath) {
+                  getVideoDetails(videoPath);
+                }
               }}
             />
             <MovieDetailsContent
@@ -148,7 +151,9 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         id={videoDetails?.movie_details?.id?.toString() || ""}
         open={openModal}
         handleClose={handleCloseModal}
-        fileName={videoDetails?.fileName?.replace(/\.(mp4|mkv|avi)$/i, "") || ""}
+        fileName={
+          videoDetails?.fileName?.replace(/\.(mp4|mkv|avi)$/i, "") || ""
+        }
         handleSelectMovie={async (movie_details) => {
           if (movie_details.id) {
             await updateTMDBId(videoPath || "", movie_details);

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
-import { Box, IconButton, Tab, Tabs, Tooltip, useTheme } from "@mui/material";
+import { Box, IconButton, Tab, Tabs, useTheme } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import {
   getFilename,
   getUrl,
@@ -24,6 +25,7 @@ import { VideoProgressBar } from "../common/VideoProgressBar";
 import TvShowDetailsButtons from "./TvShowDetailsButtons";
 import { Season } from "../../../models/tv-show-details.model";
 import { useSettings } from "../../hooks/useSettings";
+import AppIconButton from "../common/AppIconButton";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -223,18 +225,22 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
               >
                 <ArrowBackIcon />
               </IconButton>
-              <Tooltip title="theMovieDb data">
-                <IconButton
+              <Box>
+                <AppIconButton
+                  tooltip="Refresh"
+                  onClick={() => getSeasonDetails(videoPath || "")}
+                >
+                  <RefreshIcon />
+                </AppIconButton>
+                <AppIconButton
+                  tooltip="theMovieDb data"
                   onClick={handleOpenModal}
-                  style={{
-                    color: theme.customVariables.appWhite,
-                  }}
                 >
                   <MovieIcon />
-                </IconButton>
-              </Tooltip>
+                </AppIconButton>
+              </Box>
             </Box>
-            <Box className="absolute bottom-5 left-5 text-white drop-shadow-md">
+            <Box className="absolute bottom-5 left-5 ml-4 mr-4 text-white drop-shadow-md">
               <h2 className="mb-4 text-4xl font-extrabold">
                 {tvShowDetails?.tv_show_details?.name ||
                   tvShowDetails?.filePath?.split("\\").pop()}
