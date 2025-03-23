@@ -10,7 +10,7 @@ import fsPromise from "fs/promises";
 const readDeletionList = async (markedFilePath: string): Promise<string[]> => {
   try {
     const content = await helpers.readFileDataAsync(markedFilePath);
-    if (!content.trim()) { // file is empty
+    if (!content.trim()) {
       return [];
     }
     return JSON.parse(content);
@@ -85,6 +85,25 @@ const deleteMarkedForDeletion = async (): Promise<void> => {
   await updateDeletionList(markedFilePath, remaining);
 };
 
+const cleanUpVideoData = async () => {
+  try {
+    const fileJson = await helpers.getVideoMetaData();
+
+    for (const key of Object.keys(fileJson)) {
+      try {
+        if (!(await helpers.fileExists(key))) {
+          delete fileJson[key];
+        }
+      } catch (error) {
+        log.error(`Error processing key "${key}":`, error);
+      }
+    }
+  } catch (error) {
+    log.error("Error fetching or processing video metadata:", error);
+  }
+};
+
 export const runAppOpeningCleanup = () => {
   deleteMarkedForDeletion();
+  cleanUpVideoData();
 };
