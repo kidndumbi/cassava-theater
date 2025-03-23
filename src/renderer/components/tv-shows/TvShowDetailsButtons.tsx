@@ -8,6 +8,7 @@ interface TvShowDetailsButtonsProps {
   tvShowDetails: VideoDataModel;
   onContinueClick: () => void;
   onStartFromBeginningClick: () => void;
+  onNextEpisodeClick?: () => void; 
   resumeText?: string;
   playText?: string;
   startFromBeginningText?: string;
@@ -17,6 +18,7 @@ const TvShowDetailsButtons: React.FC<TvShowDetailsButtonsProps> = ({
   tvShowDetails,
   onContinueClick,
   onStartFromBeginningClick,
+  onNextEpisodeClick,
   resumeText = "Resume",
   playText = "Play",
   startFromBeginningText = "Play from beginning",
@@ -43,6 +45,15 @@ const TvShowDetailsButtons: React.FC<TvShowDetailsButtonsProps> = ({
         >
           <RefreshIcon></RefreshIcon>
           {startFromBeginningText}
+        </Button>
+      )}
+      {onNextEpisodeClick && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={onNextEpisodeClick}
+        >
+          Next Episode
         </Button>
       )}
     </Box>
