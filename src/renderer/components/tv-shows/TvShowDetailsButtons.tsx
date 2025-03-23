@@ -1,17 +1,19 @@
 import React from "react";
-import { Box, Button } from "@mui/material";
+import { Box, Button, Tooltip } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model"; // adjust path if needed
 import RefreshIcon from "@mui/icons-material/Refresh";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import { removeVidExt } from "../../util/helperFunctions";
 
 interface TvShowDetailsButtonsProps {
   tvShowDetails: VideoDataModel;
   onContinueClick: () => void;
   onStartFromBeginningClick: () => void;
-  onNextEpisodeClick?: () => void; 
+  onNextEpisodeClick?: () => void;
   resumeText?: string;
   playText?: string;
   startFromBeginningText?: string;
+  nextEpisode?: VideoDataModel;
 }
 
 const TvShowDetailsButtons: React.FC<TvShowDetailsButtonsProps> = ({
@@ -22,6 +24,7 @@ const TvShowDetailsButtons: React.FC<TvShowDetailsButtonsProps> = ({
   resumeText = "Resume",
   playText = "Play",
   startFromBeginningText = "Play from beginning",
+  nextEpisode,
 }) => {
   return (
     <Box
@@ -48,13 +51,15 @@ const TvShowDetailsButtons: React.FC<TvShowDetailsButtonsProps> = ({
         </Button>
       )}
       {onNextEpisodeClick && (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={onNextEpisodeClick}
-        >
-          Next Episode
-        </Button>
+        <Tooltip title={removeVidExt(nextEpisode.fileName)}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={onNextEpisodeClick}
+          >
+            Next Episode
+          </Button>
+        </Tooltip>
       )}
     </Box>
   );

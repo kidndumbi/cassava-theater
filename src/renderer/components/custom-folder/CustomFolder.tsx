@@ -7,7 +7,7 @@ import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { useNavigate } from "react-router-dom";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { CustomFolderDataList } from "./CustomFolderDataList";
-import { hasExtension } from "../../util/helperFunctions";
+import { hasExtension, removeVidExt } from "../../util/helperFunctions";
 
 interface CustomFolderProps {
   customFolderData: VideoDataModel[];
@@ -66,7 +66,7 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
 
   const getFilteredCustomFolderData = () => {
     return customFolderData.filter((data) => {
-      const fileNameWithoutExtension = data.fileName ? data.fileName.replace(/\.(mp4|mkv|avi)$/i, "") : "";
+      const fileNameWithoutExtension = data.fileName ? removeVidExt(data.fileName) : "";
       return fileNameWithoutExtension
         .toLowerCase()
         .includes(filter.toLowerCase());

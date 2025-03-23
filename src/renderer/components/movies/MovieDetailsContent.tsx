@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box, Tabs, Tab } from "@mui/material";
-import { getYearFromDate } from "../../util/helperFunctions";
+import { getYearFromDate, removeVidExt } from "../../util/helperFunctions";
 import { a11yProps } from "../common/TabPanel";
 import MovieDetailsButtons from "./MovieDetailsButtons";
 import { VideoDataModel } from "../../../models/videoData.model";
@@ -22,8 +22,7 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
   const [hasError, setHasError] = useState(false);
 
   const title =
-    videoDetails?.movie_details?.title ||
-    videoDetails?.fileName?.replace(/\.(mp4|mkv|avi)$/i, "");
+    videoDetails?.movie_details?.title || removeVidExt(videoDetails?.fileName);
   const releaseYear = videoDetails?.movie_details?.release_date
     ? `(${getYearFromDate(videoDetails.movie_details.release_date)})`
     : "";
@@ -36,7 +35,7 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
   };
 
   return (
-    <Box className="absolute bottom-5 left-5 text-white drop-shadow-md w-full">
+    <Box className="absolute bottom-5 left-5 w-full text-white drop-shadow-md">
       <h2 className="mb-4 text-4xl font-extrabold">
         {title}
         {releaseYear}

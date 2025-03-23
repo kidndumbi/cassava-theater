@@ -275,6 +275,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                   onNextEpisodeClick={
                     nextEpisode ? onNextEpisodeClick : undefined
                   }
+                  nextEpisode={nextEpisode}
                 />
               )}
               {tvShowDetails?.lastVideoPlayed && (

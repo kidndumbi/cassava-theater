@@ -222,6 +222,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               }
               filePath={currentVideo?.filePath}
               handleOpenNotesModal={handleOpenNotesModal}
+              nextEpisode={nextEpisode}
             />
           </>
         )}

@@ -27,7 +27,7 @@ const getFilename = (filePath: string): string => {
 };
 
 const trimFileName = (fileName: string, maxLength = 15) => {
-  const nameWithoutExtension = fileName.replace(/\.(mp4|mkv|avi)$/i, "");
+  const nameWithoutExtension = removeVidExt(fileName);
   return nameWithoutExtension.length > maxLength
     ? `${nameWithoutExtension.substring(0, maxLength)}...`
     : nameWithoutExtension;
@@ -45,6 +45,11 @@ const hasExtension = (filename: string) => {
   // The regex ensures there's at least one character after the final dot
   // and the dot is not the first character in the string
   return /\.[^.]+$/.test(filename);
+};
+
+const removeVidExt = (filename?: string) => {
+  if (!filename) return "";
+  return filename.replace(/\.(mp4|mkv|avi)$/i, "");
 };
 
 const removeLastSegments = (filePath: string, count: number) => {
@@ -66,12 +71,12 @@ const getUrl = (
   type: "video" | "file",
   filePath: string | null | undefined,
   start: number | null = null,
-  port: string
+  port: string,
 ) => {
   if (isExternalUrl(filePath)) return filePath;
 
   return `http://localhost:${port}/${type}?path=${encodeURIComponent(
-    filePath || ""
+    filePath || "",
   )}&start=${start || 0}`;
 };
 
@@ -86,7 +91,7 @@ const selectFolder = async (): Promise<string | null> => {
 const selectFile = async (
   fileDialogOptions = [
     { name: ".vtt and .srt files", extensions: ["vtt", "srt"] },
-  ]
+  ],
 ): Promise<string | null> => {
   return window.openDialogAPI.openFileDialog(fileDialogOptions);
 };
@@ -105,4 +110,5 @@ export {
   getUrl,
   selectFolder,
   selectFile,
+  removeVidExt,
 };

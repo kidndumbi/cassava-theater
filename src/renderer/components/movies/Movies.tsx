@@ -7,7 +7,7 @@ import MovieList from "./MovieList";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { SearchHeader } from "../common/SearchHeader";
 import { PosterCard } from "../common/PosterCard";
-import { getUrl, trimFileName } from "../../util/helperFunctions";
+import { getUrl, removeVidExt, trimFileName } from "../../util/helperFunctions";
 import { useSettings } from "../../hooks/useSettings";
 
 interface MoviesProps {
@@ -46,7 +46,7 @@ export const Movies: React.FC<MoviesProps> = ({
 
   const filteredMovies = movies.filter((movie) => {
     const fileNameWithoutExtension =
-      movie.fileName?.replace(/\.(mp4|mkv|avi)$/i, "") || "";
+    removeVidExt(movie.fileName) || "";
     return fileNameWithoutExtension
       .toLowerCase()
       .includes(filter.toLowerCase());
