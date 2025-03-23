@@ -12,7 +12,7 @@ import { AppNotes } from "../AppNotes";
 import MovieDetailsHeader from "./MovieDetailsHeader";
 import MovieDetailsContent from "./MovieDetailsContent";
 import { useSettings } from "../../hooks/useSettings";
-import { getUrl } from "../../util/helperFunctions";
+import { getUrl, removeVidExt } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 
 interface MovieDetailsProps {
@@ -90,7 +90,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   return (
     <>
       <Box
-        className="relative h-screen w-screen bg-cover "
+        className="relative h-screen w-screen bg-cover"
         style={{
           backgroundImage: getBackgroundGradient(imageUrl),
         }}
@@ -115,7 +115,6 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
                 await updateWatchLater(filePath, watchLater);
                 getVideoDetails(filePath);
               }}
-
               onRefresh={() => {
                 if (videoPath) {
                   getVideoDetails(videoPath);
@@ -151,9 +150,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         id={videoDetails?.movie_details?.id?.toString() || ""}
         open={openModal}
         handleClose={handleCloseModal}
-        fileName={
-          videoDetails?.fileName?.replace(/\.(mp4|mkv|avi)$/i, "") || ""
-        }
+        fileName={removeVidExt(videoDetails?.fileName) || ""}
         handleSelectMovie={async (movie_details) => {
           if (movie_details.id) {
             await updateTMDBId(videoPath || "", movie_details);

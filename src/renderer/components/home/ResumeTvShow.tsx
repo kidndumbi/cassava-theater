@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { getUrl, trimFileName } from "../../util/helperFunctions";
+import { getUrl, removeVidExt, trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { PosterCard } from "../common/PosterCard";
 import TvShowDetailsButtons from "../tv-shows/TvShowDetailsButtons";
@@ -66,10 +66,7 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
               className="w-full whitespace-normal break-all text-center"
             >
               {trimFileName(tvShow.fileName ?? "Unknown")}/
-              {tvShow.lastVideoPlayed
-                ?.split("/")
-                .pop()
-                ?.replace(/\.(mp4|mkv|avi)$/i, "")}
+              {removeVidExt(tvShow.lastVideoPlayed?.split("/").pop())}
             </Typography>
           </Box>
         }

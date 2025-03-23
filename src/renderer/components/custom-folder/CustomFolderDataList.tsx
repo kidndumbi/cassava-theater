@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import React from "react";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { getUrl, hasExtension } from "../../util/helperFunctions";
+import { getUrl, hasExtension, removeVidExt } from "../../util/helperFunctions";
 import FolderIcon from "@mui/icons-material/Folder";
 import { PosterCard } from "../common/PosterCard";
 import { useSettings } from "../../hooks/useSettings";
@@ -42,7 +42,7 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
   const renderFolderIcon = (item: VideoDataModel) =>
     item.fileName &&
     !hasExtension(item.fileName) && (
-      <Box className="absolute top-1 right-1">
+      <Box className="absolute right-1 top-1">
         <FolderIcon color="primary" />
       </Box>
     );
@@ -50,14 +50,10 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
   return (
     <Box className="flex flex-wrap gap-1">
       {customFolderData.map((item, idx) => (
-        <Box key={idx} className="m-1 flex-[1_1_200px] max-w-[200px]">
+        <Box key={idx} className="m-1 max-w-[200px] flex-[1_1_200px]">
           <Box className="relative">{renderPosterImage(item)}</Box>
-          <Typography
-            variant="subtitle1"
-            align="center"
-            className="break-all"
-          >
-            {(item.fileName ?? "").replace(/\.(mp4|mkv|avi)$/i, "")}
+          <Typography variant="subtitle1" align="center" className="break-all">
+            {removeVidExt(item.fileName ?? "")}
           </Typography>
         </Box>
       ))}

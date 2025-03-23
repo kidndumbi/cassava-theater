@@ -5,19 +5,24 @@ import { Clear, SkipNext } from "@mui/icons-material";
 import theme from "../../theme";
 import { Tooltip } from "@mui/material";
 import NotesIcon from "@mui/icons-material/Notes";
+import AppIconButton from "../common/AppIconButton";
+import { VideoDataModel } from "../../../models/videoData.model";
+import { removeVidExt } from "../../util/helperFunctions";
 
 type SideControlsOverlayProps = {
   handleCancel: (filePath: string) => void;
   filePath?: string;
   handleNext?: () => void;
   handleOpenNotesModal: () => void;
+  nextEpisode?: VideoDataModel;
 };
 
 const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
   handleCancel,
   filePath,
   handleNext,
-  handleOpenNotesModal
+  handleOpenNotesModal,
+  nextEpisode,
 }) => {
   const handleCancelClick = () => {
     handleCancel(filePath || "");
@@ -41,12 +46,19 @@ const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
         <Clear />
       </IconButton>
       {handleNext && (
-        <IconButton
-          sx={{ color: theme.customVariables.appWhite }}
+        // <IconButton
+        //   sx={{ color: theme.customVariables.appWhite }}
+        //   onClick={handleNext}
+        // >
+        //   <SkipNext />
+        // </IconButton>
+
+        <AppIconButton
+          tooltip={removeVidExt(nextEpisode.fileName)}
           onClick={handleNext}
         >
           <SkipNext />
-        </IconButton>
+        </AppIconButton>
       )}
       <Tooltip title="Notes">
         <IconButton

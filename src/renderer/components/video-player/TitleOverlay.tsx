@@ -3,6 +3,7 @@ import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import theme from "../../theme";
+import { removeVidExt } from "../../util/helperFunctions";
 
 type TitleOverlayProps = {
   fileName?: string;
@@ -30,7 +31,7 @@ const TitleOverlay: React.FC<TitleOverlayProps> = ({ fileName }) => {
           color: theme.customVariables.appWhite,
         }}
       >
-        {fileName?.replace(/\.(mp4|mkv|avi)$/i, "")}
+        {removeVidExt(fileName)}
       </Typography>
     </Box>
   );

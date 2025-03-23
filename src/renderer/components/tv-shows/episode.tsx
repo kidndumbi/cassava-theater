@@ -3,6 +3,7 @@ import { Box, IconButton, Theme, Tooltip } from "@mui/material";
 
 import {
   getPlayedPercentage,
+  removeVidExt,
   secondsTohhmmss,
 } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
@@ -95,7 +96,7 @@ export const Episode: React.FC<EpisodeProps> = ({
         sx={{ color: theme.customVariables.appWhiteSmoke }}
       >
         <h3 className="episode-title">
-          {episode.fileName?.replace(/\.(mp4|mkv|avi)$/i, "") ||
+          {removeVidExt(episode.fileName) ||
             "Unknown Title"}
         </h3>
         <p className="episode-duration">
