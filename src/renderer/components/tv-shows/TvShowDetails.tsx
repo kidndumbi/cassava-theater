@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { Box, IconButton, Tab, Tabs, useTheme } from "@mui/material";
@@ -48,6 +48,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     resetTvShowDetails,
     updateTvShowTMDBId,
     resetEpisodes,
+    findNextEpisode,
   } = useTvShows();
   const { updateSubtitle } = useSubtitle();
   const [tvShowBackgroundUrl, setTvShowBackgroundUrl] = useState("");
@@ -85,6 +86,11 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       getSeasonDetails(videoPath);
     }
   }, [videoPath]);
+
+  const nextEpisode = useMemo(
+    () => findNextEpisode(episodeLastWatched?.filePath || ""),
+    [episodeLastWatched, episodes],
+  );
 
   const { settings } = useSettings();
 
@@ -188,6 +194,12 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     }
   };
 
+  const onNextEpisodeClick = () => {
+    if (nextEpisode) {
+      setCurrentVideo(nextEpisode);
+      navigate("/video-player?menuId=" + menuId + "&resumeId=" + resumeId);
+    }
+  };
   const onStartFromBeginningClick = () => {
     if (episodeLastWatched) {
       setCurrentVideo(episodeLastWatched);
@@ -260,6 +272,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                   tvShowDetails={tvShowDetails}
                   onContinueClick={onContinueClick}
                   onStartFromBeginningClick={onStartFromBeginningClick}
+                  onNextEpisodeClick={
+                    nextEpisode ? onNextEpisodeClick : undefined
+                  }
                 />
               )}
               {tvShowDetails?.lastVideoPlayed && (
