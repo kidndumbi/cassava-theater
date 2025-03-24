@@ -17,7 +17,11 @@ import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import Video from "./video";
 import { NotesModal } from "../common/NotesModal";
 import Box from "@mui/material/Box";
-import { getUrl, secondsTohhmmss } from "../../util/helperFunctions";
+import {
+  getUrl,
+  removeLastSegments,
+  secondsTohhmmss,
+} from "../../util/helperFunctions";
 import { AppSlider } from "../common/AppSlider";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import { useDebounce } from "@uidotdev/usehooks";
@@ -25,6 +29,8 @@ import theme from "../../theme";
 import IconButton from "@mui/material/IconButton";
 import { Clear } from "@mui/icons-material";
 import CustomDrawer from "../common/CustomDrawer";
+import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
+import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
 
 export type AppVideoPlayerHandle = {
   skipBy?: (seconds: number) => void;
@@ -153,6 +159,37 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       play?.();
     };
 
+    const renderTvShowCastAndCrew = () => {
+      // console.log("currentVideo filepath", currentVideo.filePath);
+      // console.log("tv show path", removeLastSegments(currentVideo.filePath, 2));
+
+      if (currentVideo?.tv_show_details?.aggregate_credits) {
+        console.log(
+          "currentVideo.tv_show_details.aggregate_credits",
+          currentVideo.tv_show_details.aggregate_credits,
+        );
+        return (
+          <TvShowCastAndCrew
+            aggregateCredits={currentVideo.tv_show_details.aggregate_credits}
+          />
+        );
+      }
+      return null;
+    };
+
+    const renderMovieCastAndCrew = () => {
+      if (currentVideo?.movie_details?.credits) {
+        return (
+          <MovieCastAndCrew credits={currentVideo.movie_details.credits} />
+        );
+      }
+      return null;
+    };
+
+    const displayCastAndCrew = () => {
+      return isTvShow ? renderTvShowCastAndCrew() : renderMovieCastAndCrew();
+    };
+
     if (error) {
       return (
         <Box
@@ -277,7 +314,6 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
                 max={currentVideo.duration}
                 value={mkvCurrentTime}
                 onChange={(event, newValue) => {
-                  
                   setSliderValue(newValue as number);
                 }}
               ></AppSlider>
@@ -292,7 +328,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             play();
           }}
         >
-          I am the cast and crew drawer
+          {displayCastAndCrew()}
         </CustomDrawer>
       </div>
     );

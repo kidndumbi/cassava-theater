@@ -28,6 +28,7 @@ import { Season } from "../../../models/tv-show-details.model";
 import { useSettings } from "../../hooks/useSettings";
 import AppIconButton from "../common/AppIconButton";
 import CustomDrawer from "../common/CustomDrawer";
+import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -369,7 +370,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
         }}
       />
       <CustomDrawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
-        I am the cast and crew drawer
+        <TvShowCastAndCrew
+          aggregateCredits={tvShowDetails?.tv_show_details?.aggregate_credits}
+        />
       </CustomDrawer>
     </>
   );

@@ -13,6 +13,7 @@ const CustomDrawer: React.FC<CustomDrawerProps> = ({ open, onClose, children }) 
     <Drawer
       open={open}
       onClose={onClose}
+      className="custom-scrollbar"
       sx={{
         "& .MuiDrawer-paper": {
           width: "350px",
