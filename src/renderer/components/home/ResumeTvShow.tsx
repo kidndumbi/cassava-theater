@@ -6,6 +6,7 @@ import { VideoProgressBar } from "../common/VideoProgressBar";
 import { PosterCard } from "../common/PosterCard";
 import TvShowDetailsButtons from "../tv-shows/TvShowDetailsButtons";
 import { useSettings } from "../../hooks/useSettings";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 
 interface ResumeTvShowProps {
   tvShow: VideoDataModel;
@@ -26,6 +27,7 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
 }) => {
   const [showActionButtons, setShowActions] = React.useState(false);
   const { settings } = useSettings();
+  const { openDialog, setMessage } = useConfirmation();
 
   const getImageUlr = () => {
     if (tvShow.poster) {
@@ -36,7 +38,18 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
     }
   };
 
-  const handlePlay = (startFromBeginning = false) => {
+  const handlePlay = async (startFromBeginning = false) => {
+    if (startFromBeginning) {
+      setMessage(
+        "Are you sure you want to start the movie from the beginning?",
+      );
+      const dialogDecision = await openDialog();
+      if (dialogDecision === "Ok") {
+        handlePosterClick("tvShow", tvShow, startFromBeginning);
+      }
+      return;
+    }
+
     handlePosterClick("tvShow", tvShow, startFromBeginning);
   };
 
