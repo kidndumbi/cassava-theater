@@ -31,7 +31,10 @@ import { Clear } from "@mui/icons-material";
 import CustomDrawer from "../common/CustomDrawer";
 import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
-import { fetchFolderDetailsApi } from "../../store/videoInfo/folderVideosInfoApi";
+import {
+  fetchFolderDetailsApi,
+  fetchVideoDetailsApi,
+} from "../../store/videoInfo/folderVideosInfoApi";
 
 export type AppVideoPlayerHandle = {
   skipBy?: (seconds: number) => void;
@@ -159,7 +162,6 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
 
           const tvShowPath = removeLastSegments(currentVideo.filePath, 2);
           const tvShowDetails = await fetchFolderDetailsApi(tvShowPath);
-          console.log("tv show details", tvShowDetails);
 
           if (tvShowDetails?.tv_show_details?.aggregate_credits) {
             setCastAndCrewContent(
@@ -170,11 +172,25 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               />,
             );
           }
-        } else if (!isTvShow && currentVideo?.movie_details?.credits) {
-          console.log("Fetching movie cast and crew...");
-          setCastAndCrewContent(
-            <MovieCastAndCrew credits={currentVideo.movie_details.credits} />,
-          );
+        } else if (!isTvShow && currentVideo?.movie_details) {
+          if (currentVideo?.movie_details?.credits) {
+            setCastAndCrewContent(
+              <MovieCastAndCrew credits={currentVideo.movie_details.credits} />,
+            );
+          } else {
+            const movieDetails = await fetchVideoDetailsApi({
+              path: currentVideo.filePath,
+              category: "movie",
+            });
+
+            if (movieDetails?.movie_details?.credits) {
+              setCastAndCrewContent(
+                <MovieCastAndCrew
+                  credits={movieDetails.movie_details.credits}
+                />,
+              );
+            }
+          }
         } else {
           setCastAndCrewContent(null);
         }
@@ -183,9 +199,6 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       fetchCastAndCrew();
     }, [isTvShow, currentVideo]);
 
-    const displayCastAndCrew = () => castAndCrewContent;
-
-    // Handlers
     const handleOpenNotesModal = () => {
       pause?.();
       setOpenNotesModal(true);
@@ -289,7 +302,9 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             />
             <TitleOverlay fileName={currentVideo?.fileName} />
             <SideControlsOverlay
-              toggleCastAndCrew={handleToggleDrawer}
+              toggleCastAndCrew={
+                castAndCrewContent ? handleToggleDrawer : undefined
+              }
               handleCancel={handleCancel}
               handleNext={
                 isTvShow && nextEpisode
@@ -324,7 +339,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
         )}
 
         <CustomDrawer open={openDrawer} onClose={handleCloseDrawer}>
-          {displayCastAndCrew()}
+          {castAndCrewContent}
         </CustomDrawer>
       </div>
     );

@@ -62,9 +62,12 @@ const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
       >
         <NotesIcon />
       </AppIconButton>
-      <AppIconButton tooltip="Cast & Crew" onClick={toggleCastAndCrew}>
-        <RecentActorsIcon />
-      </AppIconButton>
+
+      {toggleCastAndCrew && (
+        <AppIconButton tooltip="Cast & Crew" onClick={toggleCastAndCrew}>
+          <RecentActorsIcon />
+        </AppIconButton>
+      )}
     </Box>
   );
 };

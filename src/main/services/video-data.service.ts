@@ -83,11 +83,7 @@ export const fetchVideoDetails = async (
       category,
     );
 
-    if (
-      videoDetails.videoDataType === "movie" &&
-      videoDetails?.movie_details &&
-      !videoDetails?.movie_details.credits
-    ) {
+    if (videoDetails?.movie_details && !videoDetails?.movie_details.credits) {
       const movie_details = await getMovieOrTvShowById(
         videoDetails?.movie_details.id.toString(),
         "movie",
