@@ -3,7 +3,7 @@ import { videosInfoActions } from "../store/videoInfo/folderVideosInfo.slice";
 import { useAppDispatch } from "../store";
 import { settingsActions } from "../store/settingsSlice";
 import {
-  fetchTvShowById,
+  fetchFilmDataById,
   selTvShowSuggestions,
   theMovieDbActions,
 } from "../store/theMovieDb.slice";
@@ -82,8 +82,9 @@ export const useTvShows = () => {
     filePath: string,
     tv_show_details: TvShowDetails,
   ) => {
-    const extraTvShowDetails = await fetchTvShowById(
+    const extraTvShowDetails = await fetchFilmDataById(
       tv_show_details.id.toString(),
+      "tv",
     );
     await dispatch(
       postVideoJason({
@@ -115,7 +116,7 @@ export const useTvShows = () => {
     id: string,
     callback: (data: TvShowDetails) => void,
   ) => {
-    const tvShowTMDB = await fetchTvShowById(id);
+    const tvShowTMDB = await fetchFilmDataById(id, "tv");
     callback(tvShowTMDB);
   };
 

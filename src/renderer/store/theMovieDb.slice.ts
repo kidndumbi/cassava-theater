@@ -17,7 +17,7 @@ const fetchMovieSuggestions = createAsyncThunk(
       console.error("Failed to fetch movie suggestions:", error);
       throw error;
     }
-  }
+  },
 );
 
 const fetchTvShowSuggestions = createAsyncThunk(
@@ -30,17 +30,18 @@ const fetchTvShowSuggestions = createAsyncThunk(
       console.error("Failed to fetch TV show suggestions:", error);
       throw error;
     }
-  }
+  },
 );
 
-const fetchTvShowById = async (id: string) => {
+const fetchFilmDataById = async (id: string, queryType: "movie" | "tv") => {
   try {
     const authorization = await getAuthorization();
-    return (await window.theMovieDbAPI.movieOrTvShow(
+    const result = (await window.theMovieDbAPI.movieOrTvShow(
       id,
-      "tv",
-      authorization
+      queryType,
+      authorization,
     )) as TvShowDetails;
+    return result;
   } catch (error) {
     console.error("Failed to fetch TV show by ID:", error);
     throw error;
@@ -61,7 +62,7 @@ const theMovieDbSlice = createSlice({
     tvShowSuggestions: TvShowDetails[];
     movieSuggestionsLoading: boolean;
     tvShowSuggestionsLoading: boolean;
-    movieSuggestionsError: string | null; 
+    movieSuggestionsError: string | null;
     tvShowSuggestionsError: string | null;
   },
   reducers: {
@@ -86,7 +87,8 @@ const theMovieDbSlice = createSlice({
       })
       .addCase(fetchMovieSuggestions.rejected, (state, action) => {
         state.movieSuggestionsLoading = false;
-        state.movieSuggestionsError = action.error.message || "Failed to fetch movie suggestions";
+        state.movieSuggestionsError =
+          action.error.message || "Failed to fetch movie suggestions";
       })
       .addCase(fetchTvShowSuggestions.pending, (state) => {
         state.tvShowSuggestionsLoading = true;
@@ -98,7 +100,8 @@ const theMovieDbSlice = createSlice({
       })
       .addCase(fetchTvShowSuggestions.rejected, (state, action) => {
         state.tvShowSuggestionsLoading = false;
-        state.tvShowSuggestionsError = action.error.message || "Failed to fetch TV show suggestions";
+        state.tvShowSuggestionsError =
+          action.error.message || "Failed to fetch TV show suggestions";
       });
   },
 });
@@ -129,5 +132,5 @@ export {
   selTvShowSuggestions,
   selMovieSuggestionsLoading,
   selTvShowSuggestionsLoading,
-  fetchTvShowById,
+  fetchFilmDataById,
 };

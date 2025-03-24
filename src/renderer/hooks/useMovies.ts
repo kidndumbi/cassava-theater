@@ -2,13 +2,23 @@ import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
 import { settingsActions } from "../store/settingsSlice";
 import {
+  fetchFilmDataById,
   selMovieSuggestions,
   theMovieDbActions,
 } from "../store/theMovieDb.slice";
 import { MovieDetails } from "../../models/movie-detail.model";
 import { VideoDataModel } from "../../models/videoData.model";
-import { selLoadingMovies, selLoadingVideoDetails, selMovies, selVideoDetails } from "../store/videoInfo/folderVideosInfoSelectors";
-import { fetchVideoData, fetchVideoDetails, postVideoJason } from "../store/videoInfo/folderVideosInfoActions";
+import {
+  selLoadingMovies,
+  selLoadingVideoDetails,
+  selMovies,
+  selVideoDetails,
+} from "../store/videoInfo/folderVideosInfoSelectors";
+import {
+  fetchVideoData,
+  fetchVideoDetails,
+  postVideoJason,
+} from "../store/videoInfo/folderVideosInfoActions";
 import { videosInfoActions } from "../store/videoInfo/folderVideosInfo.slice";
 
 export const useMovies = () => {
@@ -25,13 +35,13 @@ export const useMovies = () => {
         path,
         category: "movies",
         includeThumbnail: false,
-      })
+      }),
     );
   };
 
   const getMovies = async () => {
     const movieFolderPath = await dispatch(
-      settingsActions.getSetting("movieFolderPath")
+      settingsActions.getSetting("movieFolderPath"),
     );
 
     await fetchMovies(movieFolderPath.payload);
@@ -51,13 +61,18 @@ export const useMovies = () => {
 
   const updateTMDBId = async (
     filePath: string,
-    movie_details: MovieDetails
+    movie_details: MovieDetails,
   ) => {
+    const extraMovieDetails = await fetchFilmDataById(
+      movie_details.id.toString(),
+      "movie",
+    );
+
     await dispatch(
       postVideoJason({
         currentVideo: { filePath },
-        newVideoJsonData: { movie_details },
-      })
+        newVideoJsonData: { movie_details: extraMovieDetails },
+      }),
     );
   };
 
@@ -66,7 +81,7 @@ export const useMovies = () => {
       postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: { watchLater },
-      })
+      }),
     );
   };
 
@@ -75,7 +90,7 @@ export const useMovies = () => {
       fetchVideoDetails({
         path,
         category: "movies",
-      })
+      }),
     );
   };
 
@@ -84,7 +99,7 @@ export const useMovies = () => {
       postVideoJason({
         currentVideo: { filePath },
         newVideoJsonData: data,
-      })
+      }),
     );
   };
 
@@ -109,6 +124,6 @@ export const useMovies = () => {
     updateMovie,
     updateMovieDbData,
     resetMovieDetails,
-    removeMovie
+    removeMovie,
   };
 };
