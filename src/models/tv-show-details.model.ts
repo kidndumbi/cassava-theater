@@ -64,6 +64,50 @@ interface CreatedBy {
     name: string;
   }
   
+  // Updated interface for cast roles.
+  export interface CastRole {
+    credit_id: string;
+    character: string;
+    episode_count: number;
+  }
+  
+  // New interface for crew jobs.
+  export interface CrewJob {
+    credit_id: string;
+    job: string;
+    episode_count: number;
+  }
+  
+  // Updated AggregateCredits interface.
+  export interface AggregateCredits {
+    cast: {
+        adult: boolean;
+        gender: number;
+        id: number;
+        known_for_department: string;
+        name: string;
+        original_name: string;
+        popularity: number;
+        profile_path: string | null;
+        roles: CastRole[];
+        total_episode_count: number;
+        order: number;
+    }[];
+    crew: {
+        adult: boolean;
+        gender: number;
+        id: number;
+        known_for_department: string;
+        name: string;
+        original_name: string;
+        popularity: number;
+        profile_path: string | null;
+        jobs: CrewJob[];
+        department: string;
+        total_episode_count: number;
+    }[];
+  }
+  
   export interface TvShowDetails {
     adult: boolean;
     backdrop_path: string;
@@ -97,5 +141,5 @@ interface CreatedBy {
     type: string;
     vote_average: number;
     vote_count: number;
+    aggregate_credits: AggregateCredits;
   }
-  

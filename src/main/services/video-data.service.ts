@@ -5,6 +5,8 @@ import { VideoDataModel } from "../../models/videoData.model";
 import { loggingService as log } from "./main-logging.service";
 
 import * as videoDataHelpers from "./video.helpers";
+import { getMovieOrTvShowById } from "./themoviedb.service";
+import { getValue } from "../store";
 
 export const fetchVideosData = async ({
   filePath,
@@ -81,6 +83,31 @@ export const fetchVideoDetails = async (
       category,
     );
 
+    if (
+      videoDetails.videoDataType === "movie" &&
+      videoDetails?.movie_details &&
+      !videoDetails?.movie_details.credits
+    ) {
+      const movie_details = await getMovieOrTvShowById(
+        videoDetails?.movie_details.id.toString(),
+        "movie",
+        getValue("theMovieDbApiKey"), // Correctly typed key
+      );
+
+      const existingData = await videoDataHelpers.readJsonData(
+        videoDetails.filePath,
+        {} as VideoDataModel,
+      );
+
+      const mergedData = {
+        ...existingData,
+        movie_details,
+      } as VideoDataModel;
+
+      await videoDataHelpers.writeJsonToFile(videoDetails.filePath, mergedData);
+      videoDetails.movie_details = movie_details;
+    }
+
     const processedVideoData = await videoDataHelpers.getVideoThumbnail(
       videoDetails,
       duration,
@@ -128,6 +155,29 @@ export const fetchFolderDetails = async (
         jsonFileContents?.tv_show_details,
         childFolders,
       );
+
+    if (
+      videoDetails?.tv_show_details &&
+      !videoDetails?.tv_show_details.aggregate_credits
+    ) {
+      const tv_show_details = await getMovieOrTvShowById(
+        videoDetails?.tv_show_details.id.toString(),
+        "tv",
+        getValue("theMovieDbApiKey"), // Correctly typed key
+      );
+      //console.log("credits", tv_show_details);
+      const existingData = await videoDataHelpers.readJsonData(
+        videoDetails.filePath,
+        {} as VideoDataModel,
+      );
+
+      const mergedData = {
+        ...existingData,
+        tv_show_details,
+      } as VideoDataModel;
+
+      await videoDataHelpers.writeJsonToFile(videoDetails.filePath, mergedData);
+    }
 
     return videoDetails;
   } catch (error) {

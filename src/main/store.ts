@@ -34,9 +34,9 @@ export const initializeStore = (): void => {
   store = new Store<SettingsModel>({ schema });
 };
 
-export const getValue = (
-  key: keyof SettingsModel
-): SettingsModel[keyof SettingsModel] => {
+export const getValue = <K extends keyof SettingsModel>(
+  key: K
+): SettingsModel[K] => {
   return store.get(key);
 };
 
