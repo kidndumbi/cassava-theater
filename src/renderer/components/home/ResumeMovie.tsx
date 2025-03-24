@@ -7,13 +7,14 @@ import { VideoProgressBar } from "../common/VideoProgressBar";
 import { PosterCard } from "../common/PosterCard";
 import MovieDetailsButtons from "../movies/MovieDetailsButtons";
 import { useSettings } from "../../hooks/useSettings";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 
 interface ResumeMovieProps {
   movie: VideoDataModel;
   handlePosterClick: (
     videoType: string,
     video: VideoDataModel,
-    startFromBeginning: boolean
+    startFromBeginning: boolean,
   ) => void;
 }
 
@@ -24,8 +25,20 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const { settings } = useSettings();
   const [showActionButtons, setShowActions] = React.useState(false);
+  const { openDialog, setMessage } = useConfirmation();
 
-  const handlePlay = (startFromBeginning = false) => {
+  const handlePlay = async (startFromBeginning = false) => {
+    if (startFromBeginning) {
+      setMessage(
+        "Are you sure you want to start the movie from the beginning?",
+      );
+      const dialogDecision = await openDialog();
+      if (dialogDecision === "Ok") {
+        handlePosterClick("movie", movie, startFromBeginning);
+      }
+      return;
+    }
+
     handlePosterClick("movie", movie, startFromBeginning);
   };
 
@@ -52,7 +65,7 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
         imageUrl={getImageUlr()}
         altText={movie.fileName}
         footer={
-          <Box  className="mt-2">
+          <Box className="mt-2">
             <VideoProgressBar
               current={movie.currentTime || 0}
               total={movie.duration || 0}
@@ -64,7 +77,7 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
         }
       />
       {showActionButtons && (
-        <Box className="absolute top-[65%] left-1/2 -translate-x-1/2 -translate-y-1/2">
+        <Box className="absolute left-1/2 top-[65%] -translate-x-1/2 -translate-y-1/2">
           <MovieDetailsButtons
             playText=""
             resumeText=""
