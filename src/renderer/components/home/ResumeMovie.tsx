@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
@@ -18,58 +18,52 @@ interface ResumeMovieProps {
   ) => void;
 }
 
-const ResumeMovie: React.FC<ResumeMovieProps> = ({
-  movie,
-  handlePosterClick,
-}) => {
+const ResumeMovie: React.FC<ResumeMovieProps> = ({ movie, handlePosterClick }) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const { settings } = useSettings();
-  const [showActionButtons, setShowActions] = React.useState(false);
   const { openDialog, setMessage } = useConfirmation();
+  const [showActionButtons, setShowActions] = useState(false);
 
-  const handlePlay = async (startFromBeginning = false) => {
-    if (startFromBeginning) {
-      setMessage(
-        "Are you sure you want to start the movie from the beginning?",
-      );
-      const dialogDecision = await openDialog();
-      if (dialogDecision === "Ok") {
-        handlePosterClick("movie", movie, startFromBeginning);
+  const handlePlay = useCallback(
+    async (startFromBeginning = false) => {
+      if (startFromBeginning) {
+        setMessage("Are you sure you want to start the movie from the beginning?");
+        const dialogDecision = await openDialog();
+        if (dialogDecision === "Ok") {
+          handlePosterClick("movie", movie, startFromBeginning);
+        }
+        return;
       }
-      return;
-    }
+      handlePosterClick("movie", movie, startFromBeginning);
+    },
+    [handlePosterClick, movie, openDialog, setMessage],
+  );
 
-    handlePosterClick("movie", movie, startFromBeginning);
-  };
-
-  const getImageUlr = () => {
+  const imageUrl = useCallback(() => {
     if (movie.poster) {
       return getUrl("file", movie.poster, null, settings?.port);
     }
     if (movie?.movie_details?.poster_path) {
       return getTmdbImageUrl(movie.movie_details.poster_path);
     }
-  };
+    return undefined;
+  }, [movie, settings, getTmdbImageUrl]);
+
+  const handleMouseEnter = useCallback(() => setShowActions(true), []);
+  const handleMouseLeave = useCallback(() => setShowActions(false), []);
 
   return (
     <Box
       className="relative max-w-[200px]"
-      onMouseEnter={() => {
-        setShowActions(true);
-      }}
-      onMouseLeave={() => {
-        setShowActions(false);
-      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <PosterCard
-        imageUrl={getImageUlr()}
+        imageUrl={imageUrl()}
         altText={movie.fileName}
         footer={
           <Box className="mt-2">
-            <VideoProgressBar
-              current={movie.currentTime || 0}
-              total={movie.duration || 0}
-            />
+            <VideoProgressBar current={movie.currentTime || 0} total={movie.duration || 0} />
             <Typography variant="subtitle1" align="center">
               {trimFileName(movie.fileName ?? "Unknown Title")}
             </Typography>
