@@ -24,6 +24,7 @@ import { useDebounce } from "@uidotdev/usehooks";
 import theme from "../../theme";
 import IconButton from "@mui/material/IconButton";
 import { Clear } from "@mui/icons-material";
+import CustomDrawer from "../common/CustomDrawer";
 
 export type AppVideoPlayerHandle = {
   skipBy?: (seconds: number) => void;
@@ -72,6 +73,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const videoPlayerRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [error, setError] = useState<string | null>(null);
+    const [openDrawer, setOpenDrawer] = useState(false);
 
     useEffect(() => {
       console.log("AppVideoPlayer mounted");
@@ -209,11 +211,17 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               onSubtitleChange={onSubtitleChange}
               subtitleFilePath={subtitleFilePath}
               skip={skipBy}
-              onToggleFullscreen={() => toggleFullscreen(containerRef)}
+              onToggleFullscreen={() => {
+                toggleFullscreen(containerRef);
+              }}
               isNotMp4VideoFormat={isNotMp4VideoFormat}
             />
             <TitleOverlay fileName={currentVideo?.fileName} />
             <SideControlsOverlay
+              toggleCastAndCrew={() => {
+                pause();
+                setOpenDrawer(!openDrawer);
+              }}
               handleCancel={handleCancel}
               handleNext={
                 isTvShow && nextEpisode
@@ -269,12 +277,23 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
                 max={currentVideo.duration}
                 value={mkvCurrentTime}
                 onChange={(event, newValue) => {
+                  
                   setSliderValue(newValue as number);
                 }}
               ></AppSlider>
             </Box>
           </>
         )}
+
+        <CustomDrawer
+          open={openDrawer}
+          onClose={() => {
+            setOpenDrawer(false);
+            play();
+          }}
+        >
+          I am the cast and crew drawer
+        </CustomDrawer>
       </div>
     );
   },

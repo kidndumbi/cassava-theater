@@ -6,6 +6,7 @@ import { SelectChangeEvent } from "@mui/material/Select";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import {
   getFilename,
@@ -26,6 +27,7 @@ import TvShowDetailsButtons from "./TvShowDetailsButtons";
 import { Season } from "../../../models/tv-show-details.model";
 import { useSettings } from "../../hooks/useSettings";
 import AppIconButton from "../common/AppIconButton";
+import CustomDrawer from "../common/CustomDrawer";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -64,6 +66,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   const [episodeLastWatched, setEpisodeLastWatched] =
     useState<VideoDataModel | null>(null);
   const [openModal, setOpenModal] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState(false);
 
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
@@ -244,6 +247,14 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 >
                   <RefreshIcon />
                 </AppIconButton>
+
+                <AppIconButton
+                  tooltip="Cast & Crew"
+                  onClick={() => setOpenDrawer(!openDrawer)}
+                >
+                  <RecentActorsIcon />
+                </AppIconButton>
+
                 <AppIconButton
                   tooltip="theMovieDb data"
                   onClick={handleOpenModal}
@@ -357,6 +368,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
           }
         }}
       />
+      <CustomDrawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
+        I am the cast and crew drawer
+      </CustomDrawer>
     </>
   );
 };

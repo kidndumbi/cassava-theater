@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import { Clear, SkipNext } from "@mui/icons-material";
 import theme from "../../theme";
-import { Tooltip } from "@mui/material";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import NotesIcon from "@mui/icons-material/Notes";
 import AppIconButton from "../common/AppIconButton";
 import { VideoDataModel } from "../../../models/videoData.model";
@@ -15,6 +15,7 @@ type SideControlsOverlayProps = {
   handleNext?: () => void;
   handleOpenNotesModal: () => void;
   nextEpisode?: VideoDataModel;
+  toggleCastAndCrew?: () => void;
 };
 
 const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
@@ -23,6 +24,7 @@ const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
   handleNext,
   handleOpenNotesModal,
   nextEpisode,
+  toggleCastAndCrew,
 }) => {
   const handleCancelClick = () => {
     handleCancel(filePath || "");
@@ -46,13 +48,6 @@ const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
         <Clear />
       </IconButton>
       {handleNext && (
-        // <IconButton
-        //   sx={{ color: theme.customVariables.appWhite }}
-        //   onClick={handleNext}
-        // >
-        //   <SkipNext />
-        // </IconButton>
-
         <AppIconButton
           tooltip={removeVidExt(nextEpisode.fileName)}
           onClick={handleNext}
@@ -60,19 +55,16 @@ const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
           <SkipNext />
         </AppIconButton>
       )}
-      <Tooltip title="Notes">
-        <IconButton
-          sx={{
-            left: 0,
-            color: theme.customVariables.appWhiteSmoke,
-            width: 48,
-            height: 48,
-          }}
-          onClick={handleOpenNotesModal}
-        >
-          <NotesIcon />
-        </IconButton>
-      </Tooltip>
+      <AppIconButton
+        sx={{ left: 0 }}
+        tooltip="Notes"
+        onClick={handleOpenNotesModal}
+      >
+        <NotesIcon />
+      </AppIconButton>
+      <AppIconButton tooltip="Cast & Crew" onClick={toggleCastAndCrew}>
+        <RecentActorsIcon />
+      </AppIconButton>
     </Box>
   );
 };

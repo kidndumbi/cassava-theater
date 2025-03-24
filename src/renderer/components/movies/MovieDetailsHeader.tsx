@@ -6,6 +6,7 @@ import ClosedCaptionButton from "../common/ClosedCaptionButton";
 import { VideoDataModel } from "../../../models/videoData.model";
 import WatchLaterIcon from "@mui/icons-material/WatchLater";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import AppIconButton from "../common/AppIconButton";
 
 interface MovieDetailsHeaderProps {
@@ -20,6 +21,7 @@ interface MovieDetailsHeaderProps {
   getVideoDetails: (videoPath: string) => void;
   updateWatchLater: (filePath: string, watchLater: boolean) => void;
   onRefresh: () => void;
+  toggleCastAndCrew?: () => void;
 }
 
 const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
@@ -31,6 +33,7 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
   getVideoDetails,
   updateWatchLater,
   onRefresh,
+  toggleCastAndCrew,
 }) => {
   const handleSubtitleChange = async (filePath: string) => {
     await updateSubtitle(filePath === "None" ? "" : filePath, {
@@ -48,14 +51,17 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
       </AppIconButton>
 
       <Box>
+        <AppIconButton tooltip="Refresh" onClick={onRefresh}>
+          <RefreshIcon />
+        </AppIconButton>
+        <AppIconButton tooltip="Cast & Crew" onClick={toggleCastAndCrew}>
+          <RecentActorsIcon />
+        </AppIconButton>
         <ClosedCaptionButton
           showTooltip={true}
           subtitlePath={videoDetails?.subtitlePath || "None"}
           handleFilepathChange={handleSubtitleChange}
         />
-        <AppIconButton tooltip="Refresh" onClick={onRefresh}>
-          <RefreshIcon />
-        </AppIconButton>
         <AppIconButton
           tooltip={
             videoDetails?.watchLater
