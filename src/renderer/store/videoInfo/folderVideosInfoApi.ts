@@ -21,6 +21,21 @@ export const fetchVideoDetailsApi = async ({
   }
 };
 
+export const fetchFolderDetailsApi = async (path: string) => {
+  try {
+    if (!path) {
+      log.error("Path is undefined");
+      return {};
+    }
+
+    const response = await window.videoAPI.fetchFolderDetails({ path });
+    return response;
+  } catch (error) {
+    log.error("Error fetching folder details via API:", error);
+    throw error;
+  }
+};
+
 export const convertSrtToVtt = async (srt: string) => {
   try {
     return await window.fileManagerAPI.convertSrtToVtt(srt);

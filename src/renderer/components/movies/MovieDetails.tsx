@@ -14,6 +14,8 @@ import MovieDetailsContent from "./MovieDetailsContent";
 import { useSettings } from "../../hooks/useSettings";
 import { getUrl, removeVidExt } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
+import CustomDrawer from "../common/CustomDrawer";
+import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 
 interface MovieDetailsProps {
   videoPath: string | null;
@@ -40,6 +42,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
 
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
+  const [openDrawer, setOpenDrawer] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -102,6 +105,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         ) : (
           <>
             <MovieDetailsHeader
+              toggleCastAndCrew={() => setOpenDrawer(!openDrawer)}
               handleBackClick={handleBackClick}
               handleOpenModal={handleOpenModal}
               videoDetails={videoDetails}
@@ -158,6 +162,9 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
           }
         }}
       />
+      <CustomDrawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
+        <MovieCastAndCrew credits={videoDetails?.movie_details?.credits} />
+      </CustomDrawer>
     </>
   );
 };

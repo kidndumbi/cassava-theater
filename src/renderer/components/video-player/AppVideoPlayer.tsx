@@ -17,13 +17,24 @@ import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import Video from "./video";
 import { NotesModal } from "../common/NotesModal";
 import Box from "@mui/material/Box";
-import { getUrl, secondsTohhmmss } from "../../util/helperFunctions";
+import {
+  getUrl,
+  removeLastSegments,
+  secondsTohhmmss,
+} from "../../util/helperFunctions";
 import { AppSlider } from "../common/AppSlider";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import { useDebounce } from "@uidotdev/usehooks";
 import theme from "../../theme";
 import IconButton from "@mui/material/IconButton";
 import { Clear } from "@mui/icons-material";
+import CustomDrawer from "../common/CustomDrawer";
+import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
+import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
+import {
+  fetchFolderDetailsApi,
+  fetchVideoDetailsApi,
+} from "../../store/videoInfo/folderVideosInfoApi";
 
 export type AppVideoPlayerHandle = {
   skipBy?: (seconds: number) => void;
@@ -66,41 +77,21 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     },
     ref,
   ) => {
+    // Refs and hooks
     const { setPlayer } = useVideoListLogic();
     const { mkvCurrentTime, currentVideo } = useVideoPlayerLogic();
-    const isNotMp4VideoFormat = currentVideo?.isMkv || currentVideo?.isAvi;
     const videoPlayerRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-      console.log("AppVideoPlayer mounted");
-    }, []);
-
-    useEffect(() => {
-      if (videoPlayerRef.current) {
-        setPlayer(videoPlayerRef.current);
-      }
-    }, [currentVideo]);
-
+    const [openDrawer, setOpenDrawer] = useState(false);
+    const [openNotesModal, setOpenNotesModal] = useState(false);
     const [sliderValue, setSliderValue] = useState<number | null>(null);
+
     const debouncedSliderValue = useDebounce(sliderValue, 300);
+    const isMouseActive = useMouseActivity();
+    const isNotMp4VideoFormat = currentVideo?.isMkv || currentVideo?.isAvi;
 
-    useEffect(() => {
-      if (debouncedSliderValue !== null) {
-        startPlayingAt?.(debouncedSliderValue);
-      }
-    }, [debouncedSliderValue]);
-
-    const getVideoUrl = () =>
-      getUrl(
-        "video",
-        currentVideo?.filePath,
-        startFromBeginning ? 0 : currentVideo?.currentTime,
-        port,
-      );
-    const getSubtitleUrl = () => getUrl("file", subtitleFilePath, null, port);
-
+    // Video player controls
     const {
       skipBy,
       play,
@@ -119,6 +110,149 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       triggeredOnPlayInterval,
     );
 
+    // Next episode calculation
+    const nextEpisode = useMemo(
+      () => findNextEpisode(currentVideo?.filePath || ""),
+      [currentVideo, episodes, isTvShow],
+    );
+
+    // URL generators
+    const getVideoUrl = () =>
+      getUrl(
+        "video",
+        currentVideo?.filePath,
+        startFromBeginning ? 0 : currentVideo?.currentTime,
+        port,
+      );
+    const getSubtitleUrl = () => getUrl("file", subtitleFilePath, null, port);
+
+    // Effects
+    useEffect(() => {
+      console.log("AppVideoPlayer mounted");
+    }, []);
+
+    useEffect(() => {
+      if (videoPlayerRef.current) {
+        setPlayer(videoPlayerRef.current);
+      }
+    }, [currentVideo]);
+
+    useEffect(() => {
+      if (debouncedSliderValue !== null) {
+        startPlayingAt?.(debouncedSliderValue);
+      }
+    }, [debouncedSliderValue]);
+
+    useEffect(() => {
+      if (pause !== undefined && paused) {
+        onVideoPaused();
+      }
+    }, [paused]);
+
+    const [castAndCrewContent, setCastAndCrewContent] =
+      useState<React.ReactNode>(null);
+
+    useEffect(() => {
+      const fetchCastAndCrew = async () => {
+        if (isTvShow) {
+          console.log(
+            "tv show path",
+            removeLastSegments(currentVideo.filePath, 2),
+          );
+
+          const tvShowPath = removeLastSegments(currentVideo.filePath, 2);
+          const tvShowDetails = await fetchFolderDetailsApi(tvShowPath);
+
+          if (tvShowDetails?.tv_show_details?.aggregate_credits) {
+            setCastAndCrewContent(
+              <TvShowCastAndCrew
+                aggregateCredits={
+                  tvShowDetails?.tv_show_details?.aggregate_credits
+                }
+              />,
+            );
+          }
+        } else if (!isTvShow && currentVideo?.movie_details) {
+          if (currentVideo?.movie_details?.credits) {
+            setCastAndCrewContent(
+              <MovieCastAndCrew credits={currentVideo.movie_details.credits} />,
+            );
+          } else {
+            const movieDetails = await fetchVideoDetailsApi({
+              path: currentVideo.filePath,
+              category: "movie",
+            });
+
+            if (movieDetails?.movie_details?.credits) {
+              setCastAndCrewContent(
+                <MovieCastAndCrew
+                  credits={movieDetails.movie_details.credits}
+                />,
+              );
+            }
+          }
+        } else {
+          setCastAndCrewContent(null);
+        }
+      };
+
+      fetchCastAndCrew();
+    }, [isTvShow, currentVideo]);
+
+    const handleOpenNotesModal = () => {
+      pause?.();
+      setOpenNotesModal(true);
+    };
+
+    const handleCloseNotesModal = () => {
+      setOpenNotesModal(false);
+      play?.();
+    };
+
+    const handleToggleDrawer = () => {
+      pause();
+      setOpenDrawer(!openDrawer);
+    };
+
+    const handleCloseDrawer = () => {
+      setOpenDrawer(false);
+      play();
+    };
+
+    // Render functions
+    const renderTimeDisplay = () => (
+      <span className="video-time-display">
+        {formattedTime +
+          " / " +
+          (secondsTohhmmss(currentVideo?.duration) || "")}
+      </span>
+    );
+
+    const renderSlider = () => (
+      <Box className="video-slider-container">
+        <AppSlider
+          max={currentVideo.duration}
+          value={mkvCurrentTime}
+          onChange={(event, newValue) => {
+            setSliderValue(newValue as number);
+          }}
+        />
+      </Box>
+    );
+
+    const renderErrorState = () => (
+      <Box className="video-error-container">
+        <p>{error}</p>
+        <IconButton
+          sx={{ color: theme.customVariables.appWhite }}
+          onClick={handleCancel.bind(null, currentVideo?.filePath || "")}
+        >
+          <Clear />
+        </IconButton>
+      </Box>
+    );
+
+    // Expose methods to parent via ref
     useImperativeHandle(ref, () => ({
       skipBy,
       play,
@@ -127,50 +261,8 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       setVolume,
     }));
 
-    const isMouseActive = useMouseActivity();
-    const nextEpisode = useMemo(
-      () => findNextEpisode(currentVideo?.filePath || ""),
-      [currentVideo, episodes, isTvShow],
-    );
-
-    useEffect(() => {
-      if (pause !== undefined) {
-        if (paused) {
-          onVideoPaused();
-        }
-      }
-    }, [paused]);
-
-    const [openNotesModal, setOpenNotesModal] = useState(false);
-    const handleOpenNotesModal = () => {
-      pause?.();
-      setOpenNotesModal(true);
-    };
-    const handleCloseNotesModal = () => {
-      setOpenNotesModal(false);
-      play?.();
-    };
-
     if (error) {
-      return (
-        <Box
-          sx={{
-            display: "flex",
-            height: "100vh",
-            padding: "30%",
-            color: theme.customVariables.appWhiteSmoke,
-            flexDirection: "column",
-          }}
-        >
-          <p>{error}</p>
-          <IconButton
-            sx={{ color: theme.customVariables.appWhite }}
-            onClick={handleCancel.bind(null, currentVideo?.filePath || "")}
-          >
-            <Clear />
-          </IconButton>
-        </Box>
-      );
+      return renderErrorState();
     }
 
     return (
@@ -183,11 +275,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           subtitleFilePath={subtitleFilePath}
           onClick={() => {
             if (isNotMp4VideoFormat) {
-              if (!paused) {
-                pause();
-              } else {
-                play();
-              }
+              paused ? play?.() : pause?.();
             }
           }}
           onError={(error) => {
@@ -214,6 +302,9 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             />
             <TitleOverlay fileName={currentVideo?.fileName} />
             <SideControlsOverlay
+              toggleCastAndCrew={
+                castAndCrewContent ? handleToggleDrawer : undefined
+              }
               handleCancel={handleCancel}
               handleNext={
                 isTvShow && nextEpisode
@@ -226,6 +317,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             />
           </>
         )}
+
         {currentVideo && (
           <NotesModal
             open={openNotesModal}
@@ -238,43 +330,17 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             }}
           />
         )}
+
         {isNotMp4VideoFormat && isMouseActive && (
           <>
-            <span
-              style={{
-                position: "absolute",
-                bottom: "10px",
-                left: "20px",
-                color: "white",
-                fontSize: "14px",
-              }}
-            >
-              {formattedTime +
-                " / " +
-                (secondsTohhmmss(currentVideo?.duration) || "")}
-            </span>
-            <Box
-              style={{
-                position: "absolute",
-                bottom: "1px",
-                left: "20px",
-                color: "white",
-                width: "100%",
-                margin: 0,
-                padding: 0,
-                marginRight: "20px",
-              }}
-            >
-              <AppSlider
-                max={currentVideo.duration}
-                value={mkvCurrentTime}
-                onChange={(event, newValue) => {
-                  setSliderValue(newValue as number);
-                }}
-              ></AppSlider>
-            </Box>
+            {renderTimeDisplay()}
+            {renderSlider()}
           </>
         )}
+
+        <CustomDrawer open={openDrawer} onClose={handleCloseDrawer}>
+          {castAndCrewContent}
+        </CustomDrawer>
       </div>
     );
   },
