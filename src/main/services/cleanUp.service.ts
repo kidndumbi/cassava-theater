@@ -1,6 +1,6 @@
 import * as helpers from "./helpers";
 import { loggingService as log } from "./main-logging.service";
-import fsPromise from "fs/promises";
+import fsPromise, { writeFile } from "fs/promises";
 
 /**
  * Reads and parses the marked-for-deletion file.
@@ -93,11 +93,18 @@ const cleanUpVideoData = async () => {
       try {
         if (!(await helpers.fileExists(key))) {
           delete fileJson[key];
+        } else if (fileJson[key]?.videoProgressScreenshot) {
+          delete fileJson[key].videoProgressScreenshot;
         }
       } catch (error) {
         log.error(`Error processing key "${key}":`, error);
       }
     }
+
+    await writeFile(
+      helpers.getVideoDataFilePath(),
+      JSON.stringify(fileJson, null, 2),
+    );
   } catch (error) {
     log.error("Error fetching or processing video metadata:", error);
   }
