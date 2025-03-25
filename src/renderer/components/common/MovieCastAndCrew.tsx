@@ -34,7 +34,6 @@ const PersonListItem: React.FC<PersonListItemProps> = ({
   description,
 }) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
-  
   const listItemTextStyles = {
     marginLeft: 2,
     "& .MuiListItemText-primary": {
@@ -77,39 +76,43 @@ export const MovieCastAndCrew: React.FC<MovieCastAndCrewProps> = ({
     setSearchQuery(event.target.value.toLowerCase());
   };
 
-  const filterPersons = (persons: Array<{
-    id: number;
-    name: string;
-    profile_path: string | null;
-    description: string;
-  }>) => {
+  const filterPersons = (
+    persons: Array<{
+      id: number;
+      name: string;
+      profile_path: string | null;
+      description: string;
+    }>,
+  ) => {
     return persons.filter(
-      person =>
+      (person) =>
         person.name.toLowerCase().includes(searchQuery) ||
-        person.description.toLowerCase().includes(searchQuery)
+        person.description.toLowerCase().includes(searchQuery),
     );
   };
 
-  const castMembers = credits.cast.map(castMember => ({
+  const castMembers = credits.cast.map((castMember) => ({
     id: castMember.id,
     name: castMember.name,
     profile_path: castMember.profile_path,
     description: `Character: ${castMember.character}`,
   }));
 
-  const crewMembers = credits.crew.map(crewMember => ({
+  const crewMembers = credits.crew.map((crewMember) => ({
     id: crewMember.id,
     name: crewMember.name,
     profile_path: crewMember.profile_path,
     description: `Job: ${crewMember.job}`,
   }));
 
-  const renderPersonList = (persons: Array<{
-    id: number;
-    name: string;
-    profile_path: string | null;
-    description: string;
-  }>) => (
+  const renderPersonList = (
+    persons: Array<{
+      id: number;
+      name: string;
+      profile_path: string | null;
+      description: string;
+    }>,
+  ) => (
     <List>
       {persons.map((person, index) => (
         <PersonListItem
@@ -127,8 +130,20 @@ export const MovieCastAndCrew: React.FC<MovieCastAndCrewProps> = ({
   return (
     <Box>
       <Tabs value={tabValue} onChange={handleTabChange} centered>
-        <Tab label="Cast" />
-        <Tab label="Crew" />
+        <Tab
+          label="Cast"
+          sx={{
+            "&:not(.Mui-selected)": { color: "gray" },
+            "&.Mui-selected": { color: theme.customVariables.appWhiteSmoke },
+          }}
+        />
+        <Tab
+          label="Crew"
+          sx={{
+            "&:not(.Mui-selected)": { color: "gray" },
+            "&.Mui-selected": { color: theme.customVariables.appWhiteSmoke },
+          }}
+        />
       </Tabs>
       <Box p={2}>
         {tabValue === 0 && (
@@ -137,7 +152,7 @@ export const MovieCastAndCrew: React.FC<MovieCastAndCrewProps> = ({
               "Search cast by name or character",
               searchQuery,
               handleSearchChange,
-              theme
+              theme,
             )}
             {renderPersonList(filterPersons(castMembers))}
           </>

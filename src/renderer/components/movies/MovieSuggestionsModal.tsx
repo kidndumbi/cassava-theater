@@ -50,46 +50,90 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
       resetMovieSuggestions();
       getMovieSuggestions(fileName);
     }
-  }, [fileName, open]);
+  }, [fileName, open, getMovieSuggestions, resetMovieSuggestions]);
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTabValue(newValue);
   };
 
-  const renderMovie = (movie: MovieDetails) => (
-    <Box
-      key={movie.id}
-      sx={{
-        textAlign: "center",
-        display: "flex",
-        flexDirection: "column",
-        gap: 1,
-      }}
-    >
-      <img
-        src={getTmdbImageUrl(movie?.poster_path || "", "w300")}
-        alt={movie.title}
-        style={{ width: 150, height: 225 }}
-      />
-      {movie?.id?.toString() === id ? (
-        <Typography
-          variant="body2"
-          sx={{ color: theme.customVariables.appWhiteSmoke }}
-        >
-          Selected
-        </Typography>
+  const handleImageUpdate = async (data: VideoDataModel) => {
+    if (!videoDetails?.filePath) return;
+    
+    try {
+      await updateMovieDbData(videoDetails.filePath, data);
+      showSnackbar("Custom image updated successfully", "success");
+    } catch (error) {
+      showSnackbar("Failed to update custom image", "error");
+    }
+  };
+
+  const renderMovieCard = (movie: MovieDetails) => {
+    const isSelected = movie?.id?.toString() === id;
+    
+    return (
+      <Box
+        key={movie.id}
+        sx={{
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+        }}
+      >
+        <img
+          src={getTmdbImageUrl(movie?.poster_path || "", "w300")}
+          alt={movie.title}
+          style={{ width: 150, height: 225 }}
+          loading="lazy"
+        />
+        {isSelected ? (
+          <Typography
+            variant="body2"
+            sx={{ color: theme.customVariables.appWhiteSmoke }}
+          >
+            Selected
+          </Typography>
+        ) : (
+          <Button
+            variant="contained"
+            onClick={() => handleSelectMovie(movie)}
+          >
+            Select
+          </Button>
+        )}
+      </Box>
+    );
+  };
+
+  const renderTabContent = () => {
+    if (currentTabValue === 0) {
+      return movieSuggestionsLoading ? (
+        <Box className="mt-[15%]">
+          <LoadingIndicator />
+        </Box>
       ) : (
-        <Button
-          variant="contained"
-          onClick={() => {
-            handleSelectMovie(movie);
-          }}
-        >
-          Select
-        </Button>
-      )}
-    </Box>
-  );
+        <>
+          <Typography variant="h6" component="h2" color="primary">
+            Movie Suggestions
+          </Typography>
+          <Typography sx={{ mt: 2, color: theme.customVariables.appWhiteSmoke }}>
+            {fileName}
+          </Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
+            {movieSuggestions.map(renderMovieCard)}
+          </Box>
+        </>
+      );
+    }
+
+    return (
+      <CustomImages
+        posterUrl={videoDetails?.poster}
+        backdropUrl={videoDetails?.backdrop}
+        updateImage={handleImageUpdate}
+      />
+    );
+  };
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -110,8 +154,8 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
       >
         <Tabs
           value={currentTabValue}
-          onChange={handleChange}
-          aria-label="basic tabs example"
+          onChange={handleTabChange}
+          aria-label="movie suggestion tabs"
           TabIndicatorProps={{
             style: {
               backgroundColor: "primary",
@@ -139,43 +183,12 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
             }}
           />
         </Tabs>
+        
         <CustomTabPanel value={currentTabValue} index={0}>
-          {movieSuggestionsLoading ? (
-            <Box className="mt-[15%]">
-              <LoadingIndicator />
-            </Box>
-          ) : (
-            <>
-              <Typography variant="h6" component="h2" color="primary">
-                Movie Suggestions
-              </Typography>
-              <Typography
-                sx={{ mt: 2, color: theme.customVariables.appWhiteSmoke }}
-              >
-                {fileName}
-              </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 2,
-                  mt: 2,
-                }}
-              >
-                {movieSuggestions.map(renderMovie)}
-              </Box>
-            </>
-          )}
+          {renderTabContent()}
         </CustomTabPanel>
         <CustomTabPanel value={currentTabValue} index={1}>
-          <CustomImages
-            posterUrl={videoDetails?.poster}
-            backdropUrl={videoDetails?.backdrop}
-            updateImage={async (data: VideoDataModel) => {
-              await updateMovieDbData(videoDetails.filePath, data);
-              showSnackbar("Custom image updated successfully", "success");
-            }}
-          />
+          {renderTabContent()}
         </CustomTabPanel>
       </Paper>
     </Modal>

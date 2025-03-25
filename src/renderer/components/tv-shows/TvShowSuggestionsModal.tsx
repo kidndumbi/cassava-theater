@@ -20,13 +20,17 @@ interface TvShowSuggestionsModalProps {
   handleSelectTvShow: (tv_show_details: TvShowDetails) => void;
 }
 
-const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
+export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
   open,
   handleClose,
   fileName,
   id,
   handleSelectTvShow,
 }) => {
+  const [currentTabValue, setCurrentTabValue] = useState(0);
+  const { showSnackbar } = useSnackbar();
+  const { getTmdbImageUrl } = useTmdbImageUrl();
+
   const {
     tvShowSuggestions,
     getTvShowSuggestions,
@@ -36,15 +40,6 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
     tvShowSuggestionsLoading,
   } = useTvShows();
 
-  const { showSnackbar } = useSnackbar();
-
-  const { getTmdbImageUrl } = useTmdbImageUrl();
-  const [currentTabValue, setCurrentTabValue] = useState(0);
-
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setCurrentTabValue(newValue);
-  };
-
   useEffect(() => {
     if (fileName && open) {
       resetTvShowSuggestions();
@@ -52,33 +47,29 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
     }
   }, [fileName, open, id]);
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setCurrentTabValue(newValue);
+  };
+
+  const handleImageUpdate = async (data: VideoDataModel) => {
+    await updateTvShowDbData(tvShowDetails.filePath, data);
+    showSnackbar("Custom image updated successfully", "success");
+  };
+
   return (
     <Modal open={open} onClose={handleClose}>
       <Paper
-        className="custom-scrollbar"
         sx={{
-          height: "80%",
-          overflowY: "auto",
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "80%",
           bgcolor: theme.customVariables.appDark,
           color: theme.customVariables.appWhiteSmoke,
-          boxShadow: 24,
-          p: 4,
         }}
+        className="custom-scrollbar absolute left-1/2 top-1/2 h-[80%] w-[80%] -translate-x-1/2 -translate-y-1/2 transform overflow-y-auto p-4 shadow-lg"
       >
         <Tabs
           value={currentTabValue}
-          onChange={handleChange}
+          onChange={handleTabChange}
           aria-label="basic tabs example"
-          TabIndicatorProps={{
-            style: {
-              backgroundColor: "primary",
-            },
-          }}
+          TabIndicatorProps={{ style: { backgroundColor: "primary" } }}
         >
           <Tab
             label="TheMovieDb"
@@ -103,7 +94,9 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
         </Tabs>
         <CustomTabPanel value={currentTabValue} index={0}>
           {tvShowSuggestionsLoading ? (
-            <Box className="mt-[15%]"><LoadingIndicator /></Box>
+            <Box className="mt-[15%]">
+              <LoadingIndicator />
+            </Box>
           ) : (
             <TvShowSuggestions
               fileName={fileName}
@@ -115,19 +108,15 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
             />
           )}
         </CustomTabPanel>
+
         <CustomTabPanel value={currentTabValue} index={1}>
           <CustomImages
             posterUrl={tvShowDetails?.poster}
             backdropUrl={tvShowDetails?.backdrop}
-            updateImage={async (data: VideoDataModel) => {
-              await updateTvShowDbData(tvShowDetails.filePath, data);
-              showSnackbar("Custom image updated successfully", "success");
-            }}
-          ></CustomImages>
+            updateImage={handleImageUpdate}
+          />
         </CustomTabPanel>
       </Paper>
     </Modal>
   );
 };
-
-export { TvShowSuggestionsModal };
