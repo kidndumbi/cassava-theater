@@ -24,6 +24,10 @@ const AppIconButton: React.FC<AppIconButtonProps> = ({
         onClick={onClick}
         sx={{
           color: theme.customVariables.appWhite,
+          backgroundColor: `${theme.customVariables.appDark}CC`, // 80% opacity
+          "&:hover": {
+            backgroundColor: `${theme.customVariables.appDark}CC`,
+          },
           width: 48,
           height: 48,
           ...sx,
