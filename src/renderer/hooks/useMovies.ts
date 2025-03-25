@@ -21,6 +21,7 @@ import {
   postVideoJason,
 } from "../store/videoInfo/folderVideosInfoActions";
 import { videosInfoActions } from "../store/videoInfo/folderVideosInfo.slice";
+import { useCallback } from "react";
 
 export const useMovies = () => {
   const dispatch = useAppDispatch();
@@ -49,13 +50,13 @@ export const useMovies = () => {
     await fetchMovies(movieFolderPath.payload);
   };
 
-  const getMovieSuggestions = async (query: string) => {
+  const getMovieSuggestions = useCallback(async (query: string) => {
     dispatch(theMovieDbActions.fetchMovieSuggestions(query));
-  };
+  }, [dispatch]);
 
-  const resetMovieSuggestions = () => {
+  const resetMovieSuggestions = useCallback(() => {
     dispatch(theMovieDbActions.resetMovieSuggestions());
-  };
+  }, [dispatch]);
 
   const resetMovieDetails = () => {
     dispatch(videosInfoActions.resetVideoDetails());
