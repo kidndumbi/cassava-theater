@@ -15,15 +15,35 @@ import { TvShowDetails } from "../../models/tv-show-details.model";
 
 const VIDEO_META_DATA_FILE_NAME = app.getPath("userData") + "/videoData.json";
 
+/**
+ * Filters an array of video objects based on the provided category.
+ *
+ * For the "movies" and "episodes" categories, it returns only those videos that:
+ * - Have a fileName defined.
+ * - Have a valid file extension (i.e. fileName ends with a dot and some non-dot characters).
+ *
+ * For any other category, the function returns the videos array without any filtering.
+ *
+ * @param videos - The array of video data objects.
+ * @param category - The category to filter by.
+ * @returns The filtered array of videos.
+ */
 export const filterByCategory = (
   videos: VideoDataModel[],
   category: string,
-) => {
-  if (["movies", "episodes"].includes(category)) {
-    return videos.filter(
-      (vid) => vid.fileName && /\.[^.]+$/.test(vid.fileName),
-    );
+): VideoDataModel[] => {
+  const categoriesToFilter = ["movies", "episodes"];
+
+  if (categoriesToFilter.includes(category)) {
+    return videos.filter((video) => {
+      const hasFileName = Boolean(video.fileName);
+      // The regex checks if fileName ends with a dot and one or more non-dot characters,
+      // ensuring that the fileName includes a valid file extension.
+      const hasValidExtension = /\.[^.]+$/.test(video.fileName);
+      return hasFileName && hasValidExtension;
+    });
   }
+
   return videos;
 };
 
