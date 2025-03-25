@@ -42,6 +42,7 @@ export type AppVideoPlayerHandle = {
   pause?: () => void;
   startPlayingAt?: (seconds: number) => void;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
+  triggereNextEpisode?: () => void;
 };
 
 type AppVideoPlayerProps = {
@@ -220,7 +221,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     };
 
     const renderTimeDisplay = () => (
-      <span className="absolute bottom-2.5 left-5 text-white text-sm">
+      <span className="absolute bottom-2.5 left-5 text-sm text-white">
         {formattedTime +
           " / " +
           (secondsTohhmmss(currentVideo?.duration) || "")}
@@ -228,7 +229,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     );
 
     const renderSlider = () => (
-      <Box className="absolute bottom-0.5 left-5 text-white w-[calc(100%-40px)] max-w-full m-0 p-0">
+      <Box className="absolute bottom-0.5 left-5 m-0 w-[calc(100%-40px)] max-w-full p-0 text-white">
         <AppSlider
           max={currentVideo.duration}
           value={mkvCurrentTime}
@@ -258,6 +259,10 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       pause,
       startPlayingAt,
       setVolume,
+      triggereNextEpisode:
+        isTvShow && nextEpisode
+          ? () => playNextEpisode(nextEpisode)
+          : undefined,
     }));
 
     if (error) {

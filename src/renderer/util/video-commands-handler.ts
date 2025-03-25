@@ -4,30 +4,33 @@ import { VideoCommands } from "../../models/video-commands.model";
 
 export const videoCommandsHandler = (
   command: VideoCommands,
-  player: AppVideoPlayerHandle | null
+  playerHandle: AppVideoPlayerHandle | null,
 ) => {
   switch (command) {
     case "play":
-      player.play();
+      playerHandle.play();
       break;
     case "pause":
-      player.pause();
+      playerHandle.pause();
       break;
     case "forward30":
-      player?.skipBy(30);
+      playerHandle?.skipBy(30);
       break;
     case "backward10":
-      player?.skipBy(-10);
+      playerHandle?.skipBy(-10);
       break;
     case "restart":
-      player?.startPlayingAt(0);
+      playerHandle?.startPlayingAt(0);
       break;
     case "volumeDown":
-      player?.setVolume((prev) => Math.max(prev - 0.1, 0));
+      playerHandle?.setVolume((prev) => Math.max(prev - 0.1, 0));
 
       break;
     case "volumeUp":
-      player?.setVolume((prev) => Math.min(prev + 0.1, 1));
+      playerHandle?.setVolume((prev) => Math.min(prev + 0.1, 1));
+      break;
+    case "nextEpisode":
+      playerHandle?.triggereNextEpisode();
       break;
     default:
       log.error(`Unknown command: ${command}`);

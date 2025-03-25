@@ -5,4 +5,5 @@ export type VideoCommands =
   | "forward30"
   | "restart"
   | "volumeDown"
-  | "volumeUp";
+  | "volumeUp"
+  | "nextEpisode";
