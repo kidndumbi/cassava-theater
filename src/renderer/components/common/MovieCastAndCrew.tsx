@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import theme from "../../theme";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
+import { renderTextField } from "./RenderTextField";
 
 interface MovieCastAndCrewProps {
   credits: Credits;
@@ -66,10 +67,42 @@ export const MovieCastAndCrew: React.FC<MovieCastAndCrewProps> = ({
   credits,
 }) => {
   const [tabValue, setTabValue] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value.toLowerCase());
+  };
+
+  const filterPersons = (persons: Array<{
+    id: number;
+    name: string;
+    profile_path: string | null;
+    description: string;
+  }>) => {
+    return persons.filter(
+      person =>
+        person.name.toLowerCase().includes(searchQuery) ||
+        person.description.toLowerCase().includes(searchQuery)
+    );
+  };
+
+  const castMembers = credits.cast.map(castMember => ({
+    id: castMember.id,
+    name: castMember.name,
+    profile_path: castMember.profile_path,
+    description: `Character: ${castMember.character}`,
+  }));
+
+  const crewMembers = credits.crew.map(crewMember => ({
+    id: crewMember.id,
+    name: crewMember.name,
+    profile_path: crewMember.profile_path,
+    description: `Job: ${crewMember.job}`,
+  }));
 
   const renderPersonList = (persons: Array<{
     id: number;
@@ -91,20 +124,6 @@ export const MovieCastAndCrew: React.FC<MovieCastAndCrewProps> = ({
     </List>
   );
 
-  const castMembers = credits.cast.map(castMember => ({
-    id: castMember.id,
-    name: castMember.name,
-    profile_path: castMember.profile_path,
-    description: `Character: ${castMember.character}`,
-  }));
-
-  const crewMembers = credits.crew.map(crewMember => ({
-    id: crewMember.id,
-    name: crewMember.name,
-    profile_path: crewMember.profile_path,
-    description: `Job: ${crewMember.job}`,
-  }));
-
   return (
     <Box>
       <Tabs value={tabValue} onChange={handleTabChange} centered>
@@ -112,7 +131,17 @@ export const MovieCastAndCrew: React.FC<MovieCastAndCrewProps> = ({
         <Tab label="Crew" />
       </Tabs>
       <Box p={2}>
-        {tabValue === 0 && renderPersonList(castMembers)}
+        {tabValue === 0 && (
+          <>
+            {renderTextField(
+              "Search cast by name or character",
+              searchQuery,
+              handleSearchChange,
+              theme
+            )}
+            {renderPersonList(filterPersons(castMembers))}
+          </>
+        )}
         {tabValue === 1 && renderPersonList(crewMembers)}
       </Box>
     </Box>
