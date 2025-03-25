@@ -50,7 +50,7 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
         <ArrowBackIcon />
       </AppIconButton>
 
-      <Box>
+      <Box className="flex gap-x-2">
         <AppIconButton tooltip="Refresh" onClick={onRefresh}>
           <RefreshIcon />
         </AppIconButton>
@@ -58,7 +58,6 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
           <RecentActorsIcon />
         </AppIconButton>
         <ClosedCaptionButton
-          showTooltip={true}
           subtitlePath={videoDetails?.subtitlePath || "None"}
           handleFilepathChange={handleSubtitleChange}
         />

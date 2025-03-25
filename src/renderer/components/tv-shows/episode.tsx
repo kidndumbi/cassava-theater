@@ -107,7 +107,6 @@ export const Episode: React.FC<EpisodeProps> = ({
             handleFilepathChange(newSubtitleFilePath, episode);
           }}
           subtitlePath={episode.subtitlePath || "None"}
-          showTooltip={true}
         />
         <Tooltip title="Notes">
           <IconButton
