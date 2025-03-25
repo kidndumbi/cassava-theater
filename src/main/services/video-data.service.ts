@@ -48,7 +48,7 @@ export const fetchVideosData = async ({
     }
 
     const sorted = updatedVideoData.sort((a, b) =>
-      (a.fileName ?? "").localeCompare(b.fileName ?? ""),
+      (a.fileName ?? "").localeCompare(b.fileName ?? "", undefined, { numeric: true, sensitivity: 'base' }),
     );
 
     return videoDataHelpers.filterByCategory(sorted, category);
