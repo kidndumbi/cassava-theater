@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Paper, Tabs, Tab } from "@mui/material";
+import { Modal, Paper, Tabs, Tab, Box } from "@mui/material";
 import theme from "../../theme";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
@@ -10,6 +10,7 @@ import TvShowSuggestions from "./TvShowSuggestions";
 import { CustomImages } from "./CustomImages";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useSnackbar } from "../../contexts/SnackbarContext";
+import LoadingIndicator from "../common/LoadingIndicator";
 
 interface TvShowSuggestionsModalProps {
   open: boolean;
@@ -32,6 +33,7 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
     resetTvShowSuggestions,
     tvShowDetails,
     updateTvShowDbData,
+    tvShowSuggestionsLoading,
   } = useTvShows();
 
   const { showSnackbar } = useSnackbar();
@@ -100,14 +102,18 @@ const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
           />
         </Tabs>
         <CustomTabPanel value={currentTabValue} index={0}>
-          <TvShowSuggestions
-            fileName={fileName}
-            tvShowSuggestions={tvShowSuggestions}
-            id={id}
-            handleSelectTvShow={handleSelectTvShow}
-            getTmdbImageUrl={getTmdbImageUrl}
-            theme={theme}
-          />
+          {tvShowSuggestionsLoading ? (
+            <Box className="mt-[15%]"><LoadingIndicator /></Box>
+          ) : (
+            <TvShowSuggestions
+              fileName={fileName}
+              tvShowSuggestions={tvShowSuggestions}
+              id={id}
+              handleSelectTvShow={handleSelectTvShow}
+              getTmdbImageUrl={getTmdbImageUrl}
+              theme={theme}
+            />
+          )}
         </CustomTabPanel>
         <CustomTabPanel value={currentTabValue} index={1}>
           <CustomImages

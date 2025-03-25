@@ -7,7 +7,7 @@ interface LoadingIndicatorProps {
 }
 
 const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
-  message,
+  message = "Loading...",
   showCircularProgress = true,
 }) => {
   const theme = useTheme();
@@ -21,7 +21,7 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
           color: theme.customVariables.appWhiteSmoke,
         }}
       >
-        {message || "Loading..."}
+        {message}
       </Typography>
     </Box>
   );

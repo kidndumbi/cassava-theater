@@ -16,6 +16,7 @@ import { a11yProps, CustomTabPanel } from "../common/TabPanel";
 import { CustomImages } from "../tv-shows/CustomImages";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useSnackbar } from "../../contexts/SnackbarContext";
+import LoadingIndicator from "../common/LoadingIndicator";
 
 interface MovieSuggestionsModalProps {
   open: boolean;
@@ -38,6 +39,7 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
     resetMovieSuggestions,
     videoDetails,
     updateMovieDbData,
+    movieSuggestionsLoading,
   } = useMovies();
   const { showSnackbar } = useSnackbar();
   const { getTmdbImageUrl } = useTmdbImageUrl();
@@ -138,24 +140,32 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
           />
         </Tabs>
         <CustomTabPanel value={currentTabValue} index={0}>
-          <Typography variant="h6" component="h2" color="primary">
-            Movie Suggestions
-          </Typography>
-          <Typography
-            sx={{ mt: 2, color: theme.customVariables.appWhiteSmoke }}
-          >
-            {fileName}
-          </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 2,
-              mt: 2,
-            }}
-          >
-            {movieSuggestions.map(renderMovie)}
-          </Box>
+          {movieSuggestionsLoading ? (
+            <Box className="mt-[15%]">
+              <LoadingIndicator />
+            </Box>
+          ) : (
+            <>
+              <Typography variant="h6" component="h2" color="primary">
+                Movie Suggestions
+              </Typography>
+              <Typography
+                sx={{ mt: 2, color: theme.customVariables.appWhiteSmoke }}
+              >
+                {fileName}
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 2,
+                  mt: 2,
+                }}
+              >
+                {movieSuggestions.map(renderMovie)}
+              </Box>
+            </>
+          )}
         </CustomTabPanel>
         <CustomTabPanel value={currentTabValue} index={1}>
           <CustomImages
