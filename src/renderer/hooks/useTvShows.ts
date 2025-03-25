@@ -5,6 +5,7 @@ import { settingsActions } from "../store/settingsSlice";
 import {
   fetchFilmDataById,
   selTvShowSuggestions,
+  selTvShowSuggestionsLoading,
   theMovieDbActions,
 } from "../store/theMovieDb.slice";
 import { TvShowDetails } from "../../models/tv-show-details.model";
@@ -37,6 +38,7 @@ export const useTvShows = () => {
   const loadingFolderDetails = useSelector(selLoadingFolderDetails);
   const loadingTvShows = useSelector(selLoadingTvShows);
   const tvShowSuggestions = useSelector(selTvShowSuggestions);
+  const tvShowSuggestionsLoading = useSelector(selTvShowSuggestionsLoading);
   const thumbnailCache = useSelector(selThumbnailCache);
 
   const fetchData = (
@@ -233,5 +235,6 @@ export const useTvShows = () => {
     updateTvShowDbData,
     removeTvShow,
     updateEpisodeThumbnail,
+    tvShowSuggestionsLoading
   };
 };

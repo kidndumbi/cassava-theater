@@ -4,6 +4,7 @@ import { settingsActions } from "../store/settingsSlice";
 import {
   fetchFilmDataById,
   selMovieSuggestions,
+  selMovieSuggestionsLoading,
   theMovieDbActions,
 } from "../store/theMovieDb.slice";
 import { MovieDetails } from "../../models/movie-detail.model";
@@ -28,6 +29,7 @@ export const useMovies = () => {
   const loadingVideoDetails = useSelector(selLoadingVideoDetails);
   const loadingMovies = useSelector(selLoadingMovies);
   const movieSuggestions = useSelector(selMovieSuggestions);
+  const movieSuggestionsLoading = useSelector(selMovieSuggestionsLoading);
 
   const fetchMovies = async (path: string) => {
     dispatch(
@@ -125,5 +127,6 @@ export const useMovies = () => {
     updateMovieDbData,
     resetMovieDetails,
     removeMovie,
+    movieSuggestionsLoading,
   };
 };

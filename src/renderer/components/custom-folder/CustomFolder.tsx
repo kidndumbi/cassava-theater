@@ -90,7 +90,7 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
 
   const renderContent = () => {
     if (loadingCustomFolderData) {
-      return <LoadingIndicator message="Loading..." />;
+      return <LoadingIndicator />;
     }
 
     const filteredData = getFilteredCustomFolderData();
