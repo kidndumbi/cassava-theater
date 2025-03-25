@@ -219,9 +219,8 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       play();
     };
 
-    // Render functions
     const renderTimeDisplay = () => (
-      <span className="video-time-display">
+      <span className="absolute bottom-2.5 left-5 text-white text-sm">
         {formattedTime +
           " / " +
           (secondsTohhmmss(currentVideo?.duration) || "")}
@@ -229,7 +228,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     );
 
     const renderSlider = () => (
-      <Box className="video-slider-container">
+      <Box className="absolute bottom-0.5 left-5 text-white w-[calc(100%-40px)] max-w-full m-0 p-0">
         <AppSlider
           max={currentVideo.duration}
           value={mkvCurrentTime}
