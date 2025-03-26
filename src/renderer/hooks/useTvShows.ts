@@ -94,6 +94,11 @@ export const useTvShows = () => {
         newVideoJsonData: { tv_show_details: extraTvShowDetails },
       }),
     );
+
+    updateTvShow({
+      filePath,
+      tv_show_details: { ...tv_show_details, ...extraTvShowDetails },
+    });
   };
 
   const updateTvShowDbData = async (filePath: string, data: VideoDataModel) => {
@@ -235,6 +240,6 @@ export const useTvShows = () => {
     updateTvShowDbData,
     removeTvShow,
     updateEpisodeThumbnail,
-    tvShowSuggestionsLoading
+    tvShowSuggestionsLoading,
   };
 };

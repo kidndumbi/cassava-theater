@@ -80,7 +80,9 @@ const folderVideosInfoSlice = createSlice({
     updateTvShow: (state, action: PayloadAction<VideoDataModel>) => {
       const tvShow = action.payload;
       const idx = state.tvShows.findIndex(
-        (m) => m.filePath.replace(/\\/g, "/") === tvShow.filePath,
+        (m) =>
+          m.filePath.replace(/\\/g, "/") ===
+          tvShow.filePath.replace(/\\/g, "/"),
       );
       if (idx !== -1) {
         state.tvShows[idx] = { ...state.tvShows[idx], ...tvShow };

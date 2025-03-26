@@ -2,12 +2,13 @@ import React from "react";
 import { Box } from "@mui/material";
 import { styled } from "@mui/system";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { trimFileName } from "../../util/helperFunctions";
+import { removeVidExt, trimFileName } from "../../util/helperFunctions";
 import { PosterCard } from "../common/PosterCard";
 import { AppMore } from "../common/AppMore";
 import { useMovies } from "../../hooks/useMovies";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
+import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -37,6 +38,11 @@ const MovieList: React.FC<MovieListProps> = ({
   const { removeMovie } = useMovies();
   const { showSnackbar } = useSnackbar();
   const { openDialog, setMessage } = useConfirmation();
+  const { updateTMDBId } = useMovies();
+  const [selectedMovie, setSelectedMovie] =
+    React.useState<VideoDataModel | null>(null);
+  const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
+    React.useState(false);
 
   const handleDelete = async (filePath: string) => {
     setMessage("Are you sure you want to delete this Movie?");
@@ -58,21 +64,47 @@ const MovieList: React.FC<MovieListProps> = ({
   };
 
   return (
-    <Box display="flex" flexWrap="wrap" gap="4px">
-      {movies.map((movie) => (
-        <HoverBox key={movie.filePath}>
-          <PosterCard
-            imageUrl={getImageUrl(movie)}
-            altText={movie.fileName || ""}
-            onClick={() => handlePosterClick(movie.filePath || "")}
-            footer={trimFileName(movie.fileName || "")}
-          />
-          <HoverContent className="hover-content">
-            <AppMore handleDelete={handleDelete.bind(null, movie.filePath)} />
-          </HoverContent>
-        </HoverBox>
-      ))}
-    </Box>
+    <>
+      <Box display="flex" flexWrap="wrap" gap="4px">
+        {movies.map((movie) => (
+          <HoverBox key={movie.filePath}>
+            <PosterCard
+              imageUrl={getImageUrl(movie)}
+              altText={movie.fileName || ""}
+              onClick={() => handlePosterClick(movie.filePath || "")}
+              footer={trimFileName(movie.fileName || "")}
+            />
+            <HoverContent className="hover-content">
+              <AppMore
+                isMovie={true}
+                handleDelete={handleDelete.bind(null, movie.filePath)}
+                linkTheMovieDb={() => {
+                  setSelectedMovie(movie);
+                  setOpenMovieSuggestionsModal(true);
+                }}
+              />
+            </HoverContent>
+          </HoverBox>
+        ))}
+      </Box>
+
+      <MovieSuggestionsModal
+        id={selectedMovie?.movie_details?.id?.toString() || ""}
+        open={openMovieSuggestionsModal}
+        handleClose={() => {
+          setOpenMovieSuggestionsModal(false);
+          setSelectedMovie(null);
+        }}
+        fileName={removeVidExt(selectedMovie?.fileName) || ""}
+        handleSelectMovie={async (movie_details) => {
+          if (movie_details.id) {
+            await updateTMDBId(selectedMovie.filePath || "", movie_details);
+            showSnackbar("Movie linked to TMDB successfully", "success");
+            setOpenMovieSuggestionsModal(false);
+          }
+        }}
+      />
+    </>
   );
 };
 
