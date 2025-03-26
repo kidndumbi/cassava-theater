@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Alert, Box } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, trimFileName } from "../../util/helperFunctions";
@@ -11,6 +11,7 @@ import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import WarningIcon from "@mui/icons-material/Warning";
+import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
@@ -40,6 +41,12 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   const { showSnackbar } = useSnackbar();
   const { removeTvShow } = useTvShows();
   const { openDialog, setMessage } = useConfirmation();
+  const [selectedTvShow, setSelectedTvShow] = useState<VideoDataModel | null>(
+    null,
+  );
+  const [openTvShowSuggestionsModal, setOpenTvShowSuggestionsModal] =
+    useState(false);
+  const { updateTvShowTMDBId } = useTvShows();
 
   const getImageUlr = (show: VideoDataModel) => {
     if (show.poster) {
@@ -54,8 +61,9 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
     // Updated warning message with additional recovery information
     setMessage(
       <Alert icon={<WarningIcon fontSize="inherit" />} severity="error">
-        Deleting this TV show folder will permanently remove all its contents, and it won't be able to be recovered from the recycle bin.
-        Make sure it doesn't contain any important information.
+        Deleting this TV show folder will permanently remove all its contents,
+        and it won't be able to be recovered from the recycle bin. Make sure it
+        doesn't contain any important information.
       </Alert>,
     );
     const dialogDecision = await openDialog("Delete");
@@ -88,11 +96,38 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
               footer={trimFileName(show.fileName ?? "")}
             />
             <HoverContent className="hover-content">
-              <AppMore handleDelete={handleDelete.bind(null, show.filePath)} />
+              <AppMore
+                isMovie={false}
+                handleDelete={handleDelete.bind(null, show.filePath)}
+                linkTheMovieDb={() => {
+                  setSelectedTvShow(show);
+                  setOpenTvShowSuggestionsModal(true);
+                }}
+              />
             </HoverContent>
           </HoverBox>
         ))}
       </Box>
+
+      <TvShowSuggestionsModal
+        id={selectedTvShow?.tv_show_details?.id.toString() || ""}
+        open={openTvShowSuggestionsModal}
+        handleClose={() => {
+          setOpenTvShowSuggestionsModal(false);
+          setSelectedTvShow(null);
+        }}
+        fileName={selectedTvShow?.filePath?.split("/").pop() || ""}
+        handleSelectTvShow={async (tv_show_details) => {
+          if (tv_show_details.id) {
+            await updateTvShowTMDBId(
+              selectedTvShow.filePath || "",
+              tv_show_details,
+            );
+            showSnackbar("Tv Show linked to TMDB successfully", "success");
+            setOpenTvShowSuggestionsModal(false);
+          }
+        }}
+      />
     </>
   );
 };

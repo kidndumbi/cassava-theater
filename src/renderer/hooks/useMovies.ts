@@ -50,9 +50,12 @@ export const useMovies = () => {
     await fetchMovies(movieFolderPath.payload);
   };
 
-  const getMovieSuggestions = useCallback(async (query: string) => {
-    dispatch(theMovieDbActions.fetchMovieSuggestions(query));
-  }, [dispatch]);
+  const getMovieSuggestions = useCallback(
+    async (query: string) => {
+      dispatch(theMovieDbActions.fetchMovieSuggestions(query));
+    },
+    [dispatch],
+  );
 
   const resetMovieSuggestions = useCallback(() => {
     dispatch(theMovieDbActions.resetMovieSuggestions());
@@ -77,6 +80,11 @@ export const useMovies = () => {
         newVideoJsonData: { movie_details: extraMovieDetails },
       }),
     );
+
+    updateMovie({
+      filePath,
+      movie_details: { ...movie_details, ...extraMovieDetails },
+    });
   };
 
   const updateWatchLater = async (filePath: string, watchLater: boolean) => {

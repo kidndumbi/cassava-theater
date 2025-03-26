@@ -6,9 +6,11 @@ import AppIconButton from "./AppIconButton";
 
 interface AppMoreProps {
   handleDelete: () => void;
+  isMovie: boolean; 
+  linkTheMovieDb: ()=> void;
 }
 
-export const AppMore: React.FC<AppMoreProps> = ({ handleDelete }) => {
+export const AppMore: React.FC<AppMoreProps> = ({ handleDelete, isMovie, linkTheMovieDb }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -59,10 +61,13 @@ export const AppMore: React.FC<AppMoreProps> = ({ handleDelete }) => {
           Delete
         </MenuItem>
         <MenuItem
-          onClick={handleClose}
+          onClick={() => {
+            linkTheMovieDb(); 
+            handleClose();
+          }}
           sx={{ color: theme.customVariables.appWhiteSmoke }}
         >
-          My account
+           {isMovie ? "Link Movie Info" : "Link TV Show Info"} 
         </MenuItem>
         <MenuItem
           onClick={handleClose}
