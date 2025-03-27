@@ -10,13 +10,36 @@ interface ClosedCaptionButtonProps {
   subtitlePath: string;
 }
 
-const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
+const menuItems = [
+  {
+    label: "None",
+    action: (handleChange: (path: string) => void) => {
+      handleChange("None");
+    },
+  },
+  {
+    label: "Select CC",
+    action: async (handleChange: (path: string) => void) => {
+      const selectedFilePath = await selectFile();
+      if (!selectedFilePath) return;
+
+      const filePath = selectedFilePath.endsWith(".srt")
+        ? await convertSrtToVtt(selectedFilePath)
+        : selectedFilePath;
+
+      handleChange(filePath);
+    },
+  },
+];
+
+export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
   handleFilepathChange,
   subtitlePath,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const isMenuOpen = Boolean(anchorEl);
 
-  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenuToggle = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -24,41 +47,38 @@ const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
     setAnchorEl(null);
   };
 
-  const handleMenuNone = () => {
-    setAnchorEl(null);
-    handleFilepathChange("None");
-  };
-
-  const handleMenuSelectCC = async () => {
-    setAnchorEl(null);
-    const selectedFilePath = await selectFile();
-    if (selectedFilePath) {
-      if (selectedFilePath.endsWith(".srt")) {
-        const convertedFilePath = await convertSrtToVtt(selectedFilePath);
-
-        handleFilepathChange(convertedFilePath);
-      } else {
-        handleFilepathChange(selectedFilePath);
-      }
-    }
+  const handleMenuItemClick = async (menuAction: typeof menuItems[number]["action"]) => {
+    await menuAction(handleFilepathChange);
+    handleMenuClose();
   };
 
   return (
     <>
       <AppIconButton
         className="left-0 h-12 w-12"
-        onClick={handleMenuClick}
-        tooltip={subtitlePath ? subtitlePath : "None"}
+        onClick={handleMenuToggle}
+        tooltip={subtitlePath || "None"}
+        aria-label="Closed caption options"
       >
         <ClosedCaptionIcon />
       </AppIconButton>
+
       <Menu
         anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
+        open={isMenuOpen}
         onClose={handleMenuClose}
+        MenuListProps={{
+          "aria-labelledby": "closed-caption-menu",
+        }}
       >
-        <MenuItem onClick={handleMenuNone}>None</MenuItem>
-        <MenuItem onClick={handleMenuSelectCC}>Select CC</MenuItem>
+        {menuItems.map((item, index) => (
+          <MenuItem
+            key={index}
+            onClick={() => handleMenuItemClick(item.action)}
+          >
+            {item.label}
+          </MenuItem>
+        ))}
       </Menu>
     </>
   );
