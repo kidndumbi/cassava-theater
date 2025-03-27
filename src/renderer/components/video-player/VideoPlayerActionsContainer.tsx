@@ -2,7 +2,6 @@ import React from "react";
 import Box from "@mui/material/Box";
 import SkipButton from "./SkipButton";
 import { VideoPlayerActionsBar } from "./VideoPlayerActionsBar";
-import "./VideoPlayerActionsContainer.css";
 
 interface VideoPlayerActionsContainerProps {
   onSubtitleChange: (subtitle: string | null) => void;
@@ -13,7 +12,7 @@ interface VideoPlayerActionsContainerProps {
   paused?: boolean;
   play: () => void;
   pause: () => void;
-  isNotMp4VideoFormat: boolean; 
+  isNotMp4VideoFormat: boolean;
 }
 
 const VideoPlayerActionsContainer: React.FC<
@@ -29,11 +28,10 @@ const VideoPlayerActionsContainer: React.FC<
   pause,
   isNotMp4VideoFormat,
 }) => {
-
   return (
-    <Box className="video-player-actions-container">
+    <Box className="absolute bottom-7 left-1/2 -translate-x-1/2 transform rounded-md  bg-opacity-80 p-1.5 text-white">
       <VideoPlayerActionsBar
-      isNotMp4VideoFormat={isNotMp4VideoFormat}
+        isNotMp4VideoFormat={isNotMp4VideoFormat}
         onSubtitleChange={onSubtitleChange}
         subtitleFilePath={subtitleFilePath}
         renderSkipButton={(seconds, IconComponent, label) => (

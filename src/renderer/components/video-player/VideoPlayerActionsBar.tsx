@@ -34,15 +34,8 @@ export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
   isNotMp4VideoFormat,
 }) => {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "0 10px",
-      }}
-    >
-      <Box sx={{ display: "flex" }}>
+    <Box className="flex items-center justify-between px-2.5">
+      <Box className="flex">
         <PlayPauseControls onPlayPause={onPlayPause} paused={paused} />
         <SkipControls renderSkipButton={renderSkipButton} />
         <FullscreenControl

@@ -2,7 +2,7 @@ import { Box, Chip } from "@mui/material";
 
 import React, { useState } from "react";
 import { getFilename } from "../../util/helperFunctions";
-import ClosedCaptionButton from "../common/ClosedCaptionButton";
+import { ClosedCaptionButton } from "../common/ClosedCaptionButton";
 
 interface SubtitleSelectProps {
   subtitleFilePath: string | null;
@@ -24,7 +24,7 @@ export const SubtitleSelect: React.FC<SubtitleSelectProps> = ({
   };
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center" }}>
+    <Box className="flex items-center gap-2" >
       <ClosedCaptionButton
         subtitlePath={selectedSubtitleFilePath}
         handleFilepathChange={handleFilepathChange}
