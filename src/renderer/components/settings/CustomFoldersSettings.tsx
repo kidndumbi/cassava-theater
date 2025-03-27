@@ -2,17 +2,17 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, Button, useTheme } from "@mui/material";
 import { Folder as FolderIcon, Save, Delete } from "@mui/icons-material";
 import { CustomFolderModel } from "../../../models/custom-folder";
-import { renderTextField } from "../common/RenderTextField";
+import { AppTextField } from "../common/AppTextField";
 import AddNewCustomFolder from "./AddNewCustomFolder";
 
 interface CustomFoldersSettingsProps {
   customFolders: CustomFolderModel[];
   handleCustomFolderFolderSelection: (
-    customFolder: CustomFolderModel
+    customFolder: CustomFolderModel,
   ) => Promise<void>;
   handleSaveFolderName: (
     customFolder: CustomFolderModel,
-    newName: string
+    newName: string,
   ) => Promise<void>;
   saveNewFolder: (newFolder: CustomFolderModel) => Promise<void>;
   handleDeleteFolder: (folderId: string) => Promise<void>;
@@ -38,8 +38,8 @@ export const CustomFoldersSettings: React.FC<CustomFoldersSettingsProps> = ({
   const handleFolderNameChange = (folderId: string, newName: string) => {
     setComponentCustomFolders((prevFolders) =>
       prevFolders.map((folder) =>
-        folder.id === folderId ? { ...folder, name: newName } : folder
-      )
+        folder.id === folderId ? { ...folder, name: newName } : folder,
+      ),
     );
   };
 
@@ -59,12 +59,12 @@ export const CustomFoldersSettings: React.FC<CustomFoldersSettingsProps> = ({
     >
       <CardContent>
         <div style={{ display: "flex", alignItems: "center" }}>
-          {renderTextField(
-            "Folder Name",
-            folder.name,
-            (e) => handleFolderNameChange(folder.id, e.target.value),
-            theme
-          )}
+          <AppTextField
+            label="Folder Name"
+            value={folder.name}
+            onChange={(e) => handleFolderNameChange(folder.id, e.target.value)}
+            theme={theme}
+          />
           <Button
             variant="contained"
             color="primary"
@@ -78,7 +78,12 @@ export const CustomFoldersSettings: React.FC<CustomFoldersSettingsProps> = ({
           style={{ display: "flex", flexDirection: "column", marginTop: "8px" }}
         >
           <div style={{ display: "flex", alignItems: "center" }}>
-            {renderTextField("Folder Path", folder.folderPath, () => {}, theme)}
+            <AppTextField
+              label="Folder Path"
+              value={folder.folderPath}
+              theme={theme}
+              readOnly={true} // Make it read-only to prevent manual input
+            />
             <Button
               variant="contained"
               color="primary"
@@ -100,7 +105,7 @@ export const CustomFoldersSettings: React.FC<CustomFoldersSettingsProps> = ({
             variant="contained"
             color="secondary"
             onClick={() => {
-              handleDeleteFolder(folder.id)
+              handleDeleteFolder(folder.id);
             }}
           >
             <Delete />

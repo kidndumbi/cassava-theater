@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import theme from "../../theme";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
-import { renderTextField } from "./RenderTextField";
+import { AppTextField } from "./AppTextField";
 
 interface MovieCastAndCrewProps {
   credits: Credits;
@@ -148,12 +148,12 @@ export const MovieCastAndCrew: React.FC<MovieCastAndCrewProps> = ({
       <Box p={2}>
         {tabValue === 0 && (
           <>
-            {renderTextField(
-              "Search cast by name or character",
-              searchQuery,
-              handleSearchChange,
-              theme,
-            )}
+            <AppTextField
+              label="Search cast by name or character"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              theme={theme}
+            />
             {renderPersonList(filterPersons(castMembers))}
           </>
         )}

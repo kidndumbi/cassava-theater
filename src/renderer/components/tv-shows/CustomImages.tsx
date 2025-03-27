@@ -1,5 +1,5 @@
 import { Box, Button, useTheme } from "@mui/material";
-import { renderTextField } from "../common/RenderTextField";
+import { AppTextField } from "../common/AppTextField";
 import { Save, Folder as FolderIcon } from "@mui/icons-material";
 import React, { useState } from "react";
 import { VideoDataModel } from "../../../models/videoData.model";
@@ -24,7 +24,12 @@ const ImageSelector = ({
 
   return (
     <Box style={{ display: "flex", alignItems: "center" }}>
-      {renderTextField(label, value, onChange, theme)}
+      <AppTextField
+        label={label}
+        value={value}
+        onChange={onChange}
+        theme={theme}
+      />
       <Button
         sx={{ marginLeft: "8px" }}
         variant="contained"
