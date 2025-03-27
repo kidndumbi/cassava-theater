@@ -9,7 +9,7 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import { Folder as FolderIcon, Save } from "@mui/icons-material";
-import { renderTextField } from "../../components/common/RenderTextField";
+import { AppTextField } from "../common/AppTextField";
 import { SettingsModel } from "../../../models/settings.model";
 
 interface GeneralSettingsProps {
@@ -55,7 +55,11 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
     settingName: string
   ) => (
     <div style={{ display: "flex", alignItems: "center" }}>
-      {renderTextField(label, value, null, theme)}
+      <AppTextField
+        label={label}
+        value={value}
+        theme={theme}
+      />
       <Button
         sx={{ marginLeft: "8px" }}
         variant="contained"
@@ -88,12 +92,12 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
             "tvShowsFolderPath"
           )}
           <Box style={{ display: "flex", alignItems: "center" }}>
-            {renderTextField(
-              "Port",
-              componentPort,
-              (e) => setComponentPort(e.target.value),
-              theme
-            )}
+            <AppTextField
+              label="Port"
+              value={componentPort}
+              onChange={(e) => setComponentPort(e.target.value)}
+              theme={theme}
+            />
             <Button
               sx={{ marginLeft: "8px" }}
               variant="contained"
@@ -105,12 +109,12 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
             </Button>
           </Box>
           <Box style={{ display: "flex", alignItems: "center" }}>
-            {renderTextField(
-              "themoviedb API Key",
-              localApiKey,
-              (e) => setLocalApiKey(e.target.value),
-              theme
-            )}
+            <AppTextField
+              label="themoviedb API Key"
+              value={localApiKey}
+              onChange={(e) => setLocalApiKey(e.target.value)}
+              theme={theme}
+            />
             <Button
               sx={{ marginLeft: "8px" }}
               variant="contained"

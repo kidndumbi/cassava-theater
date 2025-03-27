@@ -51,6 +51,7 @@ export const TvShows: React.FC<TvShowsProps> = ({
         filter={filter}
         onFilterChange={handleFilterChange}
         theme={theme}
+        addTvShow={() => console.log("Add TV Show Folder")} // Placeholder for add TV show functionality
       />
 
       {loadingTvShows ? (

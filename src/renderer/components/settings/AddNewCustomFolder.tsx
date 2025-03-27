@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent, Button, useTheme } from "@mui/material";
 import { Folder as FolderIcon } from "@mui/icons-material";
 import { CustomFolderModel } from "../../../models/custom-folder";
-import { renderTextField } from "../../components/common/RenderTextField";
+import { AppTextField } from "../common/AppTextField";
 import { v4 as uuidv4 } from "uuid";
 import { useForm, Controller } from "react-hook-form";
 import { selectFolder } from "../../util/helperFunctions";
@@ -17,13 +17,15 @@ const AddNewCustomFolder: React.FC<AddNewCustomFolderProps> = ({
   onCancel,
 }) => {
   const theme = useTheme();
-  const { control, handleSubmit, setValue, watch } = useForm<CustomFolderModel>({
-    defaultValues: {
-      id: uuidv4(),
-      name: "",
-      folderPath: "",
+  const { control, handleSubmit, setValue, watch } = useForm<CustomFolderModel>(
+    {
+      defaultValues: {
+        id: uuidv4(),
+        name: "",
+        folderPath: "",
+      },
     },
-  });
+  );
 
   const newFolder = watch();
 
@@ -52,19 +54,37 @@ const AddNewCustomFolder: React.FC<AddNewCustomFolderProps> = ({
             <Controller
               name="name"
               control={control}
-              render={({ field }) =>
-                renderTextField("Folder Name", field.value, field.onChange, theme)
-              }
+              render={({ field }) => (
+                <AppTextField
+                  label="Folder Name"
+                  value={field.value}
+                  onChange={field.onChange}
+                  theme={theme}
+                  readOnly={false} // Set to true if you want it to be read-only
+                />
+              )}
             />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", marginTop: "8px" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              marginTop: "8px",
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center" }}>
               <Controller
                 name="folderPath"
                 control={control}
-                render={({ field }) =>
-                  renderTextField("Folder Path", field.value, null, theme)
-                }
+                render={({ field }) => (
+                  <AppTextField
+                    label="Folder Path"
+                    value={field.value}
+                    onChange={field.onChange}
+                    theme={theme}
+                    readOnly={true} // Make it read-only to prevent manual input
+                  />
+                )}
               />
               <Button
                 variant="contained"
