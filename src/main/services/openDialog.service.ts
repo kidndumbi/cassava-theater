@@ -1,29 +1,31 @@
-import { dialog } from "electron";
+import { dialog, OpenDialogOptions } from "electron";
 
-export const openFolderDialog = async () => {
+interface DialogOptions {
+  filters?: { name: string; extensions: string[] }[];
+  properties?: OpenDialogOptions["properties"];
+}
+
+const showDialog = async (options: DialogOptions) => {
   const result = await dialog.showOpenDialog({
-    properties: ["openDirectory"],
+    properties: options.properties,
+    filters: options.filters || [],
   });
 
-  if (!result.canceled) {
-    return result.filePaths[0];
-  }
+  return result.canceled ? null : result.filePaths[0];
+};
 
-  return null;
+export const openFolderDialog = async () => {
+  return showDialog({
+    properties: ["openDirectory"],
+  });
 };
 
 export const openFileDialog = async (
   _event: Electron.IpcMainInvokeEvent,
   filters?: { name: string; extensions: string[] }[]
 ) => {
-  const result = await dialog.showOpenDialog({
-    properties: ["openFile"], // Allow file selection
-    filters: filters || [], // Use provided filters or default to an empty array
+  return showDialog({
+    properties: ["openFile"],
+    filters,
   });
-
-  if (!result.canceled) {
-    return result.filePaths[0]; // Return the first selected file path
-  }
-
-  return null; // Return null if the dialog was canceled
 };
