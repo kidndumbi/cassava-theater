@@ -8,7 +8,7 @@ import {
 } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import ClosedCaptionButton from "../common/ClosedCaptionButton";
+import { ClosedCaptionButton } from "../common/ClosedCaptionButton";
 import NotesIcon from "@mui/icons-material/Notes";
 import "./episode.css";
 import { VideoProgressBar } from "../common/VideoProgressBar";
@@ -96,8 +96,7 @@ export const Episode: React.FC<EpisodeProps> = ({
         sx={{ color: theme.customVariables.appWhiteSmoke }}
       >
         <h3 className="episode-title">
-          {removeVidExt(episode.fileName) ||
-            "Unknown Title"}
+          {removeVidExt(episode.fileName) || "Unknown Title"}
         </h3>
         <p className="episode-duration">
           {secondsTohhmmss(episode.duration || 0)}

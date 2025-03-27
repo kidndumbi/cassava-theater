@@ -84,4 +84,3 @@ export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
   );
 };
 
-export default ClosedCaptionButton;

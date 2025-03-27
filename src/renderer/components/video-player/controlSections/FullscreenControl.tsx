@@ -1,8 +1,9 @@
-import { IconButton } from "@mui/material";
+import { Box, IconButton } from "@mui/material";
 import React from "react";
 import theme from "../../../theme";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import AppIconButton from "../../common/AppIconButton";
 
 interface FullscreenControlProps {
   onToggleFullscreen: () => void;
@@ -15,16 +16,14 @@ export const FullscreenControl: React.FC<FullscreenControlProps> = ({
 }) => {
   const Icon = isFullScreen ? FullscreenExitIcon : FullscreenIcon;
   return (
-    <IconButton
-      aria-label="Full screen"
-      onClick={onToggleFullscreen}
-      sx={{
-        color: theme.customVariables.appWhite,
-        width: 48,
-        height: 48,
-      }}
-    >
-      <Icon sx={{ fontSize: 40 }} />
-    </IconButton>
+    <Box className="ml-2 mr-2">
+      <AppIconButton
+        aria-label="Full screen"
+        tooltip=""
+        onClick={onToggleFullscreen}
+      >
+        <Icon sx={{ fontSize: 40 }} />
+      </AppIconButton>
+    </Box>
   );
 };

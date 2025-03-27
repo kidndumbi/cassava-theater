@@ -1,7 +1,7 @@
 import React from "react";
-import { IconButton, Tooltip, SxProps, Theme } from "@mui/material";
+import { IconButton, Tooltip, SxProps, Theme, IconButtonProps } from "@mui/material";
 
-interface AppIconButtonProps {
+interface AppIconButtonProps extends Omit<IconButtonProps, "onClick" | "children"> {
   tooltip: string;
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
   children: React.ReactNode;
@@ -25,6 +25,7 @@ const AppIconButton: React.FC<AppIconButtonProps> = ({
   children,
   className = "",
   sx,
+  ...iconButtonProps
 }) => {
   return (
     <Tooltip title={tooltip}>
@@ -35,6 +36,7 @@ const AppIconButton: React.FC<AppIconButtonProps> = ({
           ...buttonStyles,
           ...sx,
         }}
+        {...iconButtonProps}
       >
         {children}
       </IconButton>

@@ -2,7 +2,7 @@ import React from "react";
 import { Box } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MovieIcon from "@mui/icons-material/Movie";
-import ClosedCaptionButton from "../common/ClosedCaptionButton";
+import { ClosedCaptionButton } from "../common/ClosedCaptionButton";
 import { VideoDataModel } from "../../../models/videoData.model";
 import WatchLaterIcon from "@mui/icons-material/WatchLater";
 import RefreshIcon from "@mui/icons-material/Refresh";

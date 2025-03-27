@@ -1,11 +1,11 @@
 import React, { ElementType } from "react";
-import IconButton from "@mui/material/IconButton";
-import theme from "../../theme";
+
+import AppIconButton from "../common/AppIconButton";
 
 type SkipButtonProps = {
   skip: (seconds: number) => void;
   seconds: number;
-  IconComponent: ElementType ;
+  IconComponent: ElementType;
   label: string;
 };
 
@@ -15,21 +15,14 @@ const SkipButton: React.FC<SkipButtonProps> = ({
   IconComponent,
   label,
 }) => {
-  const buttonStyles = {
-    color: theme.customVariables.appWhite,
-    width: 48,
-    height: 48,
-  };
-  const iconStyles = { fontSize: 40 };
-
   return (
-    <IconButton
-      sx={buttonStyles}
-      aria-label={label}
+    <AppIconButton
+      tooltip=""
       onClick={() => skip(seconds)}
+      aria-label={label}
     >
-      <IconComponent sx={iconStyles} />
-    </IconButton>
+      <IconComponent sx={{ fontSize: 40 }} />
+    </AppIconButton>
   );
 };
 

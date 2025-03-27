@@ -26,10 +26,10 @@ export const SkipControls: React.FC<SkipControlsProps> = ({
   renderSkipButton,
 }) => {
   return (
-    <>
+    <Box className="flex gap-2 ml-2">
       {skipSettings.map(({ seconds, Icon, label }) => (
         <Box key={label}>{renderSkipButton(seconds, Icon, label)}</Box>
       ))}
-    </>
+    </Box>
   );
 };
