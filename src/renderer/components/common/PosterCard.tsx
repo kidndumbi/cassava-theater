@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Box } from "@mui/material";
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
+import { Box } from "@mui/material";
 import theme from "../../theme";
 
 interface PosterCardProps {
@@ -28,33 +28,28 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   };
 
   return (
-    <Box m={1} flex="1 1 200px" maxWidth={width} minWidth={width}>
+    <Box
+      className={`m-1 flex flex-col`}
+      sx={{ maxWidth: width, minWidth: width }}
+    >
       {!hasError && imageUrl ? (
         <img
           src={imageUrl}
           alt={altText}
           onError={handleError}
           onClick={onClick}
-          style={{
-            width,
-            height,
-            borderRadius: "10px",
-            cursor: "pointer",
-          }}
+          className="cursor-pointer rounded-lg"
+          style={{ width, height }}
         />
       ) : (
         <Box
           onClick={onClick}
+          className="flex cursor-pointer items-center justify-center rounded-lg text-gray-500"
           sx={{
-            cursor: "pointer",
             width,
             height,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "gray",
-            borderRadius: "10px",
-            backgroundColor: theme.palette.secondary.light,
+            backgroundColor: theme.palette.primary.main,
+            color: theme.customVariables.appWhiteSmoke,
           }}
         >
           Poster Not Available
