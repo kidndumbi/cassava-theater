@@ -1,6 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Typography, Box, Button, Theme } from "@mui/material";
 import { TvShowDetails } from "../../../models/tv-show-details.model";
+import { AppTextField } from "../common/AppTextField";
+import AppIconButton from "../common/AppIconButton";
+import SearchIcon from "@mui/icons-material/Search";
+import { getFilename } from "../../util/helperFunctions";
 
 interface TvShowSuggestionsProps {
   fileName: string;
@@ -9,6 +13,7 @@ interface TvShowSuggestionsProps {
   handleSelectTvShow: (show: TvShowDetails) => void;
   getTmdbImageUrl: (path: string, size: string) => string;
   theme: Theme;
+  triggererSuggestionsUpdate: (searchValue: string) => void;
 }
 
 const TvShowSuggestions: React.FC<TvShowSuggestionsProps> = ({
@@ -18,15 +23,35 @@ const TvShowSuggestions: React.FC<TvShowSuggestionsProps> = ({
   handleSelectTvShow,
   getTmdbImageUrl,
   theme,
+  triggererSuggestionsUpdate,
 }) => {
+  const [tvShowName, setTvShowName] = useState(getFilename(fileName));
+
+  const handleTvShowNameChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setTvShowName(event.target.value);
+  };
+
   return (
     <>
       <Typography variant="h6" component="h2" color="primary">
         TV Show Suggestions
       </Typography>
-      <Typography sx={{ mt: 2, color: theme.customVariables.appWhiteSmoke }}>
-        {fileName}
-      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+        <AppTextField
+          label="TV Show Name"
+          value={tvShowName}
+          onChange={handleTvShowNameChange}
+          theme={theme}
+        />
+        <AppIconButton
+          tooltip="theMovieDb data"
+          onClick={() => triggererSuggestionsUpdate(tvShowName.trim())} // Call the function to update suggestions
+        >
+          <SearchIcon />
+        </AppIconButton>
+      </Box>
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
         {tvShowSuggestions.map((tvShow) => (
           <Box

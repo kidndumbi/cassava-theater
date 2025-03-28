@@ -17,6 +17,9 @@ import { CustomImages } from "../tv-shows/CustomImages";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import LoadingIndicator from "../common/LoadingIndicator";
+import { AppTextField } from "../common/AppTextField";
+import AppIconButton from "../common/AppIconButton";
+import SearchIcon from "@mui/icons-material/Search";
 
 interface MovieSuggestionsModalProps {
   open: boolean;
@@ -45,12 +48,28 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [currentTabValue, setCurrentTabValue] = useState(0);
 
+  const [movieName, setMovieName] = useState("");
+
+  const handleMovieNameChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setMovieName(event.target.value);
+  };
+
   useEffect(() => {
     if (fileName && open) {
+      console.log("MovieSuggestionsModal useEffect triggered", fileName, open);
       resetMovieSuggestions();
       getMovieSuggestions(fileName);
+      setMovieName(fileName);
     }
   }, [fileName, open, getMovieSuggestions, resetMovieSuggestions]);
+
+  useEffect(() => {
+    return () => {
+      resetMovieSuggestions();
+    };
+  }, []);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTabValue(newValue);
@@ -58,7 +77,6 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
 
   const handleImageUpdate = async (data: VideoDataModel) => {
     if (!videoDetails?.filePath) return;
-    
     try {
       await updateMovieDbData(videoDetails.filePath, data);
       showSnackbar("Custom image updated successfully", "success");
@@ -69,7 +87,7 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
 
   const renderMovieCard = (movie: MovieDetails) => {
     const isSelected = movie?.id?.toString() === id;
-    
+
     return (
       <Box
         key={movie.id}
@@ -96,7 +114,10 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
         ) : (
           <Button
             variant="contained"
-            onClick={() => handleSelectMovie(movie)}
+            onClick={() => {
+              handleSelectMovie(movie);
+              handleClose();
+            }}
           >
             Select
           </Button>
@@ -116,9 +137,20 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
           <Typography variant="h6" component="h2" color="primary">
             Movie Suggestions
           </Typography>
-          <Typography sx={{ mt: 2, color: theme.customVariables.appWhiteSmoke }}>
-            {fileName}
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <AppTextField
+              label="TV Show Name"
+              value={movieName}
+              onChange={handleMovieNameChange}
+              theme={theme}
+            />
+            <AppIconButton
+              tooltip="theMovieDb data"
+              onClick={() => getMovieSuggestions(movieName.trim())}
+            >
+              <SearchIcon />
+            </AppIconButton>
+          </Box>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
             {movieSuggestions.map(renderMovieCard)}
           </Box>
@@ -183,7 +215,6 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
             }}
           />
         </Tabs>
-        
         <CustomTabPanel value={currentTabValue} index={0}>
           {renderTabContent()}
         </CustomTabPanel>
