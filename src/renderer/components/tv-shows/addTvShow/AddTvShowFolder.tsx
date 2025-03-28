@@ -1,5 +1,5 @@
 import { Box, Container, Divider, Button, Alert } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import WarningIcon from "@mui/icons-material/Warning";
 import MovieIcon from "@mui/icons-material/Movie";
 import { AppTextField } from "../../common/AppTextField";
@@ -14,13 +14,15 @@ import { TvShowDetailsCard } from "./TvShowDetailsCard";
 import { SubfolderList } from "./SubfolderList";
 import { useTvShows } from "../../../hooks/useTvShows";
 import { VideoDataModel } from "../../../../models/videoData.model";
+import { data } from "react-router-dom/dist";
 
 interface AddTvShowFolderProps {
   tvShows: VideoDataModel[];
+  dataSaved: () => void;
 }
 
 export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
-  tvShows,
+  tvShows,dataSaved
 }) => {
   const { settings } = useSettings();
   const { AddTvShowFolder } = useTvShows();
@@ -29,30 +31,44 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
   const [tvShowDetails, setTvShowDetails] = useState<TvShowDetails | null>(
     null,
   );
-  const [openTvShowSuggestionsModal, setOpenTvShowSuggestionsModal] =
-    useState(false);
-  const [existingTvShows, setExistingTvShows] = useState<string[]>(
-    tvShows.map((tv) => tv.fileName?.toLowerCase().trim()),
-  );
+  const [isSuggestionsModalOpen, setIsSuggestionsModalOpen] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
+  const existingTvShowNames = useMemo(
+    () => tvShows.map((tv) => tv.fileName?.toLowerCase().trim()),
+    [tvShows],
+  );
+
   useEffect(() => {
-    const newErrors: string[] = [];
-    if (tvShowName.trim() === "") newErrors.push("TV Show Name is required.");
-    if (
-      subfolders.length > 0 &&
-      (!areSubfolderNamesUnique() ||
-        subfolders.some((subfolder) => subfolder.trim() === ""))
-    ) {
-      newErrors.push("Subfolder names must be unique and non-empty.");
-    }
-    if (
-      existingTvShows.includes(trimFileName(tvShowName.trim())?.toLowerCase())
-    ) {
-      newErrors.push("A TV Show with this name already exists.");
-    }
-    setErrors(newErrors);
-  }, [tvShowName, subfolders, existingTvShows]);
+    const validateForm = () => {
+      const newErrors: string[] = [];
+
+      if (!tvShowName.trim()) {
+        newErrors.push("TV Show Name is required.");
+      }
+
+      if (
+        existingTvShowNames.includes(
+          trimFileName(tvShowName.trim())?.toLowerCase(),
+        )
+      ) {
+        newErrors.push("A TV Show with this name already exists.");
+      }
+
+      if (subfolders.length > 0) {
+        if (!areSubfolderNamesUnique()) {
+          newErrors.push("Subfolder names must be unique.");
+        }
+        if (subfolders.some((subfolder) => !subfolder.trim())) {
+          newErrors.push("Subfolder names cannot be empty.");
+        }
+      }
+
+      setErrors(newErrors);
+    };
+
+    validateForm();
+  }, [tvShowName, subfolders, existingTvShowNames]);
 
   const handleTvShowNameChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -77,23 +93,25 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
   };
 
   const isFormValid = (): boolean => {
-    return (
-      tvShowName.trim() !== "" &&
-      (subfolders.length === 0 ||
-        (areSubfolderNamesUnique() &&
-          subfolders.every((subfolder) => subfolder.trim() !== ""))) &&
-      !existingTvShows.includes(trimFileName(tvShowName.trim())?.toLowerCase())
-    );
+    return errors.length === 0;
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!isFormValid()) return;
-    AddTvShowFolder({
-      tvShowName: tvShowName.trim(),
-      subfolders,
-      tvShowDetails,
-      tvShowsFolderPath: settings?.tvShowsFolderPath?.trim(),
-    });
+
+    try {
+      await AddTvShowFolder({
+        tvShowName: tvShowName.trim(),
+        subfolders,
+        tvShowDetails,
+        tvShowsFolderPath: settings?.tvShowsFolderPath?.trim(),
+      });
+
+      dataSaved(); // Call the parent component's dataSaved function to indicate success
+
+    } catch (error) {
+
+    }
   };
 
   const handleSelectTvShow = async (tvShow: TvShowDetails) => {
@@ -102,91 +120,95 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
       "tv",
     );
     setTvShowDetails(extraTvShowDetails);
-    setOpenTvShowSuggestionsModal(false);
+    setIsSuggestionsModalOpen(false);
   };
+
+  if (!settings?.tvShowsFolderPath?.trim()) {
+    return (
+      <Container>
+        <Box>
+          Before adding TV shows, please go to Settings and select a folder
+          where your TV shows will be stored.
+        </Box>
+      </Container>
+    );
+  }
 
   return (
     <>
       <Container className="flex flex-col">
-        {settings?.tvShowsFolderPath?.trim() ? (
-          <Box>
-            {errors.length > 0 && (
-              <Alert
-                className="mt-3"
-                icon={<WarningIcon fontSize="inherit" />}
-                severity="error"
-              >
-                <ul
-                  style={{
-                    margin: 0,
-                    paddingLeft: "1.5rem",
-                    listStyleType: "disc",
-                  }}
-                >
-                  {errors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              </Alert>
-            )}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <AppTextField
-                label="TV Show Name"
-                value={tvShowName}
-                onChange={handleTvShowNameChange}
-                theme={theme}
-              />
-              <AppIconButton
-                tooltip="theMovieDb data"
-                onClick={() => setOpenTvShowSuggestionsModal(true)}
-              >
-                <MovieIcon />
-              </AppIconButton>
-            </Box>
-            {tvShowDetails && (
-              <TvShowDetailsCard
-                details={tvShowDetails}
-                onClear={() => setTvShowDetails(null)}
-                onEdit={() => setOpenTvShowSuggestionsModal(true)}
-              />
-            )}
-            <Divider
-              sx={{ backgroundColor: theme.palette.primary.main, my: 2 }}
+        <Box>
+          {errors.length > 0 && (
+            <Alert
+              className="mt-3"
+              icon={<WarningIcon fontSize="inherit" />}
+              severity="error"
+            >
+              <ul className="m-0 list-disc pl-6">
+                {errors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+            </Alert>
+          )}
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <AppTextField
+              label="TV Show Name"
+              value={tvShowName}
+              onChange={handleTvShowNameChange}
+              theme={theme}
             />
-            <SubfolderList
-              subfolders={subfolders}
-              onSubfolderChange={handleSubfolderChange}
-              onRemoveSubfolder={removeSubfolder}
-              onAddSubfolder={addSubfolder}
+            <AppIconButton
+              tooltip="theMovieDb data"
+              onClick={() => setIsSuggestionsModalOpen(true)}
+            >
+              <MovieIcon />
+            </AppIconButton>
+          </Box>
+
+          {tvShowDetails && (
+            <TvShowDetailsCard
+              details={tvShowDetails}
+              onClear={() => setTvShowDetails(null)}
+              onEdit={() => setIsSuggestionsModalOpen(true)}
             />
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleCreate}
-                disabled={!isFormValid()}
-                sx={{
-                  "&.Mui-disabled": {
-                    backgroundColor: theme.palette.grey[500],
-                    color: theme.palette.grey[300],
-                  },
-                }}
-              >
-                Create
-              </Button>
-            </Box>
+          )}
+
+          <Divider
+            sx={{ backgroundColor: theme.palette.primary.main, my: 2 }}
+          />
+
+          <SubfolderList
+            subfolders={subfolders}
+            onSubfolderChange={handleSubfolderChange}
+            onRemoveSubfolder={removeSubfolder}
+            onAddSubfolder={addSubfolder}
+          />
+
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleCreate}
+              disabled={!isFormValid()}
+              sx={{
+                "&.Mui-disabled": {
+                  backgroundColor: theme.palette.grey[500],
+                  color: theme.palette.grey[300],
+                },
+              }}
+            >
+              Create
+            </Button>
           </Box>
-        ) : (
-          <Box>
-            Please go to settings and provide a path for the Tv Shows Locations
-          </Box>
-        )}
+        </Box>
       </Container>
 
       <TvShowSuggestionsModal
-        open={openTvShowSuggestionsModal}
-        handleClose={() => setOpenTvShowSuggestionsModal(false)}
-        fileName={tvShowName.trim() || ""}
+        open={isSuggestionsModalOpen}
+        handleClose={() => setIsSuggestionsModalOpen(false)}
+        fileName={tvShowName.trim()}
         handleSelectTvShow={handleSelectTvShow}
       />
     </>
