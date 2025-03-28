@@ -5,6 +5,7 @@ import {
   fetchVideoDetails,
   fetchFolderDetails,
   postVideoJason,
+  addTvShowFolder,
 } from "./folderVideosInfoActions";
 import { VideoDataModel } from "../../../models/videoData.model";
 
@@ -166,6 +167,16 @@ const folderVideosInfoSlice = createSlice({
       })
       .addCase(postVideoJason.fulfilled, (state) => {
         state.loadingPostVideoJson = false;
+      })
+      .addCase(addTvShowFolder.pending, (state) => {
+        state.loadingTvShows = true;
+      })
+      .addCase(addTvShowFolder.fulfilled, (state, action) => {
+        state.tvShows = [...state.tvShows, action.payload];
+        state.loadingTvShows = false;
+      })
+      .addCase(addTvShowFolder.rejected, (state) => {
+        state.loadingTvShows = false;
       });
   },
 });

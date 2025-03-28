@@ -127,6 +127,14 @@ contextBridge.exposeInMainWorld("videoAPI", {
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.SaveVideoJsonData, args);
   },
+  AddTvShowFolder: (args: {
+    tvShowName: string;
+    subfolders: string[];
+    tvShowDetails: TvShowDetails | null;
+    tvShowsFolderPath: string;
+  }) => {
+    return ipcRenderer.invoke(VideoIPCChannels.AddTvShowFolder, args);
+  },
 });
 
 contextBridge.exposeInMainWorld("theMovieDbAPI", {

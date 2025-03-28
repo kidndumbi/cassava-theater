@@ -1,3 +1,4 @@
+import { TvShowDetails } from "./../../models/tv-show-details.model";
 import * as fs from "fs";
 import { stat } from "fs/promises";
 import * as path from "path";
@@ -48,13 +49,64 @@ export const fetchVideosData = async ({
     }
 
     const sorted = updatedVideoData.sort((a, b) =>
-      (a.fileName ?? "").localeCompare(b.fileName ?? "", undefined, { numeric: true, sensitivity: 'base' }),
+      (a.fileName ?? "").localeCompare(b.fileName ?? "", undefined, {
+        numeric: true,
+        sensitivity: "base",
+      }),
     );
 
     return videoDataHelpers.filterByCategory(sorted, category);
   } catch (error) {
     log.error("Error fetching video list: ", error);
     throw new Error("Error fetching video list: " + error);
+  }
+};
+
+export const AddTvShowFolder = async (data: {
+  tvShowName: string;
+  subfolders: string[];
+  tvShowDetails: TvShowDetails | null;
+  tvShowsFolderPath: string;
+}): Promise<VideoDataModel> => {
+  const { tvShowName, subfolders, tvShowDetails, tvShowsFolderPath } = data;
+
+  if (!fs.existsSync(tvShowsFolderPath)) {
+    throw new Error(`Path does not exist: ${tvShowsFolderPath}`);
+  }
+
+  try {
+    const tvShowFolderPath = path.join(tvShowsFolderPath, tvShowName);
+    if (!fs.existsSync(tvShowFolderPath)) {
+      fs.mkdirSync(tvShowFolderPath, { recursive: true });
+    }
+
+    for (const subfolder of subfolders) {
+      const subfolderPath = path.join(tvShowFolderPath, subfolder);
+      if (!fs.existsSync(subfolderPath)) {
+        fs.mkdirSync(subfolderPath, { recursive: true });
+      }
+    }
+
+    await saveVideoJsonData(null, {
+      currentVideo: { filePath: tvShowFolderPath } as VideoDataModel,
+      newVideoJsonData: {
+        tv_show_details: tvShowDetails,
+      } as VideoDataModel,
+    });
+
+    const stats = await stat(tvShowFolderPath);
+
+    const videoData = await videoDataHelpers.populateVideoData(
+      tvShowName,
+      tvShowsFolderPath,
+      stats,
+      "tvShows",
+    );
+
+    return videoData;
+  } catch (error) {
+    log.error("Error adding TV show folder: ", error);
+    throw new Error("Error adding TV show folder: " + error);
   }
 };
 

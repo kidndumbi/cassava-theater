@@ -11,7 +11,6 @@ import {
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { useSettings } from "../../hooks/useSettings";
 import { useCustomFolder } from "../../hooks/useCustomFolder";
-import { SettingsModal } from "../../components/settings/SettingsModal";
 import Grid from "@mui/material/Grid2";
 import { renderActivePage } from "./RenderActivePage";
 import { useMovies } from "../../hooks/useMovies";
@@ -20,6 +19,8 @@ import { useSearchParams } from "react-router-dom";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import { isEmptyObject } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
+import { AppModal } from "../../components/common/AppModal";
+import { SettingsPage } from "../../components/settings/SettingsPage";
 
 export const LandingPage = () => {
   const theme = useTheme();
@@ -69,7 +70,7 @@ export const LandingPage = () => {
   const handleCustomMenuClick = (menuItem: MenuItem) => {
     const customFolders = settings?.folders || ([] as CustomFolderModel[]);
     const selectedFolder = customFolders.find(
-      (folder) => folder.id === menuItem.id
+      (folder) => folder.id === menuItem.id,
     );
     setSelectedCustomFolder(selectedFolder || null);
     setActiveMenu(menuItem);
@@ -133,7 +134,7 @@ export const LandingPage = () => {
       if (settings?.folders) {
         const customFolders = settings?.folders as CustomFolderModel[];
         const selectedFolder = customFolders.find(
-          (folder) => folder.id === activeMenu.id
+          (folder) => folder.id === activeMenu.id,
         );
         setSelectedCustomFolder(selectedFolder || null);
       }
@@ -158,7 +159,7 @@ export const LandingPage = () => {
 
   function syncActiveMenuFromUrl(
     menuItems: MenuItem[],
-    setActiveMenu: React.Dispatch<React.SetStateAction<MenuItem>>
+    setActiveMenu: React.Dispatch<React.SetStateAction<MenuItem>>,
   ) {
     const menuId = searchParams.get("menuId");
     const menuItem = menuItems.find((item) => item.id === menuId);
@@ -211,10 +212,14 @@ export const LandingPage = () => {
           selectedCustomFolder,
         })}
       </Grid>
-      <SettingsModal
+      <AppModal
         open={isSettingsModalOpen}
         onClose={handleCloseSettingsModal}
-      />
+        title="Settings"
+        fullScreen={true}
+      >
+        <SettingsPage />
+      </AppModal>
     </Grid>
   );
 };
