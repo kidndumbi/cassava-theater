@@ -1,3 +1,4 @@
+import { TvShowDetails } from './../../models/tv-show-details.model';
 import { ipcMain } from "electron";
 import { VideoIPCChannels } from "../../enums/VideoIPCChannels";
 import {
@@ -7,6 +8,7 @@ import {
   getVideoJsonData,
   saveCurrentTime,
   saveVideoJsonData,
+  AddTvShowFolder,
 } from "../services/video-data.service";
 
 export const videosIpcHandlers = () => {
@@ -46,4 +48,16 @@ export const videosIpcHandlers = () => {
 
   ipcMain.handle(VideoIPCChannels.GetVideoJsonData, getVideoJsonData);
   ipcMain.handle(VideoIPCChannels.SaveVideoJsonData, saveVideoJsonData);
+
+  ipcMain.handle(
+    VideoIPCChannels.AddTvShowFolder,
+    (_event: Electron.IpcMainInvokeEvent, args: {
+      tvShowName: string;
+      subfolders: string[];
+      tvShowDetails: TvShowDetails | null;
+      tvShowsFolderPath: string;
+    }) => {
+      return AddTvShowFolder(args);
+    }
+  );
 };

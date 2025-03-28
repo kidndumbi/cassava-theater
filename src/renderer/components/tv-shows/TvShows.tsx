@@ -7,6 +7,8 @@ import { TvShowsList } from "./TvShowsList";
 
 import LoadingIndicator from "../common/LoadingIndicator";
 import { SearchHeader } from "../common/SearchHeader";
+import { AppModal } from "../common/AppModal";
+import { AddTvShowFolder } from "./addTvShow/AddTvShowFolder";
 
 interface TvShowsProps {
   tvShows: VideoDataModel[];
@@ -27,6 +29,7 @@ export const TvShows: React.FC<TvShowsProps> = ({
   const navigate = useNavigate();
 
   const [filter, setFilter] = useState("");
+  const [openAddTvShowModal, setOpenAddTvShowModal] = useState(false);
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilter(event.target.value);
@@ -51,7 +54,7 @@ export const TvShows: React.FC<TvShowsProps> = ({
         filter={filter}
         onFilterChange={handleFilterChange}
         theme={theme}
-        addTvShow={() => console.log("Add TV Show Folder")} // Placeholder for add TV show functionality
+        addTvShow={() => setOpenAddTvShowModal(true)}
       />
 
       {loadingTvShows ? (
@@ -71,6 +74,15 @@ export const TvShows: React.FC<TvShowsProps> = ({
           handlePosterClick={handlePosterClick}
         />
       )}
+
+      <AppModal
+        open={openAddTvShowModal}
+        onClose={() => setOpenAddTvShowModal(false)}
+        title="Add TV Show Folder"
+        fullScreen={true}
+      >
+        <AddTvShowFolder />
+      </AppModal>
     </Box>
   );
 };

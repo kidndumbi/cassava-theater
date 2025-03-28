@@ -1,3 +1,4 @@
+import { TvShowDetails } from './../../../models/tv-show-details.model';
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
@@ -80,6 +81,37 @@ export const postVideoJason = createAsyncThunk(
     } catch (error) {
       log.error("Failed to post video JSON data:", error);
       throw error;
+    }
+  },
+);
+
+export const addTvShowFolder = createAsyncThunk(
+  "folderVideosInfo/addTvShowFolder",
+  async (
+    {
+      tvShowName,
+      subfolders,
+      tvShowDetails,
+      tvShowsFolderPath,
+    }: {
+      tvShowName: string;
+      subfolders: string[];
+      tvShowDetails: TvShowDetails | null;
+      tvShowsFolderPath: string;
+    },
+    { rejectWithValue },
+  ) => {
+    try {
+      const response = await window.videoAPI.AddTvShowFolder({
+        tvShowName,
+        subfolders,
+        tvShowDetails,
+        tvShowsFolderPath,
+      });
+      return response;
+    } catch (error) {
+      log.error("Error adding TV show folder:", error);
+      return rejectWithValue(error);
     }
   },
 );

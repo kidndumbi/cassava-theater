@@ -1,3 +1,4 @@
+import { AddTvShowFolder } from "../components/tv-shows/addTvShow/AddTvShowFolder";
 import { useSelector } from "react-redux";
 import { videosInfoActions } from "../store/videoInfo/folderVideosInfo.slice";
 import { useAppDispatch } from "../store";
@@ -14,6 +15,7 @@ import {
   fetchFolderDetails,
   fetchVideoData,
   postVideoJason,
+  addTvShowFolder,
 } from "../store/videoInfo/folderVideosInfoActions";
 import {
   selEpisodes,
@@ -215,6 +217,15 @@ export const useTvShows = () => {
     );
   };
 
+  const AddTvShowFolder = async (data: {
+    tvShowName: string;
+    subfolders: string[];
+    tvShowDetails: TvShowDetails | null;
+    tvShowsFolderPath: string;
+  }) => {
+    await dispatch(addTvShowFolder(data));
+  };
+
   return {
     tvShows,
     episodes,
@@ -241,5 +252,6 @@ export const useTvShows = () => {
     removeTvShow,
     updateEpisodeThumbnail,
     tvShowSuggestionsLoading,
+    AddTvShowFolder,
   };
 };
