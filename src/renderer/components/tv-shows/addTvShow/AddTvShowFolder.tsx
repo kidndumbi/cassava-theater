@@ -1,26 +1,29 @@
-import { Box, Container, Divider, Typography, Button } from "@mui/material";
-import { useState } from "react";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { Box, Container, Divider, Button, Alert } from "@mui/material";
+import { useEffect, useState } from "react";
+import WarningIcon from "@mui/icons-material/Warning";
 import MovieIcon from "@mui/icons-material/Movie";
-
 import { AppTextField } from "../../common/AppTextField";
 import theme from "../../../theme";
 import AppIconButton from "../../common/AppIconButton";
 import { TvShowSuggestionsModal } from "../TvShowSuggestionsModal";
 import { fetchFilmDataById } from "../../../store/theMovieDb.slice";
 import { TvShowDetails } from "../../../../models/tv-show-details.model";
-import { PosterCard } from "../../common/PosterCard";
-import { useTmdbImageUrl } from "../../../hooks/useImageUrl";
 import { trimFileName } from "../../../util/helperFunctions";
 import { useSettings } from "../../../hooks/useSettings";
 import { TvShowDetailsCard } from "./TvShowDetailsCard";
 import { SubfolderList } from "./SubfolderList";
 import { useTvShows } from "../../../hooks/useTvShows";
+import { VideoDataModel } from "../../../../models/videoData.model";
 
-export const AddTvShowFolder = () => {
+interface AddTvShowFolderProps {
+  tvShows: VideoDataModel[];
+}
+
+export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
+  tvShows,
+}) => {
   const { settings } = useSettings();
-  const { AddTvShowFolder } = useTvShows(); // Initialize the TV shows hook to fetch data if needed
+  const { AddTvShowFolder } = useTvShows();
   const [tvShowName, setTvShowName] = useState("");
   const [subfolders, setSubfolders] = useState<string[]>([]);
   const [tvShowDetails, setTvShowDetails] = useState<TvShowDetails | null>(
@@ -28,6 +31,28 @@ export const AddTvShowFolder = () => {
   );
   const [openTvShowSuggestionsModal, setOpenTvShowSuggestionsModal] =
     useState(false);
+  const [existingTvShows, setExistingTvShows] = useState<string[]>(
+    tvShows.map((tv) => tv.fileName?.toLowerCase().trim()),
+  );
+  const [errors, setErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    const newErrors: string[] = [];
+    if (tvShowName.trim() === "") newErrors.push("TV Show Name is required.");
+    if (
+      subfolders.length > 0 &&
+      (!areSubfolderNamesUnique() ||
+        subfolders.some((subfolder) => subfolder.trim() === ""))
+    ) {
+      newErrors.push("Subfolder names must be unique and non-empty.");
+    }
+    if (
+      existingTvShows.includes(trimFileName(tvShowName.trim())?.toLowerCase())
+    ) {
+      newErrors.push("A TV Show with this name already exists.");
+    }
+    setErrors(newErrors);
+  }, [tvShowName, subfolders, existingTvShows]);
 
   const handleTvShowNameChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -56,7 +81,8 @@ export const AddTvShowFolder = () => {
       tvShowName.trim() !== "" &&
       (subfolders.length === 0 ||
         (areSubfolderNamesUnique() &&
-          subfolders.every((subfolder) => subfolder.trim() !== "")))
+          subfolders.every((subfolder) => subfolder.trim() !== ""))) &&
+      !existingTvShows.includes(trimFileName(tvShowName.trim())?.toLowerCase())
     );
   };
 
@@ -84,7 +110,25 @@ export const AddTvShowFolder = () => {
       <Container className="flex flex-col">
         {settings?.tvShowsFolderPath?.trim() ? (
           <Box>
-            {" "}
+            {errors.length > 0 && (
+              <Alert
+                className="mt-3"
+                icon={<WarningIcon fontSize="inherit" />}
+                severity="error"
+              >
+                <ul
+                  style={{
+                    margin: 0,
+                    paddingLeft: "1.5rem",
+                    listStyleType: "disc",
+                  }}
+                >
+                  {errors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </Alert>
+            )}
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <AppTextField
                 label="TV Show Name"

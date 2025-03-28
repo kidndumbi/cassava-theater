@@ -81,7 +81,7 @@ export const TvShows: React.FC<TvShowsProps> = ({
         title="Add TV Show Folder"
         fullScreen={true}
       >
-        <AddTvShowFolder />
+        <AddTvShowFolder tvShows={tvShows} />
       </AppModal>
     </Box>
   );
