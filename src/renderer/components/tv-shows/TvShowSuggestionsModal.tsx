@@ -47,6 +47,12 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
     }
   }, [fileName, open, id]);
 
+  useEffect(() => {
+    return () => {
+      resetTvShowSuggestions();
+    };
+  }, []);
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTabValue(newValue);
   };
@@ -102,9 +108,15 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
               fileName={fileName}
               tvShowSuggestions={tvShowSuggestions}
               id={id}
-              handleSelectTvShow={handleSelectTvShow}
+              handleSelectTvShow={(tvShowDetails) => {
+                handleSelectTvShow(tvShowDetails);
+                handleClose();
+              }}
               getTmdbImageUrl={getTmdbImageUrl}
               theme={theme}
+              triggererSuggestionsUpdate={(searchValue) => {
+                getTvShowSuggestions(searchValue);
+              }}
             />
           )}
         </CustomTabPanel>
