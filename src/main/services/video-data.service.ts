@@ -194,6 +194,18 @@ export const fetchFolderDetails = async (
       });
 
     const childFolders = await Promise.all(childFoldersPromises);
+    const sortedChildFolders = childFolders.sort((a, b) => {
+      const isASeason = a.basename?.toLowerCase().startsWith("season");
+      const isBSeason = b.basename?.toLowerCase().startsWith("season");
+
+      if (isASeason && !isBSeason) return -1; // "Season" folders come first
+      if (!isASeason && isBSeason) return 1; // Non-"Season" folders go to the bottom
+
+      return (a.basename ?? "").localeCompare(b.basename ?? "", undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+    });
 
     const videoDetails: VideoDataModel =
       videoDataHelpers.createFolderDataObject(
@@ -201,7 +213,7 @@ export const fetchFolderDetails = async (
         dirPath,
         jsonFileContents,
         jsonFileContents?.tv_show_details,
-        childFolders,
+        sortedChildFolders,
       );
 
     if (
@@ -211,9 +223,8 @@ export const fetchFolderDetails = async (
       const tv_show_details = await getMovieOrTvShowById(
         videoDetails?.tv_show_details.id.toString(),
         "tv",
-        getValue("theMovieDbApiKey"), // Correctly typed key
+        getValue("theMovieDbApiKey"),
       );
-      //console.log("credits", tv_show_details);
       const existingData = await videoDataHelpers.readJsonData(
         videoDetails.filePath,
         {} as VideoDataModel,
