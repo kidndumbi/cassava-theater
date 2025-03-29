@@ -8,42 +8,47 @@ import { selectFile } from "../../util/helperFunctions";
 interface ImageSelectorProps {
   label: string;
   value: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onBrowse: () => void;
+  onChange: (value: string) => void;
+  onBrowse: () => Promise<void>;
   onSave: () => void;
 }
 
-const ImageSelector = ({
+const ImageSelector: React.FC<ImageSelectorProps> = ({
   label,
   value,
   onChange,
   onBrowse,
   onSave,
-}: ImageSelectorProps) => {
+}) => {
   const theme = useTheme();
 
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(event.target.value || "");
+  };
+
   return (
-    <Box style={{ display: "flex", alignItems: "center" }}>
+    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
       <AppTextField
         label={label}
         value={value}
-        onChange={onChange}
+        onChange={handleChange}
         theme={theme}
       />
       <Button
-        sx={{ marginLeft: "8px" }}
+        sx={{ marginLeft: 1 }}
         variant="contained"
         color="primary"
-        style={{ marginRight: "8px" }}
         onClick={onBrowse}
+        aria-label={`Browse for ${label.toLowerCase()}`}
       >
         <FolderIcon />
       </Button>
       <Button
-        sx={{ marginLeft: "8px" }}
+        sx={{ marginLeft: 1 }}
         variant="contained"
         color="primary"
         onClick={onSave}
+        aria-label={`Save ${label.toLowerCase()}`}
       >
         <Save />
       </Button>
@@ -54,7 +59,7 @@ const ImageSelector = ({
 interface CustomImagesProps {
   posterUrl: string;
   backdropUrl: string;
-  updateImage: (data: VideoDataModel) => void;
+  updateImage: (data: Partial<VideoDataModel>) => void;
 }
 
 export const CustomImages: React.FC<CustomImagesProps> = ({
@@ -62,44 +67,49 @@ export const CustomImages: React.FC<CustomImagesProps> = ({
   backdropUrl,
   updateImage,
 }) => {
-  const [componentPosterUrl, setPosterUrl] = useState<string>(posterUrl);
-  const [componentBackdropUrl, setBackdropUrl] = useState<string>(backdropUrl);
+  const [poster, setPoster] = useState(posterUrl || "");
+  const [backdrop, setBackdrop] = useState(backdropUrl || "");
+
+  const handleImageSelect = async (
+    type: "poster" | "backdrop",
+    filePath: string,
+  ) => {
+    if (type === "poster") {
+      setPoster(filePath);
+    } else {
+      setBackdrop(filePath);
+    }
+    updateImage({ [type]: filePath });
+  };
+
+  const handleSave = (type: "poster" | "backdrop", value: string) => {
+    updateImage({ [type]: value });
+  };
+
+  const handleBrowse = async (type: "poster" | "backdrop") => {
+    const filePath = await selectFile([
+      { name: "image files", extensions: ["png", "jpg"] },
+    ]);
+    if (filePath) {
+      handleImageSelect(type, filePath);
+    }
+  };
 
   return (
     <Box>
       <ImageSelector
         label="Poster"
-        value={componentPosterUrl}
-        onChange={(e) => setPosterUrl(e.target.value)}
-        onBrowse={async () => {
-          const filePath = await selectFile([
-            { name: "image files", extensions: ["png", "jpg"] },
-          ]);
-          setPosterUrl(filePath);
-          updateImage({ poster: filePath });
-        }}
-        onSave={() =>
-          updateImage({
-            poster: componentPosterUrl,
-          })
-        }
+        value={poster}
+        onChange={(value) => setPoster(value)}
+        onBrowse={() => handleBrowse("poster")}
+        onSave={() => handleSave("poster", poster)}
       />
       <ImageSelector
         label="Backdrop"
-        value={componentBackdropUrl}
-        onChange={(e) => setBackdropUrl(e.target.value)}
-        onBrowse={async () => {
-          const filePath = await selectFile([
-            { name: "image files", extensions: ["png", "jpg"] },
-          ]);
-          setBackdropUrl(filePath);
-          updateImage({ backdrop: filePath });
-        }}
-        onSave={() =>
-          updateImage({
-            backdrop: componentBackdropUrl,
-          })
-        }
+        value={backdrop}
+        onChange={(value) => setBackdrop(value)}
+        onBrowse={() => handleBrowse("backdrop")}
+        onSave={() => handleSave("backdrop", backdrop)}
       />
     </Box>
   );
