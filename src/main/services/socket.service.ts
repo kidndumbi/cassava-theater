@@ -17,11 +17,13 @@ import { serveLocalFile } from "./file.service";
 import { handleVideoRequest } from "./video-streaming.service";
 import { SettingsModel } from "../../models/settings.model";
 
-// Utility functions for port management
+// Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {
   return new Promise((resolve) => {
     const server = net.createServer();
-    server.once("error", () => resolve(false));
+    server.once("error", () => {
+      resolve(false);
+    });
     server.once("listening", () => {
       server.close();
       resolve(true);
@@ -38,36 +40,44 @@ const findAvailablePort = async (startPort: number): Promise<number> => {
   return port;
 };
 
-// Request handler for HTTP server
-const createRequestHandler = () => {
-  return (req: http.IncomingMessage, res: http.ServerResponse) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    
-    if (req.method === "GET") {
-      if (req.url === "/") {
+// Initialize the HTTP server and Socket.IO events.
+export async function initializeSocket(
+  mainWindow: BrowserWindow,
+  startPort: number,
+): Promise<void> {
+  const port = await findAvailablePort(startPort);
+  // Create HTTP server
+  const server = http.createServer();
+
+  // Configure request listener with proper type annotations.
+  server.on(
+    "request",
+    (req: http.IncomingMessage, res: http.ServerResponse) => {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      if (req.method === "GET" && req.url === "/") {
         res.writeHead(200, { "Content-Type": "text/plain" });
         res.end("hello");
-        return;
-      }
-      
-      if (req.url?.startsWith("/video")) {
+      } else if (
+        req.method === "GET" &&
+        req.url &&
+        req.url?.startsWith("/video")
+      ) {
         handleVideoRequest(req, res);
-        return;
-      }
-      
-      if (req.url?.startsWith("/file")) {
+      } else if (
+        req.method === "GET" &&
+        req.url &&
+        req.url?.startsWith("/file")
+      ) {
         serveLocalFile(req, res);
-        return;
+      } else {
+        res.statusCode = 404;
+        res.end();
       }
-    }
-    
-    res.statusCode = 404;
-    res.end();
-  };
-};
+    },
+  );
 
-// Socket event handlers
-const setupSocketHandlers = (io: Server, mainWindow: BrowserWindow) => {
+  // Initialize Socket.IO server
+  const io = new Server(server, { cors: { origin: "*" } });
   io.on("connection", (socket) => {
     log.info("A user connected:", socket.id);
     mainWindow.webContents.send("user-connected", socket.id);
@@ -77,12 +87,10 @@ const setupSocketHandlers = (io: Server, mainWindow: BrowserWindow) => {
       log.info("User disconnected:", socket.id);
     });
 
-    // Command handling
     socket.on(AppSocketEvents.REMOTE_COMMAND, (command: VideoCommands) => {
       mainWindow.webContents.send("video-command", command);
     });
 
-    // Video playback control
     socket.on(
       AppSocketEvents.SET_PLAYING,
       (data: {
@@ -94,10 +102,9 @@ const setupSocketHandlers = (io: Server, mainWindow: BrowserWindow) => {
         };
       }) => {
         mainWindow.webContents.send("set-current-video", data);
-      }
+      },
     );
 
-    // Settings management
     socket.on(
       AppSocketEvents.GET_SETTINGS,
       async (
@@ -106,70 +113,105 @@ const setupSocketHandlers = (io: Server, mainWindow: BrowserWindow) => {
           success: boolean;
           data?: SettingsModel;
           error?: string;
-        }) => void
+        }) => void,
       ) => {
         try {
-          callback({ success: true, data: getAllValues() });
+          const settings = getAllValues();
+          callback({ success: true, data: settings });
         } catch (error) {
-          log.error("Error fetching settings:", error);
-          callback({ success: false, error: "Failed to fetch settings" });
+          log.error("Error fetching videos data:", error);
+          callback({ success: false, error: "Failed to fetch videos data" });
         }
-      }
+      },
     );
-
-    // Data retrieval handlers
-    const createDataHandler = <T>(
-      handler: (data: any) => Promise<T>,
-      errorMessage: string
-    ) => {
-      return async (
-        requestData: { data: any },
-        callback: (response: {
-          success: boolean;
-          data?: T;
-          error?: string;
-        }) => void
-      ) => {
-        try {
-          const data = await handler(requestData?.data);
-          callback({ success: true, data });
-        } catch (error) {
-          console.error(`${errorMessage}:`, error);
-          callback({ success: false, error: errorMessage });
-        }
-      };
-    };
 
     socket.on(
       AppSocketEvents.GET_VIDEOS_DATA,
-      createDataHandler<VideoDataModel[]>(
-        (data) => fetchVideosData({
-          filePath: data?.filepath,
-          includeThumbnail: data?.includeThumbnail,
-          searchText: "",
-          category: data?.category,
-        }),
-        "Failed to fetch videos data"
-      )
+      async (
+        requestData: {
+          data: {
+            filepath: string;
+            includeThumbnail: boolean;
+            category: string;
+          };
+        },
+        callback: (response: {
+          success: boolean;
+          data?: VideoDataModel[];
+          error?: string;
+        }) => void,
+      ) => {
+        try {
+          const videosdata = await fetchVideosData({
+            filePath: requestData?.data?.filepath,
+            includeThumbnail: requestData?.data?.includeThumbnail,
+            searchText: "",
+            category: requestData?.data?.category,
+          });
+          callback({ success: true, data: videosdata });
+        } catch (error) {
+          console.error("Error fetching videos data:", error);
+          callback({ success: false, error: "Failed to fetch videos data" });
+        }
+      },
     );
 
     socket.on(
       AppSocketEvents.GET_FOLDER_DETAILS,
-      createDataHandler<VideoDataModel>(
-        (data) => fetchFolderDetails(data?.filepath),
-        "Failed to fetch folder details"
-      )
+      async (
+        requestData: {
+          data: {
+            filepath: string;
+          };
+        },
+        callback: (response: {
+          success: boolean;
+          data?: VideoDataModel;
+          error?: string;
+        }) => void,
+      ) => {
+        try {
+          // Replace with actual logic to fetch folder details
+          const folderDetails = await fetchFolderDetails(
+            requestData?.data?.filepath,
+          );
+          callback({ success: true, data: folderDetails });
+        } catch (error) {
+          console.error("Error fetching folder details:", error);
+          callback({ success: false, error: "Failed to fetch folder details" });
+        }
+      },
     );
 
     socket.on(
       AppSocketEvents.GET_VIDEO_DETAILS,
-      createDataHandler<VideoDataModel>(
-        (data) => fetchVideoDetails(data?.filepath, data?.category),
-        "Failed to fetch video details"
-      )
+      async (
+        requestData: {
+          data: {
+            filepath: string;
+            category: string;
+          };
+        },
+        callback: (response: {
+          success: boolean;
+          data?: VideoDataModel;
+          error?: string;
+        }) => void,
+      ) => {
+        try {
+          // Replace with actual logic to fetch folder details
+          const videoDetails = await fetchVideoDetails(
+            requestData?.data?.filepath,
+            requestData?.data?.category,
+          );
+          callback({ success: true, data: videoDetails });
+        } catch (error) {
+          console.error("Error fetching folder details:", error);
+          callback({ success: false, error: "Failed to fetch folder details" });
+        }
+      },
     );
 
-    // Time management
     socket.on(
       AppSocketEvents.SET_CURRENTTIME,
       async (
@@ -184,7 +226,7 @@ const setupSocketHandlers = (io: Server, mainWindow: BrowserWindow) => {
           success: boolean;
           data?: VideoDataModel;
           error?: string;
-        }) => void
+        }) => void,
       ) => {
         try {
           const updatedVideoData = await saveCurrentTime(null, {
@@ -197,21 +239,9 @@ const setupSocketHandlers = (io: Server, mainWindow: BrowserWindow) => {
           console.error("Error setting current time:", error);
           callback({ success: false, error: "Failed to set current time" });
         }
-      }
+      },
     );
   });
-};
-
-// Main initialization function
-export async function initializeSocket(
-  mainWindow: BrowserWindow,
-  startPort: number
-): Promise<void> {
-  const port = await findAvailablePort(startPort);
-  const server = http.createServer(createRequestHandler());
-  const io = new Server(server, { cors: { origin: "*" } });
-
-  setupSocketHandlers(io, mainWindow);
 
   server.listen(port, () => {
     setValue("port", port.toString());
