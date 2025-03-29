@@ -3,8 +3,8 @@ import * as http from "http";
 import { Server } from "socket.io";
 import {
   fetchFolderDetails,
+  fetchVideoDetails,
   fetchVideosData,
-  // handleVideoRequest,
   saveCurrentTime,
 } from "./video-data.service";
 import { getAllValues, setValue } from "../store";
@@ -15,6 +15,7 @@ import { VideoDataModel } from "../../models/videoData.model";
 import * as net from "net";
 import { serveLocalFile } from "./file.service";
 import { handleVideoRequest } from "./video-streaming.service";
+import { SettingsModel } from "../../models/settings.model";
 
 // Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {
@@ -42,7 +43,7 @@ const findAvailablePort = async (startPort: number): Promise<number> => {
 // Initialize the HTTP server and Socket.IO events.
 export async function initializeSocket(
   mainWindow: BrowserWindow,
-  startPort: number
+  startPort: number,
 ): Promise<void> {
   const port = await findAvailablePort(startPort);
   // Create HTTP server
@@ -72,7 +73,7 @@ export async function initializeSocket(
         res.statusCode = 404;
         res.end();
       }
-    }
+    },
   );
 
   // Initialize Socket.IO server
@@ -101,12 +102,19 @@ export async function initializeSocket(
         };
       }) => {
         mainWindow.webContents.send("set-current-video", data);
-      }
+      },
     );
 
     socket.on(
       AppSocketEvents.GET_SETTINGS,
-      async (_event: any, callback: (response: any) => void) => {
+      async (
+        _event: Electron.IpcMainInvokeEvent,
+        callback: (response: {
+          success: boolean;
+          data?: SettingsModel;
+          error?: string;
+        }) => void,
+      ) => {
         try {
           const settings = getAllValues();
           callback({ success: true, data: settings });
@@ -114,7 +122,7 @@ export async function initializeSocket(
           log.error("Error fetching videos data:", error);
           callback({ success: false, error: "Failed to fetch videos data" });
         }
-      }
+      },
     );
 
     socket.on(
@@ -127,7 +135,11 @@ export async function initializeSocket(
             category: string;
           };
         },
-        callback: (response: any) => void
+        callback: (response: {
+          success: boolean;
+          data?: VideoDataModel[];
+          error?: string;
+        }) => void,
       ) => {
         try {
           const videosdata = await fetchVideosData({
@@ -141,7 +153,7 @@ export async function initializeSocket(
           console.error("Error fetching videos data:", error);
           callback({ success: false, error: "Failed to fetch videos data" });
         }
-      }
+      },
     );
 
     socket.on(
@@ -152,19 +164,52 @@ export async function initializeSocket(
             filepath: string;
           };
         },
-        callback: (response: any) => void
+        callback: (response: {
+          success: boolean;
+          data?: VideoDataModel;
+          error?: string;
+        }) => void,
       ) => {
         try {
           // Replace with actual logic to fetch folder details
           const folderDetails = await fetchFolderDetails(
-            requestData?.data?.filepath
+            requestData?.data?.filepath,
           );
           callback({ success: true, data: folderDetails });
         } catch (error) {
           console.error("Error fetching folder details:", error);
           callback({ success: false, error: "Failed to fetch folder details" });
         }
-      }
+      },
+    );
+
+    socket.on(
+      AppSocketEvents.GET_VIDEO_DETAILS,
+      async (
+        requestData: {
+          data: {
+            filepath: string;
+            category: string;
+          };
+        },
+        callback: (response: {
+          success: boolean;
+          data?: VideoDataModel;
+          error?: string;
+        }) => void,
+      ) => {
+        try {
+          // Replace with actual logic to fetch folder details
+          const videoDetails = await fetchVideoDetails(
+            requestData?.data?.filepath,
+            requestData?.data?.category,
+          );
+          callback({ success: true, data: videoDetails });
+        } catch (error) {
+          console.error("Error fetching folder details:", error);
+          callback({ success: false, error: "Failed to fetch folder details" });
+        }
+      },
     );
 
     socket.on(
@@ -177,11 +222,13 @@ export async function initializeSocket(
             isEpisode?: boolean;
           };
         },
-        callback: (response: any) => void
+        callback: (response: {
+          success: boolean;
+          data?: VideoDataModel;
+          error?: string;
+        }) => void,
       ) => {
         try {
-          console.log("set-currenttime::: ", requestData);
-          // Replace with actual logic to set current time
           const updatedVideoData = await saveCurrentTime(null, {
             currentVideo: requestData?.data?.currentVideo,
             currentTime: requestData?.data?.currentTime,
@@ -192,7 +239,7 @@ export async function initializeSocket(
           console.error("Error setting current time:", error);
           callback({ success: false, error: "Failed to set current time" });
         }
-      }
+      },
     );
   });
 
