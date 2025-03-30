@@ -216,6 +216,7 @@ const processFiles = async (
 
       if (helpers.isVideoFile(file) || stats.isDirectory()) {
         const data = await populateVideoData(file, filePath, stats, category);
+        data.filePath = normalizeFilePath(data.filePath); // Normalize the file path for consistency
         if (data) {
           videoData.push(data);
         }
