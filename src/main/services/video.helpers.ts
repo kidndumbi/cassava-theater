@@ -1,5 +1,6 @@
 import { access, writeFile, readdir, stat } from "fs/promises";
 import { Stats } from "fs";
+import * as fs from "fs";
 import * as helpers from "./helpers";
 import * as path from "path";
 import ffmpeg from "fluent-ffmpeg";
@@ -234,11 +235,10 @@ export const populateVideoData = async (
   category: string,
 ) => {
   try {
-    const fullFilePath = `${filePath}/${file}`;
+    const fullFilePath = path.join(filePath, file);
     const jsonFileContents = await readJsonData(fullFilePath);
-
     const duration = await calculateDuration(fullFilePath);
-    return createVideoDataObject(
+    const videoData = createVideoDataObject(
       file,
       fullFilePath,
       stats.isDirectory(),
@@ -248,6 +248,11 @@ export const populateVideoData = async (
       jsonFileContents,
       category,
     );
+
+    if (stats.isDirectory()) {
+      videoData.childFolders = await getSortedChildFolders(fullFilePath);
+    }
+    return videoData;
   } catch (error: unknown) {
     log.error("Error populating video data:", error);
     return null;
@@ -385,4 +390,40 @@ export const updateParentVideoData = async (
   grandParentJsonFileContents.lastVideoPlayedDuration = currentVideo.duration;
 
   await writeJsonToFile(grandParentJsonFilePath, grandParentJsonFileContents);
+  return {
+    lastVideoPlayed: grandParentJsonFileContents.lastVideoPlayed,
+    lastVideoPlayedTime: grandParentJsonFileContents.lastVideoPlayedTime,
+    lastVideoPlayedDate: grandParentJsonFileContents.lastVideoPlayedDate,
+    lastVideoPlayedDuration:
+      grandParentJsonFileContents.lastVideoPlayedDuration,
+  };
+};
+
+export const getSortedChildFolders = async (
+  dirPath: string,
+): Promise<{ folderPath: string; basename: string; season_id: string }[]> => {
+  const childFoldersPromises = fs
+    .readdirSync(dirPath, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map(async (dirent) => {
+      const folderPath = path.join(dirPath, dirent.name).replace(/\\/g, "/");
+      const jsonFileContents = await readJsonData(folderPath);
+      return {
+        folderPath,
+        basename: dirent.name,
+        season_id: jsonFileContents?.season_id || null,
+      };
+    });
+  const childFolders = await Promise.all(childFoldersPromises);
+  const sortedChildFolders = childFolders.sort((a, b) => {
+    const isASeason = a.basename?.toLowerCase().startsWith("season");
+    const isBSeason = b.basename?.toLowerCase().startsWith("season");
+    if (isASeason && !isBSeason) return -1; // "Season" folders come first
+    if (!isASeason && isBSeason) return 1; // Non-"Season" folders go to the bottom
+    return (a.basename ?? "").localeCompare(b.basename ?? "", undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
+  return sortedChildFolders;
 };
