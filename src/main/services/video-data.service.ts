@@ -179,33 +179,8 @@ export const fetchFolderDetails = async (
     const jsonFileContents = await videoDataHelpers.readJsonData(dirPath);
     const basename = path.basename(dirPath);
 
-    const childFoldersPromises = fs
-      .readdirSync(dirPath, { withFileTypes: true })
-      .filter((dirent) => dirent.isDirectory())
-      .map(async (dirent) => {
-        const folderPath = path.join(dirPath, dirent.name).replace(/\\/g, "/");
-        const jsonFileContents =
-          await videoDataHelpers.readJsonData(folderPath);
-        return {
-          folderPath,
-          basename: dirent.name,
-          season_id: jsonFileContents?.season_id || null,
-        };
-      });
-
-    const childFolders = await Promise.all(childFoldersPromises);
-    const sortedChildFolders = childFolders.sort((a, b) => {
-      const isASeason = a.basename?.toLowerCase().startsWith("season");
-      const isBSeason = b.basename?.toLowerCase().startsWith("season");
-
-      if (isASeason && !isBSeason) return -1; // "Season" folders come first
-      if (!isASeason && isBSeason) return 1; // Non-"Season" folders go to the bottom
-
-      return (a.basename ?? "").localeCompare(b.basename ?? "", undefined, {
-        numeric: true,
-        sensitivity: "base",
-      });
-    });
+    const sortedChildFolders =
+      await videoDataHelpers.getSortedChildFolders(dirPath);
 
     const videoDetails: VideoDataModel =
       videoDataHelpers.createFolderDataObject(
@@ -325,11 +300,16 @@ export const saveCurrentTime = async (
       jsonFileContents,
     );
 
+    let parentCurrentTimeData = {};
+
     if (isEpisode) {
-      await videoDataHelpers.updateParentVideoData(currentVideo, currentTime);
+      parentCurrentTimeData = await videoDataHelpers.updateParentVideoData(
+        currentVideo,
+        currentTime,
+      );
     }
 
-    return jsonFileContents;
+    return { ...jsonFileContents, ...parentCurrentTimeData };
   } catch (error: unknown) {
     if (error instanceof Error) {
       log.error("save:saveCurrentTime error ", error);
