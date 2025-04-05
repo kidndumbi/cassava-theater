@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTvShows } from "../../hooks/useTvShows";
@@ -9,6 +9,7 @@ import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import ResumeTvShowLists from "./ResumeTvShowLists";
 import ResumeMovieList from "./ResumeMovieList";
 import { WatchLaterList } from "./WatchLaterList";
+import AppIconButton from "../common/AppIconButton";
 
 interface HomePageProps {
   style?: React.CSSProperties;
@@ -39,7 +40,7 @@ export const HomePage: React.FC<HomePageProps> = ({
     setCurrentVideo,
     getSingleEpisodeDetails,
     resetEpisodes,
-    getEpisodeDetails
+    getEpisodeDetails,
   );
 
   const title = (value: string) => (
@@ -60,12 +61,14 @@ export const HomePage: React.FC<HomePageProps> = ({
       className="custom-scrollbar"
       style={{ ...style, overflowY: "auto", paddingTop: "20px" }}
     >
-      <IconButton
-        sx={{ color: theme.customVariables.appWhite, width: 48, height: 48 }}
+      <AppIconButton
+        tooltip="Refresh"
         onClick={refreshData}
+        disabled={loadingMovies && loadingTvShows} // Disable the button when both are loading to prevent multiple calls
       >
         <RefreshIcon />
-      </IconButton>
+      </AppIconButton>
+
       {title("Resume")}
       <Box>
         <ResumeMovieList

@@ -1,37 +1,34 @@
-import  { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { VideoDataModel } from "../../models/videoData.model";
 
 const useSortedVideos = (movies: VideoDataModel[], tvShows: VideoDataModel[]) => {
-  const getSortedMovies = useCallback(() => {
-    const filtered = movies.filter(
-      (m) => m.lastVideoPlayedDate && (m.currentTime || 0) > 1
-    );
-    return filtered
-      .sort(
-        (a, b) =>
-          new Date(b.lastVideoPlayedDate ? b.lastVideoPlayedDate : 0).getTime() -
-          new Date(a.lastVideoPlayedDate ?? 0).getTime()
-      )
-      .slice(0, 20);
-  }, [movies]);
+	// Helper to filter, sort by lastVideoPlayedDate, and limit results.
+	const getSortedItems = (
+		items: VideoDataModel[],
+		filterFn: (m: VideoDataModel) => boolean
+	) => {
+		return items
+			.filter(filterFn)
+			.sort(
+				(a, b) =>
+					new Date(b.lastVideoPlayedDate ?? 0).getTime() -
+					new Date(a.lastVideoPlayedDate ?? 0).getTime()
+			)
+			.slice(0, 20);
+	};
 
-  const getSortedTvShows = useCallback(() => {
-    const filtered = tvShows.filter(
-      (m) => m.lastVideoPlayed && m.lastVideoPlayedDate
-    );
-    return filtered
-      .sort(
-        (a, b) =>
-          new Date(b.lastVideoPlayedDate ?? 0).getTime() -
-          new Date(a.lastVideoPlayedDate ?? 0).getTime()
-      )
-      .slice(0, 20);
-  }, [tvShows]);
+	const sortedMovies = useMemo(
+		() =>
+			getSortedItems(movies, (m) => m.lastVideoPlayedDate && (m.currentTime || 0) > 1),
+		[movies]
+	);
+	const sortedTvShows = useMemo(
+		() =>
+			getSortedItems(tvShows, (m) => !!m.lastVideoPlayed && !!m.lastVideoPlayedDate),
+		[tvShows]
+	);
 
-  const sortedMovies = useMemo(() => getSortedMovies(), [getSortedMovies]);
-  const sortedTvShows = useMemo(() => getSortedTvShows(), [getSortedTvShows]);
-
-  return { sortedMovies, sortedTvShows };
+	return { sortedMovies, sortedTvShows };
 };
 
 export default useSortedVideos;
