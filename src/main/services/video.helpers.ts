@@ -402,17 +402,15 @@ export const updateParentVideoData = async (
 
 export const getSortedChildFolders = async (
   dirPath: string,
-): Promise<{ folderPath: string; basename: string; season_id: string }[]> => {
+): Promise<{ folderPath: string; basename: string;  }[]> => {
   const childFoldersPromises = fs
     .readdirSync(dirPath, { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
     .map(async (dirent) => {
       const folderPath = path.join(dirPath, dirent.name).replace(/\\/g, "/");
-      const jsonFileContents = await readJsonData(folderPath);
       return {
         folderPath,
         basename: dirent.name,
-        season_id: jsonFileContents?.season_id || null,
       };
     });
   const childFolders = await Promise.all(childFoldersPromises);

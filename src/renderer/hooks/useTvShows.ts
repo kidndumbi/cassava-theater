@@ -111,14 +111,6 @@ export const useTvShows = () => {
     );
   };
 
-  const updateSeasonTMDBId = (season_id: string, filePath: string) => {
-    dispatch(
-      postVideoJason({
-        currentVideo: { filePath },
-        newVideoJsonData: { season_id },
-      }),
-    );
-  };
 
   const getTvShowById = async (
     id: string,
@@ -244,7 +236,6 @@ export const useTvShows = () => {
     resetTvShowSuggestions,
     updateTvShowTMDBId,
     getTvShowById,
-    updateSeasonTMDBId,
     findNextEpisode,
     updateTvShow,
     updateTvShowDbData,
