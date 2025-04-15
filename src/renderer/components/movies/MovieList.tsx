@@ -1,14 +1,19 @@
 import React from "react";
-import { Box } from "@mui/material";
+import { Box, Chip } from "@mui/material";
 import { styled } from "@mui/system";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { removeVidExt, trimFileName } from "../../util/helperFunctions";
+import {
+  getFileExtension,
+  removeVidExt,
+  trimFileName,
+} from "../../util/helperFunctions";
 import { PosterCard } from "../common/PosterCard";
 import { AppMore } from "../common/AppMore";
 import { useMovies } from "../../hooks/useMovies";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
+import theme from "../../theme";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -30,15 +35,51 @@ const HoverContent = styled(Box)({
   display: "none",
 });
 
+const MovieListItem: React.FC<{
+  movie: VideoDataModel;
+  onPosterClick: (videoPath: string) => void;
+  getImageUrl: (movie: VideoDataModel) => string;
+  onDelete: (filePath: string) => void;
+  onLinkTheMovieDb: () => void;
+}> = ({ movie, onPosterClick, getImageUrl, onDelete, onLinkTheMovieDb }) => (
+  <HoverBox>
+    <PosterCard
+      imageUrl={getImageUrl(movie)}
+      altText={movie.fileName || ""}
+      onClick={() => onPosterClick(movie.filePath || "")}
+      footer={trimFileName(movie.fileName || "")}
+    />
+    <HoverContent className="hover-content">
+      <AppMore
+        isMovie={true}
+        handleDelete={() => onDelete(movie.filePath)}
+        linkTheMovieDb={onLinkTheMovieDb}
+      />
+    </HoverContent>
+    <Box
+      className="hover-content"
+      sx={{ position: "absolute", top: 9, left: 9, display: "none" }}
+    >
+      <Chip
+        label={getFileExtension(movie.filePath)}
+        size="small"
+        sx={{
+          color: theme.customVariables.appWhiteSmoke,
+          backgroundColor: theme.customVariables.appDark,
+        }}
+      />
+    </Box>
+  </HoverBox>
+);
+
 const MovieList: React.FC<MovieListProps> = ({
   movies,
   handlePosterClick,
   getImageUrl,
 }) => {
-  const { removeMovie } = useMovies();
+  const { removeMovie, updateTMDBId } = useMovies();
   const { showSnackbar } = useSnackbar();
   const { openDialog, setMessage } = useConfirmation();
-  const { updateTMDBId } = useMovies();
   const [selectedMovie, setSelectedMovie] =
     React.useState<VideoDataModel | null>(null);
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
@@ -47,7 +88,6 @@ const MovieList: React.FC<MovieListProps> = ({
   const handleDelete = async (filePath: string) => {
     setMessage("Are you sure you want to delete this Movie?");
     const dialogDecision = await openDialog("Delete");
-
     if (dialogDecision === "Ok") {
       try {
         const del = await window.fileManagerAPI.deleteFile(filePath);
@@ -67,27 +107,19 @@ const MovieList: React.FC<MovieListProps> = ({
     <>
       <Box display="flex" flexWrap="wrap" gap="4px">
         {movies.map((movie) => (
-          <HoverBox key={movie.filePath}>
-            <PosterCard
-              imageUrl={getImageUrl(movie)}
-              altText={movie.fileName || ""}
-              onClick={() => handlePosterClick(movie.filePath || "")}
-              footer={trimFileName(movie.fileName || "")}
-            />
-            <HoverContent className="hover-content">
-              <AppMore
-                isMovie={true}
-                handleDelete={handleDelete.bind(null, movie.filePath)}
-                linkTheMovieDb={() => {
-                  setSelectedMovie(movie);
-                  setOpenMovieSuggestionsModal(true);
-                }}
-              />
-            </HoverContent>
-          </HoverBox>
+          <MovieListItem
+            key={movie.filePath}
+            movie={movie}
+            onPosterClick={handlePosterClick}
+            getImageUrl={getImageUrl}
+            onDelete={handleDelete}
+            onLinkTheMovieDb={() => {
+              setSelectedMovie(movie);
+              setOpenMovieSuggestionsModal(true);
+            }}
+          />
         ))}
       </Box>
-
       <MovieSuggestionsModal
         id={selectedMovie?.movie_details?.id?.toString() || ""}
         open={openMovieSuggestionsModal}

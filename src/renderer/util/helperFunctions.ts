@@ -96,6 +96,11 @@ const selectFile = async (
   return window.openDialogAPI.openFileDialog(fileDialogOptions);
 };
 
+const getFileExtension = (filePath: string): string => {
+  const match = filePath.match(/\.([^.]+)$/);
+  return match ? match[1] : "";
+};
+
 export {
   secondsTohhmmss,
   isEmptyObject,
@@ -111,4 +116,5 @@ export {
   selectFolder,
   selectFile,
   removeVidExt,
+  getFileExtension,
 };
