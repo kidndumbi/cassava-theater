@@ -8,11 +8,11 @@ export interface IElectronAPI {
 export interface settingsAPI {
   getALLSettings: () => Promise<SettingsModel>;
   getSetting: (
-    key: keyof SettingsModel
+    key: keyof SettingsModel,
   ) => Promise<SettingsModel[keyof SettingsModel]>;
   setSetting: (
     key: keyof SettingsModel,
-    value: SettingsModel[keyof SettingsModel]
+    value: SettingsModel[keyof SettingsModel],
   ) => Promise<SettingsModel[keyof SettingsModel]>;
 }
 
@@ -21,7 +21,7 @@ export interface OpenDialogAPI {
     options: {
       name: string;
       extensions: string[];
-    }[]
+    }[],
   ) => Promise<string | null>;
   openFolderDialog: () => Promise<string | null>;
 }
@@ -34,6 +34,9 @@ export interface VideoCommandsAPI {
 export interface MainNotificationsAPI {
   userConnected: (callback: (userId: string) => void) => void;
   userDisconnected: (callback: (userId: string) => void) => void;
+  mp4ConversionProgress: (
+    callback: (progress: { file: string; percent: number }) => void,
+  ) => void;
 }
 
 export interface MainUtilAPI {
@@ -69,18 +72,19 @@ export interface VideoAPI {
     tvShowDetails: TvShowDetails | null;
     tvShowsFolderPath: string;
   }) => Promise<VideoDataModel>;
+  convertToMp4: (inputPath: string) => Promise<void>;
 }
 
 export interface TheMovieDbAPI {
   search: (
     query: string,
     queryType: "movie" | "tv",
-    authorization: string
+    authorization: string,
   ) => Promise<MovieDetails[] | TvShowDetails[]>;
   movieOrTvShow: (
     id: string,
     queryType: "movie" | "tv",
-    authorization: string
+    authorization: string,
   ) => Promise<MovieDetails | TvShowDetails>;
 }
 

@@ -14,6 +14,10 @@ import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
 import theme from "../../theme";
+import { useSelector } from "react-redux";
+import { selConvertToMp4Progress } from "../../store/videoInfo/folderVideosInfoSelectors";
+import { videosInfoActions } from "../../store/videoInfo/folderVideosInfo.slice";
+import { useAppDispatch } from "../../store";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -41,7 +45,15 @@ const MovieListItem: React.FC<{
   getImageUrl: (movie: VideoDataModel) => string;
   onDelete: (filePath: string) => void;
   onLinkTheMovieDb: () => void;
-}> = ({ movie, onPosterClick, getImageUrl, onDelete, onLinkTheMovieDb }) => (
+  onConvertToMp4: (filePath: string) => void;
+}> = ({
+  movie,
+  onPosterClick,
+  getImageUrl,
+  onDelete,
+  onLinkTheMovieDb,
+  onConvertToMp4,
+}) => (
   <HoverBox>
     <PosterCard
       imageUrl={getImageUrl(movie)}
@@ -54,6 +66,10 @@ const MovieListItem: React.FC<{
         isMovie={true}
         handleDelete={() => onDelete(movie.filePath)}
         linkTheMovieDb={onLinkTheMovieDb}
+        isNotMp4={!movie.filePath?.endsWith(".mp4")}
+        handleConvertToMp4={() => {
+          onConvertToMp4(movie.filePath || "");
+        }}
       />
     </HoverContent>
     <Box
@@ -78,6 +94,8 @@ const MovieList: React.FC<MovieListProps> = ({
   getImageUrl,
 }) => {
   const { removeMovie, updateTMDBId } = useMovies();
+  const convertToMp4Progress = useSelector(selConvertToMp4Progress);
+  const dispatch = useAppDispatch();
   const { showSnackbar } = useSnackbar();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedMovie, setSelectedMovie] =
@@ -103,6 +121,24 @@ const MovieList: React.FC<MovieListProps> = ({
     }
   };
 
+  const handleConvertToMp4 = (fromPath: string) => {
+    dispatch(
+      videosInfoActions.updateConvertToMp4Progress({
+        fromPath,
+        toPath: fromPath.replace(/\.[^/.]+$/, ".mp4"),
+        percent: 0,
+      }),
+    );
+
+    const existingProgress = convertToMp4Progress.find(
+      (progress) => progress.fromPath === fromPath,
+    );
+
+    if (!existingProgress) {
+      window.videoAPI.convertToMp4(fromPath || "");
+    }
+  };
+
   return (
     <>
       <Box display="flex" flexWrap="wrap" gap="4px">
@@ -117,6 +153,7 @@ const MovieList: React.FC<MovieListProps> = ({
               setSelectedMovie(movie);
               setOpenMovieSuggestionsModal(true);
             }}
+            onConvertToMp4={handleConvertToMp4}
           />
         ))}
       </Box>

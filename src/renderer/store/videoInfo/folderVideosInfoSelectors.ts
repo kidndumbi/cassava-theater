@@ -24,3 +24,5 @@ export const selLoadingFolderDetails = (state: RootState) =>
   state.folderVideosInfo.loadingFolderDetails;
 export const selLoadingCustomFolder = (state: RootState) =>
   state.folderVideosInfo.loadingCustomFolder;
+export const selConvertToMp4Progress = (state: RootState) =>
+  state.folderVideosInfo.convertToMp4Progress;

@@ -29,7 +29,7 @@ contextBridge.exposeInMainWorld("mainUtilAPI", {
 contextBridge.exposeInMainWorld("settingsAPI", {
   getALLSettings: () => {
     return ipcRenderer.invoke(
-      SettingsIpcChannels.GET_ALL_SETTINGS
+      SettingsIpcChannels.GET_ALL_SETTINGS,
     ) as Promise<SettingsModel>;
   },
   getSetting: (key: keyof SettingsModel) => {
@@ -39,12 +39,12 @@ contextBridge.exposeInMainWorld("settingsAPI", {
   },
   setSetting: (
     key: keyof SettingsModel,
-    value: SettingsModel[keyof SettingsModel]
+    value: SettingsModel[keyof SettingsModel],
   ) => {
     return ipcRenderer.invoke(
       SettingsIpcChannels.SET_SETTING,
       key,
-      value
+      value,
     ) as Promise<SettingsModel[keyof SettingsModel]>;
   },
 });
@@ -53,12 +53,12 @@ contextBridge.exposeInMainWorld("openDialogAPI", {
   openFileDialog: (filters?: { name: string; extensions: string[] }[]) => {
     return ipcRenderer.invoke(
       OpenDialogIpcChannels.OPEN_FILE_DIALOG,
-      filters
+      filters,
     ) as Promise<string | null>;
   },
   openFolderDialog: () => {
     return ipcRenderer.invoke(
-      OpenDialogIpcChannels.OPEN_FOLDER_DIALOG
+      OpenDialogIpcChannels.OPEN_FOLDER_DIALOG,
     ) as Promise<string | null>;
   },
 });
@@ -69,7 +69,7 @@ contextBridge.exposeInMainWorld("videoCommandsAPI", {
       "video-command",
       (event: Electron.IpcRendererEvent, command: VideoCommands) => {
         callback(command);
-      }
+      },
     );
   },
   setCurrentVideo: (callback: (data: SetPlayingModel) => void) => {
@@ -77,7 +77,7 @@ contextBridge.exposeInMainWorld("videoCommandsAPI", {
       "set-current-video",
       (event: Electron.IpcRendererEvent, data: SetPlayingModel) => {
         callback(data);
-      }
+      },
     );
   },
 });
@@ -86,13 +86,24 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
   userConnected: (callback: (userId: string) => void) => {
     ipcRenderer.on(
       "user-connected",
-      (event: Electron.IpcRendererEvent, userId: string) => callback(userId)
+      (event: Electron.IpcRendererEvent, userId: string) => callback(userId),
     );
   },
   userDisconnected: (callback: (userId: string) => void) => {
     ipcRenderer.on(
       "user-disconnected",
-      (event: Electron.IpcRendererEvent, userId: string) => callback(userId)
+      (event: Electron.IpcRendererEvent, userId: string) => callback(userId),
+    );
+  },
+  mp4ConversionProgress: (
+    callback: (progress: { file: string; percent: number }) => void,
+  ) => {
+    ipcRenderer.on(
+      "mp4-conversion-progress",
+      (
+        event: Electron.IpcRendererEvent,
+        progress: { file: string; percent: number },
+      ) => callback(progress),
     );
   },
 });
@@ -135,6 +146,9 @@ contextBridge.exposeInMainWorld("videoAPI", {
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.AddTvShowFolder, args);
   },
+  convertToMp4: (inputPath: string) => {
+    return ipcRenderer.invoke(VideoIPCChannels.ConvertToMp4, inputPath);
+  },
 });
 
 contextBridge.exposeInMainWorld("theMovieDbAPI", {
@@ -143,19 +157,19 @@ contextBridge.exposeInMainWorld("theMovieDbAPI", {
       TheMovieDbIPCChannels.Search,
       query,
       queryType,
-      authorization
+      authorization,
     ) as Promise<MovieDetails[] | TvShowDetails[]>;
   },
   movieOrTvShow: (
     id: string,
     queryType: "movie" | "tv",
-    authorization: string
+    authorization: string,
   ) => {
     return ipcRenderer.invoke(
       TheMovieDbIPCChannels.MovieOrTvShow,
       id,
       queryType,
-      authorization
+      authorization,
     ) as Promise<MovieDetails | TvShowDetails>;
   },
 });
@@ -164,13 +178,13 @@ contextBridge.exposeInMainWorld("fileManagerAPI", {
   convertSrtToVtt: (path: string) => {
     return ipcRenderer.invoke(
       FileIPCChannels.CONVERT_SRT_TO_VTT,
-      path
+      path,
     ) as Promise<string>;
   },
   deleteFile: (path: string) => {
-    return ipcRenderer.invoke(
-      FileIPCChannels.DELETE,
-      path
-    ) as Promise<{ success: boolean; message: string }>;
+    return ipcRenderer.invoke(FileIPCChannels.DELETE, path) as Promise<{
+      success: boolean;
+      message: string;
+    }>;
   },
 });
