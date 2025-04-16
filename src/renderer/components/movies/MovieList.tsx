@@ -119,7 +119,7 @@ const MovieList: React.FC<MovieListProps> = ({
   };
 
   const handleConvertToMp4 = (fromPath: string) => {
-    convertToMp4([fromPath]);
+    convertToMp4(fromPath);
   };
 
   return (
