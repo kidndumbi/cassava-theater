@@ -62,7 +62,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
             onEpisodeClick={onEpisodeClick}
             handleFilepathChange={handleFilepathChange}
             handleConvertToMp4={(filePath) => {
-              convertToMp4([filePath]);
+              convertToMp4(filePath);
             }}
           />
         ))

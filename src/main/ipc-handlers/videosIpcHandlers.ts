@@ -68,7 +68,7 @@ export const videosIpcHandlers = () => {
   ipcMain.handle(
     VideoIPCChannels.ConvertToMp4,
     async (_event: Electron.IpcMainInvokeEvent, inputPath: string) => {
-      convertToMp4(inputPath);
+      return convertToMp4(inputPath);
     },
   );
 };

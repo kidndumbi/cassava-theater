@@ -1,4 +1,5 @@
 import { Box, CircularProgress, Typography } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import theme from "../theme";
 import { useState } from "react";
 import { AppModal } from "./common/AppModal";
@@ -53,7 +54,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         }}
       >
         {convertToMp4Progress.length > 0 &&
-        convertToMp4Progress.some((p) => p.percent < 100) ? (
+        convertToMp4Progress.some((p) => !p.complete) ? (
           <CircularProgress color="secondary" size="20px" />
         ) : (
           <AppIconButton
@@ -77,9 +78,13 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
       >
         {convertToMp4Progress &&
           convertToMp4Progress.map((progress, index) => (
-            <Box key={index} className="flex" sx={{ padding: "10px" }}>
+            <Box
+              key={index}
+              className="flex items-center m-2 rounded-md"
+              sx={{ padding: "10px", backgroundColor: theme.palette.secondary.main }}
+            >
               <Typography
-                variant="h6"
+                variant="body2"
                 sx={{
                   color: theme.customVariables.appWhiteSmoke,
                   marginRight: "10px",
@@ -88,7 +93,15 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
               >
                 {progress.toPath}
               </Typography>
-              <CircularProgressWithLabel value={progress.percent} />
+              {progress.complete ? (
+                <CheckCircleIcon
+                  sx={{
+                    color: theme.palette.primary.main,
+                  }}
+                />
+              ) : (
+                <CircularProgressWithLabel value={progress.percent} />
+              )}
             </Box>
           ))}
       </AppModal>

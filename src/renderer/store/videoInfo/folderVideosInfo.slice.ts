@@ -28,6 +28,7 @@ interface FolderVideosInfoState {
     fromPath: string;
     toPath: string;
     percent: number;
+    complete: boolean;
   }[];
 }
 
@@ -127,10 +128,21 @@ const folderVideosInfoSlice = createSlice({
           fromPath,
           toPath,
           percent,
+          complete: false,
         });
       } else {
         existingProgress.percent = percent;
         existingProgress.toPath = toPath;
+      }
+    },
+    markMp4ConversionAsComplete: (state, action: PayloadAction<string>) => {
+      const fromPath = action.payload;
+      const existingProgress = state.convertToMp4Progress.find(
+        (progress) => progress.fromPath === fromPath,
+      );
+      if (existingProgress) {
+        existingProgress.complete = true;
+        existingProgress.percent = 100; // Mark as complete
       }
     },
   },

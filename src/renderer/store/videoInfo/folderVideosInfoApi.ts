@@ -52,7 +52,9 @@ export const convertToMp4Api = async (path: string) => {
       return;
     }
 
-    await window.videoAPI.convertToMp4(path);
+    const result = await window.videoAPI.convertToMp4(path);
+
+    return result;
   } catch (error) {
     log.error("Error converting to MP4 via API:", error);
     throw error;

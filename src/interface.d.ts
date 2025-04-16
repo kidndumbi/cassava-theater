@@ -72,7 +72,9 @@ export interface VideoAPI {
     tvShowDetails: TvShowDetails | null;
     tvShowsFolderPath: string;
   }) => Promise<VideoDataModel>;
-  convertToMp4: (inputPath: string) => Promise<void>;
+  convertToMp4: (
+    inputPath: string,
+  ) => Promise<{ fromPath: string; toPath: string }>;
 }
 
 export interface TheMovieDbAPI {
