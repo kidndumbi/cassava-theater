@@ -24,12 +24,6 @@ interface FolderVideosInfoState {
   loadingFolderDetails: boolean;
   loadingCustomFolder: boolean;
   loadingPostVideoJson: boolean;
-  convertToMp4Progress: {
-    fromPath: string;
-    toPath: string;
-    percent: number;
-    complete: boolean;
-  }[];
 }
 
 const initialState: FolderVideosInfoState = {
@@ -47,7 +41,6 @@ const initialState: FolderVideosInfoState = {
   loadingFolderDetails: false,
   loadingCustomFolder: false,
   loadingPostVideoJson: false,
-  convertToMp4Progress: [],
 };
 
 const folderVideosInfoSlice = createSlice({
@@ -109,40 +102,6 @@ const folderVideosInfoSlice = createSlice({
       );
       if (idx !== -1) {
         state.episodes[idx] = { ...state.episodes[idx], ...episode };
-      }
-    },
-    updateConvertToMp4Progress: (
-      state,
-      action: PayloadAction<{
-        fromPath: string;
-        toPath: string;
-        percent: number;
-      }>,
-    ) => {
-      const { fromPath, toPath, percent } = action.payload;
-      const existingProgress = state.convertToMp4Progress.find(
-        (progress) => progress.fromPath === fromPath,
-      );
-      if (!existingProgress) {
-        state.convertToMp4Progress.push({
-          fromPath,
-          toPath,
-          percent,
-          complete: false,
-        });
-      } else {
-        existingProgress.percent = percent;
-        existingProgress.toPath = toPath;
-      }
-    },
-    markMp4ConversionAsComplete: (state, action: PayloadAction<string>) => {
-      const fromPath = action.payload;
-      const existingProgress = state.convertToMp4Progress.find(
-        (progress) => progress.fromPath === fromPath,
-      );
-      if (existingProgress) {
-        existingProgress.complete = true;
-        existingProgress.percent = 100; // Mark as complete
       }
     },
   },

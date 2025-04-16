@@ -30,7 +30,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
   seasonAirDate,
   handleFilepathChange,
 }) => {
-  const { convertToMp4 } = useMp4Conversion();
+  const { addToConversionQueue } = useMp4Conversion();
 
   const renderEpisodes = () => (
     <Box
@@ -62,7 +62,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
             onEpisodeClick={onEpisodeClick}
             handleFilepathChange={handleFilepathChange}
             handleConvertToMp4={(filePath) => {
-              convertToMp4(filePath);
+              addToConversionQueue(filePath);
             }}
           />
         ))

@@ -31,7 +31,7 @@ import { ConfirmationProvider } from "./renderer/contexts/ConfirmationContext";
 import { useMovies } from "./renderer/hooks/useMovies";
 import { useTvShows } from "./renderer/hooks/useTvShows";
 import { StatusDisplay } from "./renderer/components/StatusDisplay";
-import { videosInfoActions } from "./renderer/store/videoInfo/folderVideosInfo.slice";
+import { mp4ConversionActions } from "./renderer/store/mp4Conversion/mp4Conversion.slice";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -62,7 +62,7 @@ const App = () => {
     window.mainNotificationsAPI.mp4ConversionProgress((progress) => {
       const [fromPath, toPath] = progress.file.split(":::") || [];
       dispatch(
-        videosInfoActions.updateConvertToMp4Progress({
+        mp4ConversionActions.updateConvertToMp4Progress({
           fromPath,
           toPath,
           percent: progress.percent,
