@@ -98,7 +98,7 @@ const MovieList: React.FC<MovieListProps> = ({
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
     React.useState(false);
 
-  const { convertToMp4 } = useMp4Conversion();
+  const { addToConversionQueue } = useMp4Conversion();
 
   const handleDelete = async (filePath: string) => {
     setMessage("Are you sure you want to delete this Movie?");
@@ -119,7 +119,7 @@ const MovieList: React.FC<MovieListProps> = ({
   };
 
   const handleConvertToMp4 = (fromPath: string) => {
-    convertToMp4(fromPath);
+    addToConversionQueue(fromPath);
   };
 
   return (

@@ -1,9 +1,9 @@
 import { useSelector } from "react-redux";
-import { selConvertToMp4Progress } from "../store/videoInfo/folderVideosInfoSelectors";
 import { useAppDispatch } from "../store";
-import { videosInfoActions } from "../store/videoInfo/folderVideosInfo.slice";
-import { convertToMp4Api } from "../store/videoInfo/folderVideosInfoApi";
 import { useEffect } from "react";
+import { selConvertToMp4Progress } from "../store/mp4Conversion/mp4Conversion.selectors";
+import { mp4ConversionActions } from "../store/mp4Conversion/mp4Conversion.slice";
+import { convertToMp4Api } from "../store/mp4Conversion/mp4ConversionApi";
 export const useMp4Conversion = () => {
   const convertToMp4Progress = useSelector(selConvertToMp4Progress);
   const dispatch = useAppDispatch();
@@ -12,24 +12,28 @@ export const useMp4Conversion = () => {
     console.log("useMp4Conversion effect triggered", convertToMp4Progress);
   }, [convertToMp4Progress]);
 
-  const convertToMp4 = async (fromPath: string) => {
+  const addToConversionQueue = (fromPath: string) => {
     dispatch(
-      videosInfoActions.updateConvertToMp4Progress({
+      mp4ConversionActions.updateConvertToMp4Progress({
         fromPath,
         toPath: fromPath.replace(/\.[^/.]+$/, ".mp4"),
         percent: 0,
       }),
     );
+  };
 
+  const convertToMp4 = async (fromPath: string) => {
     const existingProgress = convertToMp4Progress.find(
       (progress) => progress.fromPath === fromPath,
     );
 
     if (!existingProgress) {
       const result = await convertToMp4Api(fromPath || "");
-      console.log("MP4 conversion result:", result);
+      console.log("MP4 complete conversion result:", result);
       dispatch(
-        videosInfoActions.markMp4ConversionAsComplete(result?.fromPath || ""),
+        mp4ConversionActions.markMp4ConversionAsComplete(
+          result?.fromPath || "",
+        ),
       );
     }
   };
@@ -40,5 +44,10 @@ export const useMp4Conversion = () => {
     );
   };
 
-  return { convertToMp4, convertToMp4Progress, isConvertingToMp4 };
+  return {
+    // convertToMp4,
+    convertToMp4Progress,
+    isConvertingToMp4,
+    addToConversionQueue,
+  };
 };
