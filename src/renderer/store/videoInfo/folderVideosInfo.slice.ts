@@ -24,6 +24,11 @@ interface FolderVideosInfoState {
   loadingFolderDetails: boolean;
   loadingCustomFolder: boolean;
   loadingPostVideoJson: boolean;
+  convertToMp4Progress: {
+    fromPath: string;
+    toPath: string;
+    percent: number;
+  }[];
 }
 
 const initialState: FolderVideosInfoState = {
@@ -41,6 +46,7 @@ const initialState: FolderVideosInfoState = {
   loadingFolderDetails: false,
   loadingCustomFolder: false,
   loadingPostVideoJson: false,
+  convertToMp4Progress: [],
 };
 
 const folderVideosInfoSlice = createSlice({
@@ -102,6 +108,29 @@ const folderVideosInfoSlice = createSlice({
       );
       if (idx !== -1) {
         state.episodes[idx] = { ...state.episodes[idx], ...episode };
+      }
+    },
+    updateConvertToMp4Progress: (
+      state,
+      action: PayloadAction<{
+        fromPath: string;
+        toPath: string;
+        percent: number;
+      }>,
+    ) => {
+      const { fromPath, toPath, percent } = action.payload;
+      const existingProgress = state.convertToMp4Progress.find(
+        (progress) => progress.fromPath === fromPath,
+      );
+      if (!existingProgress) {
+        state.convertToMp4Progress.push({
+          fromPath,
+          toPath,
+          percent,
+        });
+      } else {
+        existingProgress.percent = percent;
+        existingProgress.toPath = toPath;
       }
     },
   },

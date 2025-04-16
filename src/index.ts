@@ -9,6 +9,7 @@ import { loggingService as log } from "./main/services/main-logging.service";
 import { initializeSocket } from "./main/services/socket.service";
 import * as cleanUp from "./main/services/cleanUp.service";
 import * as appSetup from "./main/services/setup.service";
+import { setMainWindow } from "./main/mainWindowManager";
 
 // import {
 //   installExtension,
@@ -57,6 +58,7 @@ const createWindow = (): void => {
 
   mainWindow.on("closed", () => {
     mainWindow = null;
+    setMainWindow(null);
   });
 };
 
@@ -71,6 +73,7 @@ app.on("ready", () => {
   createWindow();
   // Initialize the socket service after the main window is created.
   if (mainWindow) {
+    setMainWindow(mainWindow);
     initializeSocket(mainWindow, port);
   }
 });

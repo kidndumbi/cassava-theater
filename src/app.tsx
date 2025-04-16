@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import CssBaseline from "@mui/material/CssBaseline";
 import { Box, ThemeProvider } from "@mui/material";
-import { Provider } from "react-redux";
+import { Provider, useSelector } from "react-redux";
 import {
   HashRouter,
   Routes,
@@ -13,7 +13,7 @@ import {
 } from "react-router-dom";
 import theme from "./renderer/theme";
 import { useSettings } from "./renderer/hooks/useSettings";
-import { store } from "./renderer/store";
+import { store, useAppDispatch } from "./renderer/store";
 import { LandingPage } from "./renderer/pages/landing-page/LandingPage";
 import { VideoDetailsPage } from "./renderer/pages/video-details-page/VideoDetailsPage";
 import { VideoPlayerPage } from "./renderer/pages/video-player-page/VideoPlayerPage";
@@ -31,12 +31,21 @@ import { ConfirmationProvider } from "./renderer/contexts/ConfirmationContext";
 import { useMovies } from "./renderer/hooks/useMovies";
 import { useTvShows } from "./renderer/hooks/useTvShows";
 import { StatusDisplay } from "./renderer/components/StatusDisplay";
+import { videosInfoActions } from "./renderer/store/videoInfo/folderVideosInfo.slice";
+import { selConvertToMp4Progress } from "./renderer/store/videoInfo/folderVideosInfoSelectors";
 
 const App = () => {
+  const dispatch = useAppDispatch();
   const { fetchAllSettings } = useSettings();
   const { showSnackbar } = useSnackbar();
   const { getMovies } = useMovies();
   const { getTvShows } = useTvShows();
+
+  const convertToMp4Progress = useSelector(selConvertToMp4Progress);
+
+  useEffect(() => {
+    console.log("convertToMp4Progress changed:", convertToMp4Progress);
+  }, [convertToMp4Progress]);
 
   const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
 
@@ -55,6 +64,17 @@ const App = () => {
 
     window.mainNotificationsAPI.userDisconnected((userId: string) => {
       showSnackbar("User disconnected: " + userId, "error");
+    });
+
+    window.mainNotificationsAPI.mp4ConversionProgress((progress) => {
+      const [fromPath, toPath] = progress.file.split(":::") || [];
+      dispatch(
+        videosInfoActions.updateConvertToMp4Progress({
+          fromPath,
+          toPath,
+          percent: progress.percent,
+        }),
+      );
     });
   }, []);
 
@@ -85,7 +105,7 @@ root.render(
         </Provider>
       </ThemeProvider>
     </ConfirmationProvider>
-  </SnackbarProvider>
+  </SnackbarProvider>,
 );
 
 function AppRoutes({
@@ -99,7 +119,7 @@ function AppRoutes({
 
   const location = useLocation();
   const showStatusDisplay = !["/video-player", "/video-details"].includes(
-    location.pathname
+    location.pathname,
   );
 
   useEffect(() => {
@@ -111,7 +131,7 @@ function AppRoutes({
           "&resumeId=" +
           data.queryParams.resumeId +
           "&startFromBeginning=" +
-          data.queryParams.startFromBeginning
+          data.queryParams.startFromBeginning,
       );
     });
   }, []);

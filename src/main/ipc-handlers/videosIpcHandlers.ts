@@ -1,4 +1,4 @@
-import { TvShowDetails } from './../../models/tv-show-details.model';
+import { TvShowDetails } from "./../../models/tv-show-details.model";
 import { ipcMain } from "electron";
 import { VideoIPCChannels } from "../../enums/VideoIPCChannels";
 import {
@@ -10,6 +10,7 @@ import {
   saveVideoJsonData,
   AddTvShowFolder,
 } from "../services/video-data.service";
+import { convertToMp4 } from "../services/mp4Conversion.service";
 
 export const videosIpcHandlers = () => {
   ipcMain.handle(
@@ -21,27 +22,27 @@ export const videosIpcHandlers = () => {
         searchText: string | undefined;
         includeThumbnail: boolean;
         category: string;
-      }
+      },
     ) => {
       return fetchVideosData(args);
-    }
+    },
   );
 
   ipcMain.handle(
     VideoIPCChannels.FetchVideoDetails,
     (
       _event: Electron.IpcMainInvokeEvent,
-      args: { path: string; category: string }
+      args: { path: string; category: string },
     ) => {
       return fetchVideoDetails(args.path, args.category);
-    }
+    },
   );
 
   ipcMain.handle(
     VideoIPCChannels.FetchFolderDetails,
     (_event: Electron.IpcMainInvokeEvent, args: { path: string }) => {
       return fetchFolderDetails(args.path.replace("/", "\\"));
-    }
+    },
   );
 
   ipcMain.handle(VideoIPCChannels.SaveCurrentTime, saveCurrentTime);
@@ -51,13 +52,23 @@ export const videosIpcHandlers = () => {
 
   ipcMain.handle(
     VideoIPCChannels.AddTvShowFolder,
-    (_event: Electron.IpcMainInvokeEvent, args: {
-      tvShowName: string;
-      subfolders: string[];
-      tvShowDetails: TvShowDetails | null;
-      tvShowsFolderPath: string;
-    }) => {
+    (
+      _event: Electron.IpcMainInvokeEvent,
+      args: {
+        tvShowName: string;
+        subfolders: string[];
+        tvShowDetails: TvShowDetails | null;
+        tvShowsFolderPath: string;
+      },
+    ) => {
       return AddTvShowFolder(args);
-    }
+    },
+  );
+
+  ipcMain.handle(
+    VideoIPCChannels.ConvertToMp4,
+    async (_event: Electron.IpcMainInvokeEvent, inputPath: string) => {
+      convertToMp4(inputPath);
+    },
   );
 };

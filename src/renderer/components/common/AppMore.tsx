@@ -8,7 +8,8 @@ interface AppMoreProps {
   handleDelete: () => void;
   isMovie: boolean;
   linkTheMovieDb: () => void;
-  onLogout?: () => void;
+  isNotMp4?: boolean;
+  handleConvertToMp4?: () => void;
 }
 
 const iconButtonStyles: SxProps<Theme> = {
@@ -35,7 +36,8 @@ export const AppMore: React.FC<AppMoreProps> = ({
   handleDelete,
   isMovie,
   linkTheMovieDb,
-  onLogout,
+  isNotMp4 = false,
+  handleConvertToMp4,
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -64,12 +66,16 @@ export const AppMore: React.FC<AppMoreProps> = ({
       action: linkTheMovieDb,
       sx: menuItemStyles(),
     },
-    {
-      label: "Logout",
-      action: onLogout || handleClose,
-      sx: menuItemStyles(),
-    },
+
   ];
+
+  if (isMovie && isNotMp4 && handleConvertToMp4) {
+    menuItems.push({
+      label: "Convert to MP4",
+      action: handleConvertToMp4, // Replace with actual path or logic to get the path
+      sx: menuItemStyles(theme.palette.warning.main),
+    });
+  }
 
   return (
     <>
