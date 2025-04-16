@@ -2,9 +2,10 @@ import { Box, CircularProgress, Typography } from "@mui/material";
 import theme from "../theme";
 import { useState } from "react";
 import { AppModal } from "./common/AppModal";
-import { useSelector } from "react-redux";
-import { selConvertToMp4Progress } from "../store/videoInfo/folderVideosInfoSelectors";
 import { CircularProgressWithLabel } from "./common/CircularProgressWithLabel";
+import AppIconButton from "./common/AppIconButton";
+import CheckIcon from "@mui/icons-material/Check";
+import { useMp4Conversion } from "../hooks/useMp4Conversion";
 
 const StatusDisplayItem = ({
   children,
@@ -15,14 +16,8 @@ const StatusDisplayItem = ({
 }) => {
   return (
     <Box
+      className="m-0 flex h-full items-center justify-center bg-inherit px-[10px]"
       sx={{
-        padding: "0 10px",
-        margin: 0,
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "inherit",
         "&:hover": {
           backgroundColor: theme.palette.primary.light,
         },
@@ -40,33 +35,39 @@ interface StatusDisplayProps {
 
 export const StatusDisplay = ({ port }: StatusDisplayProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const convertToMp4Progress = useSelector(selConvertToMp4Progress);
+  const { convertToMp4Progress } = useMp4Conversion();
 
   return (
     <Box
-      sx={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: "30px",
+      className="fixed bottom-0 left-0 right-0 flex h-[30px] items-center border-t p-0 text-base"
+      style={{
+        borderTop: `1px solid ${theme.palette.secondary.dark}`,
         backgroundColor: theme.customVariables.appDarker,
         color: theme.customVariables.appWhiteSmoke,
-        display: "flex",
-        alignItems: "center",
-        fontSize: "1rem",
-        padding: "0",
-        borderTop: `1px solid ${theme.palette.secondary.dark}`,
       }}
     >
       <StatusDisplayItem>PORT: {port} </StatusDisplayItem>
       <StatusDisplayItem
         onClick={() => {
-          console.log("StatusDisplayItem clicked"); // Placeholder for any action
-          setIsProcessing(true); // Simulate processing state
+          setIsProcessing(true);
         }}
       >
-        <CircularProgress color="secondary" size="20px" />
+        {convertToMp4Progress.length > 0 &&
+        convertToMp4Progress.some((p) => p.percent < 100) ? (
+          <CircularProgress color="secondary" size="20px" />
+        ) : (
+          <AppIconButton
+            tooltip="view processes"
+            onClick={setIsProcessing.bind(null, true)}
+            className="left-0"
+            sx={{
+              width: 24,
+              height: 24,
+            }}
+          >
+            <CheckIcon />
+          </AppIconButton>
+        )}
       </StatusDisplayItem>
       <AppModal
         open={isProcessing}
@@ -77,10 +78,14 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         {convertToMp4Progress &&
           convertToMp4Progress.map((progress, index) => (
             <Box key={index} className="flex" sx={{ padding: "10px" }}>
-              <Typography variant="h6" sx={{
-                color: theme.customVariables.appWhiteSmoke,
-                marginRight: "10px",
-              }} component="div">
+              <Typography
+                variant="h6"
+                sx={{
+                  color: theme.customVariables.appWhiteSmoke,
+                  marginRight: "10px",
+                }}
+                component="div"
+              >
                 {progress.toPath}
               </Typography>
               <CircularProgressWithLabel value={progress.percent} />

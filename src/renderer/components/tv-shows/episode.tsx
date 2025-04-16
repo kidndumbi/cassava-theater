@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Box, IconButton, Theme, Tooltip } from "@mui/material";
+import { Box, Theme } from "@mui/material";
+import FourMpIcon from "@mui/icons-material/FourMp";
 
 import {
+  getFileExtension,
   getPlayedPercentage,
   removeVidExt,
   secondsTohhmmss,
@@ -14,6 +16,8 @@ import "./episode.css";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { NotesModal } from "../common/NotesModal";
 import { useTvShows } from "../../hooks/useTvShows";
+import AppIconButton from "../common/AppIconButton";
+import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 
 interface EpisodeProps {
   episode: VideoDataModel;
@@ -23,6 +27,7 @@ interface EpisodeProps {
     newSubtitleFilePath: string,
     episode: VideoDataModel,
   ) => void;
+  handleConvertToMp4?: (filePath: string) => void;
 }
 
 export const Episode: React.FC<EpisodeProps> = ({
@@ -30,7 +35,10 @@ export const Episode: React.FC<EpisodeProps> = ({
   theme,
   onEpisodeClick,
   handleFilepathChange,
+  handleConvertToMp4,
 }) => {
+  const { isConvertingToMp4 } = useMp4Conversion();
+
   const [hover, setHover] = useState(false);
   const [openNotesModal, setOpenNotesModal] = useState(false);
   const handleCloseNotesModal = () => setOpenNotesModal(false);
@@ -101,21 +109,27 @@ export const Episode: React.FC<EpisodeProps> = ({
         <p className="episode-duration">
           {secondsTohhmmss(episode.duration || 0)}
         </p>
-        <ClosedCaptionButton
-          handleFilepathChange={(newSubtitleFilePath: string) => {
-            handleFilepathChange(newSubtitleFilePath, episode);
-          }}
-          subtitlePath={episode.subtitlePath || "None"}
-        />
-        <Tooltip title="Notes">
-          <IconButton
-            className="notes-button"
-            sx={{ color: theme.customVariables.appWhiteSmoke }}
-            onClick={handleNotesClick}
-          >
+
+        <Box className="flex gap-2">
+          <ClosedCaptionButton
+            handleFilepathChange={(newSubtitleFilePath: string) => {
+              handleFilepathChange(newSubtitleFilePath, episode);
+            }}
+            subtitlePath={episode.subtitlePath || "None"}
+          />
+          <AppIconButton tooltip="Notes" onClick={handleNotesClick}>
             <NotesIcon />
-          </IconButton>
-        </Tooltip>
+          </AppIconButton>
+
+          {getFileExtension(episode.filePath) !== "mp4" && !isConvertingToMp4(episode.filePath) && (
+            <AppIconButton
+              tooltip="Convert to MP4"
+              onClick={handleConvertToMp4?.bind(null, episode.filePath || "")}
+            >
+              <FourMpIcon />
+            </AppIconButton>
+          )}
+        </Box>
       </Box>
       <NotesModal
         handleVideoSeek={(seekTime) => {

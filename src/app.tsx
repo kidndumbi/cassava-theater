@@ -32,7 +32,6 @@ import { useMovies } from "./renderer/hooks/useMovies";
 import { useTvShows } from "./renderer/hooks/useTvShows";
 import { StatusDisplay } from "./renderer/components/StatusDisplay";
 import { videosInfoActions } from "./renderer/store/videoInfo/folderVideosInfo.slice";
-import { selConvertToMp4Progress } from "./renderer/store/videoInfo/folderVideosInfoSelectors";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -40,12 +39,6 @@ const App = () => {
   const { showSnackbar } = useSnackbar();
   const { getMovies } = useMovies();
   const { getTvShows } = useTvShows();
-
-  const convertToMp4Progress = useSelector(selConvertToMp4Progress);
-
-  useEffect(() => {
-    console.log("convertToMp4Progress changed:", convertToMp4Progress);
-  }, [convertToMp4Progress]);
 
   const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
 

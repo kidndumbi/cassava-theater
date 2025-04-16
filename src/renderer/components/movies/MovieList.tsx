@@ -14,10 +14,7 @@ import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
 import theme from "../../theme";
-import { useSelector } from "react-redux";
-import { selConvertToMp4Progress } from "../../store/videoInfo/folderVideosInfoSelectors";
-import { videosInfoActions } from "../../store/videoInfo/folderVideosInfo.slice";
-import { useAppDispatch } from "../../store";
+import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -94,14 +91,14 @@ const MovieList: React.FC<MovieListProps> = ({
   getImageUrl,
 }) => {
   const { removeMovie, updateTMDBId } = useMovies();
-  const convertToMp4Progress = useSelector(selConvertToMp4Progress);
-  const dispatch = useAppDispatch();
   const { showSnackbar } = useSnackbar();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedMovie, setSelectedMovie] =
     React.useState<VideoDataModel | null>(null);
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
     React.useState(false);
+
+  const { convertToMp4 } = useMp4Conversion();
 
   const handleDelete = async (filePath: string) => {
     setMessage("Are you sure you want to delete this Movie?");
@@ -122,21 +119,7 @@ const MovieList: React.FC<MovieListProps> = ({
   };
 
   const handleConvertToMp4 = (fromPath: string) => {
-    dispatch(
-      videosInfoActions.updateConvertToMp4Progress({
-        fromPath,
-        toPath: fromPath.replace(/\.[^/.]+$/, ".mp4"),
-        percent: 0,
-      }),
-    );
-
-    const existingProgress = convertToMp4Progress.find(
-      (progress) => progress.fromPath === fromPath,
-    );
-
-    if (!existingProgress) {
-      window.videoAPI.convertToMp4(fromPath || "");
-    }
+    convertToMp4([fromPath]);
   };
 
   return (

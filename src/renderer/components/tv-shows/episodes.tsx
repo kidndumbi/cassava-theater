@@ -4,6 +4,7 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import { Episode } from "./episode";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { formatDate } from "../../util/helperFunctions";
+import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 
 interface EpisodesProps {
   loadingEpisodes: boolean;
@@ -15,7 +16,7 @@ interface EpisodesProps {
   seasonAirDate: string;
   handleFilepathChange: (
     newSubtitleFilePath: string,
-    episode: VideoDataModel
+    episode: VideoDataModel,
   ) => void;
 }
 
@@ -29,6 +30,8 @@ export const Episodes: React.FC<EpisodesProps> = ({
   seasonAirDate,
   handleFilepathChange,
 }) => {
+  const { convertToMp4 } = useMp4Conversion();
+
   const renderEpisodes = () => (
     <Box
       sx={{
@@ -58,6 +61,9 @@ export const Episodes: React.FC<EpisodesProps> = ({
             theme={theme}
             onEpisodeClick={onEpisodeClick}
             handleFilepathChange={handleFilepathChange}
+            handleConvertToMp4={(filePath) => {
+              convertToMp4([filePath]);
+            }}
           />
         ))
       )}
