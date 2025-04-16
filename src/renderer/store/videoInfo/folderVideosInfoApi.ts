@@ -45,7 +45,7 @@ export const convertSrtToVtt = async (srt: string) => {
   }
 };
 
-export const convertToMp4 = async (path: string) => {
+export const convertToMp4Api = async (path: string) => {
   try {
     if (!path) {
       log.error("Path is undefined");
