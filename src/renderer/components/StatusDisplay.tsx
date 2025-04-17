@@ -54,7 +54,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         }}
       >
         {convertToMp4Progress.length > 0 &&
-        convertToMp4Progress.some((p) => !p.complete) ? (
+        convertToMp4Progress.some((p) => p.percent < 99) ? (
           <CircularProgress color="secondary" size="20px" />
         ) : (
           <AppIconButton
@@ -80,8 +80,11 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
           convertToMp4Progress.map((progress, index) => (
             <Box
               key={index}
-              className="flex items-center m-2 rounded-md"
-              sx={{ padding: "10px", backgroundColor: theme.palette.secondary.main }}
+              className="m-2 flex items-center rounded-md"
+              sx={{
+                padding: "10px",
+                backgroundColor: theme.palette.secondary.main,
+              }}
             >
               <Typography
                 variant="body2"
@@ -93,7 +96,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
               >
                 {progress.toPath}
               </Typography>
-              {progress.complete ? (
+              {progress.percent >= 99 ? (
                 <CheckCircleIcon
                   sx={{
                     color: theme.palette.primary.main,

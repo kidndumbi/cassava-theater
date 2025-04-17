@@ -1,13 +1,13 @@
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 
-export const convertToMp4Api = async (path: string) => {
+export const addToConversionQueueApi = async (path: string) => {
   try {
     if (!path) {
       log.error("Path is undefined");
       return;
     }
 
-    const result = await window.videoAPI.convertToMp4(path);
+    const result = await window.videoAPI.addToConversionQueue(path);
 
     return result;
   } catch (error) {

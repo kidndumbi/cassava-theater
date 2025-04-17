@@ -146,8 +146,8 @@ contextBridge.exposeInMainWorld("videoAPI", {
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.AddTvShowFolder, args);
   },
-  convertToMp4: (inputPath: string) => {
-    return ipcRenderer.invoke(VideoIPCChannels.ConvertToMp4, inputPath);
+  addToConversionQueue: (inputPath: string) => {
+    return ipcRenderer.invoke(VideoIPCChannels.AddToConversionQueue, inputPath);
   },
 });
 
