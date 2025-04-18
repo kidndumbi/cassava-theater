@@ -107,6 +107,17 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
       ) => callback(progress),
     );
   },
+  mp4ConversionCompleted: (
+    callback: (progress: { file: string; percent: number }) => void,
+  ) => {
+    ipcRenderer.on(
+      "mp4-conversion-completed",
+      (
+        event: Electron.IpcRendererEvent,
+        progress: { file: string; percent: number },
+      ) => callback(progress),
+    );
+  },
 });
 
 contextBridge.exposeInMainWorld("videoAPI", {
@@ -187,23 +198,34 @@ contextBridge.exposeInMainWorld("fileManagerAPI", {
   },
 });
 
-contextBridge.exposeInMainWorld("mp4ConversionAPI", { 
+contextBridge.exposeInMainWorld("mp4ConversionAPI", {
   addToConversionQueue: (inputPath: string) => {
-    return ipcRenderer.invoke(Mp4ConversionIPCChannels.AddToConversionQueue, inputPath);
+    return ipcRenderer.invoke(
+      Mp4ConversionIPCChannels.AddToConversionQueue,
+      inputPath,
+    );
   },
   pauseConversionItem: (inputPath: string) => {
-    return ipcRenderer.invoke(Mp4ConversionIPCChannels.PauseConversionItem, inputPath);
+    return ipcRenderer.invoke(
+      Mp4ConversionIPCChannels.PauseConversionItem,
+      inputPath,
+    );
   },
   unpauseConversionItem: (inputPath: string) => {
-    return ipcRenderer.invoke(Mp4ConversionIPCChannels.UnpauseConversionItem, inputPath);
+    return ipcRenderer.invoke(
+      Mp4ConversionIPCChannels.UnpauseConversionItem,
+      inputPath,
+    );
   },
   isItemPaused: (inputPath: string) => {
     return ipcRenderer.invoke(Mp4ConversionIPCChannels.IsItemPaused, inputPath);
   },
   getCurrentProcessingItem: () => {
-    return ipcRenderer.invoke(Mp4ConversionIPCChannels.GetCurrentProcessingItem);
+    return ipcRenderer.invoke(
+      Mp4ConversionIPCChannels.GetCurrentProcessingItem,
+    );
   },
   getConversionQueue: () => {
     return ipcRenderer.invoke(Mp4ConversionIPCChannels.GetConversionQueue);
-  }
+  },
 });

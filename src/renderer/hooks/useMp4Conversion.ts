@@ -14,13 +14,18 @@ export const useMp4Conversion = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    // console.log("useMp4Conversion effect triggered", convertToMp4Progress);
+    //console.log("useMp4Conversion effect triggered", convertToMp4Progress);
   }, [convertToMp4Progress]);
 
   const addToConversionQueue = async (fromPath: string) => {
     if (
       !convertToMp4Progress.some((progress) => progress.fromPath === fromPath)
     ) {
+      const result = await mp4Api.addToConversionQueueApi(fromPath);
+      if (!result) {
+        console.error(`Failed to add ${fromPath} to conversion queue.`);
+        return;
+      }
       dispatch(
         mp4ConversionActions.updateConvertToMp4Progress({
           fromPath,
@@ -29,8 +34,6 @@ export const useMp4Conversion = () => {
           paused: false,
         }),
       );
-      const result = await mp4Api.addToConversionQueueApi(fromPath);
-      console.log("added to conversion queue:", result);
     }
   };
 
@@ -70,6 +73,10 @@ export const useMp4Conversion = () => {
     mp4Api.getCurrentProcessingItemApi();
   const getConversionQueue = async () => mp4Api.getConversionQueueApi();
 
+  const clearCompletedConversions = () => {
+    dispatch(mp4ConversionActions.clearCompleteConversions());
+  };
+
   return {
     convertToMp4Progress,
     currentlyProcessingItem,
@@ -80,5 +87,6 @@ export const useMp4Conversion = () => {
     isItemPaused,
     getCurrentProcessingItem,
     getConversionQueue,
+    clearCompletedConversions
   };
 };

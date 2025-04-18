@@ -7,12 +7,13 @@ import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { useMp4Conversion } from "../hooks/useMp4Conversion";
 import { Mp4ConversionProgress } from "../store/mp4Conversion/mp4Conversion.slice";
+import Button from "@mui/material/Button";
 
 interface Mp4ProgressListProps {
   progressList: Mp4ConversionProgress[];
 }
 
-const COMPLETION_THRESHOLD = 99;
+const COMPLETION_THRESHOLD = 100;
 
 export const Mp4ProgressList = ({
   progressList = [],
@@ -21,6 +22,7 @@ export const Mp4ProgressList = ({
     pauseConversionItem,
     unpauseConversionItem,
     currentlyProcessingItem,
+    clearCompletedConversions,
   } = useMp4Conversion();
 
   if (progressList.length === 0) {
@@ -29,15 +31,30 @@ export const Mp4ProgressList = ({
 
   return (
     <>
-      {progressList.map((progress, index) => (
-        <ProgressItem
-          key={index}
-          progress={progress}
-          pauseConversion={(path) => pauseConversionItem(path)}
-          unpauseConversion={(path) => unpauseConversionItem(path)}
-          currentlyProcessingItem={currentlyProcessingItem}
-        />
-      ))}
+      <Box className="ml-14 mr-14 mt-4">
+        <Box>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              console.log("Clearing completed items");
+              clearCompletedConversions();
+            }}
+          >
+            Clear completed
+          </Button>
+        </Box>
+        <Box className="mt-2 flex flex-col gap-2">
+          {progressList.map((progress, index) => (
+            <ProgressItem
+              key={index}
+              progress={progress}
+              pauseConversion={(path) => pauseConversionItem(path)}
+              unpauseConversion={(path) => unpauseConversionItem(path)}
+              currentlyProcessingItem={currentlyProcessingItem}
+            />
+          ))}
+        </Box>
+      </Box>
     </>
   );
 };
@@ -54,9 +71,8 @@ const ProgressItem = ({
   currentlyProcessingItem: Mp4ConversionProgress;
 }) => (
   <Box
-    className="m-2 flex place-content-between items-center rounded-md"
+    className="flex place-content-between items-center rounded-md p-3"
     sx={{
-      padding: "10px",
       backgroundColor: theme.palette.secondary.main,
     }}
   >
@@ -102,7 +118,7 @@ const FilePathText = ({ path }: { path: string }) => (
 );
 
 const ProgressIndicator = ({ percent }: { percent: number }) => {
-  if (percent >= COMPLETION_THRESHOLD) {
+  if (percent === COMPLETION_THRESHOLD) {
     return (
       <CheckCircleIcon
         sx={{

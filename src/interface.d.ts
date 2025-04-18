@@ -38,6 +38,9 @@ export interface MainNotificationsAPI {
   mp4ConversionProgress: (
     callback: (progress: { file: string; percent: number }) => void,
   ) => void;
+  mp4ConversionCompleted: (
+    callback: (progress: { file: string; percent: number }) => void,
+  ) => void;
 }
 
 export interface MainUtilAPI {
