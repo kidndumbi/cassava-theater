@@ -34,7 +34,7 @@ export const Mp4ProgressList = ({
       <Box className="ml-14 mr-14 mt-4">
         <Box>
           <Button
-            variant="outlined"
+            variant="contained"
             onClick={() => {
               console.log("Clearing completed items");
               clearCompletedConversions();
@@ -82,19 +82,19 @@ const ProgressItem = ({
         progress.percent < COMPLETION_THRESHOLD && (
           <>
             {!progress.paused ? (
-              <AppIconButton
-                tooltip="Pause conversion"
+              <Button
+                variant="contained"
                 onClick={() => pauseConversion(progress.fromPath)}
               >
-                <PauseIcon></PauseIcon>
-              </AppIconButton>
+                Pause
+              </Button>
             ) : (
-              <AppIconButton
-                tooltip="resume conversion"
+              <Button
+                variant="outlined"
                 onClick={() => unpauseConversion(progress.fromPath)}
               >
-                <PlayArrowIcon></PlayArrowIcon>
-              </AppIconButton>
+                Resume
+              </Button>
             )}
           </>
         )}
