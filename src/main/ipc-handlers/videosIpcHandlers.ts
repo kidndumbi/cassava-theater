@@ -9,6 +9,7 @@ import {
   saveCurrentTime,
   saveVideoJsonData,
   AddTvShowFolder,
+  getFolderFiles,
 } from "../services/video-data.service";
 
 export const videosIpcHandlers = () => {
@@ -61,6 +62,13 @@ export const videosIpcHandlers = () => {
       },
     ) => {
       return AddTvShowFolder(args);
+    },
+  );
+
+  ipcMain.handle(
+    VideoIPCChannels.GetFolderFiles,
+    (_event: Electron.IpcMainInvokeEvent, folderPath: string) => {
+      return getFolderFiles(folderPath);
     },
   );
 };

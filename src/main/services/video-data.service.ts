@@ -8,6 +8,7 @@ import { loggingService as log } from "./main-logging.service";
 import * as videoDataHelpers from "./video.helpers";
 import { getMovieOrTvShowById } from "./themoviedb.service";
 import { getValue } from "../store";
+import { normalizeFilePath } from "./helpers";
 
 export const fetchVideosData = async ({
   filePath,
@@ -108,6 +109,16 @@ export const AddTvShowFolder = async (data: {
     log.error("Error adding TV show folder: ", error);
     throw new Error("Error adding TV show folder: " + error);
   }
+};
+
+export const getFolderFiles = (folderPath: string): string[] => {
+  if (!fs.existsSync(folderPath)) {
+    throw new Error(`Path does not exist: ${folderPath}`);
+  }
+  const entries = fs.readdirSync(folderPath);
+  return entries
+    .map((entry) => normalizeFilePath(path.join(folderPath, entry)))
+    .filter((fullPath) => fs.statSync(fullPath).isFile());
 };
 
 export const fetchVideoDetails = async (

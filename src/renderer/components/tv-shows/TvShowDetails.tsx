@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import FourMpIcon from "@mui/icons-material/FourMp";
 import {
   getFilename,
   getUrl,
@@ -29,6 +30,8 @@ import { useSettings } from "../../hooks/useSettings";
 import AppIconButton from "../common/AppIconButton";
 import CustomDrawer from "../common/CustomDrawer";
 import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
+import { AppModal } from "../common/AppModal";
+import SeasonConvertSelector from "./SeasonConvertSelector";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -67,6 +70,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   const [episodeLastWatched, setEpisodeLastWatched] =
     useState<VideoDataModel | null>(null);
   const [openModal, setOpenModal] = useState(false);
+  const [openConvertToMp4Modal, setOpenConvertToMp4Modal] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
 
   const handleOpenModal = () => setOpenModal(true);
@@ -262,6 +266,14 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 >
                   <MovieIcon />
                 </AppIconButton>
+                <AppIconButton
+                  tooltip="convert to MP4"
+                  onClick={() => {
+                    setOpenConvertToMp4Modal(true);
+                  }}
+                >
+                  <FourMpIcon />
+                </AppIconButton>
               </Box>
             </Box>
             <Box className="absolute bottom-5 left-5 ml-4 mr-4 text-white drop-shadow-md">
@@ -369,6 +381,16 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
           }
         }}
       />
+      <AppModal
+        open={openConvertToMp4Modal}
+        onClose={setOpenConvertToMp4Modal.bind(null, false)}
+        title="Seasons"
+      >
+        <SeasonConvertSelector
+          childFolders={childFolders}
+          close={setOpenConvertToMp4Modal.bind(null, false)}
+        />
+      </AppModal>
       <CustomDrawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
         <TvShowCastAndCrew
           aggregateCredits={tvShowDetails?.tv_show_details?.aggregate_credits}
