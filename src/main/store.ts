@@ -22,6 +22,10 @@ const schema: Schema<SettingsModel> = {
     type: "boolean",
     default: false,
   },
+  showVideoType: {
+    type: "boolean",
+    default: true,
+  },
   theMovieDbApiKey: {
     type: "string",
     default: "",
@@ -35,14 +39,14 @@ export const initializeStore = (): void => {
 };
 
 export const getValue = <K extends keyof SettingsModel>(
-  key: K
+  key: K,
 ): SettingsModel[K] => {
   return store.get(key);
 };
 
 export const setValue = (
   key: keyof SettingsModel,
-  value: SettingsModel[keyof SettingsModel]
+  value: SettingsModel[keyof SettingsModel],
 ): SettingsModel[keyof SettingsModel] => {
   store.set(key, value);
   return value;

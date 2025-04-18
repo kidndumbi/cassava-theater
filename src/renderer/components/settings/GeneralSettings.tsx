@@ -18,12 +18,14 @@ interface GeneralSettingsProps {
   continuousPlay: boolean;
   port: string;
   theMovieDbApiKey: string;
+  showVideoType: boolean;
   handleFolderSelection: (settingName: string) => Promise<void>;
   handleUpdateSetting: (
     settingName: string,
-    value: SettingsModel[keyof SettingsModel]
+    value: SettingsModel[keyof SettingsModel],
   ) => Promise<void>;
   handleContinuousPlayChange: (value: boolean) => void;
+  handleShowVideoTypeChange: (value: boolean) => void;
 }
 
 export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
@@ -35,6 +37,8 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   handleUpdateSetting,
   continuousPlay,
   handleContinuousPlayChange,
+  showVideoType,
+  handleShowVideoTypeChange,
 }) => {
   const theme = useTheme();
 
@@ -52,14 +56,10 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   const renderFolderSetting = (
     label: string,
     value: string,
-    settingName: string
+    settingName: string,
   ) => (
     <div style={{ display: "flex", alignItems: "center" }}>
-      <AppTextField
-        label={label}
-        value={value}
-        theme={theme}
-      />
+      <AppTextField label={label} value={value} theme={theme} />
       <Button
         sx={{ marginLeft: "8px" }}
         variant="contained"
@@ -80,16 +80,16 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
       }}
     >
       <CardContent>
-        <Box>
+        <Box className="flex flex-col gap-2">
           {renderFolderSetting(
             "Movie Folder Path",
             movieFolderPath,
-            "movieFolderPath"
+            "movieFolderPath",
           )}
           {renderFolderSetting(
             "TV Shows Folder Path",
             tvShowsFolderPath,
-            "tvShowsFolderPath"
+            "tvShowsFolderPath",
           )}
           <Box style={{ display: "flex", alignItems: "center" }}>
             <AppTextField
@@ -126,20 +126,36 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
               <Save />
             </Button>
           </Box>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={continuousPlay}
-                onChange={(e) => handleContinuousPlayChange(e.target.checked)}
-                color="primary"
-              />
-            }
-            label={
-              <span style={{ color: theme.customVariables.appWhiteSmoke }}>
-                Continuous Play
-              </span>
-            }
-          />
+      
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={continuousPlay}
+                  onChange={(e) => handleContinuousPlayChange(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label={
+                <span style={{ color: theme.customVariables.appWhiteSmoke }}>
+                  Continuous Play
+                </span>
+              }
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={showVideoType}
+                  onChange={(e) => handleShowVideoTypeChange(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label={
+                <span style={{ color: theme.customVariables.appWhiteSmoke }}>
+                  Show Video Type
+                </span>
+              }
+            />
+        
         </Box>
       </CardContent>
     </Card>
