@@ -5,4 +5,5 @@ export enum Mp4ConversionIPCChannels {
     IsItemPaused = "video:isItemPaused",
     GetCurrentProcessingItem = "video:getCurrentProcessingItem",
     GetConversionQueue = "video:getConversionQueue",
+    RemoveFromConversionQueue = "video:removeFromConversionQueue",
 }

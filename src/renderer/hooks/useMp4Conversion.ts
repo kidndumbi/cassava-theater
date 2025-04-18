@@ -75,6 +75,15 @@ export const useMp4Conversion = () => {
   const getCurrentProcessingItem = async () =>
     mp4Api.getCurrentProcessingItemApi();
   const getConversionQueue = async () => mp4Api.getConversionQueueApi();
+  const removeFromConversionQueue = async (path: string) => {
+    const result = await mp4Api.removeFromConversionQueueApi(path);
+    if (!result) {
+      console.error(`Failed to remove ${path} from conversion queue.`);
+      return false;
+    }
+    dispatch(mp4ConversionActions.removeFromConversionQueue(path));
+    return result;
+  };
 
   const clearCompletedConversions = () => {
     dispatch(mp4ConversionActions.clearCompleteConversions());
@@ -92,5 +101,6 @@ export const useMp4Conversion = () => {
     getConversionQueue,
     clearCompletedConversions,
     addOrUpdateProgressItem,
+    removeFromConversionQueue,
   };
 };
