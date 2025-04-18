@@ -7,6 +7,7 @@ import {
   isItemPaused,
   getCurrentProcessingItem,
   getConversionQueue,
+  removeFromConversionQueue,
 } from "../services/mp4Conversion.service";
 
 export const mp4ConversionIpcHandlers = () => {
@@ -44,6 +45,12 @@ export const mp4ConversionIpcHandlers = () => {
     Mp4ConversionIPCChannels.GetConversionQueue,
     async () => {
       return getConversionQueue();
+    },
+  );
+  ipcMain.handle(
+    Mp4ConversionIPCChannels.RemoveFromConversionQueue,
+    async (_event: Electron.IpcMainInvokeEvent, inputPath: string) => {
+      return removeFromConversionQueue(inputPath);
     },
   );
 };

@@ -1,6 +1,10 @@
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 
-const callPathApi = async <T>(apiMethod: (path: string) => Promise<T>, errorMsg: string, path: string): Promise<T | undefined> => {
+const callPathApi = async <T>(
+  apiMethod: (path: string) => Promise<T>,
+  errorMsg: string,
+  path: string,
+): Promise<T | undefined> => {
   try {
     if (!path) {
       log.error("Path is undefined");
@@ -15,16 +19,39 @@ const callPathApi = async <T>(apiMethod: (path: string) => Promise<T>, errorMsg:
 };
 
 export const addToConversionQueueApi = async (path: string) =>
-  callPathApi(window.mp4ConversionAPI.addToConversionQueue, "Error converting to MP4 via API:", path);
+  callPathApi(
+    window.mp4ConversionAPI.addToConversionQueue,
+    "Error converting to MP4 via API:",
+    path,
+  );
 
 export const pauseConversionItemApi = async (path: string) =>
-  callPathApi(window.mp4ConversionAPI.pauseConversionItem, "Error pausing conversion item via API:", path);
+  callPathApi(
+    window.mp4ConversionAPI.pauseConversionItem,
+    "Error pausing conversion item via API:",
+    path,
+  );
 
 export const unpauseConversionItemApi = async (path: string) =>
-  callPathApi(window.mp4ConversionAPI.unpauseConversionItem, "Error unpausing conversion item via API:", path);
+  callPathApi(
+    window.mp4ConversionAPI.unpauseConversionItem,
+    "Error unpausing conversion item via API:",
+    path,
+  );
+
+export const removeFromConversionQueueApi = async (path: string) =>
+  callPathApi(
+    window.mp4ConversionAPI.removeFromConversionQueue,
+    "Error removing item from conversion queue via API:",
+    path,
+  );
 
 export const isItemPausedApi = async (path: string) =>
-  callPathApi(window.mp4ConversionAPI.isItemPaused, "Error checking if item is paused via API:", path);
+  callPathApi(
+    window.mp4ConversionAPI.isItemPaused,
+    "Error checking if item is paused via API:",
+    path,
+  );
 
 export const getCurrentProcessingItemApi = async () => {
   try {

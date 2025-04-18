@@ -104,6 +104,7 @@ export interface Mp4ConversionAPI {
   isItemPaused: (inputPath: string) => Promise<boolean>;
   getCurrentProcessingItem: () => Promise<ConversionQueueItem>;
   getConversionQueue: () => Promise<ConversionQueueItem[]>;
+  removeFromConversionQueue: (inputPath: string) => Promise<boolean>;
 }
 
 declare global {

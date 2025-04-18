@@ -2,9 +2,6 @@ import { Box, Typography } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import theme from "../theme";
 import { CircularProgressWithLabel } from "./common/CircularProgressWithLabel";
-import AppIconButton from "./common/AppIconButton";
-import PauseIcon from "@mui/icons-material/Pause";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { useMp4Conversion } from "../hooks/useMp4Conversion";
 import { Mp4ConversionProgress } from "../store/mp4Conversion/mp4Conversion.slice";
 import Button from "@mui/material/Button";
@@ -23,6 +20,7 @@ export const Mp4ProgressList = ({
     unpauseConversionItem,
     currentlyProcessingItem,
     clearCompletedConversions,
+    removeFromConversionQueue
   } = useMp4Conversion();
 
   if (progressList.length === 0) {
@@ -51,6 +49,9 @@ export const Mp4ProgressList = ({
               pauseConversion={(path) => pauseConversionItem(path)}
               unpauseConversion={(path) => unpauseConversionItem(path)}
               currentlyProcessingItem={currentlyProcessingItem}
+              removeFromConversionQueue={(path) =>
+                removeFromConversionQueue(path)
+              }
             />
           ))}
         </Box>
@@ -64,10 +65,12 @@ const ProgressItem = ({
   pauseConversion,
   unpauseConversion,
   currentlyProcessingItem,
+  removeFromConversionQueue
 }: {
   progress: Mp4ConversionProgress;
   pauseConversion: (path: string) => Promise<boolean>;
   unpauseConversion: (path: string) => Promise<boolean>;
+  removeFromConversionQueue: (path: string) => Promise<boolean>;
   currentlyProcessingItem: Mp4ConversionProgress;
 }) => (
   <Box
@@ -77,12 +80,13 @@ const ProgressItem = ({
     }}
   >
     <FilePathText path={progress.toPath} />
-    <Box className="flex">
+    <Box className="flex gap-2">
       {currentlyProcessingItem?.fromPath !== progress.fromPath &&
         progress.percent < COMPLETION_THRESHOLD && (
           <>
             {!progress.paused ? (
               <Button
+                size="small"
                 variant="contained"
                 onClick={() => pauseConversion(progress.fromPath)}
               >
@@ -90,7 +94,8 @@ const ProgressItem = ({
               </Button>
             ) : (
               <Button
-                variant="outlined"
+                size="small"
+                variant="outlined" 
                 onClick={() => unpauseConversion(progress.fromPath)}
               >
                 Resume
@@ -98,6 +103,14 @@ const ProgressItem = ({
             )}
           </>
         )}
+      <Button
+        size="small"
+        variant="contained"
+        color="error"
+        onClick={() => removeFromConversionQueue(progress.fromPath)}
+      >
+        Cancel
+      </Button>
 
       <ProgressIndicator percent={progress.percent} />
     </Box>
