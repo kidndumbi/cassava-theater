@@ -15,6 +15,7 @@ import { SetPlayingModel } from "./models/set-playing.model";
 import { MovieDetails } from "./models/movie-detail.model";
 import { TvShowDetails } from "./models/tv-show-details.model";
 import { FileIPCChannels } from "./enums/fileIPCChannels";
+import { Mp4ConversionIPCChannels } from "./enums/mp4ConversionIPCChannels.enum";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -146,9 +147,6 @@ contextBridge.exposeInMainWorld("videoAPI", {
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.AddTvShowFolder, args);
   },
-  addToConversionQueue: (inputPath: string) => {
-    return ipcRenderer.invoke(VideoIPCChannels.AddToConversionQueue, inputPath);
-  },
 });
 
 contextBridge.exposeInMainWorld("theMovieDbAPI", {
@@ -187,4 +185,25 @@ contextBridge.exposeInMainWorld("fileManagerAPI", {
       message: string;
     }>;
   },
+});
+
+contextBridge.exposeInMainWorld("mp4ConversionAPI", { 
+  addToConversionQueue: (inputPath: string) => {
+    return ipcRenderer.invoke(Mp4ConversionIPCChannels.AddToConversionQueue, inputPath);
+  },
+  pauseConversionItem: (inputPath: string) => {
+    return ipcRenderer.invoke(Mp4ConversionIPCChannels.PauseConversionItem, inputPath);
+  },
+  unpauseConversionItem: (inputPath: string) => {
+    return ipcRenderer.invoke(Mp4ConversionIPCChannels.UnpauseConversionItem, inputPath);
+  },
+  isItemPaused: (inputPath: string) => {
+    return ipcRenderer.invoke(Mp4ConversionIPCChannels.IsItemPaused, inputPath);
+  },
+  getCurrentProcessingItem: () => {
+    return ipcRenderer.invoke(Mp4ConversionIPCChannels.GetCurrentProcessingItem);
+  },
+  getConversionQueue: () => {
+    return ipcRenderer.invoke(Mp4ConversionIPCChannels.GetConversionQueue);
+  }
 });

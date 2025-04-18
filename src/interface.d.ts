@@ -1,3 +1,4 @@
+import { ConversionQueueItem } from "./main/services/mp4Conversion.service";
 import { SettingsModel } from "./main/store";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoDataModel } from "./models/videoData.model";
@@ -72,9 +73,6 @@ export interface VideoAPI {
     tvShowDetails: TvShowDetails | null;
     tvShowsFolderPath: string;
   }) => Promise<VideoDataModel>;
-  addToConversionQueue: (
-    inputPath: string,
-  ) => Promise<boolean>;
 }
 
 export interface TheMovieDbAPI {
@@ -95,6 +93,15 @@ export interface FileManagerAPI {
   deleteFile: (path: string) => Promise<{ success: boolean; message: string }>;
 }
 
+export interface Mp4ConversionAPI {
+  addToConversionQueue: (inputPath: string) => Promise<boolean>;
+  pauseConversionItem: (inputPath: string) => Promise<boolean>;
+  unpauseConversionItem: (inputPath: string) => Promise<boolean>;
+  isItemPaused: (inputPath: string) => Promise<boolean>;
+  getCurrentProcessingItem: () => Promise<ConversionQueueItem>;
+  getConversionQueue: () => Promise<ConversionQueueItem[]>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -106,5 +113,6 @@ declare global {
     mainUtilAPI: MainUtilAPI;
     theMovieDbAPI: TheMovieDbAPI;
     fileManagerAPI: FileManagerAPI;
+    mp4ConversionAPI: Mp4ConversionAPI;
   }
 }

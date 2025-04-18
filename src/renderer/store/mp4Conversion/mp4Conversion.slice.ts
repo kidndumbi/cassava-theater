@@ -1,14 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface Mp4ConversionProgress {
+export interface Mp4ConversionProgress {
   fromPath: string;
   toPath: string;
   percent: number;
-  complete: boolean;
+  paused: boolean;
 }
 
 interface Mp4ConversionState {
   convertToMp4Progress: Mp4ConversionProgress[];
+  currentlyProcessingItem?: Mp4ConversionProgress;
 }
 
 const initialState: Mp4ConversionState = {
@@ -21,37 +22,30 @@ const mp4ConversionSlice = createSlice({
   reducers: {
     updateConvertToMp4Progress: (
       state,
-      action: PayloadAction<{
-        fromPath: string;
-        toPath: string;
-        percent: number;
-      }>
+      action: PayloadAction<Mp4ConversionProgress>,
     ) => {
-      const { fromPath, toPath, percent } = action.payload;
+      const { fromPath, toPath, percent, paused } = action.payload;
       const existingProgress = state.convertToMp4Progress.find(
-        (progress) => progress.fromPath === fromPath
+        (progress) => progress.fromPath === fromPath,
       );
       if (!existingProgress) {
         state.convertToMp4Progress.push({
           fromPath,
           toPath,
           percent,
-          complete: false,
+          paused: false,
         });
       } else {
         existingProgress.percent = percent;
         existingProgress.toPath = toPath;
+        existingProgress.paused = paused;
       }
     },
-    markMp4ConversionAsComplete: (state, action: PayloadAction<string>) => {
-      const fromPath = action.payload;
-      const existingProgress = state.convertToMp4Progress.find(
-        (progress) => progress.fromPath === fromPath
-      );
-      if (existingProgress) {
-        existingProgress.complete = true;
-        existingProgress.percent = 100;
-      }
+    setCurrentlyProcessingItem: (
+      state,
+      action: PayloadAction<Mp4ConversionProgress>,
+    ) => {
+      state.currentlyProcessingItem = action.payload;
     },
   },
 });

@@ -1,12 +1,11 @@
-import { Box, CircularProgress, Typography } from "@mui/material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { Box, CircularProgress } from "@mui/material";
 import theme from "../theme";
 import { useState } from "react";
 import { AppModal } from "./common/AppModal";
-import { CircularProgressWithLabel } from "./common/CircularProgressWithLabel";
 import AppIconButton from "./common/AppIconButton";
 import CheckIcon from "@mui/icons-material/Check";
 import { useMp4Conversion } from "../hooks/useMp4Conversion";
+import { Mp4ProgressList } from "./Mp4ProgressList";
 
 const StatusDisplayItem = ({
   children,
@@ -76,37 +75,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         title="Processing..."
         fullScreen={true}
       >
-        {convertToMp4Progress &&
-          convertToMp4Progress.map((progress, index) => (
-            <Box
-              key={index}
-              className="m-2 flex items-center rounded-md"
-              sx={{
-                padding: "10px",
-                backgroundColor: theme.palette.secondary.main,
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{
-                  color: theme.customVariables.appWhiteSmoke,
-                  marginRight: "10px",
-                }}
-                component="div"
-              >
-                {progress.toPath}
-              </Typography>
-              {progress.percent >= 99 ? (
-                <CheckCircleIcon
-                  sx={{
-                    color: theme.palette.primary.main,
-                  }}
-                />
-              ) : (
-                <CircularProgressWithLabel value={progress.percent} />
-              )}
-            </Box>
-          ))}
+        <Mp4ProgressList progressList={convertToMp4Progress} />
       </AppModal>
     </Box>
   );
