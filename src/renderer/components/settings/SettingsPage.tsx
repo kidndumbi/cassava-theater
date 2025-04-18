@@ -23,6 +23,7 @@ export const SettingsPage: React.FC = () => {
   const [theMovieDbApiKey, setTheMovieDbApiKey] = useState("");
   const [customFolders, setCustomFolders] = useState<CustomFolderModel[]>([]);
   const [currentTabValue, setCurrentTabValue] = useState(0);
+  const [showVideoType, setShowVideoType] = useState(true);
 
   const { openDialog, setMessage } = useConfirmation();
 
@@ -38,6 +39,8 @@ export const SettingsPage: React.FC = () => {
     if (settings.continuousPlay) setContinuousPlay(settings.continuousPlay);
     if (settings.theMovieDbApiKey)
       setTheMovieDbApiKey(settings.theMovieDbApiKey);
+    if (typeof settings.showVideoType === "boolean")
+      setShowVideoType(settings.showVideoType);
   }, [settings]);
 
   const handleFolderUpdate = async (
@@ -166,6 +169,11 @@ export const SettingsPage: React.FC = () => {
             handleContinuousPlayChange={(value) => {
               setContinuousPlay(value);
               handleUpdateSetting("continuousPlay", value);
+            }}
+            showVideoType={showVideoType}
+            handleShowVideoTypeChange={(value: boolean) => {
+              setShowVideoType(value);
+              handleUpdateSetting("showVideoType", value);
             }}
           />
         </CustomTabPanel>

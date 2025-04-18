@@ -18,6 +18,9 @@ import { NotesModal } from "../common/NotesModal";
 import { useTvShows } from "../../hooks/useTvShows";
 import AppIconButton from "../common/AppIconButton";
 import { useMp4Conversion } from "../../hooks/useMp4Conversion";
+import { useSettings } from "../../hooks/useSettings";
+import { styled } from "@mui/system";
+import { VideoTypeChip } from "../common/VideoTypeChip";
 
 interface EpisodeProps {
   episode: VideoDataModel;
@@ -38,6 +41,7 @@ export const Episode: React.FC<EpisodeProps> = ({
   handleConvertToMp4,
 }) => {
   const { isConvertingToMp4 } = useMp4Conversion();
+  const { settings } = useSettings();
 
   const [hover, setHover] = useState(false);
   const [openNotesModal, setOpenNotesModal] = useState(false);
@@ -62,9 +66,28 @@ export const Episode: React.FC<EpisodeProps> = ({
 
   const showThumbnail = episode?.videoProgressScreenshot && !hasError;
 
+  const HoverBox = styled(Box)({
+    position: "relative",
+    "&:hover .hover-content": {
+      display: "block",
+    },
+  });
+
+  const VideoTypeContainer = styled(Box)(
+    ({ alwaysShow }: { alwaysShow: boolean }) => ({
+      position: "absolute",
+      top: 9,
+      left: 9,
+      display: alwaysShow ? "block" : "none",
+      "&.hover-content": {
+        display: alwaysShow ? "block" : "none",
+      },
+    }),
+  );
+
   return (
     <Box key={episode.filePath} className="episode-container">
-      <Box
+      <HoverBox
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         className="episode-thumbnail-container"
@@ -97,7 +120,13 @@ export const Episode: React.FC<EpisodeProps> = ({
             </Box>
           </Box>
         )}
-      </Box>
+        <VideoTypeContainer
+          className={!settings?.showVideoType ? "hover-content" : ""}
+          alwaysShow={settings?.showVideoType}
+        >
+          <VideoTypeChip filePath={episode.filePath} />
+        </VideoTypeContainer>
+      </HoverBox>
 
       <Box
         className="episode-details"
@@ -121,14 +150,15 @@ export const Episode: React.FC<EpisodeProps> = ({
             <NotesIcon />
           </AppIconButton>
 
-          {getFileExtension(episode.filePath) !== "mp4" && !isConvertingToMp4(episode.filePath) && (
-            <AppIconButton
-              tooltip="Convert to MP4"
-              onClick={handleConvertToMp4?.bind(null, episode.filePath || "")}
-            >
-              <FourMpIcon />
-            </AppIconButton>
-          )}
+          {getFileExtension(episode.filePath) !== "mp4" &&
+            !isConvertingToMp4(episode.filePath) && (
+              <AppIconButton
+                tooltip="Convert to MP4"
+                onClick={handleConvertToMp4?.bind(null, episode.filePath || "")}
+              >
+                <FourMpIcon />
+              </AppIconButton>
+            )}
         </Box>
       </Box>
       <NotesModal

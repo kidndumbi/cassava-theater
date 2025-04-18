@@ -20,7 +20,7 @@ export const Mp4ProgressList = ({
     unpauseConversionItem,
     currentlyProcessingItem,
     clearCompletedConversions,
-    removeFromConversionQueue
+    removeFromConversionQueue,
   } = useMp4Conversion();
 
   if (progressList.length === 0) {
@@ -34,7 +34,6 @@ export const Mp4ProgressList = ({
           <Button
             variant="contained"
             onClick={() => {
-              console.log("Clearing completed items");
               clearCompletedConversions();
             }}
           >
@@ -65,7 +64,7 @@ const ProgressItem = ({
   pauseConversion,
   unpauseConversion,
   currentlyProcessingItem,
-  removeFromConversionQueue
+  removeFromConversionQueue,
 }: {
   progress: Mp4ConversionProgress;
   pauseConversion: (path: string) => Promise<boolean>;
@@ -95,7 +94,7 @@ const ProgressItem = ({
             ) : (
               <Button
                 size="small"
-                variant="outlined" 
+                variant="outlined"
                 onClick={() => unpauseConversion(progress.fromPath)}
               >
                 Resume
@@ -103,14 +102,17 @@ const ProgressItem = ({
             )}
           </>
         )}
-      <Button
-        size="small"
-        variant="contained"
-        color="error"
-        onClick={() => removeFromConversionQueue(progress.fromPath)}
-      >
-        Cancel
-      </Button>
+
+      {progress.percent < COMPLETION_THRESHOLD && (
+        <Button
+          size="small"
+          variant="contained"
+          color="error"
+          onClick={() => removeFromConversionQueue(progress.fromPath)}
+        >
+          Cancel
+        </Button>
+      )}
 
       <ProgressIndicator percent={progress.percent} />
     </Box>

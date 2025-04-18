@@ -8,5 +8,6 @@ export interface SettingsModel {
     folderPath: string;
   }>;
   continuousPlay: boolean;
+  showVideoType: boolean;
   theMovieDbApiKey: string;
 }
