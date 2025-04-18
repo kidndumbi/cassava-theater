@@ -44,3 +44,18 @@ export const convertSrtToVtt = async (srt: string) => {
     throw error;
   }
 };
+
+export const getFolderFilesApi = async (path: string) => {
+  try {
+    if (!path) {
+      log.error("Path is undefined");
+      return [];
+    }
+
+    const response = await window.videoAPI.getFolderFiles(path);
+    return response;
+  } catch (error) {
+    log.error("Error fetching folder files via API:", error);
+    throw error;
+  }
+};

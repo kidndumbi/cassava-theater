@@ -76,6 +76,7 @@ export interface VideoAPI {
     tvShowDetails: TvShowDetails | null;
     tvShowsFolderPath: string;
   }) => Promise<VideoDataModel>;
+  getFolderFiles: (folderPath: string) => Promise<string[]>;
 }
 
 export interface TheMovieDbAPI {

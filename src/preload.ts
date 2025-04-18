@@ -158,6 +158,9 @@ contextBridge.exposeInMainWorld("videoAPI", {
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.AddTvShowFolder, args);
   },
+  getFolderFiles: (folderPath: string) => {
+    return ipcRenderer.invoke(VideoIPCChannels.GetFolderFiles, folderPath);
+  },
 });
 
 contextBridge.exposeInMainWorld("theMovieDbAPI", {

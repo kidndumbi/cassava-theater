@@ -5,7 +5,10 @@ import {
   selConvertToMp4Progress,
   selCurrentlyProcessingItem,
 } from "../store/mp4Conversion/mp4Conversion.selectors";
-import { mp4ConversionActions } from "../store/mp4Conversion/mp4Conversion.slice";
+import {
+  mp4ConversionActions,
+  Mp4ConversionProgress,
+} from "../store/mp4Conversion/mp4Conversion.slice";
 import * as mp4Api from "../store/mp4Conversion/mp4ConversionApi";
 
 export const useMp4Conversion = () => {
@@ -17,6 +20,10 @@ export const useMp4Conversion = () => {
     //console.log("useMp4Conversion effect triggered", convertToMp4Progress);
   }, [convertToMp4Progress]);
 
+  const addOrUpdateProgressItem = (progressItem: Mp4ConversionProgress) => {
+    dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
+  };
+
   const addToConversionQueue = async (fromPath: string) => {
     if (
       !convertToMp4Progress.some((progress) => progress.fromPath === fromPath)
@@ -26,14 +33,12 @@ export const useMp4Conversion = () => {
         console.error(`Failed to add ${fromPath} to conversion queue.`);
         return;
       }
-      dispatch(
-        mp4ConversionActions.updateConvertToMp4Progress({
-          fromPath,
-          toPath: fromPath.replace(/\.[^/.]+$/, ".mp4"),
-          percent: 0,
-          paused: false,
-        }),
-      );
+      addOrUpdateProgressItem({
+        fromPath,
+        toPath: fromPath.replace(/\.[^/.]+$/, ".mp4"),
+        percent: 0,
+        paused: false,
+      });
     }
   };
 
@@ -45,12 +50,11 @@ export const useMp4Conversion = () => {
     const progressItem = convertToMp4Progress.find(
       (progress) => progress.fromPath === path,
     );
-    dispatch(
-      mp4ConversionActions.updateConvertToMp4Progress({
-        ...progressItem,
-        paused,
-      }),
-    );
+
+    addOrUpdateProgressItem({
+      ...progressItem,
+      paused,
+    });
 
     return paused;
   };
@@ -59,12 +63,11 @@ export const useMp4Conversion = () => {
     const progressItem = convertToMp4Progress.find(
       (progress) => progress.fromPath === path,
     );
-    dispatch(
-      mp4ConversionActions.updateConvertToMp4Progress({
-        ...progressItem,
-        paused: !paused,
-      }),
-    );
+
+    addOrUpdateProgressItem({
+      ...progressItem,
+      paused: !paused,
+    });
     return paused;
   };
 
@@ -87,6 +90,7 @@ export const useMp4Conversion = () => {
     isItemPaused,
     getCurrentProcessingItem,
     getConversionQueue,
-    clearCompletedConversions
+    clearCompletedConversions,
+    addOrUpdateProgressItem,
   };
 };
