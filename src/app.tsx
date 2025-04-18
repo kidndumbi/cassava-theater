@@ -32,6 +32,7 @@ import { useMovies } from "./renderer/hooks/useMovies";
 import { useTvShows } from "./renderer/hooks/useTvShows";
 import { StatusDisplay } from "./renderer/components/StatusDisplay";
 import { mp4ConversionActions } from "./renderer/store/mp4Conversion/mp4Conversion.slice";
+import { useMp4Conversion } from "./renderer/hooks/useMp4Conversion";
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -39,6 +40,12 @@ const App = () => {
   const { showSnackbar } = useSnackbar();
   const { getMovies } = useMovies();
   const { getTvShows } = useTvShows();
+  const { currentlyProcessingItem } = useMp4Conversion();
+  const currentlyProcessingItemRef = useRef(currentlyProcessingItem);
+
+  useEffect(() => {
+    currentlyProcessingItemRef.current = currentlyProcessingItem;
+  }, [currentlyProcessingItem]);
 
   const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
 
@@ -61,13 +68,20 @@ const App = () => {
 
     window.mainNotificationsAPI.mp4ConversionProgress((progress) => {
       const [fromPath, toPath] = progress.file.split(":::") || [];
-      dispatch(
-        mp4ConversionActions.updateConvertToMp4Progress({
-          fromPath,
-          toPath,
-          percent: progress.percent,
-        }),
-      );
+      const progressItem = {
+        fromPath,
+        toPath,
+        percent: progress.percent,
+        paused: false,
+      };
+
+      dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
+
+      if (
+        progressItem.fromPath !== currentlyProcessingItemRef.current?.fromPath
+      ) {
+        dispatch(mp4ConversionActions.setCurrentlyProcessingItem(progressItem));
+      }
     });
   }, []);
 

@@ -10,7 +10,6 @@ import {
   saveVideoJsonData,
   AddTvShowFolder,
 } from "../services/video-data.service";
-import { addToConversionQueue } from "../services/mp4Conversion.service";
 
 export const videosIpcHandlers = () => {
   ipcMain.handle(
@@ -62,13 +61,6 @@ export const videosIpcHandlers = () => {
       },
     ) => {
       return AddTvShowFolder(args);
-    },
-  );
-
-  ipcMain.handle(
-    VideoIPCChannels.AddToConversionQueue,
-    async (_event: Electron.IpcMainInvokeEvent, inputPath: string) => {
-      return addToConversionQueue(inputPath);
     },
   );
 };

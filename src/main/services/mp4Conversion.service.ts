@@ -27,14 +27,16 @@ interface ConversionProgress {
   timemark?: string;
 }
 
-interface ConversionQueueItem {
+export interface ConversionQueueItem {
   inputPath: string;
-  status: "pending" | "processing" | "completed" | "failed";
+  status: "pending" | "processing" | "completed" | "failed" | "paused";
+  paused?: boolean;
 }
 
 class ConversionQueue {
   private queue: ConversionQueueItem[] = [];
   private isProcessing = false;
+  private currentProcessingItem: ConversionQueueItem | null = null;
 
   constructor(private processor: (inputPath: string) => Promise<void>) {}
 
@@ -42,17 +44,40 @@ class ConversionQueue {
     this.queue.push({
       inputPath: item,
       status: "pending",
+      paused: false,
     });
     this.processQueue();
+  }
+
+  pauseItem(inputPath: string) {
+    const item = this.queue.find((i) => i.inputPath === inputPath);
+    if (item && item.status === "pending") {
+      item.status = "paused";
+      return true;
+    }
+    return false;
+  }
+
+  unpauseItem(inputPath: string) {
+    const item = this.queue.find((i) => i.inputPath === inputPath);
+    if (item && item.status === "paused") {
+      item.status = "pending";
+      this.processQueue(); // Trigger queue processing if not already running
+      return true;
+    }
+    return false;
   }
 
   private async processQueue() {
     if (this.isProcessing || this.queue.length === 0) return;
 
     this.isProcessing = true;
-    const nextItem = this.queue.find((item) => item.status === "pending");
+    const nextItem = this.queue.find(
+      (item) => item.status === "pending" && !item.paused,
+    );
 
     if (nextItem) {
+      this.currentProcessingItem = nextItem;
       nextItem.status = "processing";
       try {
         await this.processor(nextItem.inputPath);
@@ -60,13 +85,15 @@ class ConversionQueue {
       } catch (error) {
         nextItem.status = "failed";
         console.error(`Conversion failed for ${nextItem.inputPath}:`, error);
+      } finally {
+        this.currentProcessingItem = null;
       }
     }
 
     this.isProcessing = false;
 
     // Process next item if available
-    if (this.queue.some((item) => item.status === "pending")) {
+    if (this.queue.some((item) => item.status === "pending" && !item.paused)) {
       setTimeout(() => this.processQueue(), CHECK_QUEUE_INTERVAL_MS);
     }
   }
@@ -74,18 +101,47 @@ class ConversionQueue {
   getQueue() {
     return [...this.queue];
   }
+
+  isItemPaused(inputPath: string): boolean {
+    const item = this.queue.find((i) => i.inputPath === inputPath);
+    return item?.status === "paused" || false;
+  }
+
+  getCurrentProcessingItem(): ConversionQueueItem | null {
+    return this.currentProcessingItem;
+  }
 }
 
 // Global queue instance
 const conversionQueue = new ConversionQueue(processConversion);
 
-// Main export to add files to queue
+// Main exports
 export async function addToConversionQueue(inputPath: string) {
   if (await isConvertibleVideoFile(inputPath)) {
     conversionQueue.add(inputPath);
     return true;
   }
   return false;
+}
+
+export function pauseConversionItem(inputPath: string): boolean {
+  return conversionQueue.pauseItem(inputPath);
+}
+
+export function unpauseConversionItem(inputPath: string): boolean {
+  return conversionQueue.unpauseItem(inputPath);
+}
+
+export function isItemPaused(inputPath: string): boolean {
+  return conversionQueue.isItemPaused(inputPath);
+}
+
+export function getCurrentProcessingItem(): ConversionQueueItem | null {
+  return conversionQueue.getCurrentProcessingItem();
+}
+
+export function getConversionQueue(): ConversionQueueItem[] {
+  return conversionQueue.getQueue();
 }
 
 // Core conversion processor
