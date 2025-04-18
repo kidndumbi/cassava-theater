@@ -83,6 +83,19 @@ const App = () => {
         dispatch(mp4ConversionActions.setCurrentlyProcessingItem(progressItem));
       }
     });
+
+    window.mainNotificationsAPI.mp4ConversionCompleted((progress) => {
+      const [fromPath, toPath] = progress.file.split(":::") || [];
+      const progressItem = {
+        fromPath,
+        toPath,
+        percent: progress.percent,
+        paused: false,
+      };
+
+      dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
+      showSnackbar(`Conversion completed: ${toPath}`, "success");
+    });
   }, []);
 
   return (

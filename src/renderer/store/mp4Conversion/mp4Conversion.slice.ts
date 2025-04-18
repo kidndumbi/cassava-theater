@@ -47,6 +47,11 @@ const mp4ConversionSlice = createSlice({
     ) => {
       state.currentlyProcessingItem = action.payload;
     },
+    clearCompleteConversions: (state) => {
+      state.convertToMp4Progress = state.convertToMp4Progress.filter(
+        (progress) => progress.percent < 100,
+      );
+    }
   },
 });
 

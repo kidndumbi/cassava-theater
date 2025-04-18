@@ -53,7 +53,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         }}
       >
         {convertToMp4Progress.length > 0 &&
-        convertToMp4Progress.some((p) => p.percent < 99) ? (
+        convertToMp4Progress.some((p) => p.percent < 100) ? (
           <CircularProgress color="secondary" size="20px" />
         ) : (
           <AppIconButton

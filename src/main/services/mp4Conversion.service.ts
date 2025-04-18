@@ -202,7 +202,7 @@ function performConversion(
       .on("progress", (progress: ConversionProgress) =>
         handleProgress(progress, inputPath, mp4Path, mainWindow),
       )
-      .on("end", () => handleConversionEnd(inputPath, mp4Path, resolve))
+      .on("end", () => handleConversionEnd(inputPath, mp4Path, resolve, mainWindow))
       .on("error", (err: Error) =>
         handleConversionError(inputPath, err, reject),
       )
@@ -229,12 +229,17 @@ async function handleConversionEnd(
   inputPath: string,
   mp4Path: string,
   resolve: (value: void) => void,
+  mainWindow: Electron.BrowserWindow | null,
 ) {
   console.log(`\nFinished: "${mp4Path}"`);
   try {
     const previousData = await videoDataHelpers.readJsonData(inputPath);
     await videoDataHelpers.writeJsonToFile(mp4Path, previousData);
     await deleteFile(inputPath);
+    mainWindow?.webContents.send("mp4-conversion-completed", {
+      file: `${inputPath}:::${mp4Path}`,
+      percent: 100,
+    });
     resolve();
   } catch (error) {
     console.error(`Error handling metadata for "${mp4Path}":`, error);
