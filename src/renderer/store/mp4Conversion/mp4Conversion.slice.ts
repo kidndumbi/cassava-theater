@@ -34,7 +34,7 @@ const mp4ConversionSlice = createSlice({
           fromPath,
           toPath,
           percent,
-          paused: false,
+          paused: paused !== undefined ? paused : false,
         });
       } else {
         existingProgress.percent = percent;
@@ -53,13 +53,16 @@ const mp4ConversionSlice = createSlice({
         (progress) => progress.percent < 100,
       );
     },
-    removeFromConversionQueue: ( state, action: PayloadAction<string> ) => {
+    removeFromConversionQueue: (state, action: PayloadAction<string>) => {
       const fromPath = action.payload;
-      remove(state.convertToMp4Progress, (progress) => progress.fromPath === fromPath);
+      remove(
+        state.convertToMp4Progress,
+        (progress) => progress.fromPath === fromPath,
+      );
       if (state.currentlyProcessingItem?.fromPath === fromPath) {
         state.currentlyProcessingItem = undefined;
       }
-    }
+    },
   },
 });
 

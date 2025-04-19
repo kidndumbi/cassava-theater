@@ -237,4 +237,9 @@ contextBridge.exposeInMainWorld("mp4ConversionAPI", {
       inputPath,
     );
   },
+  initializeConversionQueue: () => {
+    return ipcRenderer.invoke(
+      Mp4ConversionIPCChannels.InitializeConversionQueue
+    );
+  },
 });

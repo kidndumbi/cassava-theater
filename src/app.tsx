@@ -36,12 +36,19 @@ import { useMp4Conversion } from "./renderer/hooks/useMp4Conversion";
 
 const App = () => {
   const dispatch = useAppDispatch();
-  const { fetchAllSettings } = useSettings();
+  const { fetchAllSettings, settings } = useSettings();
   const { showSnackbar } = useSnackbar();
   const { getMovies } = useMovies();
   const { getTvShows } = useTvShows();
   const { currentlyProcessingItem } = useMp4Conversion();
   const currentlyProcessingItemRef = useRef(currentlyProcessingItem);
+  const { initConverversionQueueFromStore } = useMp4Conversion();
+
+  useEffect(() => {
+    if (settings?.conversionQueue) {
+      initConverversionQueueFromStore(settings.conversionQueue);
+    }
+  }, [settings?.conversionQueue]);
 
   useEffect(() => {
     currentlyProcessingItemRef.current = currentlyProcessingItem;

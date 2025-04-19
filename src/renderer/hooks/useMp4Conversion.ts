@@ -10,11 +10,32 @@ import {
   Mp4ConversionProgress,
 } from "../store/mp4Conversion/mp4Conversion.slice";
 import * as mp4Api from "../store/mp4Conversion/mp4ConversionApi";
+import { ConversionQueueItem } from "../../main/services/mp4Conversion.service";
 
 export const useMp4Conversion = () => {
   const convertToMp4Progress = useSelector(selConvertToMp4Progress);
   const currentlyProcessingItem = useSelector(selCurrentlyProcessingItem);
   const dispatch = useAppDispatch();
+
+  const initConverversionQueueFromStore = (queue: ConversionQueueItem[]) => {
+    const pendingItems = queue.filter((p) => p.status !== "completed");
+
+    if (pendingItems.length === 0) {
+      console.log("No pending items in conversion queue.");
+      return;
+    }
+
+    pendingItems.forEach((item) => {
+      addOrUpdateProgressItem({
+        fromPath: item.inputPath,
+        toPath: item.inputPath.replace(/\.[^/.]+$/, ".mp4"),
+        percent: 0,
+        paused: item.status === "paused" ? true : false,
+      });
+    });
+
+    initializeConversionQueue();
+  };
 
   useEffect(() => {
     //console.log("useMp4Conversion effect triggered", convertToMp4Progress);
@@ -89,6 +110,10 @@ export const useMp4Conversion = () => {
     dispatch(mp4ConversionActions.clearCompleteConversions());
   };
 
+  const initializeConversionQueue = async () => {
+    await mp4Api.initializeConversionQueueApi();
+  };
+
   return {
     convertToMp4Progress,
     currentlyProcessingItem,
@@ -102,5 +127,6 @@ export const useMp4Conversion = () => {
     clearCompletedConversions,
     addOrUpdateProgressItem,
     removeFromConversionQueue,
+    initConverversionQueueFromStore,
   };
 };
