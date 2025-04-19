@@ -232,10 +232,11 @@ async function processConversion(
   const mp4Path = getMp4Path(inputPath);
 
   if (await isAlreadyConverted(mp4Path)) {
-    const item = queue.getQueue().find((i) => i.inputPath === inputPath);
-    if (item) {
-      item.status = "completed";
-      setValue("conversionQueue", queue.getQueue());
+    // Remove item from queue if already converted
+    const idx = queue.getQueue().findIndex((i) => i.inputPath === inputPath);
+    if (idx !== -1) {
+      queue.removeItem(inputPath);
+      this.saveQueue();
     }
     return;
   }
