@@ -138,8 +138,12 @@ class ConversionQueue {
       this.saveQueue();
       try {
         await this.processor(nextItem.inputPath, this);
-        nextItem.status = "completed";
-        this.saveQueue();
+        // Remove item from queue when completed
+        const idx = this.queue.findIndex(i => i.inputPath === nextItem.inputPath);
+        if (idx !== -1) {
+          this.queue.splice(idx, 1);
+          this.saveQueue();
+        }
       } catch (error) {
         nextItem.status = "failed";
         this.saveQueue();
