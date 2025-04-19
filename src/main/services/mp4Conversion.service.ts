@@ -4,6 +4,7 @@ import ffmpeg from "fluent-ffmpeg";
 import { getMainWindow } from "../mainWindowManager";
 import * as videoDataHelpers from "./video.helpers";
 import { deleteFile } from "./file.service";
+import { getValue, setValue } from "../store";
 
 const VIDEO_EXTENSIONS = new Set([
   ".mkv",
@@ -39,7 +40,31 @@ class ConversionQueue {
   private currentProcessingItem: ConversionQueueItem | null = null;
   private currentFFmpegProcess: ffmpeg.FfmpegCommand | null = null;
 
-  constructor(private processor: (inputPath: string, queue: ConversionQueue) => Promise<void>) {}
+  constructor(
+    private processor: (
+      inputPath: string,
+      queue: ConversionQueue,
+    ) => Promise<void>,
+  ) {
+
+  }
+
+  initializeProcessing() {
+    this.loadQueue();
+    this.processQueue();
+  }
+
+  private loadQueue() {
+    const savedQueue = getValue("conversionQueue") || [];
+    this.queue = savedQueue.map((item) => ({
+      ...item,
+      status: item.status === "processing" ? "pending" : item.status,
+    }));
+  }
+
+  private saveQueue() {
+    setValue("conversionQueue", this.queue);
+  }
 
   add(item: string) {
     this.queue.push({
@@ -47,6 +72,7 @@ class ConversionQueue {
       status: "pending",
       paused: false,
     });
+    this.saveQueue();
     this.processQueue();
   }
 
@@ -54,6 +80,7 @@ class ConversionQueue {
     const item = this.queue.find((i) => i.inputPath === inputPath);
     if (item && item.status === "pending") {
       item.status = "paused";
+      this.saveQueue();
       return true;
     }
     return false;
@@ -63,6 +90,7 @@ class ConversionQueue {
     const item = this.queue.find((i) => i.inputPath === inputPath);
     if (item && item.status === "paused") {
       item.status = "pending";
+      this.saveQueue();
       this.processQueue();
       return true;
     }
@@ -71,24 +99,26 @@ class ConversionQueue {
 
   removeItem(inputPath: string): boolean {
     const itemIndex = this.queue.findIndex((i) => i.inputPath === inputPath);
-    
+
     if (itemIndex === -1) return false;
-    
+
     if (this.currentProcessingItem?.inputPath === inputPath) {
       this.cancelCurrentProcessing();
     }
-    
+
     this.queue.splice(itemIndex, 1);
+    this.saveQueue();
     return true;
   }
 
   private cancelCurrentProcessing() {
     if (this.currentFFmpegProcess) {
-      this.currentFFmpegProcess.kill('SIGTERM');
+      this.currentFFmpegProcess.kill("SIGTERM");
       this.currentFFmpegProcess = null;
     }
     if (this.currentProcessingItem) {
       this.currentProcessingItem.status = "failed";
+      this.saveQueue();
       this.currentProcessingItem = null;
     }
     this.isProcessing = false;
@@ -105,11 +135,14 @@ class ConversionQueue {
     if (nextItem) {
       this.currentProcessingItem = nextItem;
       nextItem.status = "processing";
+      this.saveQueue();
       try {
         await this.processor(nextItem.inputPath, this);
         nextItem.status = "completed";
+        this.saveQueue();
       } catch (error) {
         nextItem.status = "failed";
+        this.saveQueue();
         console.error(`Conversion failed for ${nextItem.inputPath}:`, error);
       } finally {
         this.currentProcessingItem = null;
@@ -142,45 +175,64 @@ class ConversionQueue {
   }
 }
 
-const conversionQueue = new ConversionQueue(processConversion);
+let conversionQueueInstance: ConversionQueue | null = null;
+
+function getConversionQueueInstance(): ConversionQueue {
+  if (!conversionQueueInstance) {
+    conversionQueueInstance = new ConversionQueue(processConversion);
+  }
+  return conversionQueueInstance;
+}
 
 export async function addToConversionQueue(inputPath: string) {
   if (await isConvertibleVideoFile(inputPath)) {
-    conversionQueue.add(inputPath);
+    getConversionQueueInstance().add(inputPath);
     return true;
   }
   return false;
 }
 
 export function pauseConversionItem(inputPath: string): boolean {
-  return conversionQueue.pauseItem(inputPath);
+  return getConversionQueueInstance().pauseItem(inputPath);
 }
 
 export function unpauseConversionItem(inputPath: string): boolean {
-  return conversionQueue.unpauseItem(inputPath);
+  return getConversionQueueInstance().unpauseItem(inputPath);
 }
 
 export function removeFromConversionQueue(inputPath: string): boolean {
-  return conversionQueue.removeItem(inputPath);
+  return getConversionQueueInstance().removeItem(inputPath);
 }
 
 export function isItemPaused(inputPath: string): boolean {
-  return conversionQueue.isItemPaused(inputPath);
+  return getConversionQueueInstance().isItemPaused(inputPath);
 }
 
 export function getCurrentProcessingItem(): ConversionQueueItem | null {
-  return conversionQueue.getCurrentProcessingItem();
+  return getConversionQueueInstance().getCurrentProcessingItem();
 }
 
 export function getConversionQueue(): ConversionQueueItem[] {
-  return conversionQueue.getQueue();
+  return getConversionQueueInstance().getQueue();
 }
 
-async function processConversion(inputPath: string, queue: ConversionQueue): Promise<void> {
+export function initializeConversionQueue() {
+  getConversionQueueInstance().initializeProcessing();
+}
+
+async function processConversion(
+  inputPath: string,
+  queue: ConversionQueue,
+): Promise<void> {
   const mainWindow = getMainWindow();
   const mp4Path = getMp4Path(inputPath);
 
   if (await isAlreadyConverted(mp4Path)) {
+    const item = queue.getQueue().find((i) => i.inputPath === inputPath);
+    if (item) {
+      item.status = "completed";
+      setValue("conversionQueue", queue.getQueue());
+    }
     return;
   }
 
@@ -209,10 +261,14 @@ async function isAlreadyConverted(mp4Path: string): Promise<boolean> {
   try {
     await fs.access(mp4Path);
     await videoDataHelpers.calculateDuration(mp4Path);
-    console.log(`Skipping conversion, "${mp4Path}" already exists and is valid`);
+    console.log(
+      `Skipping conversion, "${mp4Path}" already exists and is valid`,
+    );
     return true;
   } catch (error) {
-    console.log(`Proceeding with conversion, "${mp4Path}" not found or invalid`);
+    console.log(
+      `Proceeding with conversion, "${mp4Path}" not found or invalid`,
+    );
     return false;
   }
 }
@@ -221,7 +277,7 @@ function performConversion(
   inputPath: string,
   mp4Path: string,
   mainWindow: Electron.BrowserWindow | null,
-  queue: ConversionQueue
+  queue: ConversionQueue,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const ffmpegCommand = ffmpeg(inputPath)
@@ -229,10 +285,13 @@ function performConversion(
       .on("progress", (progress: ConversionProgress) =>
         handleProgress(progress, inputPath, mp4Path, mainWindow),
       )
-      .on("end", () => handleConversionEnd(inputPath, mp4Path, resolve, mainWindow))
-      .on("error", (err: Error) => handleConversionError(inputPath, err, reject));
+      .on("end", () =>
+        handleConversionEnd(inputPath, mp4Path, resolve, mainWindow, queue),
+      )
+      .on("error", (err: Error) =>
+        handleConversionError(inputPath, err, reject, queue),
+      );
 
-    // Store the command before running it
     queue.setCurrentFFmpegProcess(ffmpegCommand);
     ffmpegCommand.run();
   });
@@ -258,6 +317,7 @@ async function handleConversionEnd(
   mp4Path: string,
   resolve: (value: void) => void,
   mainWindow: Electron.BrowserWindow | null,
+  queue: ConversionQueue,
 ) {
   console.log(`\nFinished: "${mp4Path}"`);
   try {
@@ -279,7 +339,13 @@ function handleConversionError(
   inputPath: string,
   error: Error,
   reject: (reason?: unknown) => void,
+  queue: ConversionQueue,
 ) {
   console.error(`Error converting "${inputPath}"`, error);
+  const item = queue.getQueue().find((i) => i.inputPath === inputPath);
+  if (item) {
+    item.status = "failed";
+    setValue("conversionQueue", queue.getQueue());
+  }
   reject(error);
 }

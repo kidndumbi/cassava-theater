@@ -6,4 +6,5 @@ export enum Mp4ConversionIPCChannels {
     GetCurrentProcessingItem = "video:getCurrentProcessingItem",
     GetConversionQueue = "video:getConversionQueue",
     RemoveFromConversionQueue = "video:removeFromConversionQueue",
+    InitializeConversionQueue = "video:initializeConversionQueue",
 }

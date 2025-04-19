@@ -8,6 +8,7 @@ import {
   getCurrentProcessingItem,
   getConversionQueue,
   removeFromConversionQueue,
+  initializeConversionQueue,
 } from "../services/mp4Conversion.service";
 
 export const mp4ConversionIpcHandlers = () => {
@@ -51,6 +52,13 @@ export const mp4ConversionIpcHandlers = () => {
     Mp4ConversionIPCChannels.RemoveFromConversionQueue,
     async (_event: Electron.IpcMainInvokeEvent, inputPath: string) => {
       return removeFromConversionQueue(inputPath);
+    },
+  );
+  ipcMain.handle(
+    Mp4ConversionIPCChannels.InitializeConversionQueue,
+    async () => {
+      initializeConversionQueue();
+      return true;
     },
   );
 };
