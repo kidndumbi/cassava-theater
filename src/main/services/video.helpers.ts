@@ -12,6 +12,7 @@ import { VideoDataModel } from "../../models/videoData.model";
 import { normalizeFilePath } from "./helpers";
 import { TvShowDetails } from "../../models/tv-show-details.model";
 
+
 /**
  * Filters an array of video objects based on the provided category.
  *
@@ -95,6 +96,7 @@ export async function getVideoThumbnail(
         duration,
       );
       video.videoProgressScreenshot = videoProgressScreenshot;
+
     } catch (error) {
       log.error(
         `Error generating thumbnail for video ${video.filePath}:`,
@@ -117,7 +119,8 @@ export const getRootVideoData = async (
   const videoData: VideoDataModel[] = [];
 
   try {
-    const markedForDeletion = await markedForDeleteService.getAllMarkedForDelete();
+    const markedForDeletion =
+      await markedForDeleteService.getAllMarkedForDelete();
     const files = await readdir(filePath);
 
     const filteredFiles = filterFilesNotMarkedForDeletion(
@@ -182,7 +185,10 @@ export const populateVideoData = async (
     const videoDb = await videoDbDataService.getVideo(
       normalizeFilePath(fullFilePath),
     );
-    const duration = videoDb?.duration > 0 ? videoDb.duration :  await calculateDuration(fullFilePath);
+    const duration =
+      videoDb?.duration > 0
+        ? videoDb.duration
+        : await calculateDuration(fullFilePath);
     const videoData = createVideoDataObject(
       file,
       fullFilePath,
@@ -303,8 +309,6 @@ export function getVideoDuration(
     });
   });
 }
-
-
 
 export const updateParentVideoData = async (
   currentVideo: VideoDataModel,

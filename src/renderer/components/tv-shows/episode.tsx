@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import { Box, Theme } from "@mui/material";
 import FourMpIcon from "@mui/icons-material/FourMp";
 
@@ -15,7 +15,6 @@ import NotesIcon from "@mui/icons-material/Notes";
 import "./episode.css";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { NotesModal } from "../common/NotesModal";
-import { useTvShows } from "../../hooks/useTvShows";
 import AppIconButton from "../common/AppIconButton";
 import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 import { useSettings } from "../../hooks/useSettings";
@@ -47,8 +46,6 @@ export const Episode: React.FC<EpisodeProps> = ({
   const [openNotesModal, setOpenNotesModal] = useState(false);
   const handleCloseNotesModal = () => setOpenNotesModal(false);
 
-  const { updateEpisodeThumbnail } = useTvShows();
-
   const handleMouseEnter = () => setHover(true);
   const handleMouseLeave = () => setHover(false);
   const handlePlayClick = () => onEpisodeClick(episode);
@@ -59,10 +56,6 @@ export const Episode: React.FC<EpisodeProps> = ({
   const handleError = () => {
     setHasError(true);
   };
-
-  useEffect(() => {
-    updateEpisodeThumbnail(episode);
-  }, []);
 
   const showThumbnail = episode?.videoProgressScreenshot && !hasError;
 
@@ -102,7 +95,7 @@ export const Episode: React.FC<EpisodeProps> = ({
           />
         ) : (
           <Box className="flex h-[200px] w-[300px] items-center justify-center">
-            Loading Image
+            No Image
           </Box>
         )}
 
