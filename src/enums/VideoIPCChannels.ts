@@ -7,4 +7,5 @@ export enum VideoIPCChannels {
   SaveVideoJsonData = "video:saveVideoJsonData",
   AddTvShowFolder = "video:addTvShowFolder",
   GetFolderFiles = "video:getFolderFiles",
+  GetScreenshot = "video:getScreenshot",
 }

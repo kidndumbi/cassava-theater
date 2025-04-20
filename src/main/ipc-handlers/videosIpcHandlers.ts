@@ -11,6 +11,9 @@ import {
   AddTvShowFolder,
   getFolderFiles,
 } from "../services/video-data.service";
+import { generateThumbnail } from "../services/thumbnail.service";
+import { VideoDataModel } from "../../models/videoData.model";
+import { calculateDuration } from "../services/video.helpers";
 
 export const videosIpcHandlers = () => {
   ipcMain.handle(
@@ -69,6 +72,22 @@ export const videosIpcHandlers = () => {
     VideoIPCChannels.GetFolderFiles,
     (_event: Electron.IpcMainInvokeEvent, folderPath: string) => {
       return getFolderFiles(folderPath);
+    },
+  );
+
+  ipcMain.handle(
+    VideoIPCChannels.GetScreenshot,
+    async (_event: Electron.IpcMainInvokeEvent, videoData: VideoDataModel) => {
+      const duration =
+        videoData?.duration > 0
+          ? videoData.duration
+          : await calculateDuration(videoData.filePath);
+      const screenshot = await generateThumbnail(
+        videoData.filePath,
+        videoData.currentTime,
+        duration,
+      );
+      return screenshot;
     },
   );
 };

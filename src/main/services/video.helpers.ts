@@ -92,7 +92,6 @@ export async function getVideoThumbnail(
       const videoProgressScreenshot = await generateThumbnail(
         video.filePath,
         video.currentTime ?? 30,
-        ffmpeg,
         duration,
       );
       video.videoProgressScreenshot = videoProgressScreenshot;
