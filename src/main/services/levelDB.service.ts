@@ -5,12 +5,14 @@ import { app } from "electron";
 import { loggingService as log } from "./main-logging.service";
 import { VideoDataModel } from "../../models/videoData.model";
 import { ConversionQueueItem } from "../../models/conversion-queue-item.model";
+import { SettingsModel } from "../../models/settings.model";
 
 // Define your database collections
 type Collections = {
   videos: VideoDataModel;
   markedForDelete: string; // Each key is a file path, value is the file path string
   converQueueItems: ConversionQueueItem;
+  settings: SettingsModel; // <-- Add this line
   // Add more collections as needed
 };
 

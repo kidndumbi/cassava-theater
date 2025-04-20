@@ -1,25 +1,29 @@
 import { ipcMain } from "electron";
 import { SettingsIpcChannels } from "../../enums/settings-IPC-channels.enum";
-import { getAllValues, getValue, setValue } from "../store";
+import * as settingsDataDbService from "../services/settingsDataDb.service";
 import { SettingsModel } from "../../models/settings.model";
 
 export const settingsIpcHandlers = () => {
   ipcMain.handle(
     SettingsIpcChannels.GET_ALL_SETTINGS,
-    () => getAllValues()
+    async () => await settingsDataDbService.getAllSettings(),
   );
 
   ipcMain.handle(
     SettingsIpcChannels.GET_SETTING,
     (_event: Electron.IpcMainInvokeEvent, key: keyof SettingsModel) => {
-      return getValue(key);
-    }
+      return settingsDataDbService.getSetting(key);
+    },
   );
 
   ipcMain.handle(
     SettingsIpcChannels.SET_SETTING,
-    (_event: Electron.IpcMainInvokeEvent, key: keyof SettingsModel, value: SettingsModel[keyof SettingsModel]) => {
-      return setValue(key, value);
-    }
+    (
+      _event: Electron.IpcMainInvokeEvent,
+      key: keyof SettingsModel,
+      value: SettingsModel[keyof SettingsModel],
+    ) => {
+      return settingsDataDbService.setSetting(key, value);
+    },
   );
 };

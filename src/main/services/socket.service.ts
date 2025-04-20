@@ -1,13 +1,13 @@
 import { BrowserWindow } from "electron";
 import * as http from "http";
 import { Server } from "socket.io";
+import * as settingsDataDbService from "../services/settingsDataDb.service";
 import {
   fetchFolderDetails,
   fetchVideoDetails,
   fetchVideosData,
   saveCurrentTime,
 } from "./video-data.service";
-import { getAllValues, setValue } from "../store";
 import { loggingService as log } from "./main-logging.service";
 import { AppSocketEvents } from "../../enums/app-socket-events.enum";
 import { VideoCommands } from "../../models/video-commands.model";
@@ -116,7 +116,7 @@ export async function initializeSocket(
         }) => void,
       ) => {
         try {
-          const settings = getAllValues();
+          const settings = await settingsDataDbService.getAllSettings();
           callback({ success: true, data: settings });
         } catch (error) {
           log.error("Error fetching videos data:", error);
@@ -244,7 +244,7 @@ export async function initializeSocket(
   });
 
   server.listen(port, () => {
-    setValue("port", port.toString());
+    settingsDataDbService.setSetting("port", port.toString());
     log.info(`Server running on port ${port}`);
   });
 }
