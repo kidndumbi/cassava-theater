@@ -5,7 +5,6 @@ export const putVideoScreenshot = async (
   key: KeyType,
   value: Partial<VideoScreenshotModel>,
 ): Promise<void> => {
-    console.log("putVideoScreenshot::::::::::::::::::::::::::::::::::", key);
   const existing = (await getVideoScreenshot(key)) || {};
   return levelDBService.put("videoScreenshots", key, { ...existing, ...value });
 };
@@ -16,9 +15,7 @@ export const getVideoScreenshot = (
   return levelDBService.get("videoScreenshots", key);
 };
 
-export const deleteVideoScreenshot = (
-  key: KeyType,
-): Promise<void> => {
+export const deleteVideoScreenshot = (key: KeyType): Promise<void> => {
   return levelDBService.delete("videoScreenshots", key);
 };
 

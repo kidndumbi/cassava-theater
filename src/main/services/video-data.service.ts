@@ -135,7 +135,10 @@ export const fetchVideoDetails = async (
     const videoDbData = await videoDbDataService.getVideo(
       normalizeFilePath(filePath),
     );
-    const duration = videoDbData?.duration > 0 ? videoDbData.duration :  await videoDataHelpers.calculateDuration(filePath);
+    const duration =
+      videoDbData?.duration > 0
+        ? videoDbData.duration
+        : await videoDataHelpers.calculateDuration(filePath);
     const fileName = path.basename(filePath);
 
     const videoDetails: VideoDataModel = videoDataHelpers.createVideoDataObject(
@@ -269,6 +272,9 @@ export const saveVideoJsonData = async (
   };
 
   try {
+    if (newVideoJsonData && newVideoJsonData.videoProgressScreenshot) {
+      newVideoJsonData.videoProgressScreenshot = null;
+    }
     await videoDbDataService.putVideo(
       normalizeFilePath(newFilePath),
       newVideoJsonData,
@@ -309,7 +315,7 @@ export const saveCurrentTime = async (
     videoDbData.watched = currentTime !== 0;
     videoDbData.lastVideoPlayedDate = new Date().toISOString();
 
-    await videoDbDataService.putVideo(
+    videoDbDataService.putVideo(
       normalizeFilePath(currentVideo.filePath),
       videoDbData,
     );
