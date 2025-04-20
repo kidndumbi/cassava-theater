@@ -5,7 +5,7 @@ import { getMainWindow } from "../mainWindowManager";
 import * as videoDataHelpers from "./video.helpers";
 import { deleteFile } from "./file.service";
 import { getValue, setValue } from "../store";
-import { levelDBService } from "./levelDB.service";
+import * as videoDbDataService from "./videoDbData.service";
 import { normalizeFilePath } from "./helpers";
 
 const VIDEO_EXTENSIONS = new Set([
@@ -328,10 +328,10 @@ async function handleConversionEnd(
 ) {
   console.log(`\nFinished: "${mp4Path}"`);
   try {
-    const previousData = await levelDBService.getVideo(
+    const previousData = await videoDbDataService.getVideo(
       normalizeFilePath(inputPath),
     );
-    await levelDBService.putVideo(mp4Path, previousData);
+    await videoDbDataService.putVideo(mp4Path, previousData);
     await deleteFile(inputPath);
     mainWindow?.webContents.send("mp4-conversion-completed", {
       file: `${inputPath}:::${mp4Path}`,

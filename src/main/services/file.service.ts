@@ -4,8 +4,7 @@ import * as path from "path";
 import * as fs from "fs";
 import fsPromise from "fs/promises";
 import * as helpers from "./helpers";
-
-const VIDEO_META_DATA_FILE_NAME = helpers.getVideoDataFilePath();
+import * as videoDbDataService from "./videoDbData.service";
 
 export function serveLocalFile(req: IncomingMessage, res: ServerResponse) {
   if (!req.url) {
@@ -151,20 +150,11 @@ export const deleteFile = async (
 };
 
 async function updateMetadataFile(filePaths: string[]): Promise<void> {
-  const fileJson = await helpers.getVideoMetaData();
-
-  const updatedFileJson = { ...fileJson };
-
   if (Array.isArray(filePaths)) {
     filePaths.forEach((filePath) => {
-      delete updatedFileJson[filePath];
+      videoDbDataService.deleteVideo(filePath);
     });
   }
-
-  await fsPromise.writeFile(
-    VIDEO_META_DATA_FILE_NAME,
-    JSON.stringify(updatedFileJson, null, 2),
-  );
 }
 
 async function handleThumbnailCache(filePath: string[]): Promise<void> {

@@ -1,10 +1,9 @@
 import { app } from "electron";
-import fsPromise, { readFile, access } from "fs/promises";
+import fsPromise, { access } from "fs/promises";
 import * as fs from "fs";
 import * as path from "path";
-
 import { loggingService as log } from "./main-logging.service";
-import { VideoDataModel } from "../../models/videoData.model";
+import * as markedForDeleteService from "./markedForDelete.service";
 
 export const SUPPORTED_VIDEO_EXTENSIONS = [".mp4", ".mkv", ".avi"];
 export const DEFAULT_THUMBNAIL_URL =
@@ -18,43 +17,9 @@ export const getThumbnailCacheFilePath = () => {
   return app.getPath("userData") + "/thumbnailCache.json";
 };
 
-export const getVideoDataFilePath = () => {
-  return app.getPath("userData") + "/videoData.json";
-};
-
 export const isVideoFile = (file: string): boolean => {
   const extension = path.extname(file).toLowerCase();
   return SUPPORTED_VIDEO_EXTENSIONS.includes(extension);
-};
-
-export const getVideoMetaData = async () => {
-  try {
-    const file = await readFileDataAsync(getVideoDataFilePath());
-    if (!file) {
-      return {};
-    }
-    return JSON.parse(file) as { [key: string]: VideoDataModel };
-  } catch (error) {
-    log.error("Error in getVideoMetaData:", error);
-    return {};
-  }
-};
-
-export const getMarkedForDeletionFilePath = () => {
-  return app.getPath("userData") + "/markedForDeletion.json";
-};
-
-export const getMarkedForDeletion = async () => {
-  try {
-    const file = await readFileDataAsync(getMarkedForDeletionFilePath());
-    if (!file) {
-      return [];
-    }
-    return JSON.parse(file) as string[];
-  } catch (error) {
-    log.error("Error in getMarkedForDeletion:", error);
-    return [];
-  }
 };
 
 export async function fileExists(filePath: string): Promise<boolean> {
@@ -63,17 +28,6 @@ export async function fileExists(filePath: string): Promise<boolean> {
     return true;
   } catch {
     return false;
-  }
-}
-
-export async function readFileData(
-  filePath: string,
-): Promise<string | undefined> {
-  try {
-    const jsonFile = await readFile(filePath);
-    return jsonFile?.toString();
-  } catch (error) {
-    log.error("Error in readFileData:", error);
   }
 }
 
@@ -154,29 +108,12 @@ export async function getVideoFilesInChildFolders(
   }
 }
 
-// Add helper to mark files for deletion
+// Add helper to mark files for deletion using LevelDB
 export async function addToMarkedForDeletion(filePath: string): Promise<void> {
-  // Get the path to markedForDeletion.json
-  const markedFilePath = getMarkedForDeletionFilePath();
-  let list: string[] = [];
-  // Check if file exists and read its array, else start with []
-  if (await fileExists(markedFilePath)) {
-    try {
-      const content = await readFileDataAsync(markedFilePath);
-      list = JSON.parse(content);
-    } catch {
-      list = [];
-    }
-  }
-  // Add file path if not already present
-  if (!list.includes(filePath)) {
-    list.push(filePath);
-  }
-  // Write back the updated array
   try {
-    await fsPromise.writeFile(markedFilePath, JSON.stringify(list, null, 2));
+    await markedForDeleteService.addMarkedForDelete(filePath);
   } catch (e) {
-    log.error("Error updating markedForDeletion.json for", filePath, e);
+    log.error("Error updating markedForDelete collection for", filePath, e);
   }
 }
 

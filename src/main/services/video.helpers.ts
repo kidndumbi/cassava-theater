@@ -1,18 +1,16 @@
-import {  readdir, stat } from "fs/promises";
+import { readdir, stat } from "fs/promises";
 import { Stats } from "fs";
 import * as fs from "fs";
 import * as helpers from "./helpers";
+import * as videoDbDataService from "./videoDbData.service";
+import * as markedForDeleteService from "./markedForDelete.service";
 import * as path from "path";
 import ffmpeg from "fluent-ffmpeg";
 import { loggingService as log } from "./main-logging.service";
-import { levelDBService } from "./levelDB.service";
-
 import { generateThumbnail } from "./thumbnail.service";
-
 import { VideoDataModel } from "../../models/videoData.model";
-import {  normalizeFilePath,  } from "./helpers";
+import { normalizeFilePath } from "./helpers";
 import { TvShowDetails } from "../../models/tv-show-details.model";
-
 
 /**
  * Filters an array of video objects based on the provided category.
@@ -45,7 +43,6 @@ export const filterByCategory = (
 
   return videos;
 };
-
 
 export function shouldProcessFile(
   file: string,
@@ -120,7 +117,7 @@ export const getRootVideoData = async (
   const videoData: VideoDataModel[] = [];
 
   try {
-    const markedForDeletion = await helpers.getMarkedForDeletion();
+    const markedForDeletion = await markedForDeleteService.getAllMarkedForDelete();
     const files = await readdir(filePath);
 
     const filteredFiles = filterFilesNotMarkedForDeletion(
@@ -182,7 +179,7 @@ export const populateVideoData = async (
 ) => {
   try {
     const fullFilePath = path.join(filePath, file);
-    const videoDb = await levelDBService.getVideo(
+    const videoDb = await videoDbDataService.getVideo(
       normalizeFilePath(fullFilePath),
     );
     const duration = await calculateDuration(fullFilePath);
@@ -311,8 +308,7 @@ export const updateVideoData = async (
   filePath: string,
   currentTime: number,
 ) => {
-
-  const videoDbData = await levelDBService.getVideo(
+  const videoDbData = await videoDbDataService.getVideo(
     normalizeFilePath(filePath),
   );
   videoDbData.currentTime = currentTime;
@@ -333,14 +329,17 @@ export const updateParentVideoData = async (
   const grandParentFilePath = path.dirname(parentFilePath);
   const grandParentJsonFilePath = grandParentFilePath;
 
-  const grandParentJsonFileContents = await levelDBService.getVideo(
+  const grandParentJsonFileContents = await videoDbDataService.getVideo(
     normalizeFilePath(grandParentJsonFilePath),
   );
   grandParentJsonFileContents.lastVideoPlayed = currentVideo.filePath;
   grandParentJsonFileContents.lastVideoPlayedTime = currentTime;
   grandParentJsonFileContents.lastVideoPlayedDate = new Date().toISOString();
   grandParentJsonFileContents.lastVideoPlayedDuration = currentVideo.duration;
-  await levelDBService.putVideo(normalizeFilePath(grandParentJsonFilePath), grandParentJsonFileContents);
+  await videoDbDataService.putVideo(
+    normalizeFilePath(grandParentJsonFilePath),
+    grandParentJsonFileContents,
+  );
 
   return {
     lastVideoPlayed: grandParentJsonFileContents.lastVideoPlayed,
