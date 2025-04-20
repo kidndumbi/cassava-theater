@@ -30,36 +30,13 @@ const schema: Schema<SettingsModel> = {
     type: "string",
     default: "",
   },
-  conversionQueue: {
-    type: "array",
-    default: [],
-    items: {
-      type: "object",
-      properties: {
-        inputPath: { type: "string" },
-        status: { 
-          type: "string",
-          enum: ["pending", "processing", "completed", "failed", "paused"]
-        },
-        paused: { type: "boolean" }
-      },
-      required: ["inputPath", "status"]
-    }
-  }
 };
 
 let store: Store<SettingsModel>;
 
 export const initializeStore = (): void => {
   store = new Store<SettingsModel>({ schema });
-  subscribeToStoreChanges();
-};
 
-// Log store changes as they happen
-const subscribeToStoreChanges = () => {
-  store.onDidChange("conversionQueue", (newValue, oldValue) => {
-    console.log("conversionQueue changed:", { oldValue, newValue });
-  });
 };
 
 export const getValue = <K extends keyof SettingsModel>(

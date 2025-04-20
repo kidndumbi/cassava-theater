@@ -4,11 +4,13 @@ import path from "path";
 import { app } from "electron";
 import { loggingService as log } from "./main-logging.service";
 import { VideoDataModel } from "../../models/videoData.model";
+import { ConversionQueueItem } from "../../models/conversion-queue-item.model";
 
 // Define your database collections
 type Collections = {
   videos: VideoDataModel;
   markedForDelete: string; // Each key is a file path, value is the file path string
+  converQueueItems: ConversionQueueItem;
   // Add more collections as needed
 };
 
@@ -77,10 +79,7 @@ class LevelDBService {
     }
   }
 
-  public async delete(
-    collection: CollectionName,
-    key: KeyType,
-  ): Promise<void> {
+  public async delete(collection: CollectionName, key: KeyType): Promise<void> {
     const collectionKey = `${collection}:${key}`;
     try {
       await this.db.del(collectionKey);
@@ -104,6 +103,29 @@ class LevelDBService {
       return items;
     } catch (err) {
       log.error(`DB getAll failed for ${collection}:`, err);
+      throw err;
+    }
+  }
+
+  /**
+   * Delete all entries in a given collection.
+   */
+  public async clearCollection<T extends CollectionName>(
+    collection: T,
+  ): Promise<void> {
+    const batch = this.db.batch();
+    try {
+      for await (const [key] of this.db.iterator({
+        gte: `${collection}:`,
+        lte: `${collection}:\xff`,
+        keys: true,
+        values: false,
+      })) {
+        batch.del(key);
+      }
+      await batch.write();
+    } catch (err) {
+      log.error(`Failed to clear collection  ${collection}:`, err);
       throw err;
     }
   }
