@@ -5,10 +5,10 @@ import * as path from "path";
 import { VideoDataModel } from "../../models/videoData.model";
 import { loggingService as log } from "./main-logging.service";
 import * as videoDbDataService from "./videoDbData.service";
+import * as settingsDataDbService from "../services/settingsDataDb.service";
 
 import * as videoDataHelpers from "./video.helpers";
 import { getMovieOrTvShowById } from "./themoviedb.service";
-import { getValue } from "../store";
 import { normalizeFilePath } from "./helpers";
 
 export const fetchVideosData = async ({
@@ -153,12 +153,15 @@ export const fetchVideoDetails = async (
       const movie_details = await getMovieOrTvShowById(
         videoDetails?.movie_details.id.toString(),
         "movie",
-        getValue("theMovieDbApiKey"), // Correctly typed key
+        await settingsDataDbService.getSetting("theMovieDbApiKey"),
       );
 
-      await videoDbDataService.putVideo(normalizeFilePath(videoDetails.filePath), {
-        movie_details,
-      });
+      await videoDbDataService.putVideo(
+        normalizeFilePath(videoDetails.filePath),
+        {
+          movie_details,
+        },
+      );
       videoDetails.movie_details = movie_details;
     }
 
@@ -206,12 +209,15 @@ export const fetchFolderDetails = async (
       const tv_show_details = (await getMovieOrTvShowById(
         videoDetails?.tv_show_details.id.toString(),
         "tv",
-        getValue("theMovieDbApiKey"),
+        await settingsDataDbService.getSetting("theMovieDbApiKey"),
       )) as TvShowDetails;
 
-      await videoDbDataService.putVideo(normalizeFilePath(videoDetails.filePath), {
-        tv_show_details: tv_show_details,
-      });
+      await videoDbDataService.putVideo(
+        normalizeFilePath(videoDetails.filePath),
+        {
+          tv_show_details: tv_show_details,
+        },
+      );
     }
 
     return videoDetails;

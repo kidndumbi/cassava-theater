@@ -4,13 +4,13 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { registerIpcHandlers } from "./main/ipc-handlers/ipcHandlers";
-import { initializeStore, getValue } from "./main/store";
 import { loggingService as log } from "./main/services/main-logging.service";
 import { initializeSocket } from "./main/services/socket.service";
 import * as cleanUp from "./main/services/cleanUp.service";
 import * as appSetup from "./main/services/setup.service";
 import { setMainWindow } from "./main/mainWindowManager";
 import { levelDBService } from "./main/services/levelDB.service";
+import * as settingsDataDbService from "./main/services/settingsDataDb.service";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -21,7 +21,6 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
-initializeStore();
 appSetup.initializeFfmpeg();
 cleanUp.runAppOpeningCleanup();
 
@@ -68,7 +67,9 @@ app.on("ready", async () => {
 
     registerIpcHandlers();
 
-    const port = parseInt((getValue("port") as string) || "5000", 10);
+    const portFromDb = await settingsDataDbService.getSetting("port");
+
+    const port = parseInt((portFromDb as string) || "5000", 10);
     initializeSocket(mainWindow, port);
   } catch (err) {
     log.error("App initialization failed:", err);
