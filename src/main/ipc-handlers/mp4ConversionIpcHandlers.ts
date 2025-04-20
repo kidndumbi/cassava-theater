@@ -45,7 +45,7 @@ export const mp4ConversionIpcHandlers = () => {
   ipcMain.handle(
     Mp4ConversionIPCChannels.GetConversionQueue,
     async () => {
-      return getConversionQueue();
+      return await getConversionQueue();
     },
   );
   ipcMain.handle(

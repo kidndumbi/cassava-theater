@@ -10,7 +10,7 @@ import {
   Mp4ConversionProgress,
 } from "../store/mp4Conversion/mp4Conversion.slice";
 import * as mp4Api from "../store/mp4Conversion/mp4ConversionApi";
-import { ConversionQueueItem } from "../../main/services/mp4Conversion.service";
+import { ConversionQueueItem } from "../../models/conversion-queue-item.model";
 
 export const useMp4Conversion = () => {
   const convertToMp4Progress = useSelector(selConvertToMp4Progress);

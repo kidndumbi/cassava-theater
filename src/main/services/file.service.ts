@@ -2,7 +2,6 @@ import { IncomingMessage, ServerResponse } from "http";
 import { loggingService as log } from "./main-logging.service";
 import * as path from "path";
 import * as fs from "fs";
-import fsPromise from "fs/promises";
 import * as helpers from "./helpers";
 import * as videoDbDataService from "./videoDbData.service";
 

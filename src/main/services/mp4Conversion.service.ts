@@ -4,9 +4,10 @@ import ffmpeg from "fluent-ffmpeg";
 import { getMainWindow } from "../mainWindowManager";
 import * as videoDataHelpers from "./video.helpers";
 import { deleteFile } from "./file.service";
-import { getValue, setValue } from "../store";
 import * as videoDbDataService from "./videoDbData.service";
 import { normalizeFilePath } from "./helpers";
+import { ConversionQueueItem } from "../../models/conversion-queue-item.model";
+import * as conversionQueueDataService from "./conversionQueueDataDb.service";
 
 const VIDEO_EXTENSIONS = new Set([
   ".mkv",
@@ -30,12 +31,6 @@ interface ConversionProgress {
   timemark?: string;
 }
 
-export interface ConversionQueueItem {
-  inputPath: string;
-  status: "pending" | "processing" | "completed" | "failed" | "paused";
-  paused?: boolean;
-}
-
 class ConversionQueue {
   private queue: ConversionQueueItem[] = [];
   private isProcessing = false;
@@ -49,21 +44,18 @@ class ConversionQueue {
     ) => Promise<void>,
   ) {}
 
-  initializeProcessing() {
-    this.loadQueue();
+  async initializeProcessing() {
+    await this.loadQueue();
     this.processQueue();
   }
 
-  private loadQueue() {
-    const savedQueue = getValue("conversionQueue") || [];
+  private async loadQueue() {
+    const savedQueue =
+      (await conversionQueueDataService.getAllQueueItems()) || [];
     this.queue = savedQueue.map((item) => ({
       ...item,
       status: item.status === "processing" ? "pending" : item.status,
     }));
-  }
-
-  private saveQueue() {
-    setValue("conversionQueue", this.queue);
   }
 
   add(item: string) {
@@ -72,7 +64,11 @@ class ConversionQueue {
       status: "pending",
       paused: false,
     });
-    this.saveQueue();
+    conversionQueueDataService.putQueueItem(item, {
+      inputPath: item,
+      status: "pending",
+      paused: false,
+    });
     this.processQueue();
   }
 
@@ -80,7 +76,7 @@ class ConversionQueue {
     const item = this.queue.find((i) => i.inputPath === inputPath);
     if (item && item.status === "pending") {
       item.status = "paused";
-      this.saveQueue();
+      conversionQueueDataService.putQueueItem(item.inputPath, item);
       return true;
     }
     return false;
@@ -90,7 +86,8 @@ class ConversionQueue {
     const item = this.queue.find((i) => i.inputPath === inputPath);
     if (item && item.status === "paused") {
       item.status = "pending";
-      this.saveQueue();
+      //this.saveQueue();
+      conversionQueueDataService.putQueueItem(item.inputPath, item);
       this.processQueue();
       return true;
     }
@@ -107,7 +104,7 @@ class ConversionQueue {
     }
 
     this.queue.splice(itemIndex, 1);
-    this.saveQueue();
+    conversionQueueDataService.deleteQueueItem(inputPath);
     return true;
   }
 
@@ -118,7 +115,9 @@ class ConversionQueue {
     }
     if (this.currentProcessingItem) {
       this.currentProcessingItem.status = "failed";
-      this.saveQueue();
+      conversionQueueDataService.deleteQueueItem(
+        this.currentProcessingItem.inputPath,
+      );
       this.currentProcessingItem = null;
     }
     this.isProcessing = false;
@@ -135,7 +134,7 @@ class ConversionQueue {
     if (nextItem) {
       this.currentProcessingItem = nextItem;
       nextItem.status = "processing";
-      this.saveQueue();
+      conversionQueueDataService.putQueueItem(nextItem.inputPath, nextItem);
       try {
         await this.processor(nextItem.inputPath, this);
         // Remove item from queue when completed
@@ -144,11 +143,11 @@ class ConversionQueue {
         );
         if (idx !== -1) {
           this.queue.splice(idx, 1);
-          this.saveQueue();
+          conversionQueueDataService.deleteQueueItem(nextItem.inputPath);
         }
       } catch (error) {
         nextItem.status = "failed";
-        this.saveQueue();
+        conversionQueueDataService.putQueueItem(nextItem.inputPath, nextItem);
         console.error(`Conversion failed for ${nextItem.inputPath}:`, error);
       } finally {
         this.currentProcessingItem = null;
@@ -218,8 +217,8 @@ export function getCurrentProcessingItem(): ConversionQueueItem | null {
   return getConversionQueueInstance().getCurrentProcessingItem();
 }
 
-export function getConversionQueue(): ConversionQueueItem[] {
-  return getConversionQueueInstance().getQueue();
+export async function getConversionQueue(): Promise<ConversionQueueItem[]> {
+  return await conversionQueueDataService.getAllQueueItems();
 }
 
 export function initializeConversionQueue() {
@@ -354,7 +353,7 @@ function handleConversionError(
   const item = queue.getQueue().find((i) => i.inputPath === inputPath);
   if (item) {
     item.status = "failed";
-    setValue("conversionQueue", queue.getQueue());
+    conversionQueueDataService.putQueueItem(item.inputPath, item);
   }
   reject(error);
 }

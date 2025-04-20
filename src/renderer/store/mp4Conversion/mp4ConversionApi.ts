@@ -78,7 +78,7 @@ export const initializeConversionQueueApi = async () => {
     const result = await window.mp4ConversionAPI.initializeConversionQueue();
     return result;
   } catch (error) {
-    log.error("Error initializing conversion queue via API:", error);
+    log.error("Error initializing conversion queue via API:", error); 
     throw error;
   }
 }
