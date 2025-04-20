@@ -4,6 +4,7 @@ import { Jimp } from "jimp";
 import path from "path";
 import ffmpeg from "fluent-ffmpeg";
 import { loggingService as log } from "./main-logging.service";
+import * as videoScreenshotDbService from "./videoScreenshotDb.service";
 
 function ensureTempDir(): string {
   const tempDir = `${app.getPath("userData")}/temp`;
@@ -15,7 +16,7 @@ function ensureTempDir(): string {
 
 function getVideoDimensions(
   videoPath: string,
-  ffmpegInstance: typeof ffmpeg
+  ffmpegInstance: typeof ffmpeg,
 ): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     ffmpegInstance.ffprobe(videoPath, (err, metadata) => {
@@ -26,7 +27,7 @@ function getVideoDimensions(
       }
 
       const stream = metadata.streams.find(
-        (s: ffmpeg.FfprobeStream) => s.width && s.height
+        (s: ffmpeg.FfprobeStream) => s.width && s.height,
       );
       if (!stream) {
         const error = new Error("Unable to retrieve video dimensions.");
@@ -48,15 +49,13 @@ function generateScreenshot(
   duration: number,
   tempDir: string,
   filename: string,
-  ffmpegInstance: typeof ffmpeg
+  ffmpegInstance: typeof ffmpeg,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const normalizedCurrentTime = Math.min(currentTime, duration - 3);
     ffmpegInstance(videoPath)
       .screenshots({
-        timestamps: [
-          currentTime === 0 ? 5 : Math.floor(normalizedCurrentTime),
-        ],
+        timestamps: [currentTime === 0 ? 5 : Math.floor(normalizedCurrentTime)],
         filename,
         folder: tempDir,
       })
@@ -71,7 +70,7 @@ function generateScreenshot(
 async function processThumbnail(
   imagePath: string,
   thumbnailWidth: number,
-  thumbnailHeight: number
+  thumbnailHeight: number,
 ): Promise<string> {
   const image = await Jimp.read(imagePath);
   image.resize({ w: thumbnailWidth, h: thumbnailHeight });
@@ -84,16 +83,25 @@ export async function generateThumbnail(
   videoPath: string,
   currentTime: number,
   ffmpegInstance: typeof ffmpeg,
-  duration: number
+  duration: number,
 ): Promise<string> {
   try {
+    const dbScreenshot =
+      await videoScreenshotDbService.getVideoScreenshot(videoPath);
+    if (dbScreenshot?.currentTime === currentTime) {
+      return dbScreenshot.image;
+    }
+
     const tempDir = ensureTempDir();
     const filename = `thumbnail-at-${path.basename(
       videoPath,
-      path.extname(videoPath)
+      path.extname(videoPath),
     )}.png`;
 
-    const { width, height } = await getVideoDimensions(videoPath, ffmpegInstance);
+    const { width, height } = await getVideoDimensions(
+      videoPath,
+      ffmpegInstance,
+    );
     const thumbnailWidth = width / 5; // Adjust this value to control the thumbnail size
     const thumbnailHeight = height / 5; // Maintain aspect ratio
 
@@ -103,16 +111,30 @@ export async function generateThumbnail(
       duration,
       tempDir,
       filename,
-      ffmpegInstance
+      ffmpegInstance,
     );
 
     if (!fs.existsSync(imagePath)) {
-      const error = new Error(`Thumbnail image not found at path: ${imagePath}`);
+      const error = new Error(
+        `Thumbnail image not found at path: ${imagePath}`,
+      );
       log.error(error.message);
       throw error;
     }
 
-    return await processThumbnail(imagePath, thumbnailWidth, thumbnailHeight);
+    const image = await processThumbnail(
+      imagePath,
+      thumbnailWidth,
+      thumbnailHeight,
+    );
+
+    videoScreenshotDbService.putVideoScreenshot(videoPath, {
+      filePath: videoPath,
+      currentTime,
+      image,
+    });
+
+    return image;
   } catch (error) {
     log.error("Error generating thumbnail:", error);
     throw error;

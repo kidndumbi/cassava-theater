@@ -25,10 +25,6 @@ import {
   selTvShows,
 } from "../store/videoInfo/folderVideosInfoSelectors";
 import { fetchVideoDetailsApi } from "../store/videoInfo/folderVideosInfoApi";
-import {
-  selThumbnailCache,
-  thumbnailCacheActions,
-} from "../store/thumbnailCache.slice";
 
 export const useTvShows = () => {
   const dispatch = useAppDispatch();
@@ -40,7 +36,6 @@ export const useTvShows = () => {
   const loadingTvShows = useSelector(selLoadingTvShows);
   const tvShowSuggestions = useSelector(selTvShowSuggestions);
   const tvShowSuggestionsLoading = useSelector(selTvShowSuggestionsLoading);
-  const thumbnailCache = useSelector(selThumbnailCache);
 
   const fetchData = (
     path: string,
@@ -111,7 +106,6 @@ export const useTvShows = () => {
     );
   };
 
-
   const getTvShowById = async (
     id: string,
     callback: (data: TvShowDetails) => void,
@@ -121,7 +115,7 @@ export const useTvShows = () => {
   };
 
   const getEpisodeDetails = async (path: string) => {
-    fetchData(path, "episodes", false);
+    fetchData(path, "episodes", true);
   };
 
   const getSeasonDetails = (path: string) => {
@@ -156,58 +150,6 @@ export const useTvShows = () => {
     dispatch(videosInfoActions.removeTvShow(filePath));
   };
 
-  const updateEpisodeThumbnail = async (episode: VideoDataModel) => {
-    const { filePath, currentTime } = episode;
-    const cacheEntry = thumbnailCache[filePath];
-
-    // Return cached thumbnail if it matches the current time
-    if (cacheEntry?.currentTime === currentTime) {
-      dispatchEpisodeUpdate(cacheEntry.image, filePath);
-      return;
-    }
-
-    // Fetch new thumbnail details from the API
-    const { videoProgressScreenshot } = await fetchVideoDetailsApi({
-      path: filePath,
-      category: null,
-    });
-
-    // Update the thumbnail cache
-    dispatchThumbnailCacheUpdate(
-      filePath,
-      videoProgressScreenshot,
-      currentTime,
-    );
-
-    // Dispatch the episode update with the new thumbnail
-    dispatchEpisodeUpdate(videoProgressScreenshot, filePath);
-  };
-
-  // Helper function to dispatch episode updates
-  const dispatchEpisodeUpdate = (image: string, filePath: string) => {
-    dispatch(
-      videosInfoActions.updateEpisode({
-        videoProgressScreenshot: image,
-        filePath,
-      }),
-    );
-  };
-
-  // Helper function to update the thumbnail cache
-  const dispatchThumbnailCacheUpdate = (
-    key: string,
-    image: string,
-    currentTime: number,
-  ) => {
-    dispatch(
-      thumbnailCacheActions.setThumbnail({
-        key,
-        image,
-        currentTime,
-      }),
-    );
-  };
-
   const AddTvShowFolder = async (data: {
     tvShowName: string;
     subfolders: string[];
@@ -240,7 +182,7 @@ export const useTvShows = () => {
     updateTvShow,
     updateTvShowDbData,
     removeTvShow,
-    updateEpisodeThumbnail,
+    // updateEpisodeThumbnail,
     tvShowSuggestionsLoading,
     AddTvShowFolder,
   };
