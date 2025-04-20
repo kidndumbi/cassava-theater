@@ -13,10 +13,6 @@ export function normalizeFilePath(filePath: string): string {
   return filePath.replace(/\\/g, "/");
 }
 
-export const getThumbnailCacheFilePath = () => {
-  return app.getPath("userData") + "/thumbnailCache.json";
-};
-
 export const isVideoFile = (file: string): boolean => {
   const extension = path.extname(file).toLowerCase();
   return SUPPORTED_VIDEO_EXTENSIONS.includes(extension);
