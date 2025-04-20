@@ -182,7 +182,7 @@ export const populateVideoData = async (
     const videoDb = await videoDbDataService.getVideo(
       normalizeFilePath(fullFilePath),
     );
-    const duration = await calculateDuration(fullFilePath);
+    const duration = videoDb?.duration > 0 ? videoDb.duration :  await calculateDuration(fullFilePath);
     const videoData = createVideoDataObject(
       file,
       fullFilePath,
@@ -304,18 +304,7 @@ export function getVideoDuration(
   });
 }
 
-export const updateVideoData = async (
-  filePath: string,
-  currentTime: number,
-) => {
-  const videoDbData = await videoDbDataService.getVideo(
-    normalizeFilePath(filePath),
-  );
-  videoDbData.currentTime = currentTime;
-  videoDbData.watched = currentTime !== 0;
-  videoDbData.lastVideoPlayedDate = new Date().toISOString();
-  return videoDbData;
-};
+
 
 export const updateParentVideoData = async (
   currentVideo: VideoDataModel,
