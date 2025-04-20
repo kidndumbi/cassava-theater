@@ -30,16 +30,9 @@ export const Mp4ProgressList = ({
   return (
     <>
       <Box className="ml-14 mr-14 mt-4">
-        <Box>
-          <Button
-            variant="contained"
-            onClick={() => {
-              clearCompletedConversions();
-            }}
-          >
-            Clear completed
-          </Button>
-        </Box>
+        <Mp4ProgressListActions
+          clearCompletedConversions={clearCompletedConversions}
+        />
         <Box className="mt-2 flex flex-col gap-2">
           {progressList.map((progress, index) => (
             <ProgressItem
@@ -58,6 +51,32 @@ export const Mp4ProgressList = ({
     </>
   );
 };
+
+const Mp4ProgressListActions = ({
+  clearCompletedConversions,
+}: {
+  clearCompletedConversions: () => void;
+}) => (
+  <Box>
+    <Button
+      variant="contained"
+      onClick={() => {
+        clearCompletedConversions();
+      }}
+    >
+      Clear completed
+    </Button>
+    <Button
+      variant="contained"
+      onClick={() => {
+        console.log("Pausing all conversions");
+        //clearCompletedConversions();
+      }}
+    >
+      Pause
+    </Button>
+  </Box>
+);
 
 const ProgressItem = ({
   progress,

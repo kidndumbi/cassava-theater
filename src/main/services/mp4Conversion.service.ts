@@ -5,6 +5,8 @@ import { getMainWindow } from "../mainWindowManager";
 import * as videoDataHelpers from "./video.helpers";
 import { deleteFile } from "./file.service";
 import { getValue, setValue } from "../store";
+import { levelDBService } from "./levelDB.service";
+import { normalizeFilePath } from "./helpers";
 
 const VIDEO_EXTENSIONS = new Set([
   ".mkv",
@@ -45,9 +47,7 @@ class ConversionQueue {
       inputPath: string,
       queue: ConversionQueue,
     ) => Promise<void>,
-  ) {
-
-  }
+  ) {}
 
   initializeProcessing() {
     this.loadQueue();
@@ -139,7 +139,9 @@ class ConversionQueue {
       try {
         await this.processor(nextItem.inputPath, this);
         // Remove item from queue when completed
-        const idx = this.queue.findIndex(i => i.inputPath === nextItem.inputPath);
+        const idx = this.queue.findIndex(
+          (i) => i.inputPath === nextItem.inputPath,
+        );
         if (idx !== -1) {
           this.queue.splice(idx, 1);
           this.saveQueue();
@@ -326,8 +328,10 @@ async function handleConversionEnd(
 ) {
   console.log(`\nFinished: "${mp4Path}"`);
   try {
-    const previousData = await videoDataHelpers.readJsonData(inputPath);
-    await videoDataHelpers.writeJsonToFile(mp4Path, previousData);
+    const previousData = await levelDBService.getVideo(
+      normalizeFilePath(inputPath),
+    );
+    await levelDBService.putVideo(mp4Path, previousData);
     await deleteFile(inputPath);
     mainWindow?.webContents.send("mp4-conversion-completed", {
       file: `${inputPath}:::${mp4Path}`,

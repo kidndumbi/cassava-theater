@@ -1,20 +1,18 @@
-import { access, writeFile, readdir, stat } from "fs/promises";
+import {  readdir, stat } from "fs/promises";
 import { Stats } from "fs";
 import * as fs from "fs";
 import * as helpers from "./helpers";
 import * as path from "path";
 import ffmpeg from "fluent-ffmpeg";
 import { loggingService as log } from "./main-logging.service";
+import { levelDBService } from "./levelDB.service";
 
 import { generateThumbnail } from "./thumbnail.service";
 
 import { VideoDataModel } from "../../models/videoData.model";
-import * as lockFile from "proper-lockfile";
-import { app } from "electron";
-import { fileExists, normalizeFilePath, readFileData } from "./helpers";
+import {  normalizeFilePath,  } from "./helpers";
 import { TvShowDetails } from "../../models/tv-show-details.model";
 
-const VIDEO_META_DATA_FILE_NAME = app.getPath("userData") + "/videoData.json";
 
 /**
  * Filters an array of video objects based on the provided category.
@@ -48,59 +46,6 @@ export const filterByCategory = (
   return videos;
 };
 
-export async function readJsonData(
-  filePath: string,
-  defaultData: VideoDataModel = {
-    notes: [],
-    overview: {},
-  },
-) {
-  if (await fileExists(VIDEO_META_DATA_FILE_NAME)) {
-    const file = await readFileData(VIDEO_META_DATA_FILE_NAME);
-    const fileJson = JSON.parse(file);
-    const videoData = (fileJson[normalizeFilePath(filePath)] ||
-      defaultData) as VideoDataModel;
-    return videoData;
-  }
-  return defaultData;
-}
-
-export const writeJsonToFile = async (
-  filePath: string,
-  jsonData: VideoDataModel,
-): Promise<VideoDataModel> => {
-  let release: (() => Promise<void>) | null = null;
-  try {
-    try {
-      await access(VIDEO_META_DATA_FILE_NAME);
-    } catch {
-      await writeFile(VIDEO_META_DATA_FILE_NAME, "{}");
-    }
-    release = await lockFile.lock(VIDEO_META_DATA_FILE_NAME, { retries: 3 });
-
-    let currentData: Record<string, VideoDataModel> = {};
-    const content = await readFileData(VIDEO_META_DATA_FILE_NAME);
-    if (content) {
-      try {
-        currentData = JSON.parse(content);
-      } catch {
-        currentData = {};
-      }
-    }
-
-    currentData[normalizeFilePath(filePath)] = jsonData;
-
-    await writeFile(
-      VIDEO_META_DATA_FILE_NAME,
-      JSON.stringify(currentData, null, 2),
-    );
-    return jsonData;
-  } finally {
-    if (release) {
-      await release();
-    }
-  }
-};
 
 export function shouldProcessFile(
   file: string,
@@ -237,7 +182,9 @@ export const populateVideoData = async (
 ) => {
   try {
     const fullFilePath = path.join(filePath, file);
-    const jsonFileContents = await readJsonData(fullFilePath);
+    const videoDb = await levelDBService.getVideo(
+      normalizeFilePath(fullFilePath),
+    );
     const duration = await calculateDuration(fullFilePath);
     const videoData = createVideoDataObject(
       file,
@@ -246,13 +193,14 @@ export const populateVideoData = async (
       stats.birthtimeMs,
       filePath,
       duration,
-      jsonFileContents,
+      videoDb,
       category,
     );
 
     if (stats.isDirectory()) {
       videoData.childFolders = await getSortedChildFolders(fullFilePath);
     }
+
     return videoData;
   } catch (error: unknown) {
     log.error("Error populating video data:", error);
@@ -363,11 +311,14 @@ export const updateVideoData = async (
   filePath: string,
   currentTime: number,
 ) => {
-  const jsonFileContents = await readJsonData(filePath);
-  jsonFileContents.currentTime = currentTime;
-  jsonFileContents.watched = currentTime !== 0;
-  jsonFileContents.lastVideoPlayedDate = new Date().toISOString();
-  return jsonFileContents;
+
+  const videoDbData = await levelDBService.getVideo(
+    normalizeFilePath(filePath),
+  );
+  videoDbData.currentTime = currentTime;
+  videoDbData.watched = currentTime !== 0;
+  videoDbData.lastVideoPlayedDate = new Date().toISOString();
+  return videoDbData;
 };
 
 export const updateParentVideoData = async (
@@ -382,15 +333,15 @@ export const updateParentVideoData = async (
   const grandParentFilePath = path.dirname(parentFilePath);
   const grandParentJsonFilePath = grandParentFilePath;
 
-  const grandParentJsonFileContents = await readJsonData(
-    grandParentJsonFilePath,
+  const grandParentJsonFileContents = await levelDBService.getVideo(
+    normalizeFilePath(grandParentJsonFilePath),
   );
   grandParentJsonFileContents.lastVideoPlayed = currentVideo.filePath;
   grandParentJsonFileContents.lastVideoPlayedTime = currentTime;
   grandParentJsonFileContents.lastVideoPlayedDate = new Date().toISOString();
   grandParentJsonFileContents.lastVideoPlayedDuration = currentVideo.duration;
+  await levelDBService.putVideo(normalizeFilePath(grandParentJsonFilePath), grandParentJsonFileContents);
 
-  await writeJsonToFile(grandParentJsonFilePath, grandParentJsonFileContents);
   return {
     lastVideoPlayed: grandParentJsonFileContents.lastVideoPlayed,
     lastVideoPlayedTime: grandParentJsonFileContents.lastVideoPlayedTime,
@@ -402,7 +353,7 @@ export const updateParentVideoData = async (
 
 export const getSortedChildFolders = async (
   dirPath: string,
-): Promise<{ folderPath: string; basename: string;  }[]> => {
+): Promise<{ folderPath: string; basename: string }[]> => {
   const childFoldersPromises = fs
     .readdirSync(dirPath, { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
