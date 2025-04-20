@@ -4,7 +4,7 @@ import { stat } from "fs/promises";
 import * as path from "path";
 import { VideoDataModel } from "../../models/videoData.model";
 import { loggingService as log } from "./main-logging.service";
-import { levelDBService } from "./levelDB.service";
+import * as videoDbDataService from "./videoDbData.service";
 
 import * as videoDataHelpers from "./video.helpers";
 import { getMovieOrTvShowById } from "./themoviedb.service";
@@ -132,7 +132,7 @@ export const fetchVideoDetails = async (
 
   try {
     const stats = await stat(filePath);
-    const videoDbData = await levelDBService.getVideo(
+    const videoDbData = await videoDbDataService.getVideo(
       normalizeFilePath(filePath),
     );
     const duration = await videoDataHelpers.calculateDuration(filePath);
@@ -156,7 +156,7 @@ export const fetchVideoDetails = async (
         getValue("theMovieDbApiKey"), // Correctly typed key
       );
 
-      await levelDBService.putVideo(normalizeFilePath(videoDetails.filePath), {
+      await videoDbDataService.putVideo(normalizeFilePath(videoDetails.filePath), {
         movie_details,
       });
       videoDetails.movie_details = movie_details;
@@ -182,7 +182,7 @@ export const fetchFolderDetails = async (
   }
 
   try {
-    const videoDbData = await levelDBService.getVideo(
+    const videoDbData = await videoDbDataService.getVideo(
       normalizeFilePath(dirPath),
     );
     const basename = path.basename(dirPath);
@@ -209,7 +209,7 @@ export const fetchFolderDetails = async (
         getValue("theMovieDbApiKey"),
       )) as TvShowDetails;
 
-      await levelDBService.putVideo(normalizeFilePath(videoDetails.filePath), {
+      await videoDbDataService.putVideo(normalizeFilePath(videoDetails.filePath), {
         tv_show_details: tv_show_details,
       });
     }
@@ -235,7 +235,7 @@ export const getVideoJsonData = async (
       return EMPTY_JSON_RESPONSE;
     }
 
-    return await levelDBService.getVideo(
+    return await videoDbDataService.getVideo(
       normalizeFilePath(currentVideo.filePath),
     );
   } catch (error) {
@@ -263,11 +263,11 @@ export const saveVideoJsonData = async (
   };
 
   try {
-    await levelDBService.putVideo(
+    await videoDbDataService.putVideo(
       normalizeFilePath(newFilePath),
       newVideoJsonData,
     );
-    const videoDbData = await levelDBService.getVideo(
+    const videoDbData = await videoDbDataService.getVideo(
       normalizeFilePath(newFilePath),
     );
     return videoDbData;
@@ -294,7 +294,7 @@ export const saveCurrentTime = async (
       currentTime,
     );
 
-    await levelDBService.putVideo(
+    await videoDbDataService.putVideo(
       normalizeFilePath(currentVideo.filePath),
       videoDbData,
     );

@@ -8,11 +8,12 @@ import { VideoDataModel } from "../../models/videoData.model";
 // Define your database collections
 type Collections = {
   videos: VideoDataModel;
+  markedForDelete: string; // Each key is a file path, value is the file path string
   // Add more collections as needed
 };
 
 type CollectionName = keyof Collections;
-type KeyType = string;
+export type KeyType = string;
 
 interface DatabaseStatus {
   initialized: boolean;
@@ -46,29 +47,8 @@ class LevelDBService {
     }
   }
 
-  // Collection-specific methods
-  public async putVideo(
-    key: KeyType,
-    value: Partial<VideoDataModel>,
-  ): Promise<void> {
-    const existing = (await this.getVideo(key)) || {};
-    return this.put("videos", key, { ...existing, ...value });
-  }
-
-  public async getVideo(key: KeyType): Promise<VideoDataModel | null> {
-    return this.get("videos", key);
-  }
-
-  public async deleteVideo(key: KeyType): Promise<void> {
-    return this.delete("videos", key);
-  }
-
-  public async getAllVideos(): Promise<VideoDataModel[]> {
-    return this.getAll("videos");
-  }
-
   // Generic methods
-  private async put<T extends CollectionName>(
+  public async put<T extends CollectionName>(
     collection: T,
     key: KeyType,
     value: Collections[T],
@@ -82,13 +62,14 @@ class LevelDBService {
     }
   }
 
-  private async get<T extends CollectionName>(
+  public async get<T extends CollectionName>(
     collection: T,
     key: KeyType,
   ): Promise<Collections[T] | null> {
     const collectionKey = `${collection}:${key}`;
     try {
-      return await this.db.get(collectionKey);
+      // Cast the result to Collections[T] to satisfy TypeScript
+      return (await this.db.get(collectionKey)) as Collections[T];
     } catch (err) {
       if (err.code === "LEVEL_NOT_FOUND") return null;
       log.error(`DB get failed for ${collectionKey}:`, err);
@@ -96,7 +77,7 @@ class LevelDBService {
     }
   }
 
-  private async delete(
+  public async delete(
     collection: CollectionName,
     key: KeyType,
   ): Promise<void> {
@@ -109,7 +90,7 @@ class LevelDBService {
     }
   }
 
-  private async getAll<T extends CollectionName>(
+  public async getAll<T extends CollectionName>(
     collection: T,
   ): Promise<Collections[T][]> {
     const items: Collections[T][] = [];
