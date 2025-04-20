@@ -1,3 +1,4 @@
+import { VideoDataModel } from "../../../models/videoData.model";
 import { rendererLoggingService as log } from "../../util/renderer-logging.service";
 
 export const fetchVideoDetailsApi = async ({
@@ -56,6 +57,16 @@ export const getFolderFilesApi = async (path: string) => {
     return response;
   } catch (error) {
     log.error("Error fetching folder files via API:", error);
+    throw error;
+  }
+};
+
+export const getScreenshotApi = async (videodata: VideoDataModel) => {
+  try {
+    const response = await window.videoAPI.getScreenshot(videodata);
+    return response;
+  } catch (error) {
+    log.error("Error fetching screenshot via API:", error);
     throw error;
   }
 };

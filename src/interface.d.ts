@@ -1,5 +1,5 @@
 import { ConversionQueueItem } from "./main/services/mp4Conversion.service";
-import { SettingsModel } from "./main/store";
+// import { SettingsModel } from "./main/store";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoDataModel } from "./models/videoData.model";
 export interface IElectronAPI {
@@ -77,6 +77,7 @@ export interface VideoAPI {
     tvShowsFolderPath: string;
   }) => Promise<VideoDataModel>;
   getFolderFiles: (folderPath: string) => Promise<string[]>;
+  getScreenshot: (videoData: VideoDataModel) => Promise<string>;
 }
 
 export interface TheMovieDbAPI {

@@ -82,7 +82,6 @@ async function processThumbnail(
 export async function generateThumbnail(
   videoPath: string,
   currentTime: number,
-  ffmpegInstance: typeof ffmpeg,
   duration: number,
 ): Promise<string> {
   try {
@@ -100,7 +99,7 @@ export async function generateThumbnail(
 
     const { width, height } = await getVideoDimensions(
       videoPath,
-      ffmpegInstance,
+      ffmpeg,
     );
     const thumbnailWidth = width / 5; // Adjust this value to control the thumbnail size
     const thumbnailHeight = height / 5; // Maintain aspect ratio
@@ -111,7 +110,7 @@ export async function generateThumbnail(
       duration,
       tempDir,
       filename,
-      ffmpegInstance,
+      ffmpeg,
     );
 
     if (!fs.existsSync(imagePath)) {

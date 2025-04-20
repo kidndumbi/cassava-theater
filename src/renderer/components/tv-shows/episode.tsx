@@ -1,4 +1,4 @@
-import React, {  useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Theme } from "@mui/material";
 import FourMpIcon from "@mui/icons-material/FourMp";
 
@@ -20,6 +20,7 @@ import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 import { useSettings } from "../../hooks/useSettings";
 import { styled } from "@mui/system";
 import { VideoTypeChip } from "../common/VideoTypeChip";
+import { useCommonUtil } from "../../../renderer/hooks/useCommonUtil";
 
 interface EpisodeProps {
   episode: VideoDataModel;
@@ -41,6 +42,7 @@ export const Episode: React.FC<EpisodeProps> = ({
 }) => {
   const { isConvertingToMp4 } = useMp4Conversion();
   const { settings } = useSettings();
+  const { getScreenshot } = useCommonUtil();
 
   const [hover, setHover] = useState(false);
   const [openNotesModal, setOpenNotesModal] = useState(false);
@@ -52,12 +54,27 @@ export const Episode: React.FC<EpisodeProps> = ({
   const handleNotesClick = () => setOpenNotesModal(true);
 
   const [hasError, setHasError] = useState(false);
+  const [episodeScreenshot, setEpisodeScreenshot] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (episode) {
+      const callGetScreenshot = async () => {
+        const screenShot = await getScreenshot(episode);
+        if (screenShot) {
+          setEpisodeScreenshot(screenShot);
+        }
+      };
+      callGetScreenshot();
+    }
+  }, [episode]);
 
   const handleError = () => {
     setHasError(true);
   };
 
-  const showThumbnail = episode?.videoProgressScreenshot && !hasError;
+  const showThumbnail = episodeScreenshot && !hasError;
 
   const HoverBox = styled(Box)({
     position: "relative",
@@ -87,7 +104,7 @@ export const Episode: React.FC<EpisodeProps> = ({
       >
         {showThumbnail ? (
           <img
-            src={episode?.videoProgressScreenshot}
+            src={episodeScreenshot}
             alt={episode?.fileName}
             className="episode-thumbnail"
             onClick={handlePlayClick}
@@ -95,7 +112,7 @@ export const Episode: React.FC<EpisodeProps> = ({
           />
         ) : (
           <Box className="flex h-[200px] w-[300px] items-center justify-center">
-            No Image
+            Loading Image
           </Box>
         )}
 

@@ -161,6 +161,9 @@ contextBridge.exposeInMainWorld("videoAPI", {
   getFolderFiles: (folderPath: string) => {
     return ipcRenderer.invoke(VideoIPCChannels.GetFolderFiles, folderPath);
   },
+  getScreenshot: (videoData: VideoDataModel) => {
+    return ipcRenderer.invoke(VideoIPCChannels.GetScreenshot, videoData);
+  },
 });
 
 contextBridge.exposeInMainWorld("theMovieDbAPI", {

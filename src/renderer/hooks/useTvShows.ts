@@ -115,7 +115,7 @@ export const useTvShows = () => {
   };
 
   const getEpisodeDetails = async (path: string) => {
-    fetchData(path, "episodes", true);
+    fetchData(path, "episodes", false);
   };
 
   const getSeasonDetails = (path: string) => {
