@@ -135,7 +135,7 @@ export const fetchVideoDetails = async (
     const videoDbData = await videoDbDataService.getVideo(
       normalizeFilePath(filePath),
     );
-    const duration = await videoDataHelpers.calculateDuration(filePath);
+    const duration = videoDbData?.duration > 0 ? videoDbData.duration :  await videoDataHelpers.calculateDuration(filePath);
     const fileName = path.basename(filePath);
 
     const videoDetails: VideoDataModel = videoDataHelpers.createVideoDataObject(
@@ -295,10 +295,19 @@ export const saveCurrentTime = async (
       throw new Error("currentVideo.filePath is undefined");
     }
 
-    const videoDbData = await videoDataHelpers.updateVideoData(
-      currentVideo.filePath,
-      currentTime,
+    currentVideo.videoProgressScreenshot = null;
+
+    let videoDbData = await videoDbDataService.getVideo(
+      normalizeFilePath(currentVideo.filePath),
     );
+
+    if (!videoDbData) {
+      videoDbData = currentVideo;
+    }
+
+    videoDbData.currentTime = currentTime;
+    videoDbData.watched = currentTime !== 0;
+    videoDbData.lastVideoPlayedDate = new Date().toISOString();
 
     await videoDbDataService.putVideo(
       normalizeFilePath(currentVideo.filePath),
