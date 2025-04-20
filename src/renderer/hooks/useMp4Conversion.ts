@@ -10,7 +10,7 @@ import {
   Mp4ConversionProgress,
 } from "../store/mp4Conversion/mp4Conversion.slice";
 import * as mp4Api from "../store/mp4Conversion/mp4ConversionApi";
-import { ConversionQueueItem } from "../../models/conversion-queue-item.model";
+import { ConversionQueueItem } from "../../models/conversion-queue-item.model"; 
 
 export const useMp4Conversion = () => {
   const convertToMp4Progress = useSelector(selConvertToMp4Progress);
@@ -18,7 +18,7 @@ export const useMp4Conversion = () => {
   const dispatch = useAppDispatch();
 
   const initConverversionQueueFromStore = (queue: ConversionQueueItem[]) => {
-    const pendingItems = queue.filter((p) => p.status !== "completed");
+    const pendingItems = queue.filter((p) => p.status !== "failed");
 
     if (pendingItems.length === 0) {
       console.log("No pending items in conversion queue.");

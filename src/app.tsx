@@ -48,6 +48,7 @@ const App = () => {
   useEffect(() => {
     const initQueue = async () => {
       const conversionQueue = await getConversionQueue();
+      console.log("Conversion queue from store:", conversionQueue);
       initConverversionQueueFromStore(conversionQueue);
     };
     initQueue();
