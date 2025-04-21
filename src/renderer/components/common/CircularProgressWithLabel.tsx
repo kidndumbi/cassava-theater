@@ -10,13 +10,19 @@ export function CircularProgressWithLabel(
 ) {
   return (
     <Box className="relative inline-flex">
-      <CircularProgress variant="determinate" {...props} />
+      <CircularProgress
+        variant="determinate"
+        size={70}
+        {...props}
+      />
       <Box className="absolute inset-0 flex items-center justify-center">
         <Typography
           variant="caption"
           component="div"
           sx={{ color: theme.customVariables.appWhiteSmoke }}
-        >{`${Math.round(props.value)}%`}</Typography>
+        >
+          {`${props.value.toFixed(2)}%`}
+        </Typography>
       </Box>
     </Box>
   );
