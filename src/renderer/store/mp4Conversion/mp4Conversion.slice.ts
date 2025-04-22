@@ -6,6 +6,7 @@ export interface Mp4ConversionProgress {
   toPath: string;
   percent: number;
   paused: boolean;
+  complete: boolean;
 }
 
 interface Mp4ConversionState {
@@ -25,7 +26,7 @@ const mp4ConversionSlice = createSlice({
       state,
       action: PayloadAction<Mp4ConversionProgress>,
     ) => {
-      const { fromPath, toPath, percent, paused } = action.payload;
+      const { fromPath, toPath, percent, paused, complete } = action.payload;
       const existingProgress = state.convertToMp4Progress.find(
         (progress) => progress.fromPath === fromPath,
       );
@@ -35,11 +36,14 @@ const mp4ConversionSlice = createSlice({
           toPath,
           percent,
           paused: paused !== undefined ? paused : false,
+          complete
+
         });
       } else {
         existingProgress.percent = percent;
         existingProgress.toPath = toPath;
         existingProgress.paused = paused;
+        existingProgress.complete = complete;
       }
     },
     setCurrentlyProcessingItem: (

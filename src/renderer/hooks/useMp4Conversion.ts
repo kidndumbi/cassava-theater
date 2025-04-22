@@ -31,6 +31,7 @@ export const useMp4Conversion = () => {
         toPath: item.inputPath.replace(/\.[^/.]+$/, ".mp4"),
         percent: 0,
         paused: item.status === "paused" ? true : false,
+        complete: false
       });
     });
 
@@ -59,6 +60,7 @@ export const useMp4Conversion = () => {
         toPath: fromPath.replace(/\.[^/.]+$/, ".mp4"),
         percent: 0,
         paused: false,
+        complete: false
       });
     }
   };
