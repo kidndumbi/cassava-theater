@@ -43,7 +43,9 @@ const mp4ConversionSlice = createSlice({
         existingProgress.percent = percent;
         existingProgress.toPath = toPath;
         existingProgress.paused = paused;
-        existingProgress.complete = complete;
+        if (!existingProgress.complete) {
+          existingProgress.complete = complete;
+        }
       }
     },
     setCurrentlyProcessingItem: (
