@@ -85,8 +85,8 @@ export const ProgressItem = ({
         )}
 
         {progress.percent > 0 && progress.percent < COMPLETION_THRESHOLD ? (
-          <CircularProgressWithLabel value={progress.percent}  />
-        ) : progress.percent === COMPLETION_THRESHOLD ? (
+          <CircularProgressWithLabel value={progress.percent} />
+        ) : progress.complete ? (
           <CheckCircleIcon
             sx={{
               color: theme.palette.primary.main,

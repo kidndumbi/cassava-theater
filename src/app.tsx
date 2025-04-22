@@ -31,7 +31,10 @@ import { ConfirmationProvider } from "./renderer/contexts/ConfirmationContext";
 import { useMovies } from "./renderer/hooks/useMovies";
 import { useTvShows } from "./renderer/hooks/useTvShows";
 import { StatusDisplay } from "./renderer/components/StatusDisplay";
-import { mp4ConversionActions } from "./renderer/store/mp4Conversion/mp4Conversion.slice";
+import {
+  mp4ConversionActions,
+  Mp4ConversionProgress,
+} from "./renderer/store/mp4Conversion/mp4Conversion.slice";
 import { useMp4Conversion } from "./renderer/hooks/useMp4Conversion";
 
 const App = () => {
@@ -44,6 +47,10 @@ const App = () => {
   const currentlyProcessingItemRef = useRef(currentlyProcessingItem);
   const { initConverversionQueueFromStore, getConversionQueue } =
     useMp4Conversion();
+
+  const lastExecutionRef = useRef<number>(0);
+  const pendingProgressRef = useRef<any>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const initQueue = async () => {
@@ -77,31 +84,59 @@ const App = () => {
       showSnackbar("User disconnected: " + userId, "error");
     });
 
-    window.mainNotificationsAPI.mp4ConversionProgress((progress) => {
-      const [fromPath, toPath] = progress.file.split(":::") || [];
-      const progressItem = {
-        fromPath,
-        toPath,
-        percent: progress.percent,
-        paused: false,
+    // Throttle mp4ConversionProgress handler to fire at most once every 4 seconds
+    window.mainNotificationsAPI.mp4ConversionProgress((progress) => { 
+      pendingProgressRef.current = progress;
+      const now = Date.now();
+      const elapsed = now - lastExecutionRef.current;
+
+      const execute = () => {
+        const progress = pendingProgressRef.current;
+        pendingProgressRef.current = null;
+        lastExecutionRef.current = Date.now();
+
+        const [fromPath, toPath] = progress.file.split(":::") || [];
+        const progressItem: Mp4ConversionProgress = {
+          fromPath,
+          toPath,
+          percent: progress.percent,
+          paused: false,
+          complete: false,
+        };
+
+        dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
+
+        if (
+          progressItem.fromPath !== currentlyProcessingItemRef.current?.fromPath
+        ) {
+          dispatch(
+            mp4ConversionActions.setCurrentlyProcessingItem(progressItem),
+          );
+        }
       };
 
-      dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
-
-      if (
-        progressItem.fromPath !== currentlyProcessingItemRef.current?.fromPath
-      ) {
-        dispatch(mp4ConversionActions.setCurrentlyProcessingItem(progressItem));
+      if (elapsed >= 10000) {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+        execute();
+      } else if (!timeoutRef.current) {
+        timeoutRef.current = setTimeout(() => {
+          timeoutRef.current = null;
+          execute();
+        }, 10000 - elapsed);
       }
     });
 
     window.mainNotificationsAPI.mp4ConversionCompleted((progress) => {
       const [fromPath, toPath] = progress.file.split(":::") || [];
-      const progressItem = {
+      const progressItem: Mp4ConversionProgress = {
         fromPath,
         toPath,
         percent: progress.percent,
         paused: false,
+        complete: true,
       };
 
       dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
