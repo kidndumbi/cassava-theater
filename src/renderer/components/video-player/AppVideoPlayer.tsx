@@ -117,7 +117,6 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       [currentVideo, episodes, isTvShow],
     );
 
-    // URL generators
     const getVideoUrl = () =>
       getUrl(
         "video",
@@ -126,11 +125,6 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
         port,
       );
     const getSubtitleUrl = () => getUrl("file", subtitleFilePath, null, port);
-
-    // Effects
-    useEffect(() => {
-      console.log("AppVideoPlayer mounted");
-    }, []);
 
     useEffect(() => {
       if (videoPlayerRef.current) {
@@ -156,11 +150,6 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     useEffect(() => {
       const fetchCastAndCrew = async () => {
         if (isTvShow) {
-          console.log(
-            "tv show path",
-            removeLastSegments(currentVideo.filePath, 2),
-          );
-
           const tvShowPath = removeLastSegments(currentVideo.filePath, 2);
           const tvShowDetails = await fetchFolderDetailsApi(tvShowPath);
 

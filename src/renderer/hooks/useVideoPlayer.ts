@@ -199,10 +199,6 @@ export const useVideoPlayer = (
         ? 0
         : videoData?.currentTime || 0;
       globalVideoPlayer.play();
-      console.log(
-        "globalVideoPlayer.currentTime",
-        globalVideoPlayer.currentTime,
-      );
     };
     const onFullscreenChange = () =>
       setIsFullScreen(!!document.fullscreenElement);

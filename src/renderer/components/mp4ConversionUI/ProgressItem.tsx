@@ -32,9 +32,9 @@ export const ProgressItem = ({
 
   return (
     <Box
-      className="flex place-content-between items-center rounded-md p-3"
+      className="flex place-content-between items-center rounded-md p-1"
       sx={{
-        backgroundColor: theme.palette.secondary.main,
+        backgroundColor: theme.customVariables.appDark,
       }}
     >
       <Box className="flex items-center gap-2">
@@ -50,7 +50,7 @@ export const ProgressItem = ({
         <FilePathText path={progress.toPath} />
       </Box>
 
-      <Box className="flex gap-2">
+      <Box className="flex gap-2" sx={{ alignItems: "center" }}>
         {isSelectable && (
           <>
             {!progress.paused ? (
@@ -58,6 +58,7 @@ export const ProgressItem = ({
                 size="small"
                 variant="contained"
                 onClick={() => pauseConversion(progress.fromPath)}
+                sx={{ alignSelf: "center" }}
               >
                 Pause
               </Button>
@@ -66,6 +67,7 @@ export const ProgressItem = ({
                 size="small"
                 variant="outlined"
                 onClick={() => unpauseConversion(progress.fromPath)}
+                sx={{ alignSelf: "center" }}
               >
                 Resume
               </Button>
@@ -73,18 +75,19 @@ export const ProgressItem = ({
           </>
         )}
 
-        {progress.percent < COMPLETION_THRESHOLD && (
+        {!progress.complete && (
           <Button
             size="small"
             variant="contained"
             color="error"
             onClick={() => removeFromConversionQueue(progress.fromPath)}
+            sx={{ alignSelf: "center" }}
           >
             Cancel
           </Button>
         )}
 
-        {progress.percent > 0 && progress.percent < COMPLETION_THRESHOLD ? (
+        {progress.percent > 0 && progress.percent < COMPLETION_THRESHOLD && !progress.complete  ? (
           <CircularProgressWithLabel value={progress.percent} />
         ) : progress.complete ? (
           <CheckCircleIcon

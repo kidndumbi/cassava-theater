@@ -54,7 +54,6 @@ const SeasonConvertSelector: React.FC<SeasonConvertSelectorProps> = ({
     const allFiles = allFilesArrays
       .flat()
       .filter((file) => !file.endsWith(".json") && !file.endsWith(".mp4"));
-    console.log("Combined files from selected seasons:", allFiles);
     if (allFiles?.length === 0) {
       setNoFilesToConvert(true);
       console.warn("No files to convert in selected seasons.");
