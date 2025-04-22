@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { remove } from "lodash";
 
 export interface Mp4ConversionProgress {
   fromPath: string;
@@ -35,9 +34,8 @@ const mp4ConversionSlice = createSlice({
           fromPath,
           toPath,
           percent,
-          paused: paused !== undefined ? paused : false,
-          complete
-
+          paused: paused ?? false,
+          complete,
         });
       } else {
         existingProgress.percent = percent;
@@ -61,9 +59,8 @@ const mp4ConversionSlice = createSlice({
     },
     removeFromConversionQueue: (state, action: PayloadAction<string>) => {
       const fromPath = action.payload;
-      remove(
-        state.convertToMp4Progress,
-        (progress) => progress.fromPath === fromPath,
+      state.convertToMp4Progress = state.convertToMp4Progress.filter(
+        (progress) => progress.fromPath !== fromPath,
       );
       if (state.currentlyProcessingItem?.fromPath === fromPath) {
         state.currentlyProcessingItem = undefined;
