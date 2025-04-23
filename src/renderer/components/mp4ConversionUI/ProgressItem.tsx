@@ -3,7 +3,6 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import theme from "../../theme";
 import { CircularProgressWithLabel } from "../common/CircularProgressWithLabel";
 import { Mp4ConversionProgress } from "../../store/mp4Conversion/mp4Conversion.slice";
-import React from "react";
 
 interface ProgressItemProps {
   progress: Mp4ConversionProgress;
@@ -28,7 +27,8 @@ export const ProgressItem = ({
 }: ProgressItemProps) => {
   const isSelectable =
     currentlyProcessingItem?.fromPath !== progress.fromPath &&
-    progress.percent < COMPLETION_THRESHOLD;
+    progress.percent < COMPLETION_THRESHOLD &&
+    !progress.complete;
 
   return (
     <Box
@@ -43,7 +43,10 @@ export const ProgressItem = ({
             <Checkbox
               checked={checked}
               onChange={(e) => onCheck(e.target.checked)}
-              sx={{ marginRight: 1 }}
+              sx={{
+                marginRight: 1,
+                color: theme.palette.primary.main,
+              }}
             />
           ) : null}
         </Box>
@@ -87,7 +90,9 @@ export const ProgressItem = ({
           </Button>
         )}
 
-        {progress.percent > 0 && progress.percent < COMPLETION_THRESHOLD && !progress.complete  ? (
+        {progress.percent > 0 &&
+        progress.percent < COMPLETION_THRESHOLD &&
+        !progress.complete ? (
           <CircularProgressWithLabel value={progress.percent} />
         ) : progress.complete ? (
           <CheckCircleIcon
