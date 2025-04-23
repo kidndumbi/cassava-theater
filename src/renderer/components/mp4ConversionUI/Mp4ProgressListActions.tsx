@@ -1,4 +1,4 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, useTheme } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import React from "react";
 import { AppButton } from "../common/AppButton";
@@ -25,6 +25,8 @@ export const Mp4ProgressListActions = ({
   bulkPause,
   bulkResume,
 }: Mp4ProgressListActionsProps) => {
+  const theme = useTheme();
+
   const selectedItems = progressList.filter((item) =>
     selected.includes(item.fromPath),
   );
@@ -55,7 +57,7 @@ export const Mp4ProgressListActions = ({
                 setSelected([]);
               }
             }}
-            sx={{ marginRight: 1 }}
+            sx={{ marginRight: 1, color: theme.palette.primary.main }}
           />
         </Box>
         <AppButton
