@@ -32,15 +32,13 @@ const deleteFileSafely = async (filePath: string): Promise<boolean> => {
     log.error("Error deleting file:", filePath, error);
   }
   return false; // Failed to delete.
-}
+};
 
 /**
  * Updates the marked-for-deletion list in LevelDB with the remaining file paths.
  * @param remaining List of file paths that were not deleted.
  */
-const updateDeletionList = async (
-  remaining: string[],
-): Promise<void> => {
+const updateDeletionList = async (remaining: string[]): Promise<void> => {
   try {
     // Remove all entries, then re-add remaining
     const all = await markedForDeleteService.getAllMarkedForDelete();
@@ -70,10 +68,11 @@ const deleteMarkedForDeletion = async (): Promise<void> => {
   for (const filePath of deletionList) {
     const wasDeleted = await deleteFileSafely(filePath);
     if (!wasDeleted) {
-      remaining.push(filePath); // Keep track of files that couldn't be deleted.
+      if (await helpers.fileExists(filePath)) {
+        remaining.push(filePath); // Keep track of files that couldn't be deleted.
+      }
     }
   }
-
   await updateDeletionList(remaining);
 };
 
