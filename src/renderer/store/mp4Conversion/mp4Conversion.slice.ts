@@ -38,11 +38,13 @@ const mp4ConversionSlice = createSlice({
           complete,
         });
       } else {
-        existingProgress.percent = percent;
         existingProgress.toPath = toPath;
         existingProgress.paused = paused;
         if (!existingProgress.complete) {
           existingProgress.complete = complete;
+        }
+        if (existingProgress.percent !== 100) {
+          existingProgress.percent = percent;
         }
       }
     },
