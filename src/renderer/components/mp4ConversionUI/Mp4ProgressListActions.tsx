@@ -34,7 +34,7 @@ export const Mp4ProgressListActions = ({
   const anyPaused = selectedItems.some((item) => item.paused);
 
   const selectableItems = progressList.filter(
-    (item) => item.percent < COMPLETION_THRESHOLD,
+    (item) => !item.complete,
   );
   const allSelected =
     selectableItems.length > 0 &&
