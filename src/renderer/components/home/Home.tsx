@@ -32,22 +32,12 @@ export const HomePage: React.FC<HomePageProps> = ({
 }) => {
   const theme = useTheme();
   const { setCurrentVideo } = useVideoListLogic();
-  const { getSingleEpisodeDetails, 
-    // resetEpisodes, 
-    // getEpisodeDetails
-  } =
-    useTvShows();
+  const { getSingleEpisodeDetails } = useTvShows();
   const { sortedMovies, sortedTvShows } = useSortedVideos(movies, tvShows);
   const { handlePosterClick, loadingItems } = useHandlePosterClick(
     menuId,
     setCurrentVideo,
     getSingleEpisodeDetails,
-    () => {
-      console.log("will be implemented later"); 
-    },
-    () => {
-      console.log("will be implemented later"); 
-    },
   );
 
   const title = (value: string) => (

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { VideoDataModel } from "../../models/videoData.model";
-import { removeLastSegments } from "../util/helperFunctions";
 import { useNavigate } from "react-router-dom";
 import { rendererLoggingService as log } from "../util/renderer-logging.service";
 
@@ -9,10 +8,8 @@ const useHandlePosterClick = (
   setCurrentVideo: (video: VideoDataModel) => void,
   getSingleEpisodeDetails: (
     path: string,
-    category: string
+    category: string,
   ) => Promise<VideoDataModel | null>,
-  resetEpisodes: () => void,
-  getEpisodeDetails: (path: string) => void
 ) => {
   const navigate = useNavigate();
   const [loadingItems, setLoadingItems] = useState<{
@@ -24,7 +21,7 @@ const useHandlePosterClick = (
       try {
         const episode = await getSingleEpisodeDetails(
           video.lastVideoPlayed || "",
-          "episodes"
+          "episodes",
         );
         if (episode) {
           return episode;
@@ -39,20 +36,15 @@ const useHandlePosterClick = (
   const handlePosterClick = async (
     videoType: string,
     video: VideoDataModel,
-    startFromBeginning = false
+    startFromBeginning = false,
   ) => {
     if (video.filePath) {
       setLoadingItems((prev) => ({ ...prev, [video.filePath]: true }));
     }
     try {
       const selectedVideo = await getSelectedVideo(videoType, video);
+
       const resumeId = videoType === "tvShow" ? "tvShow" : "movie";
-      const seasonPath =
-        videoType === "tvShow"
-          ? removeLastSegments(video.lastVideoPlayed || "", 1)
-          : "";
-      resetEpisodes();
-      getEpisodeDetails(seasonPath);
       setCurrentVideo(selectedVideo);
       const path = `/video-player?menuId=${menuId}&resumeId=${resumeId}&startFromBeginning=${startFromBeginning}`;
       navigate(path);
