@@ -18,6 +18,7 @@ interface MovieListProps {
   movies: VideoDataModel[];
   handlePosterClick: (videoPath: string) => void;
   getImageUrl: (movie: VideoDataModel) => string;
+  refetchMovies: () => void;
 }
 
 const HoverBox = styled(Box)({
@@ -96,6 +97,7 @@ const MovieList: React.FC<MovieListProps> = ({
   movies,
   handlePosterClick,
   getImageUrl,
+  refetchMovies,
 }) => {
   const { 
     // removeMovie, 
@@ -148,7 +150,8 @@ const MovieList: React.FC<MovieListProps> = ({
     if (movie_details.id && selectedMovie?.filePath) {
       await updateTMDBId(selectedMovie.filePath, movie_details);
       showSnackbar("Movie linked to TMDB successfully", "success");
-      setOpenMovieSuggestionsModal(false);
+      refetchMovies();
+      setOpenMovieSuggestionsModal(false); 
     }
   };
 

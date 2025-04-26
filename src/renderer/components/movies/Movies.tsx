@@ -103,6 +103,7 @@ export const Movies: React.FC<MoviesProps> = ({
             movies={filteredMovies}
             handlePosterClick={handlePosterClick}
             getImageUrl={getImageUrl}
+            refetchMovies={handleRefresh}
           />
           <Modal open={!!randomMovie} onClose={() => setRandomMovie(null)}>
             <Paper
