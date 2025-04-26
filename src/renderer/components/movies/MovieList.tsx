@@ -97,7 +97,10 @@ const MovieList: React.FC<MovieListProps> = ({
   handlePosterClick,
   getImageUrl,
 }) => {
-  const { removeMovie, updateTMDBId } = useMovies();
+  const { removeMovie, 
+    updateTMDBId 
+
+  } = useMovies();
   const { showSnackbar } = useSnackbar();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedMovie, setSelectedMovie] = React.useState<VideoDataModel | null>(null);

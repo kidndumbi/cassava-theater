@@ -6,7 +6,6 @@ import { AppTextField } from "../../common/AppTextField";
 import theme from "../../../theme";
 import AppIconButton from "../../common/AppIconButton";
 import { TvShowSuggestionsModal } from "../TvShowSuggestionsModal";
-import { fetchFilmDataById } from "../../../store/theMovieDb.slice";
 import { TvShowDetails } from "../../../../models/tv-show-details.model";
 import { trimFileName } from "../../../util/helperFunctions";
 import { useSettings } from "../../../hooks/useSettings";
@@ -14,7 +13,6 @@ import { TvShowDetailsCard } from "./TvShowDetailsCard";
 import { SubfolderList } from "./SubfolderList";
 import { useTvShows } from "../../../hooks/useTvShows";
 import { VideoDataModel } from "../../../../models/videoData.model";
-import { data } from "react-router-dom/dist";
 
 interface AddTvShowFolderProps {
   tvShows: VideoDataModel[];
@@ -22,7 +20,8 @@ interface AddTvShowFolderProps {
 }
 
 export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
-  tvShows,dataSaved
+  tvShows,
+  dataSaved,
 }) => {
   const { settings } = useSettings();
   const { AddTvShowFolder } = useTvShows();
@@ -99,28 +98,28 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
   const handleCreate = async () => {
     if (!isFormValid()) return;
 
-    try {
-      await AddTvShowFolder({
-        tvShowName: tvShowName.trim(),
-        subfolders,
-        tvShowDetails,
-        tvShowsFolderPath: settings?.tvShowsFolderPath?.trim(),
-      });
+    // try {
+    //   await AddTvShowFolder({
+    //     tvShowName: tvShowName.trim(),
+    //     subfolders,
+    //     tvShowDetails,
+    //     tvShowsFolderPath: settings?.tvShowsFolderPath?.trim(),
+    //   });
 
-      dataSaved(); // Call the parent component's dataSaved function to indicate success
+    //   dataSaved(); // Call the parent component's dataSaved function to indicate success
 
-    } catch (error) {
+    // } catch (error) {
 
-    }
+    // }
   };
 
   const handleSelectTvShow = async (tvShow: TvShowDetails) => {
-    const extraTvShowDetails = await fetchFilmDataById(
-      tvShow.id.toString(),
-      "tv",
-    );
-    setTvShowDetails(extraTvShowDetails);
-    setIsSuggestionsModalOpen(false);
+    // const extraTvShowDetails = await fetchFilmDataById(
+    //   tvShow.id.toString(),
+    //   "tv",
+    // );
+    // setTvShowDetails(extraTvShowDetails);
+    // setIsSuggestionsModalOpen(false);
   };
 
   if (!settings?.tvShowsFolderPath?.trim()) {

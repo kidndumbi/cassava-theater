@@ -2,12 +2,6 @@ import { useSelector } from "react-redux";
 import { videosInfoActions } from "../store/videoInfo/folderVideosInfo.slice";
 import { useAppDispatch } from "../store";
 import { settingsActions } from "../store/settingsSlice";
-import {
-  fetchFilmDataById,
-  selTvShowSuggestions,
-  selTvShowSuggestionsLoading,
-  theMovieDbActions,
-} from "../store/theMovieDb.slice";
 import { TvShowDetails } from "../../models/tv-show-details.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import {
@@ -25,6 +19,7 @@ import {
   selTvShows,
 } from "../store/videoInfo/folderVideosInfoSelectors";
 import { fetchVideoDetailsApi } from "../store/videoInfo/folderVideosInfoApi";
+import { fetchFilmDataByIdApi } from "../api/theMovieDb.api";
 
 export const useTvShows = () => {
   const dispatch = useAppDispatch();
@@ -34,8 +29,6 @@ export const useTvShows = () => {
   const tvShowDetails = useSelector(selFolderDetails);
   const loadingFolderDetails = useSelector(selLoadingFolderDetails);
   const loadingTvShows = useSelector(selLoadingTvShows);
-  const tvShowSuggestions = useSelector(selTvShowSuggestions);
-  const tvShowSuggestionsLoading = useSelector(selTvShowSuggestionsLoading);
 
   const fetchData = (
     path: string,
@@ -68,19 +61,11 @@ export const useTvShows = () => {
     fetchData(tvShowsFolderPath.payload, "tvShows");
   };
 
-  const getTvShowSuggestions = (query: string) => {
-    dispatch(theMovieDbActions.fetchTvShowSuggestions(query));
-  };
-
-  const resetTvShowSuggestions = () => {
-    dispatch(theMovieDbActions.resetTvShowSuggestions());
-  };
-
   const updateTvShowTMDBId = async (
     filePath: string,
     tv_show_details: TvShowDetails,
   ) => {
-    const extraTvShowDetails = await fetchFilmDataById(
+    const extraTvShowDetails = await fetchFilmDataByIdApi(
       tv_show_details.id.toString(),
       "tv",
     );
@@ -104,14 +89,6 @@ export const useTvShows = () => {
         newVideoJsonData: data,
       }),
     );
-  };
-
-  const getTvShowById = async (
-    id: string,
-    callback: (data: TvShowDetails) => void,
-  ) => {
-    const tvShowTMDB = await fetchFilmDataById(id, "tv");
-    callback(tvShowTMDB);
   };
 
   const getEpisodeDetails = async (path: string) => {
@@ -173,17 +150,11 @@ export const useTvShows = () => {
     resetTvShowDetails,
     getSingleEpisodeDetails,
     loadingTvShows,
-    tvShowSuggestions,
-    getTvShowSuggestions,
-    resetTvShowSuggestions,
     updateTvShowTMDBId,
-    getTvShowById,
     findNextEpisode,
     updateTvShow,
     updateTvShowDbData,
     removeTvShow,
-    // updateEpisodeThumbnail,
-    tvShowSuggestionsLoading,
     AddTvShowFolder,
   };
 };

@@ -11,6 +11,7 @@ import { CustomImages } from "./CustomImages";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import LoadingIndicator from "../common/LoadingIndicator";
+import { useTvShowSuggestions } from "../../hooks/useTvShowSuggestions";
 
 interface TvShowSuggestionsModalProps {
   open: boolean;
@@ -30,28 +31,18 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
   const [currentTabValue, setCurrentTabValue] = useState(0);
   const { showSnackbar } = useSnackbar();
   const { getTmdbImageUrl } = useTmdbImageUrl();
+  const [searchQuery, setSearchQuery] = useState(fileName); // new state for search
 
-  const {
-    tvShowSuggestions,
-    getTvShowSuggestions,
-    resetTvShowSuggestions,
-    tvShowDetails,
-    updateTvShowDbData,
-    tvShowSuggestionsLoading,
-  } = useTvShows();
+  const { tvShowDetails, updateTvShowDbData } = useTvShows();
+
+  const { data: tvShowSuggestions, isLoading: tvShowSuggestionsLoading } =
+    useTvShowSuggestions(getFilename(searchQuery));
 
   useEffect(() => {
     if (fileName && open) {
-      resetTvShowSuggestions();
-      getTvShowSuggestions(getFilename(fileName));
+      setSearchQuery(fileName);
     }
   }, [fileName, open, id]);
-
-  useEffect(() => {
-    return () => {
-      resetTvShowSuggestions();
-    };
-  }, []);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTabValue(newValue);
@@ -115,7 +106,7 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
               getTmdbImageUrl={getTmdbImageUrl}
               theme={theme}
               triggererSuggestionsUpdate={(searchValue) => {
-                getTvShowSuggestions(searchValue);
+                setSearchQuery(searchValue);
               }}
             />
           )}

@@ -36,6 +36,9 @@ import {
   Mp4ConversionProgress,
 } from "./renderer/store/mp4Conversion/mp4Conversion.slice";
 import { useMp4Conversion } from "./renderer/hooks/useMp4Conversion";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient()
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -145,7 +148,8 @@ const App = () => {
   }, []);
 
   return (
-    <HashRouter>
+    <QueryClientProvider client={queryClient}>
+     <HashRouter>
       <Box
         data-testid="box-container"
         sx={{
@@ -157,6 +161,8 @@ const App = () => {
         </main>
       </Box>
     </HashRouter>
+  </QueryClientProvider>
+
   );
 };
 
