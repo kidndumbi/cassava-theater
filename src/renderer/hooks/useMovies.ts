@@ -1,12 +1,6 @@
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
 import { settingsActions } from "../store/settingsSlice";
-import {
-  fetchFilmDataById,
-  selMovieSuggestions,
-  selMovieSuggestionsLoading,
-  theMovieDbActions,
-} from "../store/theMovieDb.slice";
 import { MovieDetails } from "../../models/movie-detail.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import {
@@ -21,7 +15,7 @@ import {
   postVideoJason,
 } from "../store/videoInfo/folderVideosInfoActions";
 import { videosInfoActions } from "../store/videoInfo/folderVideosInfo.slice";
-import { useCallback } from "react";
+import { fetchFilmDataByIdApi } from "../api/theMovieDb.api";
 
 export const useMovies = () => {
   const dispatch = useAppDispatch();
@@ -29,8 +23,6 @@ export const useMovies = () => {
   const videoDetails = useSelector(selVideoDetails);
   const loadingVideoDetails = useSelector(selLoadingVideoDetails);
   const loadingMovies = useSelector(selLoadingMovies);
-  const movieSuggestions = useSelector(selMovieSuggestions);
-  const movieSuggestionsLoading = useSelector(selMovieSuggestionsLoading);
 
   const fetchMovies = async (path: string) => {
     dispatch(
@@ -50,16 +42,6 @@ export const useMovies = () => {
     await fetchMovies(movieFolderPath.payload);
   };
 
-  const getMovieSuggestions = useCallback(
-    async (query: string) => {
-      dispatch(theMovieDbActions.fetchMovieSuggestions(query));
-    },
-    [dispatch],
-  );
-
-  const resetMovieSuggestions = useCallback(() => {
-    dispatch(theMovieDbActions.resetMovieSuggestions());
-  }, [dispatch]);
 
   const resetMovieDetails = () => {
     dispatch(videosInfoActions.resetVideoDetails());
@@ -69,7 +51,7 @@ export const useMovies = () => {
     filePath: string,
     movie_details: MovieDetails,
   ) => {
-    const extraMovieDetails = await fetchFilmDataById(
+    const extraMovieDetails = await fetchFilmDataByIdApi(
       movie_details.id.toString(),
       "movie",
     );
@@ -127,15 +109,11 @@ export const useMovies = () => {
     getVideoDetails,
     loadingVideoDetails,
     loadingMovies,
-    movieSuggestions,
-    getMovieSuggestions,
-    resetMovieSuggestions,
     updateTMDBId,
     updateWatchLater,
     updateMovie,
     updateMovieDbData,
     resetMovieDetails,
     removeMovie,
-    movieSuggestionsLoading,
   };
 };

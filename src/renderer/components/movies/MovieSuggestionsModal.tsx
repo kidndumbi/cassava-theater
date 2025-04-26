@@ -20,6 +20,7 @@ import LoadingIndicator from "../common/LoadingIndicator";
 import { AppTextField } from "../common/AppTextField";
 import AppIconButton from "../common/AppIconButton";
 import SearchIcon from "@mui/icons-material/Search";
+import { useMovieSuggestions } from "../../hooks/useMovieSuggestions";
 
 interface MovieSuggestionsModalProps {
   open: boolean;
@@ -36,19 +37,13 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
   id,
   handleSelectMovie,
 }) => {
-  const {
-    movieSuggestions,
-    getMovieSuggestions,
-    resetMovieSuggestions,
-    videoDetails,
-    updateMovieDbData,
-    movieSuggestionsLoading,
-  } = useMovies();
+  const { videoDetails, updateMovieDbData } = useMovies();
   const { showSnackbar } = useSnackbar();
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [currentTabValue, setCurrentTabValue] = useState(0);
 
   const [movieName, setMovieName] = useState("");
+  const [searchQuery, setSearchQuery] = useState(fileName); // new state for search
 
   const handleMovieNameChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -56,20 +51,15 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
     setMovieName(event.target.value);
   };
 
-  useEffect(() => {
-    if (fileName && open) {
-      console.log("MovieSuggestionsModal useEffect triggered", fileName, open);
-      resetMovieSuggestions();
-      getMovieSuggestions(fileName);
-      setMovieName(fileName);
-    }
-  }, [fileName, open, getMovieSuggestions, resetMovieSuggestions]);
+  const { data: movieSuggestions, isLoading: movieSuggestionsLoading } =
+    useMovieSuggestions(searchQuery);
 
   useEffect(() => {
-    return () => {
-      resetMovieSuggestions();
-    };
-  }, []);
+    if (fileName && open) {
+      setMovieName(fileName);
+      setSearchQuery(fileName); // update search query
+    }
+  }, [fileName, open]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTabValue(newValue);
@@ -146,13 +136,15 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
             />
             <AppIconButton
               tooltip="theMovieDb data"
-              onClick={() => getMovieSuggestions(movieName.trim())}
+              onClick={() => {
+                setSearchQuery(movieName.trim());
+              }}
             >
               <SearchIcon />
             </AppIconButton>
           </Box>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
-            {movieSuggestions.map(renderMovieCard)}
+            {movieSuggestions?.map(renderMovieCard)}
           </Box>
         </>
       );
