@@ -21,6 +21,7 @@ import { AppTextField } from "../common/AppTextField";
 import AppIconButton from "../common/AppIconButton";
 import SearchIcon from "@mui/icons-material/Search";
 import { useMovieSuggestions } from "../../hooks/useMovieSuggestions";
+import { useVideoDetailsQuery } from "../../hooks/useVideoData.query";
 
 interface MovieSuggestionsModalProps {
   open: boolean;
@@ -37,7 +38,11 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
   id,
   handleSelectMovie,
 }) => {
-  const { videoDetails, updateMovieDbData } = useMovies();
+  // const { videoDetails, updateMovieDbData } = useMovies();
+
+  const { data: videoDetails } =
+      useVideoDetailsQuery({ path: fileName, category: "movies" });
+
   const { showSnackbar } = useSnackbar();
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [currentTabValue, setCurrentTabValue] = useState(0);
@@ -66,13 +71,14 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
   };
 
   const handleImageUpdate = async (data: VideoDataModel) => {
-    if (!videoDetails?.filePath) return;
-    try {
-      await updateMovieDbData(videoDetails.filePath, data);
-      showSnackbar("Custom image updated successfully", "success");
-    } catch (error) {
-      showSnackbar("Failed to update custom image", "error");
-    }
+    console.log("will be implemented later"); 
+    // if (!videoDetails?.filePath) return;
+    // try {
+    //   await updateMovieDbData(videoDetails.filePath, data);
+    //   showSnackbar("Custom image updated successfully", "success");
+    // } catch (error) {
+    //   showSnackbar("Failed to update custom image", "error");
+    // }
   };
 
   const renderMovieCard = (movie: MovieDetails) => {

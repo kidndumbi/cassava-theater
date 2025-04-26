@@ -13,56 +13,42 @@ import { useSettings } from "../../hooks/useSettings";
 import { useCustomFolder } from "../../hooks/useCustomFolder";
 import Grid from "@mui/material/Grid2";
 import { renderActivePage } from "./RenderActivePage";
-import { useMovies } from "../../hooks/useMovies";
-import { useTvShows } from "../../hooks/useTvShows";
 import { useSearchParams } from "react-router-dom";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import { isEmptyObject } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { AppModal } from "../../components/common/AppModal";
 import { SettingsPage } from "../../components/settings/SettingsPage";
+import { useVideoDataQuery } from "../../hooks/useVideoData.query";
 
 export const LandingPage = () => {
   const theme = useTheme();
   const { settings } = useSettings();
   const [searchParams] = useSearchParams();
-  const { movies, getMovies, loadingMovies, updateMovie } = useMovies();
-  const { tvShows, getTvShows, loadingTvShows, updateTvShow } = useTvShows();
-  const { customFolderData, loadCustomFolder, loadingCustomFolderData } =
-    useCustomFolder();
-  const { currentTime, currentVideo, lastVideoPlayedDate } =
-    useVideoPlayerLogic();
+
+  const { data: movies, isLoading: loadingMovies } = useVideoDataQuery({
+    filePath: settings?.movieFolderPath || "",
+    category: "movies",
+  });
+
+  const { data: tvShows, isLoading: loadingTvShows } = useVideoDataQuery({
+    filePath: settings?.tvShowsFolderPath || "",
+    category: "tvShows",
+  });
+
+  // const { 
+  //   // customFolderData, 
+  //   loadCustomFolder, 
+  //   // loadingCustomFolderData 
+  // } =
+  //   useCustomFolder();
+  // const { currentTime, currentVideo, lastVideoPlayedDate } =
+  //   useVideoPlayerLogic();
 
   const handleMenuClick = (menuItem: MenuItem) => {
     setActiveMenu(menuItem);
   };
 
-  function handleVideoUpdate() {
-    if (currentTime > 0 && !isEmptyObject(currentVideo)) {
-      if (currentVideo.videoDataType === "movie") {
-        updateMovie({ ...currentVideo, currentTime });
-      } else if (
-        currentVideo.videoDataType === "episode" &&
-        lastVideoPlayedDate
-      ) {
-        const pathArray = currentVideo.filePath.split("/");
-        pathArray.pop();
-        pathArray.pop();
-        const filePath = pathArray.join("/");
-        const updatedVideo: VideoDataModel = {
-          filePath,
-          lastVideoPlayedTime: currentTime,
-          lastVideoPlayedDate,
-          lastVideoPlayed: currentVideo.filePath,
-        };
-        updateTvShow(updatedVideo);
-      }
-    }
-  }
-
-  useEffect(() => {
-    handleVideoUpdate();
-  }, [currentTime, currentVideo]);
 
   const [selectedCustomFolder, setSelectedCustomFolder] =
     useState<CustomFolderModel | null>(null);
@@ -148,7 +134,7 @@ export const LandingPage = () => {
 
   useEffect(() => {
     if (selectedCustomFolder && selectedCustomFolder.folderPath) {
-      loadCustomFolder(selectedCustomFolder.folderPath);
+      //loadCustomFolder(selectedCustomFolder.folderPath);
     }
   }, [selectedCustomFolder]);
 
@@ -156,6 +142,13 @@ export const LandingPage = () => {
     getMovies();
     getTvShows();
   };
+
+  const getMovies = () => {
+    // getMovies();
+  };
+  const getTvShows = () => {
+    // getTvShows();
+  }
 
   function syncActiveMenuFromUrl(
     menuItems: MenuItem[],
@@ -171,6 +164,12 @@ export const LandingPage = () => {
   useEffect(() => {
     syncActiveMenuFromUrl(menuItems, setActiveMenu);
   }, [searchParams, menuItems]);
+
+  //const loadingCustomFolderData = false; // Placeholder for actual loading state
+
+  const loadCustomFolder = (path: string) => { 
+    console.log("will be implemented in future", path);
+  }
 
   return (
     <Grid
@@ -206,8 +205,8 @@ export const LandingPage = () => {
           refreshData,
           getMovies,
           getTvShows,
-          loadingCustomFolderData,
-          customFolderData,
+          loadingCustomFolderData: false, // Placeholder for actual loading state
+          customFolderData: null, // Placeholder for actual custom folder data
           loadCustomFolder,
           selectedCustomFolder,
         })}

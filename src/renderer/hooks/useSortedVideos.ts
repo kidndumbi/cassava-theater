@@ -7,8 +7,7 @@ const useSortedVideos = (movies: VideoDataModel[], tvShows: VideoDataModel[]) =>
 		items: VideoDataModel[],
 		filterFn: (m: VideoDataModel) => boolean
 	) => {
-		return items
-			.filter(filterFn)
+		return items?.filter(filterFn)
 			.sort(
 				(a, b) =>
 					new Date(b.lastVideoPlayedDate ?? 0).getTime() -

@@ -12,7 +12,7 @@ import { useAppDispatch } from "../store";
 import { isEmptyObject } from "../util/helperFunctions";
 import { useState } from "react";
 import { VideoDataModel } from "../../models/videoData.model";
-import { postVideoJason } from "../store/videoInfo/folderVideosInfoActions";
+import { updateVideoData } from "../api/videoData.api";
 
 export const useVideoPlayerLogic = () => {
   const dispatch = useAppDispatch();
@@ -45,7 +45,7 @@ export const useVideoPlayerLogic = () => {
 
     dispatch(videoPlayerActions.setCurrentTime(currentTime));
     dispatch(
-      videoPlayerActions.setLastVideoPlayedDate(new Date().toISOString())
+      videoPlayerActions.setLastVideoPlayedDate(new Date().toISOString()),
     );
 
     await window.videoAPI.saveVideoDbCurrentTime({
@@ -61,12 +61,7 @@ export const useVideoPlayerLogic = () => {
       currentTime: 1,
     };
 
-    return dispatch(
-      postVideoJason({
-        currentVideo,
-        newVideoJsonData,
-      })
-    );
+    return updateVideoData({ currentVideo, newVideoJsonData });
   };
 
   return {

@@ -35,7 +35,7 @@ export const TvShows: React.FC<TvShowsProps> = ({
     setFilter(event.target.value);
   };
 
-  const filteredTvShows = tvShows.filter((show) => {
+  const filteredTvShows = tvShows?.filter((show) => {
     return show.fileName?.toLowerCase().includes(filter.toLowerCase()) ?? false;
   });
 
@@ -59,7 +59,7 @@ export const TvShows: React.FC<TvShowsProps> = ({
 
       {loadingTvShows ? (
         <LoadingIndicator message="Loading TV Shows..." />
-      ) : filteredTvShows.length === 0 ? (
+      ) : filteredTvShows?.length === 0 ? (
         <Box
           display="flex"
           justifyContent="center"

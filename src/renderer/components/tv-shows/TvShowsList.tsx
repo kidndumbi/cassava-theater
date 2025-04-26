@@ -39,7 +39,7 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const { settings } = useSettings();
   const { showSnackbar } = useSnackbar();
-  const { removeTvShow } = useTvShows();
+  // const { removeTvShow } = useTvShows();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedTvShow, setSelectedTvShow] = useState<VideoDataModel | null>(
     null,
@@ -58,35 +58,37 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   };
 
   const handleDelete = async (filePath: string) => {
-    // Updated warning message with additional recovery information
-    setMessage(
-      <Alert icon={<WarningIcon fontSize="inherit" />} severity="error">
-        Deleting this TV show folder will permanently remove all its contents,
-        and it won't be able to be recovered from the recycle bin. Make sure it
-        doesn't contain any important information.
-      </Alert>,
-    );
-    const dialogDecision = await openDialog("Delete");
 
-    if (dialogDecision === "Ok") {
-      try {
-        const del = await window.fileManagerAPI.deleteFile(filePath);
-        if (del.success) {
-          removeTvShow(filePath);
-          showSnackbar("Tv Show deleted successfully", "success");
-        } else {
-          showSnackbar("Failed to delete Tv Show: " + del.message, "error");
-        }
-      } catch (error) {
-        showSnackbar("Error deleting Tv Show: " + error, "error");
-      }
-    }
+    console.log("will be implemented later"); 
+    // // Updated warning message with additional recovery information
+    // setMessage(
+    //   <Alert icon={<WarningIcon fontSize="inherit" />} severity="error">
+    //     Deleting this TV show folder will permanently remove all its contents,
+    //     and it won't be able to be recovered from the recycle bin. Make sure it
+    //     doesn't contain any important information.
+    //   </Alert>,
+    // );
+    // const dialogDecision = await openDialog("Delete");
+
+    // if (dialogDecision === "Ok") {
+    //   try {
+    //     const del = await window.fileManagerAPI.deleteFile(filePath);
+    //     if (del.success) {
+    //       removeTvShow(filePath);
+    //       showSnackbar("Tv Show deleted successfully", "success");
+    //     } else {
+    //       showSnackbar("Failed to delete Tv Show: " + del.message, "error");
+    //     }
+    //   } catch (error) {
+    //     showSnackbar("Error deleting Tv Show: " + error, "error");
+    //   }
+    // }
   };
 
   return (
     <>
       <Box display="flex" flexWrap="wrap" gap="4px">
-        {shows.map((show: VideoDataModel, index: number) => (
+        {shows?.map((show: VideoDataModel, index: number) => (
           <HoverBox key={show.filePath}>
             <PosterCard
               key={index}

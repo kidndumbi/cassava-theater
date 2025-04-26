@@ -17,14 +17,14 @@ export const WatchLaterList: FC<WatchLaterProps> = ({
   loadingMovies,
   handlePosterClick,
 }) => {
-  const watchLaterMovies = movies.filter((movie) => movie.watchLater);
+  const watchLaterMovies = movies?.filter((movie) => movie.watchLater);
 
   const renderMovies = () => {
     if (loadingMovies) {
       return <LoadingIndicator message="Loading movies..." />;
     }
 
-    if (watchLaterMovies.length === 0) {
+    if (!watchLaterMovies || watchLaterMovies.length === 0) {
       return (
         <Box display="flex" justifyContent="center" paddingY="2rem">
           <Box fontSize="2rem">No Movies to display</Box>

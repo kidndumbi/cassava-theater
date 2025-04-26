@@ -28,8 +28,6 @@ import {
 } from "./renderer/contexts/SnackbarContext";
 import { AppVideoPlayerHandle } from "./renderer/components/video-player/AppVideoPlayer";
 import { ConfirmationProvider } from "./renderer/contexts/ConfirmationContext";
-import { useMovies } from "./renderer/hooks/useMovies";
-import { useTvShows } from "./renderer/hooks/useTvShows";
 import { StatusDisplay } from "./renderer/components/StatusDisplay";
 import {
   mp4ConversionActions,
@@ -37,6 +35,7 @@ import {
 } from "./renderer/store/mp4Conversion/mp4Conversion.slice";
 import { useMp4Conversion } from "./renderer/hooks/useMp4Conversion";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient()
 
@@ -44,8 +43,6 @@ const App = () => {
   const dispatch = useAppDispatch();
   const { fetchAllSettings } = useSettings();
   const { showSnackbar } = useSnackbar();
-  const { getMovies } = useMovies();
-  const { getTvShows } = useTvShows();
   const { currentlyProcessingItem } = useMp4Conversion();
   const currentlyProcessingItemRef = useRef(currentlyProcessingItem);
   const { initConverversionQueueFromStore, getConversionQueue } =
@@ -72,8 +69,6 @@ const App = () => {
 
   useEffect(() => {
     fetchAllSettings();
-    getMovies();
-    getTvShows();
 
     window.videoCommandsAPI.videoCommand((command: VideoCommands) => {
       videoCommandsHandler(command, appVideoPlayerRef.current);
@@ -161,6 +156,7 @@ const App = () => {
         </main>
       </Box>
     </HashRouter>
+    <ReactQueryDevtools initialIsOpen={false} />
   </QueryClientProvider>
 
   );

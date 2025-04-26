@@ -1,16 +1,13 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { useAppDispatch } from "../store";
 import { selVideoPlayer } from "../store/videoPlayer.slice";
 import { v4 as uuidv4 } from "uuid";
 import { NoteModel } from "../../models/note.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import { OverviewModel } from "../../models/overview.model";
-import { postVideoJason } from "../store/videoInfo/folderVideosInfoActions";
-import { fetchVideoDetailsApi } from "../store/videoInfo/folderVideosInfoApi";
+import { fetchVideoDetails, updateVideoData } from "../api/videoData.api";
 
 export const useNoteListLogic = () => {
-  const dispatch = useAppDispatch();
   const player = useSelector(selVideoPlayer);
 
   const [showTextEditor, setShowTextEditor] = useState(false);
@@ -18,7 +15,7 @@ export const useNoteListLogic = () => {
   const updateVideoJsonData = (
     updatedData: Partial<VideoDataModel>,
     videoData: VideoDataModel | null,
-    callback?: () => void
+    callback?: () => void,
   ) => {
     if (!videoData) {
       return;
@@ -28,12 +25,7 @@ export const useNoteListLogic = () => {
       ...updatedData,
     };
 
-    dispatch(
-      postVideoJason({
-        currentVideo: videoData,
-        newVideoJsonData,
-      })
-    ).then(() => {
+    updateVideoData({ currentVideo: videoData, newVideoJsonData }).then(() => {
       callback?.();
     });
   };
@@ -41,7 +33,7 @@ export const useNoteListLogic = () => {
   const updateOverview = (
     body: string,
     videoData: VideoDataModel | null,
-    callback?: () => void
+    callback?: () => void,
   ) => {
     if (!videoData) {
       return;
@@ -61,7 +53,7 @@ export const useNoteListLogic = () => {
     existingNotes: NoteModel[],
     videoData: VideoDataModel | null,
     currentTime: number,
-    callback?: () => void
+    callback?: () => void,
   ) => {
     if (content === "" || !videoData) {
       return;
@@ -80,12 +72,12 @@ export const useNoteListLogic = () => {
       () => {
         setShowTextEditor(false);
         callback?.();
-      }
+      },
     );
   };
 
   const getNotesAndOverview = async (path: string) => {
-    const videoDetails = await fetchVideoDetailsApi({ path, category: null });
+    const videoDetails = await fetchVideoDetails({ path, category: null });
     const { notes, overview } = videoDetails;
     return { notes, overview };
   };
@@ -94,7 +86,7 @@ export const useNoteListLogic = () => {
     note: NoteModel,
     existingNotes: NoteModel[],
     videoData: VideoDataModel | null,
-    callback?: () => void
+    callback?: () => void,
   ) => {
     const filteredNotes = (existingNotes || []).filter((n) => n.id !== note.id);
     updateVideoJsonData({ notes: filteredNotes }, videoData, callback);
@@ -104,12 +96,12 @@ export const useNoteListLogic = () => {
     updatedNote: NoteModel,
     existingNotes: NoteModel[],
     videoData: VideoDataModel | null,
-    callback?: () => void
+    callback?: () => void,
   ) => {
     const notesForUpdate = existingNotes.map((note) =>
       note.id === updatedNote.id
         ? { ...note, content: updatedNote.content }
-        : note
+        : note,
     );
 
     updateVideoJsonData({ notes: notesForUpdate }, videoData, callback);
@@ -133,6 +125,6 @@ export const useNoteListLogic = () => {
     handleCreateNewNoteButtonClick,
     handleCancelClick,
     updateOverview,
-    getNotesAndOverview
+    getNotesAndOverview,
   };
 };

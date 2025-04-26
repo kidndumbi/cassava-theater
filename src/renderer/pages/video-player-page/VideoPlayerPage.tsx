@@ -7,9 +7,9 @@ import AppVideoPlayer, {
 } from "../../components/video-player/AppVideoPlayer";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { removeLastSegments } from "../../util/helperFunctions";
-import { useTvShows } from "../../hooks/useTvShows";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useSettings } from "../../hooks/useSettings";
+import { useVideoDataQuery } from "../../hooks/useVideoData.query";
 
 type VideoPlayerPageProps = {
   appVideoPlayerRef?: React.Ref<AppVideoPlayerHandle>;
@@ -30,7 +30,12 @@ export const VideoPlayerPage = ({
   } = useVideoPlayerLogic();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { episodes, resetEpisodes, findNextEpisode } = useTvShows();
+
+  const { data: episodes } = useVideoDataQuery({
+    filePath: currentVideo?.rootPath || "",
+    category: "episodes",
+  });
+
   const { settings } = useSettings();
 
   const [menuId, setMenuId] = useState("");
@@ -51,7 +56,7 @@ export const VideoPlayerPage = ({
     setResumeId(resumeId);
     setStartFromBeginning(start === "true");
     setIsTvShow(menuId === "app-tv-shows" || resumeId === "tvShow");
-  }, [location.search, location.hash, player, episodes, currentVideo]);
+  }, [location.search, location.hash, player, currentVideo]);
 
   const parseSearchParams = () => {
     return {
@@ -79,13 +84,12 @@ export const VideoPlayerPage = ({
       pathBuildingStrategies[menuId] || pathBuildingStrategies.default;
     const path = buildPath(filePath);
     const url = `/video-details?menuId=${menuId}&resumeId=${resumeId}&videoPath=${path}`;
-    resetEpisodes();
     navigate(url);
   };
 
   const onVideoEnded = async (
     filePath: string,
-    nextEpisode: VideoDataModel | null
+    nextEpisode: VideoDataModel | null,
   ) => {
     setVideoEnded(true);
     await resetVideo();
@@ -113,7 +117,7 @@ export const VideoPlayerPage = ({
   const saveVideoDBCurrentTime = async () => {
     await updateVideoDBCurrentTime(
       menuId === "app-tv-shows" ||
-        (menuId === "app-home" && resumeId === "tvShow")
+        (menuId === "app-home" && resumeId === "tvShow"),
     );
   };
 
@@ -135,7 +139,19 @@ export const VideoPlayerPage = ({
       onVideoPaused={saveVideoDBCurrentTime}
       onVideoEnded={onVideoEnded}
       playNextEpisode={playNextEpisode}
-      findNextEpisode={findNextEpisode}
+      findNextEpisode={(currentFilePath: string) => {
+        console.log(
+          "Running findNextEpisode with currentFilePath:",
+          currentFilePath,
+        );
+        const currentIndex = episodes.findIndex(
+          (episode) => episode.filePath === currentFilePath,
+        );
+        if (currentIndex !== -1 && currentIndex < episodes.length - 1) {
+          return episodes[currentIndex + 1];
+        }
+        return null;
+      }}
     />
   );
 };

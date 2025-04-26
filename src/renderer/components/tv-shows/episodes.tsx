@@ -51,10 +51,10 @@ export const Episodes: React.FC<EpisodesProps> = ({
           {overview} ({formatDate(seasonAirDate)})
         </p>
       )}
-      {episodes.length === 0 ? (
+      {episodes?.length === 0 ? (
         <p>No episodes available.</p>
       ) : (
-        episodes.map((episode) => (
+        episodes?.map((episode) => (
           <Episode
             key={episode.filePath}
             episode={episode}

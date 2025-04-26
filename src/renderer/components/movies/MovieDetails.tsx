@@ -16,6 +16,7 @@ import { getUrl, removeVidExt } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import CustomDrawer from "../common/CustomDrawer";
 import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
+import { useVideoDetailsQuery } from "../../hooks/useVideoData.query";
 
 interface MovieDetailsProps {
   videoPath: string | null;
@@ -24,13 +25,15 @@ interface MovieDetailsProps {
 
 const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const {
-    getVideoDetails,
-    videoDetails,
-    loadingVideoDetails,
+
     updateTMDBId,
     updateWatchLater,
-    resetMovieDetails,
+
   } = useMovies();
+
+  const { data: videoDetails, isLoading: loadingVideoDetails } =
+    useVideoDetailsQuery({ path: videoPath, category: "movies" });
+
   const [imageUrl, setImageUrl] = useState("");
   const { getTmdbImageUrl, getBackgroundGradient } = useTmdbImageUrl();
   const navigate = useNavigate();
@@ -43,18 +46,6 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
   const [openDrawer, setOpenDrawer] = useState(false);
-
-  useEffect(() => {
-    return () => {
-      resetMovieDetails();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (videoPath) {
-      getVideoDetails(videoPath);
-    }
-  }, [videoPath]);
 
   const getImageUlr = (movie: VideoDataModel) => {
     if (movie.backdrop) {
@@ -111,17 +102,19 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
               videoDetails={videoDetails}
               videoPath={videoPath}
               updateSubtitle={updateSubtitle}
-              getVideoDetails={getVideoDetails}
+              getVideoDetails={() => {
+                console.log("will be implemented in future");
+              }}
               updateWatchLater={async (
                 filePath: string,
                 watchLater: boolean,
               ) => {
                 await updateWatchLater(filePath, watchLater);
-                getVideoDetails(filePath);
+                //getVideoDetails(filePath);
               }}
               onRefresh={() => {
                 if (videoPath) {
-                  getVideoDetails(videoPath);
+                  //getVideoDetails(videoPath);
                 }
               }}
             />
@@ -158,7 +151,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         handleSelectMovie={async (movie_details) => {
           if (movie_details.id) {
             await updateTMDBId(videoPath || "", movie_details);
-            getVideoDetails(videoPath || "");
+            //getVideoDetails(videoPath || "");
           }
         }}
       />
