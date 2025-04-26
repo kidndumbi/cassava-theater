@@ -21,8 +21,6 @@ export async function fetchVideoData({
     category,
   });
 
-  console.log("fetchVideoData result:", result);
-
   return result;
 }
 
@@ -101,13 +99,13 @@ export const getFolderFilesApi = async (path: string) => {
 };
 
 export const getScreenshotApi = async (videodata: VideoDataModel) => {
-    try {
-      const response = await window.videoAPI.getScreenshot(videodata);
-      return response;
-    } catch (error) {
-      log.error("Error fetching screenshot via API:", error);
-      throw error;
-    }
-  };
+  try {
+    const response = await window.videoAPI.getScreenshot(videodata);
+    return response;
+  } catch (error) {
+    log.error("Error fetching screenshot via API:", error);
+    throw error;
+  }
+};
 
 // Add more API wrappers as needed for TanStack Query usage.

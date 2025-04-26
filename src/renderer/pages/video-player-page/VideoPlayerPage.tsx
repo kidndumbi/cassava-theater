@@ -31,10 +31,21 @@ export const VideoPlayerPage = ({
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  const [seasonPath, setSeasonPath] = useState("");
+
   const { data: episodes } = useVideoDataQuery({
-    filePath: currentVideo?.rootPath || "",
+    filePath: seasonPath || "",
     category: "episodes",
   });
+
+  useEffect(() => {
+    if (currentVideo) {
+      const { filePath } = currentVideo;
+      if (filePath) {
+        setSeasonPath(removeLastSegments(filePath, 1));
+      }
+    }
+  }, [currentVideo]);
 
   const { settings } = useSettings();
 
@@ -140,14 +151,10 @@ export const VideoPlayerPage = ({
       onVideoEnded={onVideoEnded}
       playNextEpisode={playNextEpisode}
       findNextEpisode={(currentFilePath: string) => {
-        console.log(
-          "Running findNextEpisode with currentFilePath:",
-          currentFilePath,
-        );
-        const currentIndex = episodes.findIndex(
+        const currentIndex = episodes?.findIndex(
           (episode) => episode.filePath === currentFilePath,
         );
-        if (currentIndex !== -1 && currentIndex < episodes.length - 1) {
+        if (currentIndex !== -1 && currentIndex < episodes?.length - 1) {
           return episodes[currentIndex + 1];
         }
         return null;
