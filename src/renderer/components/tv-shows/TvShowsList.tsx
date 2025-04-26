@@ -16,6 +16,7 @@ import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
 interface TvShowsListProps {
   shows: VideoDataModel[];
   handlePosterClick: (videoPath: string) => void;
+  refetchTvShows: () => void;
 }
 
 const HoverBox = styled(Box)({
@@ -35,6 +36,7 @@ const HoverContent = styled(Box)({
 export const TvShowsList: React.FC<TvShowsListProps> = ({
   shows,
   handlePosterClick,
+  refetchTvShows,
 }) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const { settings } = useSettings();
@@ -126,6 +128,7 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
               tv_show_details,
             );
             showSnackbar("Tv Show linked to TMDB successfully", "success");
+            refetchTvShows();
             setOpenTvShowSuggestionsModal(false);
           }
         }}

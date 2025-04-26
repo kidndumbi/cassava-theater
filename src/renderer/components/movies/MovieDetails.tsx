@@ -24,15 +24,13 @@ interface MovieDetailsProps {
 }
 
 const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
+  const { updateTMDBId, updateWatchLater } = useMovies();
+
   const {
-
-    updateTMDBId,
-    updateWatchLater,
-
-  } = useMovies();
-
-  const { data: videoDetails, isLoading: loadingVideoDetails } =
-    useVideoDetailsQuery({ path: videoPath, category: "movies" });
+    data: videoDetails,
+    isLoading: loadingVideoDetails,
+    refetch,
+  } = useVideoDetailsQuery({ path: videoPath, category: "movies" });
 
   const [imageUrl, setImageUrl] = useState("");
   const { getTmdbImageUrl, getBackgroundGradient } = useTmdbImageUrl();
@@ -151,7 +149,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         handleSelectMovie={async (movie_details) => {
           if (movie_details.id) {
             await updateTMDBId(videoPath || "", movie_details);
-            //getVideoDetails(videoPath || "");
+            refetch();
           }
         }}
       />

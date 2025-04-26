@@ -14,9 +14,7 @@ import { useCustomFolder } from "../../hooks/useCustomFolder";
 import Grid from "@mui/material/Grid2";
 import { renderActivePage } from "./RenderActivePage";
 import { useSearchParams } from "react-router-dom";
-import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
-import { isEmptyObject } from "../../util/helperFunctions";
-import { VideoDataModel } from "../../../models/videoData.model";
+
 import { AppModal } from "../../components/common/AppModal";
 import { SettingsPage } from "../../components/settings/SettingsPage";
 import { useVideoDataQuery } from "../../hooks/useVideoData.query";
@@ -26,12 +24,12 @@ export const LandingPage = () => {
   const { settings } = useSettings();
   const [searchParams] = useSearchParams();
 
-  const { data: movies, isLoading: loadingMovies } = useVideoDataQuery({
+  const { data: movies, isLoading: loadingMovies, refetch:getMovies } = useVideoDataQuery({
     filePath: settings?.movieFolderPath || "",
     category: "movies",
   });
 
-  const { data: tvShows, isLoading: loadingTvShows } = useVideoDataQuery({
+  const { data: tvShows, isLoading: loadingTvShows, refetch: getTvShows } = useVideoDataQuery({
     filePath: settings?.tvShowsFolderPath || "",
     category: "tvShows",
   });
@@ -42,8 +40,7 @@ export const LandingPage = () => {
   //   // loadingCustomFolderData 
   // } =
   //   useCustomFolder();
-  // const { currentTime, currentVideo, lastVideoPlayedDate } =
-  //   useVideoPlayerLogic();
+
 
   const handleMenuClick = (menuItem: MenuItem) => {
     setActiveMenu(menuItem);
@@ -143,12 +140,6 @@ export const LandingPage = () => {
     getTvShows();
   };
 
-  const getMovies = () => {
-    // getMovies();
-  };
-  const getTvShows = () => {
-    // getTvShows();
-  }
 
   function syncActiveMenuFromUrl(
     menuItems: MenuItem[],
@@ -164,8 +155,6 @@ export const LandingPage = () => {
   useEffect(() => {
     syncActiveMenuFromUrl(menuItems, setActiveMenu);
   }, [searchParams, menuItems]);
-
-  //const loadingCustomFolderData = false; // Placeholder for actual loading state
 
   const loadCustomFolder = (path: string) => { 
     console.log("will be implemented in future", path);
