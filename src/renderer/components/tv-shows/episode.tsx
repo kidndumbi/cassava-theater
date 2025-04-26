@@ -20,7 +20,7 @@ import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 import { useSettings } from "../../hooks/useSettings";
 import { styled } from "@mui/system";
 import { VideoTypeChip } from "../common/VideoTypeChip";
-import { useCommonUtil } from "../../../renderer/hooks/useCommonUtil";
+import { useScreenshot } from "../../hooks/useScreenshot";
 
 interface EpisodeProps {
   episode: VideoDataModel;
@@ -42,7 +42,6 @@ export const Episode: React.FC<EpisodeProps> = ({
 }) => {
   const { isConvertingToMp4 } = useMp4Conversion();
   const { settings } = useSettings();
-  const { getScreenshot } = useCommonUtil();
 
   const [hover, setHover] = useState(false);
   const [openNotesModal, setOpenNotesModal] = useState(false);
@@ -54,21 +53,8 @@ export const Episode: React.FC<EpisodeProps> = ({
   const handleNotesClick = () => setOpenNotesModal(true);
 
   const [hasError, setHasError] = useState(false);
-  const [episodeScreenshot, setEpisodeScreenshot] = useState<string | null>(
-    null,
-  );
 
-  useEffect(() => {
-    if (episode) {
-      const callGetScreenshot = async () => {
-        const screenShot = await getScreenshot(episode);
-        if (screenShot) {
-          setEpisodeScreenshot(screenShot);
-        }
-      };
-      callGetScreenshot();
-    }
-  }, [episode]);
+  const { data: episodeScreenshot } = useScreenshot(episode);
 
   const handleError = () => {
     setHasError(true);
