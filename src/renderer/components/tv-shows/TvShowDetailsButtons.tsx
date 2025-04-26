@@ -51,7 +51,7 @@ const TvShowDetailsButtons: React.FC<TvShowDetailsButtonsProps> = ({
         </Button>
       )}
       {onNextEpisodeClick && (
-        <Tooltip title={removeVidExt(nextEpisode.fileName)}>
+        <Tooltip title={removeVidExt(nextEpisode?.fileName)}>
           <Button
             variant="contained"
             color="primary"

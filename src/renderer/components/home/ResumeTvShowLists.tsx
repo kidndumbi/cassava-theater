@@ -40,7 +40,7 @@ const ResumeTvShowLists: React.FC<ResumeTvShowListsProps> = ({
       <PosterList>
         {loadingTvShows ? (
           <LoadingIndicator message="Loading TV shows..." />
-        ) : sortedTvShows.length === 0 ? (
+        ) : !sortedTvShows || sortedTvShows.length === 0 ? (
           <Box
             display="flex"
             justifyContent="center"

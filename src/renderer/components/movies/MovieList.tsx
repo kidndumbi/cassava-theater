@@ -97,7 +97,8 @@ const MovieList: React.FC<MovieListProps> = ({
   handlePosterClick,
   getImageUrl,
 }) => {
-  const { removeMovie, 
+  const { 
+    // removeMovie, 
     updateTMDBId 
 
   } = useMovies();
@@ -109,22 +110,24 @@ const MovieList: React.FC<MovieListProps> = ({
   const { settings } = useSettings();
 
   const handleDelete = async (filePath: string) => {
-    setMessage("Are you sure you want to delete this Movie?");
-    const dialogDecision = await openDialog("Delete");
+
+    console.log("will be implemented soon");
+    // setMessage("Are you sure you want to delete this Movie?");
+    // const dialogDecision = await openDialog("Delete");
     
-    if (dialogDecision !== "Ok") return;
+    // if (dialogDecision !== "Ok") return;
     
-    try {
-      const del = await window.fileManagerAPI.deleteFile(filePath);
-      if (del.success) {
-        removeMovie(filePath);
-        showSnackbar("Movie deleted successfully", "success");
-      } else {
-        showSnackbar(`Failed to delete Movie: ${del.message}`, "error");
-      }
-    } catch (error) {
-      showSnackbar(`Error deleting Movie: ${error}`, "error");
-    }
+    // try {
+    //   const del = await window.fileManagerAPI.deleteFile(filePath);
+    //   if (del.success) {
+    //     removeMovie(filePath);
+    //     showSnackbar("Movie deleted successfully", "success");
+    //   } else {
+    //     showSnackbar(`Failed to delete Movie: ${del.message}`, "error");
+    //   }
+    // } catch (error) {
+    //   showSnackbar(`Error deleting Movie: ${error}`, "error");
+    // }
   };
 
   const handleConvertToMp4 = (fromPath: string) => {
@@ -152,7 +155,7 @@ const MovieList: React.FC<MovieListProps> = ({
   return (
     <>
       <Box display="flex" flexWrap="wrap" gap="4px">
-        {movies.map((movie) => (
+        {movies?.map((movie) => (
           <MovieListItem
             key={movie.filePath}
             movie={movie}
@@ -170,7 +173,7 @@ const MovieList: React.FC<MovieListProps> = ({
         id={selectedMovie?.movie_details?.id?.toString() || ""}
         open={openMovieSuggestionsModal}
         handleClose={handleCloseSuggestionsModal}
-        fileName={removeVidExt(selectedMovie?.fileName) || ""}
+        fileName={removeVidExt(selectedMovie?.fileName) || ""} 
         handleSelectMovie={handleSelectMovie}
       />
     </>

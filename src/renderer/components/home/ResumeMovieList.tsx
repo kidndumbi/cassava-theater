@@ -20,14 +20,14 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
     if (loadingMovies) {
       return <LoadingIndicator message="Loading movies..." />;
     }
-    if (sortedMovies.length === 0) {
+    if (!sortedMovies || sortedMovies?.length === 0) {
       return (
         <Box display="flex" justifyContent="center" paddingY="2rem">
           <Box fontSize="2rem">No Movies to display</Box>
         </Box>
       );
     }
-    return sortedMovies.map((movie: VideoDataModel) => (
+    return sortedMovies?.map((movie: VideoDataModel) => (
       <ResumeMovie
         key={movie.filePath}
         movie={movie}

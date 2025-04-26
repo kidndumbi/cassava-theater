@@ -33,7 +33,7 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [searchQuery, setSearchQuery] = useState(fileName); // new state for search
 
-  const { tvShowDetails, updateTvShowDbData } = useTvShows();
+  // const { tvShowDetails, updateTvShowDbData } = useTvShows();
 
   const { data: tvShowSuggestions, isLoading: tvShowSuggestionsLoading } =
     useTvShowSuggestions(getFilename(searchQuery));
@@ -48,10 +48,10 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
     setCurrentTabValue(newValue);
   };
 
-  const handleImageUpdate = async (data: VideoDataModel) => {
-    await updateTvShowDbData(tvShowDetails.filePath, data);
-    showSnackbar("Custom image updated successfully", "success");
-  };
+  // const handleImageUpdate = async (data: VideoDataModel) => {
+  //   await updateTvShowDbData(tvShowDetails.filePath, data);
+  //   showSnackbar("Custom image updated successfully", "success");
+  // };
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -113,11 +113,11 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
         </CustomTabPanel>
 
         <CustomTabPanel value={currentTabValue} index={1}>
-          <CustomImages
+          {/* <CustomImages
             posterUrl={tvShowDetails?.poster}
             backdropUrl={tvShowDetails?.backdrop}
             updateImage={handleImageUpdate}
-          />
+          /> */}
         </CustomTabPanel>
       </Paper>
     </Modal>

@@ -32,6 +32,10 @@ import CustomDrawer from "../common/CustomDrawer";
 import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
 import { AppModal } from "../common/AppModal";
 import SeasonConvertSelector from "./SeasonConvertSelector";
+import {
+  useFolderDetailsQuery,
+  useVideoDataQuery,
+} from "../../hooks/useVideoData.query";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -44,18 +48,17 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   menuId,
   resumeId,
 }) => {
-  const {
-    getSeasonDetails,
-    tvShowDetails,
-    loadingFolderDetails,
-    episodes,
-    getEpisodeDetails,
-    loadingEpisodes,
-    resetTvShowDetails,
-    updateTvShowTMDBId,
-    resetEpisodes,
-    findNextEpisode,
-  } = useTvShows();
+  const { updateTvShowTMDBId } = useTvShows();
+
+  const [episodesQuery, setEpisodesQuery] = useState("");
+
+  const { data: tvShowDetails, isLoading: loadingFolderDetails } =
+    useFolderDetailsQuery(videoPath || "");
+  const { data: episodes, isLoading: loadingEpisodes } = useVideoDataQuery({
+    filePath: episodesQuery,
+    category: "episodes",
+  });
+
   const { updateSubtitle } = useSubtitle();
   const [tvShowBackgroundUrl, setTvShowBackgroundUrl] = useState("");
   const { getTmdbImageUrl, getBackgroundGradient } = useTmdbImageUrl();
@@ -82,23 +85,15 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
 
   const theme = useTheme();
 
-  useEffect(() => {
-    return () => {
-      resetTvShowDetails();
-      //resetEpisodes();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (videoPath) {
-      getSeasonDetails(videoPath);
+  const nextEpisode = useMemo(() => {
+    const currentIndex = episodes?.findIndex(
+      (episode) => episode.filePath === episodeLastWatched?.filePath,
+    );
+    if (currentIndex !== -1 && currentIndex < episodes?.length - 1) {
+      return episodes[currentIndex + 1];
     }
-  }, [videoPath]);
-
-  const nextEpisode = useMemo(
-    () => findNextEpisode(episodeLastWatched?.filePath || ""),
-    [episodeLastWatched, episodes],
-  );
+    return null;
+  }, [episodeLastWatched, episodes]);
 
   const { settings } = useSettings();
 
@@ -116,7 +111,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     tvShowDetails?.childFolders?.at(0)?.folderPath ?? "";
 
   const setSeasonDetails = async (path: string, details: VideoDataModel) => {
-    resetEpisodes();
     const seasonName = getFilename(path);
     const selectedSeason = details?.tv_show_details?.seasons?.find(
       (season: Season) =>
@@ -129,7 +123,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       selectedSeason?.poster_path &&
         getTmdbImageUrl(selectedSeason.poster_path, "original"),
     );
-    getEpisodeDetails(path);
+    setEpisodesQuery(path);
   };
 
   function updateBackgroundAndSeason(tvShowDetails: VideoDataModel) {
@@ -163,7 +157,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   useEffect(() => {
     if (
       !tvShowDetails?.lastVideoPlayed ||
-      episodes.length === 0 ||
+      episodes?.length === 0 ||
       episodeLastWatched
     )
       return;
@@ -171,7 +165,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       /\\/g,
       "/",
     );
-    const lastWatchedEpisode = episodes.find(
+    const lastWatchedEpisode = episodes?.find(
       (episode) => episode.filePath === normalizedLastPlayed,
     );
     if (lastWatchedEpisode) {
@@ -248,7 +242,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
               <Box>
                 <AppIconButton
                   tooltip="Refresh"
-                  onClick={() => getSeasonDetails(videoPath || "")}
+                  onClick={() => {
+                    console.log("will be implemented later");
+                  }}
                 >
                   <RefreshIcon />
                 </AppIconButton>
@@ -291,7 +287,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 {tvShowDetails?.tv_show_details?.overview}
               </p>
 
-              {episodes.length > 0 && tvShowDetails?.lastVideoPlayed && (
+              {episodes?.length > 0 && tvShowDetails?.lastVideoPlayed && (
                 <TvShowDetailsButtons
                   tvShowDetails={tvShowDetails}
                   onContinueClick={onContinueClick}
@@ -319,7 +315,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                     />
                   </Box>
                 )}
-              {childFolders.length > 0 && (
+              {childFolders?.length > 0 && (
                 <Box className="flex gap-2">
                   <RenderSelect
                     value={selectedSeason}
@@ -361,7 +357,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
               episode: VideoDataModel,
             ) => {
               await updateSubtitle(newSubtitleFilePath, episode);
-              getEpisodeDetails(selectedSeason);
             }}
           />
         </CustomTabPanel>
@@ -377,7 +372,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
         handleSelectTvShow={async (tv_show_details) => {
           if (tv_show_details.id) {
             await updateTvShowTMDBId(videoPath || "", tv_show_details);
-            getSeasonDetails(videoPath || "");
           }
         }}
       />

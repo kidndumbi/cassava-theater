@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import ClosedCaptionIcon from "@mui/icons-material/ClosedCaption";
 import { selectFile } from "../../util/helperFunctions";
-import { convertSrtToVtt } from "../../store/videoInfo/folderVideosInfoApi";
 import AppIconButton from "./AppIconButton";
+import { convertSrtToVtt } from "../../api/videoData.api";
 
 interface ClosedCaptionButtonProps {
   handleFilepathChange: (folderPath: string) => void;

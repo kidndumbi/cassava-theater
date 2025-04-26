@@ -44,7 +44,7 @@ export const Movies: React.FC<MoviesProps> = ({
     setFilter(event.target.value);
   };
 
-  const filteredMovies = movies.filter((movie) => {
+  const filteredMovies = movies?.filter((movie) => {
     const fileNameWithoutExtension =
     removeVidExt(movie.fileName) || "";
     return fileNameWithoutExtension
@@ -56,7 +56,7 @@ export const Movies: React.FC<MoviesProps> = ({
 
   const getRandomMovie = () => {
     const intervalId = setInterval(() => {
-      const randomIndex = Math.floor(Math.random() * movies.length);
+      const randomIndex = Math.floor(Math.random() * movies?.length);
       setRandomMovie(movies[randomIndex]);
     }, 100);
 
@@ -88,7 +88,7 @@ export const Movies: React.FC<MoviesProps> = ({
 
       {loadingMovies ? (
         <LoadingIndicator message="Loading..." />
-      ) : filteredMovies.length === 0 ? (
+      ) : filteredMovies?.length === 0 ? (
         <Box
           display="flex"
           justifyContent="center"

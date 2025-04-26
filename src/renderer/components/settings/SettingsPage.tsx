@@ -14,8 +14,8 @@ import { selectFolder } from "../../util/helperFunctions";
 
 export const SettingsPage: React.FC = () => {
   const { settings, setSetting } = useSettings();
-  const { getMovies } = useMovies();
-  const { getTvShows } = useTvShows();
+  // const { getMovies } = useMovies();
+  // const { getTvShows } = useTvShows();
   const [movieFolderPath, setMovieFolderPath] = useState("");
   const [tvShowsFolderPath, setTvShowsFolderPath] = useState("");
   const [continuousPlay, setContinuousPlay] = useState(false);
@@ -54,8 +54,8 @@ export const SettingsPage: React.FC = () => {
     await handleFolderUpdate(async (folderPath) => {
       await setSetting(settingName, folderPath);
       showSnackbar("Setting updated successfully", "success");
-      if (settingName === "movieFolderPath") getMovies();
-      else if (settingName === "tvShowsFolderPath") getTvShows();
+      // if (settingName === "movieFolderPath") getMovies();
+      // else if (settingName === "tvShowsFolderPath") getTvShows();
     });
   };
 
