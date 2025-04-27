@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { Box, IconButton, Tab, Tabs, useTheme } from "@mui/material";
@@ -85,13 +85,22 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
 
   const theme = useTheme();
 
+  const nextEpisodeRef = useRef<VideoDataModel | null>(null);
+
   const nextEpisode = useMemo(() => {
+    // If nextEpisodeRef.current is already set, keep the same value
+    if (nextEpisodeRef.current) {
+      return nextEpisodeRef.current;
+    }
     const currentIndex = episodes?.findIndex(
       (episode) => episode.filePath === episodeLastWatched?.filePath,
     );
     if (currentIndex !== -1 && currentIndex < episodes?.length - 1) {
-      return episodes[currentIndex + 1];
+      const foundNext = episodes[currentIndex + 1];
+      nextEpisodeRef.current = foundNext;
+      return foundNext;
     }
+    nextEpisodeRef.current = null;
     return null;
   }, [episodeLastWatched, episodes]);
 
