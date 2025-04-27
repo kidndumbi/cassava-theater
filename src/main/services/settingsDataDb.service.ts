@@ -5,10 +5,15 @@ const SETTINGS_KEY: KeyType = "main";
 const SETTINGS_COLLECTION = "settings";
 
 export const getAllSettings = async (): Promise<SettingsModel | null> => {
-  return levelDBService.get(SETTINGS_COLLECTION, SETTINGS_KEY) as Promise<SettingsModel | null>;
+  return levelDBService.get(
+    SETTINGS_COLLECTION,
+    SETTINGS_KEY,
+  ) as Promise<SettingsModel | null>;
 };
 
-export const setAllSettings = async (settings: SettingsModel): Promise<void> => {
+export const setAllSettings = async (
+  settings: SettingsModel,
+): Promise<void> => {
   await levelDBService.put(SETTINGS_COLLECTION, SETTINGS_KEY, settings);
 };
 
@@ -22,8 +27,9 @@ export const getSetting = async <K extends keyof SettingsModel>(
 export const setSetting = async <K extends keyof SettingsModel>(
   key: K,
   value: SettingsModel[K],
-): Promise<void> => {
+): Promise<SettingsModel[K]> => {
   const settings = await getAllSettings();
   settings[key] = value;
   await setAllSettings(settings);
+  return value;
 };
