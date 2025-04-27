@@ -108,11 +108,11 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
                 watchLater: boolean,
               ) => {
                 await updateWatchLater(filePath, watchLater);
-                //getVideoDetails(filePath);
+                refetch();
               }}
               onRefresh={() => {
                 if (videoPath) {
-                  //getVideoDetails(videoPath);
+                  refetch();
                 }
               }}
             />

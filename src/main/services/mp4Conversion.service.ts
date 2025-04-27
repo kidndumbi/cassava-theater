@@ -86,7 +86,6 @@ class ConversionQueue {
     const item = this.queue.find((i) => i.inputPath === inputPath);
     if (item && item.status === "paused") {
       item.status = "pending";
-      //this.saveQueue();
       conversionQueueDataService.putQueueItem(item.inputPath, item);
       this.processQueue();
       return true;
@@ -150,7 +149,7 @@ class ConversionQueue {
         conversionQueueDataService.putQueueItem(nextItem.inputPath, nextItem);
         console.error(`Conversion failed for ${nextItem.inputPath}:`, error);
       } finally {
-        this.currentProcessingItem = null;
+        this.currentProcessingItem = null; 
         this.currentFFmpegProcess = null;
       }
     }
