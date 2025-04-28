@@ -24,6 +24,7 @@ export function useVideoDataQuery({
       category,
     }),
     enabled: !!filePath,
+    networkMode: "always",
   });
 }
 
@@ -35,6 +36,7 @@ export function useVideoDetailsQuery(params: {
     queryKey: ["videoDetails", params.path, params.category],
     queryFn: () => fetchVideoDetails(params),
     enabled: !!params.path,
+    networkMode: "always",
   });
 }
 
@@ -43,6 +45,7 @@ export function useFolderDetailsQuery(path: string) {
     queryKey: ["folderDetails", path],
     queryFn: () => fetchFolderDetails(path),
     enabled: !!path,
+    networkMode: "always",
   });
 }
 
@@ -51,5 +54,6 @@ export function useRecentlyWatchedVideosQuery(args: { videoType: "movies" | "tvS
     queryKey: ["recentlyWatchedVideos", args.videoType, args.limit],
     queryFn: () => fetchRecentlyWatchedVideosData(args),
     enabled: !!args.videoType,
+    networkMode: "always",
   });
 }
