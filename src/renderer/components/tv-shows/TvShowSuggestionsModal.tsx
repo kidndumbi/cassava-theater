@@ -12,6 +12,8 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { useTvShowSuggestions } from "../../hooks/useTvShowSuggestions";
+import { useVideoDetailsQuery } from "../../hooks/useVideoData.query";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface TvShowSuggestionsModalProps {
   open: boolean;
@@ -19,6 +21,7 @@ interface TvShowSuggestionsModalProps {
   fileName: string;
   id?: string;
   handleSelectTvShow: (tv_show_details: TvShowDetails) => void;
+  filePath: string;
 }
 
 export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
@@ -27,13 +30,20 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
   fileName,
   id,
   handleSelectTvShow,
+  filePath,
 }) => {
   const [currentTabValue, setCurrentTabValue] = useState(0);
   const { showSnackbar } = useSnackbar();
   const { getTmdbImageUrl } = useTmdbImageUrl();
-  const [searchQuery, setSearchQuery] = useState(fileName); // new state for search
+  const [searchQuery, setSearchQuery] = useState(fileName);
 
-  // const { tvShowDetails, updateTvShowDbData } = useTvShows();
+  const { updateTvShowDbData } = useTvShows();
+  const queryClient = useQueryClient();
+
+  const { data: tvShowDetails } = useVideoDetailsQuery({
+    path: filePath,
+    category: "tvShows",
+  });
 
   const { data: tvShowSuggestions, isLoading: tvShowSuggestionsLoading } =
     useTvShowSuggestions(getFilename(searchQuery));
@@ -48,10 +58,17 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
     setCurrentTabValue(newValue);
   };
 
-  // const handleImageUpdate = async (data: VideoDataModel) => {
-  //   await updateTvShowDbData(tvShowDetails.filePath, data);
-  //   showSnackbar("Custom image updated successfully", "success");
-  // };
+  const handleImageUpdate = async (data: VideoDataModel) => {
+    try {
+      await updateTvShowDbData(tvShowDetails.filePath, data);
+      showSnackbar("Custom image updated successfully", "success");
+      queryClient.invalidateQueries({
+        queryKey: ["folderDetails", tvShowDetails.filePath],
+      });
+    } catch (error) {
+      showSnackbar("Failed to update custom image", "error");
+    }
+  };
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -113,11 +130,11 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
         </CustomTabPanel>
 
         <CustomTabPanel value={currentTabValue} index={1}>
-          {/* <CustomImages
+          <CustomImages
             posterUrl={tvShowDetails?.poster}
             backdropUrl={tvShowDetails?.backdrop}
             updateImage={handleImageUpdate}
-          /> */}
+          />
         </CustomTabPanel>
       </Paper>
     </Modal>

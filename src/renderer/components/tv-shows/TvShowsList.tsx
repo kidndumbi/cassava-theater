@@ -133,6 +133,7 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
           setSelectedTvShow(null);
         }}
         fileName={selectedTvShow?.filePath?.split("/").pop() || ""}
+        filePath={selectedTvShow?.filePath || ""}
         handleSelectTvShow={async (tv_show_details) => {
           if (tv_show_details.id) {
             await updateTvShowTMDBId(

@@ -378,6 +378,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
         open={openModal}
         handleClose={handleCloseModal}
         fileName={tvShowDetails?.filePath?.split("/").pop() || ""}
+        filePath={videoPath || ""}
         handleSelectTvShow={async (tv_show_details) => {
           if (tv_show_details.id) {
             await updateTvShowTMDBId(videoPath || "", tv_show_details);

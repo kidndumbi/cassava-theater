@@ -146,6 +146,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         open={openModal}
         handleClose={handleCloseModal}
         fileName={removeVidExt(videoDetails?.fileName) || ""}
+        filePath={videoPath || ""}
         handleSelectMovie={async (movie_details) => {
           if (movie_details.id) {
             await updateTMDBId(videoPath || "", movie_details);
