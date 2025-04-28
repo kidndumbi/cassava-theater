@@ -3,13 +3,13 @@ import { Box, Typography, useTheme } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTvShows } from "../../hooks/useTvShows";
-import useSortedVideos from "../../hooks/useSortedVideos";
 import useHandlePosterClick from "../../hooks/useHandlePosterClick";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import ResumeTvShowLists from "./ResumeTvShowLists";
 import ResumeMovieList from "./ResumeMovieList";
 import { WatchLaterList } from "./WatchLaterList";
 import AppIconButton from "../common/AppIconButton";
+import { useRecentlyWatchedVideosQuery } from "../../hooks/useVideoData.query";
 
 interface HomePageProps {
   style?: React.CSSProperties;
@@ -33,7 +33,14 @@ export const HomePage: React.FC<HomePageProps> = ({
   const theme = useTheme();
   const { setCurrentVideo } = useVideoListLogic();
   const { getSingleEpisodeDetails } = useTvShows();
-  const { sortedMovies, sortedTvShows } = useSortedVideos(movies, tvShows);
+
+  const { data: sortedMovies } = useRecentlyWatchedVideosQuery({
+    videoType: "movies",
+  });
+  const { data: sortedTvShows } = useRecentlyWatchedVideosQuery({
+    videoType: "tvShows",
+  });
+
   const { handlePosterClick, loadingItems } = useHandlePosterClick(
     menuId,
     setCurrentVideo,

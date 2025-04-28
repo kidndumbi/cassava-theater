@@ -3,6 +3,7 @@ import {
   fetchVideoData,
   fetchVideoDetails,
   fetchFolderDetails,
+  fetchRecentlyWatchedVideosData
 } from "../api/videoData.api";
 import { VideoDataModel } from "../../models/videoData.model";
 
@@ -42,5 +43,13 @@ export function useFolderDetailsQuery(path: string) {
     queryKey: ["folderDetails", path],
     queryFn: () => fetchFolderDetails(path),
     enabled: !!path,
+  });
+}
+
+export function useRecentlyWatchedVideosQuery(args: { videoType: "movies" | "tvShows"; limit?: number }) {
+  return useQuery<VideoDataModel[]>({
+    queryKey: ["recentlyWatchedVideos", args.videoType, args.limit],
+    queryFn: () => fetchRecentlyWatchedVideosData(args),
+    enabled: !!args.videoType,
   });
 }

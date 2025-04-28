@@ -164,6 +164,9 @@ contextBridge.exposeInMainWorld("videoAPI", {
   getScreenshot: (videoData: VideoDataModel) => {
     return ipcRenderer.invoke(VideoIPCChannels.GetScreenshot, videoData);
   },
+  fetchRecentlyWatchedVideosData: (args: { videoType: "movies" | "tvShows"; limit?: number }) => {
+    return ipcRenderer.invoke(VideoIPCChannels.FetchRecentlyWatchedVideosData, args);
+  },
 });
 
 contextBridge.exposeInMainWorld("theMovieDbAPI", {
