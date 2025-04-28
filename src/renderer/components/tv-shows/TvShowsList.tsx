@@ -12,6 +12,7 @@ import { useTvShows } from "../../hooks/useTvShows";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import WarningIcon from "@mui/icons-material/Warning";
 import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
@@ -41,7 +42,6 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const { settings } = useSettings();
   const { showSnackbar } = useSnackbar();
-  // const { removeTvShow } = useTvShows();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedTvShow, setSelectedTvShow] = useState<VideoDataModel | null>(
     null,
@@ -49,6 +49,31 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   const [openTvShowSuggestionsModal, setOpenTvShowSuggestionsModal] =
     useState(false);
   const { updateTvShowTMDBId } = useTvShows();
+  const queryClient = useQueryClient();
+
+  const { mutate: deleteFolder } = useMutation({
+    mutationFn: async (filePath: string) => {
+      return window.fileManagerAPI.deleteFile(filePath);
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        showSnackbar("Tv Show deleted successfully", "success");
+        queryClient.invalidateQueries({
+          queryKey: [
+            "videoData",
+            settings?.tvShowsFolderPath,
+            false,
+            "tvShows",
+          ],
+        });
+      } else {
+        showSnackbar("Failed to delete Tv Show: " + data.message, "error");
+      }
+    },
+    onError: (error) => {
+      showSnackbar("Error deleting Tv Show: " + error, "error");
+    },
+  });
 
   const getImageUlr = (show: VideoDataModel) => {
     if (show.poster) {
@@ -60,31 +85,18 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   };
 
   const handleDelete = async (filePath: string) => {
+    setMessage(
+      <Alert icon={<WarningIcon fontSize="inherit" />} severity="error">
+        Deleting this TV show folder will permanently remove all its contents,
+        and it won't be able to be recovered from the recycle bin. Make sure it
+        doesn't contain any important information.
+      </Alert>,
+    );
+    const dialogDecision = await openDialog("Delete");
 
-    console.log("will be implemented later"); 
-    // // Updated warning message with additional recovery information
-    // setMessage(
-    //   <Alert icon={<WarningIcon fontSize="inherit" />} severity="error">
-    //     Deleting this TV show folder will permanently remove all its contents,
-    //     and it won't be able to be recovered from the recycle bin. Make sure it
-    //     doesn't contain any important information.
-    //   </Alert>,
-    // );
-    // const dialogDecision = await openDialog("Delete");
-
-    // if (dialogDecision === "Ok") {
-    //   try {
-    //     const del = await window.fileManagerAPI.deleteFile(filePath);
-    //     if (del.success) {
-    //       removeTvShow(filePath);
-    //       showSnackbar("Tv Show deleted successfully", "success");
-    //     } else {
-    //       showSnackbar("Failed to delete Tv Show: " + del.message, "error");
-    //     }
-    //   } catch (error) {
-    //     showSnackbar("Error deleting Tv Show: " + error, "error");
-    //   }
-    // }
+    if (dialogDecision === "Ok") {
+      deleteFolder(filePath);
+    }
   };
 
   return (
