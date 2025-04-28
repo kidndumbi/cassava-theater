@@ -36,7 +36,6 @@ export const useMovies = () => {
   return {
     updateTMDBId,
     updateWatchLater,
-
     updateMovieDbData,
   };
 };

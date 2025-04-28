@@ -13,6 +13,7 @@ import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 import { useSettings } from "../../hooks/useSettings";
 import { VideoTypeChip } from "../common/VideoTypeChip";
 import { MovieDetails } from "../../../models/movie-detail.model";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -35,15 +36,17 @@ const HoverContent = styled(Box)({
   display: "none",
 });
 
-const VideoTypeContainer = styled(Box)(({ alwaysShow }: { alwaysShow: boolean }) => ({
-  position: "absolute",
-  top: 9,
-  left: 9,
-  display: alwaysShow ? "block" : "none",
-  "&.hover-content": {
+const VideoTypeContainer = styled(Box)(
+  ({ alwaysShow }: { alwaysShow: boolean }) => ({
+    position: "absolute",
+    top: 9,
+    left: 9,
     display: alwaysShow ? "block" : "none",
-  },
-}));
+    "&.hover-content": {
+      display: alwaysShow ? "block" : "none",
+    },
+  }),
+);
 
 interface MovieListItemProps {
   movie: VideoDataModel;
@@ -72,7 +75,6 @@ const MovieListItem: React.FC<MovieListItemProps> = ({
         onClick={() => onPosterClick(movie.filePath || "")}
         footer={trimFileName(movie.fileName || "")}
       />
-      
       <HoverContent className="hover-content">
         <AppMore
           isMovie={true}
@@ -82,8 +84,7 @@ const MovieListItem: React.FC<MovieListItemProps> = ({
           handleConvertToMp4={() => onConvertToMp4(movie.filePath || "")}
         />
       </HoverContent>
-      
-      <VideoTypeContainer 
+      <VideoTypeContainer
         className={!alwaysShowVideoType ? "hover-content" : ""}
         alwaysShow={alwaysShowVideoType}
       >
@@ -99,38 +100,36 @@ const MovieList: React.FC<MovieListProps> = ({
   getImageUrl,
   refetchMovies,
 }) => {
-  const { 
-    // removeMovie, 
-    updateTMDBId 
-
-  } = useMovies();
+  const { updateTMDBId } = useMovies();
   const { showSnackbar } = useSnackbar();
   const { openDialog, setMessage } = useConfirmation();
-  const [selectedMovie, setSelectedMovie] = React.useState<VideoDataModel | null>(null);
-  const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] = React.useState(false);
+  const [selectedMovie, setSelectedMovie] =
+    React.useState<VideoDataModel | null>(null);
+  const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
+    React.useState(false);
   const { addToConversionQueue } = useMp4Conversion();
   const { settings } = useSettings();
 
-  const handleDelete = async (filePath: string) => {
+  const queryClient = useQueryClient();
 
-    console.log("will be implemented soon");
-    // setMessage("Are you sure you want to delete this Movie?");
-    // const dialogDecision = await openDialog("Delete");
-    
-    // if (dialogDecision !== "Ok") return;
-    
-    // try {
-    //   const del = await window.fileManagerAPI.deleteFile(filePath);
-    //   if (del.success) {
-    //     removeMovie(filePath);
-    //     showSnackbar("Movie deleted successfully", "success");
-    //   } else {
-    //     showSnackbar(`Failed to delete Movie: ${del.message}`, "error");
-    //   }
-    // } catch (error) {
-    //   showSnackbar(`Error deleting Movie: ${error}`, "error");
-    // }
-  };
+  const { mutate: deleteFile } = useMutation({
+    mutationFn: (filePath: string) => {
+      return window.fileManagerAPI.deleteFile(filePath);
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        showSnackbar("Movie deleted successfully", "success");
+        queryClient.invalidateQueries({
+          queryKey: ["videoData", settings?.movieFolderPath, false, "movies"],
+        });
+      } else {
+        showSnackbar(`Failed to delete Movie: ${data.message}`, "error");
+      }
+    },
+    onError: (error) => {
+      showSnackbar(`Error deleting Movie: ${error}`, "error");
+    },
+  });
 
   const handleConvertToMp4 = (fromPath: string) => {
     addToConversionQueue(fromPath);
@@ -151,7 +150,7 @@ const MovieList: React.FC<MovieListProps> = ({
       await updateTMDBId(selectedMovie.filePath, movie_details);
       showSnackbar("Movie linked to TMDB successfully", "success");
       refetchMovies();
-      setOpenMovieSuggestionsModal(false); 
+      setOpenMovieSuggestionsModal(false);
     }
   };
 
@@ -164,19 +163,25 @@ const MovieList: React.FC<MovieListProps> = ({
             movie={movie}
             onPosterClick={handlePosterClick}
             getImageUrl={getImageUrl}
-            onDelete={handleDelete}
+            onDelete={async (filePath) => {
+              setMessage("Are you sure you want to delete this Movie?");
+              const dialogDecision = await openDialog("Delete");
+
+              if (dialogDecision !== "Ok") return;
+              deleteFile(filePath);
+            }}
             onLinkTheMovieDb={() => handleLinkMovieDb(movie)}
             onConvertToMp4={handleConvertToMp4}
             alwaysShowVideoType={settings?.showVideoType}
           />
         ))}
       </Box>
-      
+
       <MovieSuggestionsModal
         id={selectedMovie?.movie_details?.id?.toString() || ""}
         open={openMovieSuggestionsModal}
         handleClose={handleCloseSuggestionsModal}
-        fileName={removeVidExt(selectedMovie?.fileName) || ""} 
+        fileName={removeVidExt(selectedMovie?.fileName) || ""}
         handleSelectMovie={handleSelectMovie}
       />
     </>
