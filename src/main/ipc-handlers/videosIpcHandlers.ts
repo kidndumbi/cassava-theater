@@ -10,6 +10,7 @@ import {
   saveVideoJsonData,
   AddTvShowFolder,
   getFolderFiles,
+  fetchRecentlyWatchedVideosData,
 } from "../services/video-data.service";
 import { generateThumbnail } from "../services/thumbnail.service";
 import { VideoDataModel } from "../../models/videoData.model";
@@ -89,5 +90,15 @@ export const videosIpcHandlers = () => {
       );
       return screenshot;
     },
+  );
+
+  ipcMain.handle(
+    VideoIPCChannels.FetchRecentlyWatchedVideosData,
+    async (
+      _event: Electron.IpcMainInvokeEvent,
+      args: { videoType: "movies" | "tvShows"; limit?: number }
+    ) => {
+      return fetchRecentlyWatchedVideosData(args.videoType, args.limit);
+    }
   );
 };

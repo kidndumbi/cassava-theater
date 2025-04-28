@@ -109,3 +109,12 @@ export const getScreenshotApi = async (videodata: VideoDataModel) => {
 };
 
 // Add more API wrappers as needed for TanStack Query usage.
+
+export async function fetchRecentlyWatchedVideosData(args: { videoType: "movies" | "tvShows"; limit?: number }) {
+  try {
+    return await window.videoAPI.fetchRecentlyWatchedVideosData(args);
+  } catch (error) {
+    log.error("Error fetching recently watched videos data:", error);
+    throw error;
+  }
+}

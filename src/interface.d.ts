@@ -78,6 +78,10 @@ export interface VideoAPI {
   }) => Promise<VideoDataModel>;
   getFolderFiles: (folderPath: string) => Promise<string[]>;
   getScreenshot: (videoData: VideoDataModel) => Promise<string>;
+  fetchRecentlyWatchedVideosData: (args: {
+    videoType: "movies" | "tvShows";
+    limit?: number;
+  }) => Promise<VideoDataModel[]>;
 }
 
 export interface TheMovieDbAPI {

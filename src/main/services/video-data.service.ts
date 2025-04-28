@@ -11,6 +11,57 @@ import * as videoDataHelpers from "./video.helpers";
 import { getMovieOrTvShowById } from "./themoviedb.service";
 import { normalizeFilePath } from "./helpers";
 
+export const fetchRecentlyWatchedVideosData = async (
+  videoType: "movies" | "tvShows",
+  limit = 20,
+): Promise<VideoDataModel[]> => {
+  try {
+    const filePath =
+      videoType === "movies"
+        ? await settingsDataDbService.getSetting("movieFolderPath")
+        : await settingsDataDbService.getSetting("tvShowsFolderPath");
+
+    if (!filePath) {
+      throw new Error("Path is required");
+    }
+
+    // Fetch all videos data
+    const videosData = await fetchVideosData({
+      filePath,
+      searchText: "",
+      includeThumbnail: false,
+      category: videoType,
+    });
+
+    // Filtering and sorting logic similar to useSortedVideos
+    let filtered: VideoDataModel[];
+    if (videoType === "movies") {
+      filtered = videosData
+        .filter((m) => m.lastVideoPlayedDate && (m.currentTime || 0) > 1)
+        .sort(
+          (a, b) =>
+            new Date(b.lastVideoPlayedDate ?? 0).getTime() -
+            new Date(a.lastVideoPlayedDate ?? 0).getTime(),
+        )
+        .slice(0, limit);
+    } else {
+      filtered = videosData
+        .filter((m) => !!m.lastVideoPlayed && !!m.lastVideoPlayedDate)
+        .sort(
+          (a, b) =>
+            new Date(b.lastVideoPlayedDate ?? 0).getTime() -
+            new Date(a.lastVideoPlayedDate ?? 0).getTime(),
+        )
+        .slice(0, limit);
+    }
+
+    return filtered;
+  } catch (error) {
+    log.error("Error fetching sorted video list: ", error);
+    throw new Error("Error fetching sorted video list: " + error);
+  }
+};
+
 export const fetchVideosData = async ({
   filePath,
   searchText,
