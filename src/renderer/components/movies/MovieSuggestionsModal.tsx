@@ -22,6 +22,7 @@ import AppIconButton from "../common/AppIconButton";
 import SearchIcon from "@mui/icons-material/Search";
 import { useMovieSuggestions } from "../../hooks/useMovieSuggestions";
 import { useVideoDetailsQuery } from "../../hooks/useVideoData.query";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MovieSuggestionsModalProps {
   open: boolean;
@@ -29,6 +30,7 @@ interface MovieSuggestionsModalProps {
   fileName: string;
   id?: string;
   handleSelectMovie: (movie_details: MovieDetails) => void;
+  filePath: string;
 }
 
 const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
@@ -37,11 +39,16 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
   fileName,
   id,
   handleSelectMovie,
+  filePath,
 }) => {
-  // const { videoDetails, updateMovieDbData } = useMovies();
+  const { updateMovieDbData } = useMovies();
 
-  const { data: videoDetails } =
-      useVideoDetailsQuery({ path: fileName, category: "movies" });
+  const { data: videoDetails } = useVideoDetailsQuery({
+    path: filePath,
+    category: "movies",
+  });
+
+  const queryClient = useQueryClient();
 
   const { showSnackbar } = useSnackbar();
   const { getTmdbImageUrl } = useTmdbImageUrl();
@@ -70,15 +77,20 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
     setCurrentTabValue(newValue);
   };
 
-  const handleImageUpdate = async (data: VideoDataModel) => {
-    console.log("will be implemented later"); 
-    // if (!videoDetails?.filePath) return;
-    // try {
-    //   await updateMovieDbData(videoDetails.filePath, data);
-    //   showSnackbar("Custom image updated successfully", "success");
-    // } catch (error) {
-    //   showSnackbar("Failed to update custom image", "error");
-    // }
+  const handleImageUpdate = async (
+    data: VideoDataModel,
+    videoDetails: VideoDataModel,
+  ) => {
+    if (!videoDetails?.filePath) return;
+    try {
+      await updateMovieDbData(videoDetails.filePath, data);
+      queryClient.invalidateQueries({
+        queryKey: ["videoDetails", videoDetails.filePath, "movies"],
+      });
+      showSnackbar("Custom image updated successfully", "success");
+    } catch (error) {
+      showSnackbar("Failed to update custom image", "error");
+    }
   };
 
   const renderMovieCard = (movie: MovieDetails) => {
@@ -160,7 +172,9 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
       <CustomImages
         posterUrl={videoDetails?.poster}
         backdropUrl={videoDetails?.backdrop}
-        updateImage={handleImageUpdate}
+        updateImage={(data) => {
+          handleImageUpdate(data, videoDetails);
+        }}
       />
     );
   };

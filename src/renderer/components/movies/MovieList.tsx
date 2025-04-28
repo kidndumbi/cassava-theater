@@ -182,6 +182,7 @@ const MovieList: React.FC<MovieListProps> = ({
         open={openMovieSuggestionsModal}
         handleClose={handleCloseSuggestionsModal}
         fileName={removeVidExt(selectedMovie?.fileName) || ""}
+        filePath={selectedMovie?.filePath || ""}
         handleSelectMovie={handleSelectMovie}
       />
     </>

@@ -208,6 +208,7 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
         open={isSuggestionsModalOpen}
         handleClose={() => setIsSuggestionsModalOpen(false)}
         fileName={tvShowName.trim()}
+        filePath={""}
         handleSelectTvShow={handleSelectTvShow}
       />
     </>
