@@ -63,6 +63,8 @@ export const videosIpcHandlers = () => {
         subfolders: string[];
         tvShowDetails: TvShowDetails | null;
         tvShowsFolderPath: string;
+        poster: string;
+        backdrop: string;
       },
     ) => {
       return AddTvShowFolder(args);

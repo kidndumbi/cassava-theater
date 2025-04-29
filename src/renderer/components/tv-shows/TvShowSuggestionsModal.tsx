@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Paper, Tabs, Tab, Box } from "@mui/material";
 import theme from "../../theme";
-import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { TvShowDetails } from "../../../models/tv-show-details.model";
 import { getFilename } from "../../util/helperFunctions";
@@ -9,11 +8,9 @@ import { a11yProps, CustomTabPanel } from "../common/TabPanel";
 import TvShowSuggestions from "./TvShowSuggestions";
 import { CustomImages } from "./CustomImages";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { useSnackbar } from "../../contexts/SnackbarContext";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { useTvShowSuggestions } from "../../hooks/useTvShowSuggestions";
 import { useVideoDetailsQuery } from "../../hooks/useVideoData.query";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface TvShowSuggestionsModalProps {
   open: boolean;
@@ -21,6 +18,7 @@ interface TvShowSuggestionsModalProps {
   fileName: string;
   id?: string;
   handleSelectTvShow: (tv_show_details: TvShowDetails) => void;
+    handleImageUpdate: (data: VideoDataModel, filePath: string) => void;
   filePath: string;
 }
 
@@ -31,14 +29,14 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
   id,
   handleSelectTvShow,
   filePath,
+  handleImageUpdate
 }) => {
   const [currentTabValue, setCurrentTabValue] = useState(0);
-  const { showSnackbar } = useSnackbar();
+
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [searchQuery, setSearchQuery] = useState(fileName);
 
-  const { updateTvShowDbData } = useTvShows();
-  const queryClient = useQueryClient();
+  
 
   const { data: tvShowDetails } = useVideoDetailsQuery({
     path: filePath,
@@ -56,18 +54,6 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTabValue(newValue);
-  };
-
-  const handleImageUpdate = async (data: VideoDataModel) => {
-    try {
-      await updateTvShowDbData(tvShowDetails.filePath, data);
-      showSnackbar("Custom image updated successfully", "success");
-      queryClient.invalidateQueries({
-        queryKey: ["folderDetails", tvShowDetails.filePath],
-      });
-    } catch (error) {
-      showSnackbar("Failed to update custom image", "error");
-    }
   };
 
   return (
@@ -133,7 +119,7 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
           <CustomImages
             posterUrl={tvShowDetails?.poster}
             backdropUrl={tvShowDetails?.backdrop}
-            updateImage={handleImageUpdate}
+            updateImage={(data) => { handleImageUpdate(data, tvShowDetails?.filePath) }}
           />
         </CustomTabPanel>
       </Paper>

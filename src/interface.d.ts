@@ -75,6 +75,8 @@ export interface VideoAPI {
     subfolders: string[];
     tvShowDetails: TvShowDetails | null;
     tvShowsFolderPath: string;
+    poster: string;
+    backdrop: string;
   }) => Promise<VideoDataModel>;
   getFolderFiles: (folderPath: string) => Promise<string[]>;
   getScreenshot: (videoData: VideoDataModel) => Promise<string>;

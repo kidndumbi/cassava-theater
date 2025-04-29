@@ -60,17 +60,23 @@ export async function addTvShowFolder({
   subfolders,
   tvShowDetails,
   tvShowsFolderPath,
+  poster,
+  backdrop,
 }: {
   tvShowName: string;
   subfolders: string[];
-  tvShowDetails: TvShowDetails; // Use TvShowDetails if imported
+  tvShowDetails: TvShowDetails;
   tvShowsFolderPath: string;
+  poster: string;
+  backdrop: string;
 }) {
   return window.videoAPI.AddTvShowFolder({
     tvShowName,
     subfolders,
     tvShowDetails,
     tvShowsFolderPath,
+    poster,
+    backdrop,
   });
 }
 

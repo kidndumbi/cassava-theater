@@ -14,6 +14,7 @@ import { SubfolderList } from "./SubfolderList";
 import { useTvShows } from "../../../hooks/useTvShows";
 import { VideoDataModel } from "../../../../models/videoData.model";
 import { fetchFilmDataByIdApi } from "../../../api/theMovieDb.api";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AddTvShowFolderProps {
   tvShows: VideoDataModel[];
@@ -25,12 +26,16 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
   dataSaved,
 }) => {
   const { settings } = useSettings();
+  const queryClient = useQueryClient();
   const { AddTvShowFolder } = useTvShows();
   const [tvShowName, setTvShowName] = useState("");
   const [subfolders, setSubfolders] = useState<string[]>([]);
   const [tvShowDetails, setTvShowDetails] = useState<TvShowDetails | null>(
     null,
   );
+  const [poster, setPoster] = useState<string>("");
+  const [backdrop, setBackdrop] = useState<string>("");
+
   const [isSuggestionsModalOpen, setIsSuggestionsModalOpen] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -100,20 +105,31 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
     if (!isFormValid()) return;
 
     try {
-      await AddTvShowFolder({
+      const newTvShow = await AddTvShowFolder({
         tvShowName: tvShowName.trim(),
         subfolders,
         tvShowDetails,
         tvShowsFolderPath: settings?.tvShowsFolderPath?.trim(),
+        poster,
+        backdrop,
       });
 
-      dataSaved();
-      setErrors([]); 
+      queryClient.setQueryData(
+        ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
+        (oldData: VideoDataModel[] = []) =>
+          [...oldData, newTvShow].sort((a, b) =>
+            (a.fileName ?? "").localeCompare(b.fileName ?? "", undefined, {
+              numeric: true,
+              sensitivity: "base",
+            }),
+          ),
+      );
 
+      dataSaved();
+      setErrors([]);
     } catch (error) {
       console.error("Error creating TV show folder:", error);
       setErrors(["Failed to create TV show folder. Please try again."]);
-
     }
   };
 
@@ -214,6 +230,14 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
         fileName={tvShowName.trim()}
         filePath={""}
         handleSelectTvShow={handleSelectTvShow}
+        handleImageUpdate={(data: VideoDataModel) => {
+          if (data.poster !== undefined) {
+            setPoster(data.poster);
+          }
+          if (data.backdrop !== undefined) {
+            setBackdrop(data.backdrop);
+          }
+        }}
       />
     </>
   );
