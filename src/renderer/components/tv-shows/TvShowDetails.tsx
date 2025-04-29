@@ -36,6 +36,7 @@ import {
   useFolderDetailsQuery,
   useVideoDataQuery,
 } from "../../hooks/useVideoData.query";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -52,7 +53,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
 
   const [episodesQuery, setEpisodesQuery] = useState("");
 
-  const { data: tvShowDetails, isLoading: loadingFolderDetails, refetch: refetchTvShowDetails } =
+  const queryClient = useQueryClient();
+
+  const { data: tvShowDetails, isLoading: loadingFolderDetails } =
     useFolderDetailsQuery(videoPath || "");
   const { data: episodes, isLoading: loadingEpisodes } = useVideoDataQuery({
     filePath: episodesQuery,
@@ -381,8 +384,16 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
         filePath={videoPath || ""}
         handleSelectTvShow={async (tv_show_details) => {
           if (tv_show_details.id) {
-            await updateTvShowTMDBId(videoPath || "", tv_show_details);
-            refetchTvShowDetails();
+            const extraTvShowDetails = await updateTvShowTMDBId(
+              videoPath || "",
+              tv_show_details,
+            );
+            queryClient.setQueryData(
+              ["folderDetails", videoPath],
+              (oldData: VideoDataModel) => {
+                return { ...oldData, tv_show_details: extraTvShowDetails };
+              },
+            );
           }
         }}
       />

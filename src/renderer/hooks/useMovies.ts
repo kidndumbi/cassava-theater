@@ -17,6 +17,7 @@ export const useMovies = () => {
       currentVideo: { filePath: filePath },
       newVideoJsonData: { movie_details: extraMovieDetails },
     });
+    return extraMovieDetails;
   };
 
   const updateWatchLater = async (filePath: string, watchLater: boolean) => {

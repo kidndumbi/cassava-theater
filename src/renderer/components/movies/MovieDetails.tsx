@@ -17,6 +17,7 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import CustomDrawer from "../common/CustomDrawer";
 import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 import { useVideoDetailsQuery } from "../../hooks/useVideoData.query";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface MovieDetailsProps {
   videoPath: string | null;
@@ -25,6 +26,8 @@ interface MovieDetailsProps {
 
 const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const { updateTMDBId, updateWatchLater } = useMovies();
+
+  const queryClient = useQueryClient();
 
   const {
     data: videoDetails,
@@ -149,8 +152,16 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         filePath={videoPath || ""}
         handleSelectMovie={async (movie_details) => {
           if (movie_details.id) {
-            await updateTMDBId(videoPath || "", movie_details);
-            refetch();
+            const extraMovieDetails = await updateTMDBId(
+              videoPath || "",
+              movie_details,
+            );
+            queryClient.setQueryData(
+              ["videoDetails", videoPath, "movies"],
+              (oldData: VideoDataModel) => {
+                return { ...oldData, movie_details: extraMovieDetails };
+              },
+            );
           }
         }}
       />
