@@ -155,6 +155,8 @@ contextBridge.exposeInMainWorld("videoAPI", {
     subfolders: string[];
     tvShowDetails: TvShowDetails | null;
     tvShowsFolderPath: string;
+    poster: string;
+    backdrop: string;
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.AddTvShowFolder, args);
   },

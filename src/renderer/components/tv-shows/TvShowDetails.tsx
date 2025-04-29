@@ -37,6 +37,7 @@ import {
   useVideoDataQuery,
 } from "../../hooks/useVideoData.query";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -49,9 +50,10 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   menuId,
   resumeId,
 }) => {
-  const { updateTvShowTMDBId } = useTvShows();
+  const { updateTvShowTMDBId, updateTvShowDbData } = useTvShows();
 
   const [episodesQuery, setEpisodesQuery] = useState("");
+  const { showSnackbar } = useSnackbar();
 
   const queryClient = useQueryClient();
 
@@ -68,7 +70,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   const navigate = useNavigate();
   const { setCurrentVideo } = useVideoListLogic();
   const [selectedSeason, setSelectedSeason] = useState<string>("");
-
   const [currentTabValue, setCurrentTabValue] = useState(0);
   const [seasonPosterPath, setSeasonPosterPath] = useState("");
   const [seasonOverview, setSeasonOverview] = useState("");
@@ -394,6 +395,20 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 return { ...oldData, tv_show_details: extraTvShowDetails };
               },
             );
+          }
+        }}
+        handleImageUpdate={async (data: VideoDataModel, filePath: string) => {
+          try {
+            await updateTvShowDbData(filePath, data);
+            showSnackbar("Custom image updated successfully", "success");
+            queryClient.setQueryData(
+              ["folderDetails", filePath],
+              (oldData: VideoDataModel) => {
+                return { ...oldData, ...data };
+              },
+            );
+          } catch (error) {
+            showSnackbar("Failed to update custom image", "error");
           }
         }}
       />

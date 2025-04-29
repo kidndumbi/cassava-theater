@@ -48,7 +48,7 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
   );
   const [openTvShowSuggestionsModal, setOpenTvShowSuggestionsModal] =
     useState(false);
-  const { updateTvShowTMDBId } = useTvShows();
+  const { updateTvShowTMDBId, updateTvShowDbData } = useTvShows();
   const queryClient = useQueryClient();
 
   const { mutate: deleteFolder } = useMutation({
@@ -60,7 +60,8 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
         showSnackbar("Tv Show deleted successfully", "success");
         queryClient.setQueryData(
           ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
-          (oldData: VideoDataModel[] = []) => oldData.filter(m => m.filePath !== filePathDeleted)
+          (oldData: VideoDataModel[] = []) =>
+            oldData.filter((m) => m.filePath !== filePathDeleted),
         );
       } else {
         showSnackbar("Failed to delete Tv Show: " + data.message, "error");
@@ -139,6 +140,24 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
             showSnackbar("Tv Show linked to TMDB successfully", "success");
             refetchTvShows();
             setOpenTvShowSuggestionsModal(false);
+          }
+        }}
+        handleImageUpdate={async (data: VideoDataModel, filePath: string) => {
+          try {
+            await updateTvShowDbData(filePath, data);
+            showSnackbar("Custom image updated successfully", "success");
+            queryClient.setQueryData(
+              ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
+              (oldData: VideoDataModel[] = []) =>
+                oldData.map((m) => {
+                  if (m.filePath === filePath) {
+                    return { ...m, ...data };
+                  }
+                  return m;
+                }),
+            );
+          } catch (error) {
+            showSnackbar("Failed to update custom image", "error");
           }
         }}
       />

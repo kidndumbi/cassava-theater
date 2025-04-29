@@ -120,8 +120,17 @@ export const AddTvShowFolder = async (data: {
   subfolders: string[];
   tvShowDetails: TvShowDetails | null;
   tvShowsFolderPath: string;
+  poster: string;
+  backdrop: string;
 }): Promise<VideoDataModel> => {
-  const { tvShowName, subfolders, tvShowDetails, tvShowsFolderPath } = data;
+  const {
+    tvShowName,
+    subfolders,
+    tvShowDetails,
+    tvShowsFolderPath,
+    poster,
+    backdrop,
+  } = data;
 
   if (!fs.existsSync(tvShowsFolderPath)) {
     throw new Error(`Path does not exist: ${tvShowsFolderPath}`);
@@ -144,6 +153,8 @@ export const AddTvShowFolder = async (data: {
       currentVideo: { filePath: tvShowFolderPath } as VideoDataModel,
       newVideoJsonData: {
         tv_show_details: tvShowDetails,
+        poster,
+        backdrop,
       } as VideoDataModel,
     });
 

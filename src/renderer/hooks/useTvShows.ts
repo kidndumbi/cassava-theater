@@ -41,8 +41,10 @@ export const useTvShows = () => {
     subfolders: string[];
     tvShowDetails: TvShowDetails | null;
     tvShowsFolderPath: string;
+    poster: string;
+    backdrop: string;
   }) => {
-    await addTvShowFolder(data);
+    return await addTvShowFolder(data);
   };
 
   return {
