@@ -13,6 +13,7 @@ import { TvShowDetailsCard } from "./TvShowDetailsCard";
 import { SubfolderList } from "./SubfolderList";
 import { useTvShows } from "../../../hooks/useTvShows";
 import { VideoDataModel } from "../../../../models/videoData.model";
+import { fetchFilmDataByIdApi } from "../../../api/theMovieDb.api";
 
 interface AddTvShowFolderProps {
   tvShows: VideoDataModel[];
@@ -98,28 +99,31 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
   const handleCreate = async () => {
     if (!isFormValid()) return;
 
-    // try {
-    //   await AddTvShowFolder({
-    //     tvShowName: tvShowName.trim(),
-    //     subfolders,
-    //     tvShowDetails,
-    //     tvShowsFolderPath: settings?.tvShowsFolderPath?.trim(),
-    //   });
+    try {
+      await AddTvShowFolder({
+        tvShowName: tvShowName.trim(),
+        subfolders,
+        tvShowDetails,
+        tvShowsFolderPath: settings?.tvShowsFolderPath?.trim(),
+      });
 
-    //   dataSaved(); // Call the parent component's dataSaved function to indicate success
+      dataSaved();
+      setErrors([]); 
 
-    // } catch (error) {
+    } catch (error) {
+      console.error("Error creating TV show folder:", error);
+      setErrors(["Failed to create TV show folder. Please try again."]);
 
-    // }
+    }
   };
 
   const handleSelectTvShow = async (tvShow: TvShowDetails) => {
-    // const extraTvShowDetails = await fetchFilmDataById(
-    //   tvShow.id.toString(),
-    //   "tv",
-    // );
-    // setTvShowDetails(extraTvShowDetails);
-    // setIsSuggestionsModalOpen(false);
+    const extraTvShowDetails = await fetchFilmDataByIdApi(
+      tvShow.id.toString(),
+      "tv",
+    );
+    setTvShowDetails(extraTvShowDetails);
+    setIsSuggestionsModalOpen(false);
   };
 
   if (!settings?.tvShowsFolderPath?.trim()) {
