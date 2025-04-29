@@ -55,17 +55,13 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
     mutationFn: async (filePath: string) => {
       return window.fileManagerAPI.deleteFile(filePath);
     },
-    onSuccess: (data) => {
+    onSuccess: (data, filePathDeleted) => {
       if (data.success) {
         showSnackbar("Tv Show deleted successfully", "success");
-        queryClient.invalidateQueries({
-          queryKey: [
-            "videoData",
-            settings?.tvShowsFolderPath,
-            false,
-            "tvShows",
-          ],
-        });
+        queryClient.setQueryData(
+          ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
+          (oldData: VideoDataModel[] = []) => oldData.filter(m => m.filePath !== filePathDeleted)
+        );
       } else {
         showSnackbar("Failed to delete Tv Show: " + data.message, "error");
       }

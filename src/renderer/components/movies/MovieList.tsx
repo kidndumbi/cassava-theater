@@ -116,12 +116,13 @@ const MovieList: React.FC<MovieListProps> = ({
     mutationFn: (filePath: string) => {
       return window.fileManagerAPI.deleteFile(filePath);
     },
-    onSuccess: (data) => {
+    onSuccess: (data, filePathDeleted) => {
       if (data.success) {
         showSnackbar("Movie deleted successfully", "success");
-        queryClient.invalidateQueries({
-          queryKey: ["videoData", settings?.movieFolderPath, false, "movies"],
-        });
+        queryClient.setQueryData(
+          ["videoData", settings?.movieFolderPath, false, "movies"],
+          (oldData: VideoDataModel[] = []) => oldData.filter(m => m.filePath !== filePathDeleted)
+        );
       } else {
         showSnackbar(`Failed to delete Movie: ${data.message}`, "error");
       }

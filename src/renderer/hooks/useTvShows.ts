@@ -22,6 +22,8 @@ export const useTvShows = () => {
       currentVideo: { filePath },
       newVideoJsonData: { tv_show_details: extraTvShowDetails },
     });
+
+    return extraTvShowDetails;
   };
 
   const updateTvShowDbData = async (filePath: string, data: VideoDataModel) => {
