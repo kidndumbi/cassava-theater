@@ -18,6 +18,7 @@ import CustomDrawer from "../common/CustomDrawer";
 import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 import { useVideoDetailsQuery } from "../../hooks/useVideoData.query";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 interface MovieDetailsProps {
   videoPath: string | null;
@@ -25,7 +26,8 @@ interface MovieDetailsProps {
 }
 
 const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
-  const { updateTMDBId, updateWatchLater } = useMovies();
+  const { updateTMDBId, updateWatchLater, updateMovieDbData } = useMovies();
+    const { showSnackbar } = useSnackbar();
 
   const queryClient = useQueryClient();
 
@@ -162,6 +164,18 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
                 return { ...oldData, movie_details: extraMovieDetails };
               },
             );
+          }
+        }}
+        handleImageUpdate={async (data: VideoDataModel, filePath: string) => {
+          if (!filePath) return;
+          try {
+            await updateMovieDbData(filePath, data);
+            queryClient.invalidateQueries({
+              queryKey: ["videoDetails", filePath, "movies"],
+            });
+            showSnackbar("Custom image updated successfully", "success");
+          } catch (error) {
+            showSnackbar("Failed to update custom image", "error");
           }
         }}
       />

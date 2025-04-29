@@ -9,20 +9,17 @@ import {
   Tab,
 } from "@mui/material";
 import theme from "../../theme";
-import { useMovies } from "../../hooks/useMovies";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { MovieDetails } from "../../../models/movie-detail.model";
 import { a11yProps, CustomTabPanel } from "../common/TabPanel";
 import { CustomImages } from "../tv-shows/CustomImages";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { useSnackbar } from "../../contexts/SnackbarContext";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { AppTextField } from "../common/AppTextField";
 import AppIconButton from "../common/AppIconButton";
 import SearchIcon from "@mui/icons-material/Search";
 import { useMovieSuggestions } from "../../hooks/useMovieSuggestions";
 import { useVideoDetailsQuery } from "../../hooks/useVideoData.query";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface MovieSuggestionsModalProps {
   open: boolean;
@@ -30,6 +27,7 @@ interface MovieSuggestionsModalProps {
   fileName: string;
   id?: string;
   handleSelectMovie: (movie_details: MovieDetails) => void;
+  handleImageUpdate: (data: VideoDataModel, filePath: string) => void;
   filePath: string;
 }
 
@@ -40,17 +38,13 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
   id,
   handleSelectMovie,
   filePath,
+  handleImageUpdate,
 }) => {
-  const { updateMovieDbData } = useMovies();
-
   const { data: videoDetails } = useVideoDetailsQuery({
     path: filePath,
     category: "movies",
   });
 
-  const queryClient = useQueryClient();
-
-  const { showSnackbar } = useSnackbar();
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [currentTabValue, setCurrentTabValue] = useState(0);
 
@@ -69,28 +63,12 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
   useEffect(() => {
     if (fileName && open) {
       setMovieName(fileName);
-      setSearchQuery(fileName); // update search query
+      setSearchQuery(fileName);
     }
   }, [fileName, open]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTabValue(newValue);
-  };
-
-  const handleImageUpdate = async (
-    data: VideoDataModel,
-    videoDetails: VideoDataModel,
-  ) => {
-    if (!videoDetails?.filePath) return;
-    try {
-      await updateMovieDbData(videoDetails.filePath, data);
-      queryClient.invalidateQueries({
-        queryKey: ["videoDetails", videoDetails.filePath, "movies"],
-      });
-      showSnackbar("Custom image updated successfully", "success");
-    } catch (error) {
-      showSnackbar("Failed to update custom image", "error");
-    }
   };
 
   const renderMovieCard = (movie: MovieDetails) => {
@@ -173,7 +151,7 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
         posterUrl={videoDetails?.poster}
         backdropUrl={videoDetails?.backdrop}
         updateImage={(data) => {
-          handleImageUpdate(data, videoDetails);
+          handleImageUpdate(data, videoDetails?.filePath);
         }}
       />
     );
