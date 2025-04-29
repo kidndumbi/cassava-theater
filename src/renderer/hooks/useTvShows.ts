@@ -1,4 +1,3 @@
-import { useAppDispatch } from "../store";
 import { TvShowDetails } from "../../models/tv-show-details.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import { fetchFilmDataByIdApi } from "../api/theMovieDb.api";

@@ -100,7 +100,7 @@ const MovieList: React.FC<MovieListProps> = ({
   getImageUrl,
   refetchMovies,
 }) => {
-  const { updateTMDBId } = useMovies();
+  const { updateTMDBId, updateMovieDbData } = useMovies();
   const { showSnackbar } = useSnackbar();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedMovie, setSelectedMovie] =
@@ -121,7 +121,8 @@ const MovieList: React.FC<MovieListProps> = ({
         showSnackbar("Movie deleted successfully", "success");
         queryClient.setQueryData(
           ["videoData", settings?.movieFolderPath, false, "movies"],
-          (oldData: VideoDataModel[] = []) => oldData.filter(m => m.filePath !== filePathDeleted)
+          (oldData: VideoDataModel[] = []) =>
+            oldData.filter((m) => m.filePath !== filePathDeleted),
         );
       } else {
         showSnackbar(`Failed to delete Movie: ${data.message}`, "error");
@@ -185,6 +186,25 @@ const MovieList: React.FC<MovieListProps> = ({
         fileName={removeVidExt(selectedMovie?.fileName) || ""}
         filePath={selectedMovie?.filePath || ""}
         handleSelectMovie={handleSelectMovie}
+        handleImageUpdate={async (data: VideoDataModel, filePath: string) => {
+          if (!filePath) return;
+          try {
+            await updateMovieDbData(filePath, data);
+            queryClient.setQueryData(
+              ["videoData", settings?.movieFolderPath, false, "movies"],
+              (oldData: VideoDataModel[] = []) =>
+                oldData.map((m) => {
+                  if (m.filePath === filePath) {
+                    return { ...m, ...data };
+                  }
+                  return m;
+                }),
+            );
+            showSnackbar("Custom image updated successfully", "success");
+          } catch (error) {
+            showSnackbar("Failed to update custom image", "error");
+          }
+        }}
       />
     </>
   );
