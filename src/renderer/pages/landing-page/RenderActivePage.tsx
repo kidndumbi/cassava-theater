@@ -74,10 +74,6 @@ export const renderActivePage = (
       return (
         <HomePage
           menuId={activeMenu.id}
-          loadingTvShows={loadingTvShows}
-          loadingMovies={loadingMovies}
-          tvShows={tvShows}
-          movies={movies}
           refreshData={refreshData}
         />
       );

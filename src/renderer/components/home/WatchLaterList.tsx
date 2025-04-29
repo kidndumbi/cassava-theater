@@ -7,7 +7,6 @@ import { WatchLater } from "./WatchLater";
 
 interface WatchLaterProps {
   movies: VideoDataModel[];
-  tvShows: VideoDataModel[];
   loadingMovies: boolean;
   handlePosterClick: (videoType: string, video: VideoDataModel) => void;
 }
