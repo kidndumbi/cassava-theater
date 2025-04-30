@@ -172,24 +172,22 @@ contextBridge.exposeInMainWorld("videoAPI", {
 });
 
 contextBridge.exposeInMainWorld("theMovieDbAPI", {
-  search: (query: string, queryType: "movie" | "tv", authorization: string) => {
+  search: (query: string, queryType: "movie" | "tv", 
+  ) => {
     return ipcRenderer.invoke(
       TheMovieDbIPCChannels.Search,
       query,
       queryType,
-      authorization,
     ) as Promise<MovieDetails[] | TvShowDetails[]>;
   },
   movieOrTvShow: (
     id: string,
     queryType: "movie" | "tv",
-    authorization: string,
   ) => {
     return ipcRenderer.invoke(
       TheMovieDbIPCChannels.MovieOrTvShow,
       id,
       queryType,
-      authorization,
     ) as Promise<MovieDetails | TvShowDetails>;
   },
 });

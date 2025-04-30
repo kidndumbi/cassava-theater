@@ -1,13 +1,12 @@
 import { TvShowDetails } from "../../models/tv-show-details.model";
 import { VideoDataModel } from "../../models/videoData.model";
-import { fetchFilmDataByIdApi } from "../api/theMovieDb.api";
 
 export const useTvShows = () => {
   const updateTvShowTMDBId = async (
     filePath: string,
     tv_show_details: TvShowDetails,
   ) => {
-    const extraTvShowDetails = await fetchFilmDataByIdApi(
+    const extraTvShowDetails = await window.theMovieDbAPI.movieOrTvShow(
       tv_show_details.id.toString(),
       "tv",
     );

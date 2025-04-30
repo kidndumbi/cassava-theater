@@ -28,7 +28,6 @@ interface MovieDetailsProps {
 const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const {
     updateTMDBId,
-    updateWatchLater,
   } = useMovies();
   const { showSnackbar } = useSnackbar();
 
@@ -131,7 +130,10 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
                 filePath: string,
                 watchLater: boolean,
               ) => {
-                await updateWatchLater(filePath, watchLater);
+                await window.videoAPI.saveVideoJsonData({
+                  currentVideo: { filePath },
+                  newVideoJsonData: { watchLater },
+                });
                 refetch();
               }}
               onRefresh={() => {

@@ -13,7 +13,6 @@ import { TvShowDetailsCard } from "./TvShowDetailsCard";
 import { SubfolderList } from "./SubfolderList";
 import { useTvShows } from "../../../hooks/useTvShows";
 import { VideoDataModel } from "../../../../models/videoData.model";
-import { fetchFilmDataByIdApi } from "../../../api/theMovieDb.api";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface AddTvShowFolderProps {
@@ -134,7 +133,7 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
   };
 
   const handleSelectTvShow = async (tvShow: TvShowDetails) => {
-    const extraTvShowDetails = await fetchFilmDataByIdApi(
+    const extraTvShowDetails = await window.theMovieDbAPI.movieOrTvShow(
       tvShow.id.toString(),
       "tv",
     );

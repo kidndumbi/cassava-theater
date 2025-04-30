@@ -100,7 +100,9 @@ const MovieList: React.FC<MovieListProps> = ({
   getImageUrl,
   refetchMovies,
 }) => {
-  const { updateTMDBId, updateMovieDbData } = useMovies();
+  const {
+    updateTMDBId,
+  } = useMovies();
   const { showSnackbar } = useSnackbar();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedMovie, setSelectedMovie] =
@@ -187,7 +189,10 @@ const MovieList: React.FC<MovieListProps> = ({
         handleImageUpdate={async (data: VideoDataModel, filePath: string) => {
           if (!filePath) return;
           try {
-            await updateMovieDbData(filePath, data);
+            await window.videoAPI.saveVideoJsonData({
+              currentVideo: { filePath },
+              newVideoJsonData: data,
+            });
             queryClient.setQueryData(
               ["videoData", settings?.movieFolderPath, false, "movies"],
               (oldData: VideoDataModel[] = []) =>
