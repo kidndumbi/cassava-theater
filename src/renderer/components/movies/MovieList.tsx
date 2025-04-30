@@ -82,6 +82,13 @@ const MovieListItem: React.FC<MovieListItemProps> = ({
           linkTheMovieDb={onLinkTheMovieDb}
           isNotMp4={!movie.filePath?.endsWith(".mp4")}
           handleConvertToMp4={() => onConvertToMp4(movie.filePath || "")}
+          videoData={movie}
+          handleWatchLaterUpdate={async (filePath, watchLater) => {
+            await window.videoAPI.saveVideoJsonData({
+              currentVideo: { filePath },
+              newVideoJsonData: { watchLater },
+            });
+          }}
         />
       </HoverContent>
       <VideoTypeContainer

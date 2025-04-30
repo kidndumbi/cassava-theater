@@ -3,6 +3,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { Menu, MenuItem, SxProps, Theme } from "@mui/material";
 import theme from "../../theme";
 import AppIconButton from "./AppIconButton";
+import { VideoDataModel } from "../../../models/videoData.model";
 
 interface AppMoreProps {
   handleDelete: () => void;
@@ -10,6 +11,8 @@ interface AppMoreProps {
   linkTheMovieDb: () => void;
   isNotMp4?: boolean;
   handleConvertToMp4?: () => void;
+  videoData: VideoDataModel;
+  handleWatchLaterUpdate?: (filePath: string, watchLater: boolean) => Promise<void>
 }
 
 const iconButtonStyles: SxProps<Theme> = {
@@ -38,6 +41,8 @@ export const AppMore: React.FC<AppMoreProps> = ({
   linkTheMovieDb,
   isNotMp4 = false,
   handleConvertToMp4,
+  videoData,
+  handleWatchLaterUpdate,
 }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -74,6 +79,14 @@ export const AppMore: React.FC<AppMoreProps> = ({
       label: "Convert to MP4",
       action: handleConvertToMp4, // Replace with actual path or logic to get the path
       sx: menuItemStyles(theme.palette.warning.main),
+    });
+  }
+
+  if (isMovie) {
+    menuItems.push({
+      label: !videoData.watchLater ? "Add to Watch Later" : "Remove from Watch Later",
+      action: () => handleWatchLaterUpdate(videoData.filePath, !videoData.watchLater), // Replace with actual path or logic to get the path
+      sx: menuItemStyles(),
     });
   }
 

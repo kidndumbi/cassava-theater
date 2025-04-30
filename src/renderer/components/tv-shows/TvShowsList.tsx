@@ -173,6 +173,7 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
                   setSelectedTvShow(show);
                   setOpenTvShowSuggestionsModal(true);
                 }}
+                videoData={show}
               />
             </HoverContent>
           </HoverBox>
