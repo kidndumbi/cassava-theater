@@ -5,8 +5,6 @@ import { v4 as uuidv4 } from "uuid";
 import { NoteModel } from "../../models/note.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import { OverviewModel } from "../../models/overview.model";
-import { fetchVideoDetails, 
-} from "../api/videoData.api";
 
 export const useNoteListLogic = () => {
   const player = useSelector(selVideoPlayer);
@@ -86,7 +84,7 @@ export const useNoteListLogic = () => {
   };
 
   const getNotesAndOverview = async (path: string) => {
-    const videoDetails = await fetchVideoDetails({ path, category: null });
+    const videoDetails = await window.videoAPI.fetchVideoDetails({ path, category: null });
     const { notes, overview } = videoDetails;
     return { notes, overview };
   };
