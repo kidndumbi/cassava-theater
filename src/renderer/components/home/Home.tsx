@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Typography, useTheme } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useTvShows } from "../../hooks/useTvShows";
@@ -29,6 +29,10 @@ export const HomePage: React.FC<HomePageProps> = ({
   const { setCurrentVideo } = useVideoListLogic();
   const { getSingleEpisodeDetails } = useTvShows();
   const { settings } = useSettings();
+
+  useEffect(() => {
+    console.log("Homepage rendered");
+  }, []);
 
   const { data: sortedMovies, isLoading: loadingMovies } =
     useRecentlyWatchedVideosQuery({

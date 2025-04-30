@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, Modal, Paper, useTheme } from "@mui/material";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import MovieList from "./MovieList";
@@ -31,6 +31,10 @@ export const Movies: React.FC<MoviesProps> = ({
   const { settings } = useSettings();
 
   const [filter, setFilter] = useState("");
+
+    useEffect(() => {
+      console.log("Movies page rendered");
+    }, []);
 
   const handlePosterClick = (videoPath: string) => {
     navigate(`/video-details?videoPath=${videoPath}&menuId=${menuId}`); // Add menuId to the query string
