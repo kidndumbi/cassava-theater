@@ -114,6 +114,26 @@ const MovieList: React.FC<MovieListProps> = ({
 
   const queryClient = useQueryClient();
 
+  const { mutate: saveVideoJsonData } = useMutation({
+    mutationFn: window.videoAPI.saveVideoJsonData,
+    onSuccess: (data: VideoDataModel, variables: { currentVideo: { filePath: string }, newVideoJsonData: VideoDataModel }) => {
+      queryClient.setQueryData(
+        ["videoData", settings?.movieFolderPath, false, "movies"],
+        (oldData: VideoDataModel[] = []) =>
+          oldData.map((m) => {
+            if (m.filePath === variables.currentVideo.filePath) {
+              return { ...m, ...variables.newVideoJsonData };
+            }
+            return m;
+          }),
+      );
+      showSnackbar("Custom image updated successfully", "success");
+    },
+    onError: () => {
+      showSnackbar("Failed to update custom image", "error");
+    },
+  });
+
   const { mutate: deleteFile } = useMutation({
     mutationFn: window.fileManagerAPI.deleteFile,
     onSuccess: (data, filePathDeleted) => {
@@ -186,27 +206,12 @@ const MovieList: React.FC<MovieListProps> = ({
         fileName={removeVidExt(selectedMovie?.fileName) || ""}
         filePath={selectedMovie?.filePath || ""}
         handleSelectMovie={handleSelectMovie}
-        handleImageUpdate={async (data: VideoDataModel, filePath: string) => {
+        handleImageUpdate={(data: VideoDataModel, filePath: string) => {
           if (!filePath) return;
-          try {
-            await window.videoAPI.saveVideoJsonData({
-              currentVideo: { filePath },
-              newVideoJsonData: data,
-            });
-            queryClient.setQueryData(
-              ["videoData", settings?.movieFolderPath, false, "movies"],
-              (oldData: VideoDataModel[] = []) =>
-                oldData.map((m) => {
-                  if (m.filePath === filePath) {
-                    return { ...m, ...data };
-                  }
-                  return m;
-                }),
-            );
-            showSnackbar("Custom image updated successfully", "success");
-          } catch (error) {
-            showSnackbar("Failed to update custom image", "error");
-          }
+          saveVideoJsonData({
+            currentVideo: { filePath },
+            newVideoJsonData: data,
+          });
         }}
       />
     </>

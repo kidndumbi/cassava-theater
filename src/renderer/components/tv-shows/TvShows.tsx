@@ -72,7 +72,6 @@ export const TvShows: React.FC<TvShowsProps> = ({
         <TvShowsList
           shows={filteredTvShows}
           handlePosterClick={handlePosterClick}
-          refetchTvShows={refreshTvShows}
         />
       )}
 

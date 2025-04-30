@@ -9,7 +9,7 @@ export const useTvShows = () => {
     const extraTvShowDetails = await window.theMovieDbAPI.movieOrTvShow(
       tv_show_details.id.toString(),
       "tv",
-    );
+    ) as TvShowDetails
 
     await window.videoAPI.saveVideoJsonData({
       currentVideo: { filePath },
