@@ -1,10 +1,6 @@
 import { TvShowDetails } from "../../models/tv-show-details.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import { fetchFilmDataByIdApi } from "../api/theMovieDb.api";
-import {
-  addTvShowFolder,
-  fetchVideoDetails,
-} from "../api/videoData.api";
 
 export const useTvShows = () => {
   const updateTvShowTMDBId = async (
@@ -32,7 +28,7 @@ export const useTvShows = () => {
   };
 
   const getSingleEpisodeDetails = (path: string, category: string) => {
-    return fetchVideoDetails({ path, category });
+    return window.videoAPI.fetchVideoDetails({ path, category });
   };
 
   const AddTvShowFolder = async (data: {
@@ -43,7 +39,7 @@ export const useTvShows = () => {
     poster: string;
     backdrop: string;
   }) => {
-    return await addTvShowFolder(data);
+    return await window.videoAPI.AddTvShowFolder(data);
   };
 
   return {

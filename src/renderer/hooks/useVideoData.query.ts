@@ -1,10 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  fetchVideoData,
-  fetchVideoDetails,
-  fetchFolderDetails,
-  fetchRecentlyWatchedVideosData
-} from "../api/videoData.api";
 import { VideoDataModel } from "../../models/videoData.model";
 
 export function useVideoDataQuery({
@@ -18,11 +12,12 @@ export function useVideoDataQuery({
 }) {
   return useQuery<VideoDataModel[]>({
     queryKey: ["videoData", filePath, includeThumbnail, category],
-    queryFn: () => fetchVideoData({
-      filePath,
-      includeThumbnail,
-      category,
-    }),
+    queryFn: () =>
+      window.videoAPI.fetchVideoData({
+        filePath,
+        includeThumbnail,
+        category,
+      }),
     enabled: !!filePath,
     networkMode: "always",
   });
@@ -34,7 +29,7 @@ export function useVideoDetailsQuery(params: {
 }) {
   return useQuery<VideoDataModel | null>({
     queryKey: ["videoDetails", params.path, params.category],
-    queryFn: () => fetchVideoDetails(params),
+    queryFn: () => window.videoAPI.fetchVideoDetails(params),
     enabled: !!params.path,
     networkMode: "always",
   });
@@ -43,16 +38,19 @@ export function useVideoDetailsQuery(params: {
 export function useFolderDetailsQuery(path: string) {
   return useQuery<VideoDataModel | null>({
     queryKey: ["folderDetails", path],
-    queryFn: () => fetchFolderDetails(path),
+    queryFn: () => window.videoAPI.fetchFolderDetails({ path }),
     enabled: !!path,
     networkMode: "always",
   });
 }
 
-export function useRecentlyWatchedVideosQuery(args: { videoType: "movies" | "tvShows"; limit?: number }) {
+export function useRecentlyWatchedVideosQuery(args: {
+  videoType: "movies" | "tvShows";
+  limit?: number;
+}) {
   return useQuery<VideoDataModel[]>({
     queryKey: ["recentlyWatchedVideos", args.videoType, args.limit],
-    queryFn: () => fetchRecentlyWatchedVideosData(args),
+    queryFn: () => window.videoAPI.fetchRecentlyWatchedVideosData(args),
     enabled: !!args.videoType,
     networkMode: "always",
   });

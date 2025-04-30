@@ -31,7 +31,6 @@ import { Clear } from "@mui/icons-material";
 import CustomDrawer from "../common/CustomDrawer";
 import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
-import { fetchFolderDetails, fetchVideoDetails } from "../../api/videoData.api";
 
 export type AppVideoPlayerHandle = {
   skipBy?: (seconds: number) => void;
@@ -148,7 +147,9 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       const fetchCastAndCrew = async () => {
         if (isTvShow) {
           const tvShowPath = removeLastSegments(currentVideo.filePath, 2);
-          const tvShowDetails = await fetchFolderDetails(tvShowPath);
+          const tvShowDetails = await window.videoAPI.fetchFolderDetails({
+            path: tvShowPath,
+          });
 
           if (tvShowDetails?.tv_show_details?.aggregate_credits) {
             setCastAndCrewContent(
@@ -165,7 +166,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               <MovieCastAndCrew credits={currentVideo.movie_details.credits} />,
             );
           } else {
-            const movieDetails = await fetchVideoDetails({
+            const movieDetails = await window.videoAPI.fetchVideoDetails({
               path: currentVideo.filePath,
               category: "movie",
             });

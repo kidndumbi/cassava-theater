@@ -3,7 +3,6 @@ import { Menu, MenuItem } from "@mui/material";
 import ClosedCaptionIcon from "@mui/icons-material/ClosedCaption";
 import { selectFile } from "../../util/helperFunctions";
 import AppIconButton from "./AppIconButton";
-import { convertSrtToVtt } from "../../api/videoData.api";
 
 interface ClosedCaptionButtonProps {
   handleFilepathChange: (folderPath: string) => void;
@@ -24,7 +23,7 @@ const menuItems = [
       if (!selectedFilePath) return;
 
       const filePath = selectedFilePath.endsWith(".srt")
-        ? await convertSrtToVtt(selectedFilePath)
+        ? await window.fileManagerAPI.convertSrtToVtt(selectedFilePath)
         : selectedFilePath;
 
       handleChange(filePath);

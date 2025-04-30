@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { VideoDataModel } from "../../models/videoData.model";
-import { getScreenshotApi } from "../api/videoData.api";
 
 export function useScreenshot(videodata: VideoDataModel) {
   return useQuery<string | null>({
@@ -13,7 +12,7 @@ export function useScreenshot(videodata: VideoDataModel) {
       },
     ],
     queryFn: async () => {
-      const response = await getScreenshotApi(videodata);
+      const response = await window.videoAPI.getScreenshot(videodata);
       return response;
     },
     enabled: !!videodata?.filePath,

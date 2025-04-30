@@ -8,7 +8,6 @@ import {
   useTheme,
   Alert,
 } from "@mui/material";
-import { useCommonUtil } from "../../hooks/useCommonUtil";
 import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 
 type ChildFolder = {
@@ -27,7 +26,6 @@ const SeasonConvertSelector: React.FC<SeasonConvertSelectorProps> = ({
   close,
 }) => {
   const theme = useTheme();
-  const { getFolderFiles } = useCommonUtil();
   const { addToConversionQueue } = useMp4Conversion();
   const [noFilesToConvert, setNoFilesToConvert] = useState(false);
   const [selectedSeasonsToConvert, setSelectedSeasonsToConvert] = useState<
@@ -48,7 +46,7 @@ const SeasonConvertSelector: React.FC<SeasonConvertSelectorProps> = ({
     );
 
     const allFilesArrays = await Promise.all(
-      selected.map((folder) => getFolderFiles(folder.folderPath)),
+      selected.map((folder) => window.videoAPI.getFolderFiles(folder.folderPath)),
     );
 
     const allFiles = allFilesArrays
