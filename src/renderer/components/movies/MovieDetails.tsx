@@ -19,6 +19,7 @@ import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 import { useVideoDetailsQuery } from "../../hooks/useVideoData.query";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "../../contexts/SnackbarContext";
+import { MovieDetails } from "../../../models/movie-detail.model";
 
 interface MovieDetailsProps {
   videoPath: string | null;
@@ -26,11 +27,8 @@ interface MovieDetailsProps {
 }
 
 const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
-  const {
-    updateTMDBId,
-  } = useMovies();
+  const { updateTMDBId } = useMovies();
   const { showSnackbar } = useSnackbar();
-
   const queryClient = useQueryClient();
 
   const {
@@ -44,14 +42,30 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     onSuccess: (_, { newVideoJsonData }) => {
       queryClient.setQueryData(
         ["videoDetails", videoPath, "movies"],
-        (oldData: VideoDataModel) => {
-          return { ...oldData, ...newVideoJsonData };
-        },
+        (oldData: VideoDataModel) => ({ ...oldData, ...newVideoJsonData })
       );
       showSnackbar("Custom image updated successfully", "success");
     },
     onError: () => {
       showSnackbar("Failed to update custom image", "error");
+    },
+  });
+
+  // --- Add mutation for TMDB movie selection ---
+  const updateTmdbMutation = useMutation({
+    mutationFn: async (movie_details: MovieDetails) => {
+      if (!videoPath || !movie_details?.id) return null;
+      return updateTMDBId(videoPath, movie_details);
+    },
+    onSuccess: (extraMovieDetails, movie_details) => {
+      if (!videoPath || !extraMovieDetails) return;
+      queryClient.setQueryData(
+        ["videoDetails", videoPath, "movies"],
+        (oldData: VideoDataModel) => ({
+          ...oldData,
+          movie_details: extraMovieDetails,
+        })
+      );
     },
   });
 
@@ -63,11 +77,62 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const [openModal, setOpenModal] = useState(false);
   const [currentTabValue, setCurrentTabValue] = useState(0);
   const { settings } = useSettings();
-
-  const handleOpenModal = () => setOpenModal(true);
-  const handleCloseModal = () => setOpenModal(false);
   const [openDrawer, setOpenDrawer] = useState(false);
 
+  // --- Extracted Handlers ---
+  const handleOpenModal = () => setOpenModal(true);
+  const handleCloseModal = () => setOpenModal(false);
+
+  const handleBackClick = () => {
+    navigate("/?menuId=" + menuId);
+  };
+
+  const handlePlay = (startFromBeginning = false) => {
+    if (videoDetails) {
+      setCurrentVideo(videoDetails);
+      navigate(
+        `/video-player?${
+          startFromBeginning ? "startFromBeginning=true&" : ""
+        }&menuId=${menuId}`
+      );
+    }
+  };
+
+  const onTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setCurrentTabValue(newValue);
+  };
+
+  const handleWatchLaterUpdate = async (filePath: string, watchLater: boolean) => {
+    await window.videoAPI.saveVideoJsonData({
+      currentVideo: { filePath },
+      newVideoJsonData: { watchLater },
+    });
+    refetch();
+  };
+
+  const handleMovieSelect = (movie_details: MovieDetails) => {
+    updateTmdbMutation.mutate(movie_details);
+  };
+
+  const handleImageUpdate = async (data: VideoDataModel, filePath: string) => {
+    if (!filePath) return;
+    updateVideoData({
+      currentVideo: { filePath },
+      newVideoJsonData: data,
+    });
+  };
+
+  const handleVideoSeek = (seekTime: number) => {
+    if (!videoDetails) return;
+    const videoWithUpdatedTime = {
+      ...videoDetails,
+      currentTime: seekTime,
+    };
+    setCurrentVideo(videoWithUpdatedTime);
+    navigate(`/video-player?menuId=${menuId}`);
+  };
+
+  // --- Extracted Logic ---
   const getImageUlr = (movie: VideoDataModel) => {
     if (movie.backdrop) {
       return getUrl("file", movie.backdrop, null, settings?.port);
@@ -82,25 +147,6 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       setImageUrl(getImageUlr(videoDetails));
     }
   }, [videoDetails, getTmdbImageUrl]);
-
-  const handleBackClick = () => {
-    navigate("/?menuId=" + menuId);
-  };
-
-  const handlePlay = (startFromBeginning = false) => {
-    if (videoDetails) {
-      setCurrentVideo(videoDetails);
-      navigate(
-        `/video-player?${
-          startFromBeginning ? "startFromBeginning=true&" : ""
-        }&menuId=${menuId}`,
-      );
-    }
-  };
-
-  const onTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setCurrentTabValue(newValue);
-  };
 
   return (
     <>
@@ -126,16 +172,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
               getVideoDetails={() => {
                 console.log("will be implemented in future");
               }}
-              updateWatchLater={async (
-                filePath: string,
-                watchLater: boolean,
-              ) => {
-                await window.videoAPI.saveVideoJsonData({
-                  currentVideo: { filePath },
-                  newVideoJsonData: { watchLater },
-                });
-                refetch();
-              }}
+              updateWatchLater={handleWatchLaterUpdate}
               onRefresh={() => {
                 if (videoPath) {
                   refetch();
@@ -156,15 +193,8 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
           <AppNotes
             videoData={videoDetails}
             currentVideoTime={0}
-            handleVideoSeek={(seekTime) => {
-              const videoWithUpdatedTime = {
-                ...videoDetails,
-                currentTime: seekTime,
-              };
-              setCurrentVideo(videoWithUpdatedTime);
-              navigate(`/video-player?menuId=${menuId}`);
-            }}
-          ></AppNotes>
+            handleVideoSeek={handleVideoSeek}
+          />
         </CustomTabPanel>
       </Box>
       <MovieSuggestionsModal
@@ -173,27 +203,8 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         handleClose={handleCloseModal}
         fileName={removeVidExt(videoDetails?.fileName) || ""}
         filePath={videoPath || ""}
-        handleSelectMovie={async (movie_details) => {
-          if (movie_details.id) {
-            const extraMovieDetails = await updateTMDBId(
-              videoPath || "",
-              movie_details,
-            );
-            queryClient.setQueryData(
-              ["videoDetails", videoPath, "movies"],
-              (oldData: VideoDataModel) => {
-                return { ...oldData, movie_details: extraMovieDetails };
-              },
-            );
-          }
-        }}
-        handleImageUpdate={async (data: VideoDataModel, filePath: string) => {
-          if (!filePath) return;
-          updateVideoData({
-            currentVideo: { filePath },
-            newVideoJsonData: data,
-          });
-        }}
+        handleSelectMovie={handleMovieSelect}
+        handleImageUpdate={handleImageUpdate}
       />
       <CustomDrawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
         <MovieCastAndCrew credits={videoDetails?.movie_details?.credits} />
