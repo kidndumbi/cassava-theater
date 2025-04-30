@@ -36,7 +36,7 @@ import {
   useFolderDetailsQuery,
   useVideoDataQuery,
 } from "../../hooks/useVideoData.query";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 
 interface TvShowDetailsProps {
@@ -229,6 +229,44 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
 
   const childFolders = tvShowDetails?.childFolders ?? [];
 
+  // --- Mutations ---
+  const updateTmdbMutation = useMutation({
+    mutationFn: async (tv_show_details: any) => {
+      if (!videoPath || !tv_show_details?.id) return null;
+      return updateTvShowTMDBId(videoPath, tv_show_details);
+    },
+    onSuccess: (extraTvShowDetails, tv_show_details) => {
+      if (!videoPath || !extraTvShowDetails) return;
+      queryClient.setQueryData(
+        ["folderDetails", videoPath],
+        (oldData: VideoDataModel) => ({
+          ...oldData,
+          tv_show_details: extraTvShowDetails,
+        })
+      );
+    },
+  });
+
+  const updateImageMutation = useMutation({
+    mutationFn: async ({ filePath, data }: { filePath: string; data: VideoDataModel }) => {
+      await updateTvShowDbData(filePath, data);
+      return { filePath, data };
+    },
+    onSuccess: ({ filePath, data }) => {
+      showSnackbar("Custom image updated successfully", "success");
+      queryClient.setQueryData(
+        ["folderDetails", filePath],
+        (oldData: VideoDataModel) => ({
+          ...oldData,
+          ...data,
+        })
+      );
+    },
+    onError: () => {
+      showSnackbar("Failed to update custom image", "error");
+    },
+  });
+
   return (
     <>
       <Box
@@ -384,32 +422,10 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
         fileName={tvShowDetails?.filePath?.split("/").pop() || ""}
         filePath={videoPath || ""}
         handleSelectTvShow={async (tv_show_details) => {
-          if (tv_show_details.id) {
-            const extraTvShowDetails = await updateTvShowTMDBId(
-              videoPath || "",
-              tv_show_details,
-            );
-            queryClient.setQueryData(
-              ["folderDetails", videoPath],
-              (oldData: VideoDataModel) => {
-                return { ...oldData, tv_show_details: extraTvShowDetails };
-              },
-            );
-          }
+          updateTmdbMutation.mutate(tv_show_details);
         }}
         handleImageUpdate={async (data: VideoDataModel, filePath: string) => {
-          try {
-            await updateTvShowDbData(filePath, data);
-            showSnackbar("Custom image updated successfully", "success");
-            queryClient.setQueryData(
-              ["folderDetails", filePath],
-              (oldData: VideoDataModel) => {
-                return { ...oldData, ...data };
-              },
-            );
-          } catch (error) {
-            showSnackbar("Failed to update custom image", "error");
-          }
+          updateImageMutation.mutate({ filePath, data });
         }}
       />
       <AppModal
