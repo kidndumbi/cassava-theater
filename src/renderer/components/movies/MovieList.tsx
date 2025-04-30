@@ -113,9 +113,7 @@ const MovieList: React.FC<MovieListProps> = ({
   const queryClient = useQueryClient();
 
   const { mutate: deleteFile } = useMutation({
-    mutationFn: (filePath: string) => {
-      return window.fileManagerAPI.deleteFile(filePath);
-    },
+    mutationFn: window.fileManagerAPI.deleteFile,
     onSuccess: (data, filePathDeleted) => {
       if (data.success) {
         showSnackbar("Movie deleted successfully", "success");

@@ -4,7 +4,6 @@ import { fetchFilmDataByIdApi } from "../api/theMovieDb.api";
 import {
   addTvShowFolder,
   fetchVideoDetails,
-  updateVideoData,
 } from "../api/videoData.api";
 
 export const useTvShows = () => {
@@ -17,7 +16,7 @@ export const useTvShows = () => {
       "tv",
     );
 
-    await updateVideoData({
+    await window.videoAPI.saveVideoJsonData({
       currentVideo: { filePath },
       newVideoJsonData: { tv_show_details: extraTvShowDetails },
     });
@@ -26,7 +25,7 @@ export const useTvShows = () => {
   };
 
   const updateTvShowDbData = async (filePath: string, data: VideoDataModel) => {
-    await updateVideoData({
+    await window.videoAPI.saveVideoJsonData({
       currentVideo: { filePath },
       newVideoJsonData: data,
     });
