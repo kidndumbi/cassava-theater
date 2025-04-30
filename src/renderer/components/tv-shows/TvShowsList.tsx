@@ -13,11 +13,11 @@ import { useConfirmation } from "../../contexts/ConfirmationContext";
 import WarningIcon from "@mui/icons-material/Warning";
 import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { TvShowDetails } from "../../../models/tv-show-details.model";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
   handlePosterClick: (videoPath: string) => void;
-  refetchTvShows: () => void;
 }
 
 const HoverBox = styled(Box)({
@@ -37,7 +37,6 @@ const HoverContent = styled(Box)({
 export const TvShowsList: React.FC<TvShowsListProps> = ({
   shows,
   handlePosterClick,
-  refetchTvShows,
 }) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const { settings } = useSettings();
@@ -69,6 +68,64 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
     },
     onError: (error) => {
       showSnackbar("Error deleting Tv Show: " + error, "error");
+    },
+  });
+
+  // Add mutations for TMDB linking and image update
+  const { mutate: linkTvShowMutation } = useMutation({
+    mutationFn: async ({
+      filePath,
+      tv_show_details,
+    }: {
+      filePath: string;
+      tv_show_details: TvShowDetails;
+    }) => {
+      return updateTvShowTMDBId(filePath, tv_show_details);
+    },
+    onSuccess: (tv_show_details, {filePath}) => {
+      showSnackbar("Tv Show linked to TMDB successfully", "success");
+      queryClient.setQueryData(
+        ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
+        (oldData: VideoDataModel[] = []) =>
+          oldData.map((m) => {
+            if (m.filePath === filePath) {
+              return { ...m, tv_show_details };
+            }
+            return m;
+          }),
+      );
+      setOpenTvShowSuggestionsModal(false);
+    },
+    onError: () => {
+      showSnackbar("Failed to link Tv Show to TMDB", "error");
+    },
+  });
+
+  const { mutate: updateImageMutation } = useMutation({
+    mutationFn: async ({
+      data,
+      filePath,
+    }: {
+      data: VideoDataModel;
+      filePath: string;
+    }) => {
+      return updateTvShowDbData(filePath, data);
+    },
+    onSuccess: (_data, variables) => {
+      showSnackbar("Custom image updated successfully", "success");
+      queryClient.setQueryData(
+        ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
+        (oldData: VideoDataModel[] = []) =>
+          oldData.map((m) => {
+            if (m.filePath === variables.filePath) {
+              return { ...m, ...variables.data };
+            }
+            return m;
+          }),
+      );
+    },
+    onError: () => {
+      showSnackbar("Failed to update custom image", "error");
     },
   });
 
@@ -131,34 +188,16 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
         }}
         fileName={selectedTvShow?.filePath?.split("/").pop() || ""}
         filePath={selectedTvShow?.filePath || ""}
-        handleSelectTvShow={async (tv_show_details) => {
+        handleSelectTvShow={(tv_show_details) => {
           if (tv_show_details.id) {
-            await updateTvShowTMDBId(
-              selectedTvShow.filePath || "",
+            linkTvShowMutation({
+              filePath: selectedTvShow.filePath || "",
               tv_show_details,
-            );
-            showSnackbar("Tv Show linked to TMDB successfully", "success");
-            refetchTvShows();
-            setOpenTvShowSuggestionsModal(false);
+            });
           }
         }}
-        handleImageUpdate={async (data: VideoDataModel, filePath: string) => {
-          try {
-            await updateTvShowDbData(filePath, data);
-            showSnackbar("Custom image updated successfully", "success");
-            queryClient.setQueryData(
-              ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
-              (oldData: VideoDataModel[] = []) =>
-                oldData.map((m) => {
-                  if (m.filePath === filePath) {
-                    return { ...m, ...data };
-                  }
-                  return m;
-                }),
-            );
-          } catch (error) {
-            showSnackbar("Failed to update custom image", "error");
-          }
+        handleImageUpdate={(data: VideoDataModel, filePath: string) => {
+          updateImageMutation({ data, filePath });
         }}
       />
     </>
