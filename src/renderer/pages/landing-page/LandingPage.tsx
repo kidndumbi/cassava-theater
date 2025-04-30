@@ -10,7 +10,6 @@ import {
 } from "@mui/icons-material";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { useSettings } from "../../hooks/useSettings";
-import { useCustomFolder } from "../../hooks/useCustomFolder";
 import Grid from "@mui/material/Grid2";
 import { renderActivePage } from "./RenderActivePage";
 import { useSearchParams } from "react-router-dom";
@@ -24,28 +23,35 @@ export const LandingPage = () => {
   const { settings } = useSettings();
   const [searchParams] = useSearchParams();
 
-  const { data: movies, isLoading: loadingMovies, refetch:getMovies } = useVideoDataQuery({
+  const [customFolderPath, setCustomFolderPath] = useState<string>("");
+
+  const {
+    data: movies,
+    isLoading: loadingMovies,
+    refetch: getMovies,
+  } = useVideoDataQuery({
     filePath: settings?.movieFolderPath || "",
     category: "movies",
   });
 
-  const { data: tvShows, isLoading: loadingTvShows, refetch: getTvShows } = useVideoDataQuery({
-    filePath: settings?.tvShowsFolderPath || "",
-    category: "tvShows",
+  const { data: tvShows, isLoading: loadingCustomFolderData } =
+    useVideoDataQuery({
+      filePath: settings?.tvShowsFolderPath || "",
+      category: "tvShows",
+    });
+
+  const {
+    data: customFolderData,
+    isLoading: loadingTvShows,
+    refetch: getTvShows,
+  } = useVideoDataQuery({
+    filePath: customFolderPath || "",
+    category: "customFolder",
   });
-
-  // const { 
-  //   // customFolderData, 
-  //   loadCustomFolder, 
-  //   // loadingCustomFolderData 
-  // } =
-  //   useCustomFolder();
-
 
   const handleMenuClick = (menuItem: MenuItem) => {
     setActiveMenu(menuItem);
   };
-
 
   const [selectedCustomFolder, setSelectedCustomFolder] =
     useState<CustomFolderModel | null>(null);
@@ -131,7 +137,7 @@ export const LandingPage = () => {
 
   useEffect(() => {
     if (selectedCustomFolder && selectedCustomFolder.folderPath) {
-      //loadCustomFolder(selectedCustomFolder.folderPath);
+      loadCustomFolder(selectedCustomFolder.folderPath);
     }
   }, [selectedCustomFolder]);
 
@@ -139,7 +145,6 @@ export const LandingPage = () => {
     getMovies();
     getTvShows();
   };
-
 
   function syncActiveMenuFromUrl(
     menuItems: MenuItem[],
@@ -156,9 +161,9 @@ export const LandingPage = () => {
     syncActiveMenuFromUrl(menuItems, setActiveMenu);
   }, [searchParams, menuItems]);
 
-  const loadCustomFolder = (path: string) => { 
-    console.log("will be implemented in future", path);
-  }
+  const loadCustomFolder = (path: string) => {
+    setCustomFolderPath(path);
+  };
 
   return (
     <Grid
@@ -194,8 +199,8 @@ export const LandingPage = () => {
           refreshData,
           getMovies,
           getTvShows,
-          loadingCustomFolderData: false, // Placeholder for actual loading state
-          customFolderData: null, // Placeholder for actual custom folder data
+          loadingCustomFolderData,
+          customFolderData,
           loadCustomFolder,
           selectedCustomFolder,
         })}

@@ -49,7 +49,7 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
 
   return (
     <Box className="flex flex-wrap gap-1">
-      {customFolderData.map((item, idx) => (
+      {customFolderData?.map((item, idx) => (
         <Box key={idx} className="m-1 max-w-[200px] flex-[1_1_200px]">
           <Box className="relative">{renderPosterImage(item)}</Box>
           <Typography variant="subtitle1" align="center" className="break-all">
