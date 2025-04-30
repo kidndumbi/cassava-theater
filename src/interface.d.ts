@@ -90,12 +90,10 @@ export interface TheMovieDbAPI {
   search: (
     query: string,
     queryType: "movie" | "tv",
-    authorization: string,
   ) => Promise<MovieDetails[] | TvShowDetails[]>;
   movieOrTvShow: (
     id: string,
     queryType: "movie" | "tv",
-    authorization: string,
   ) => Promise<MovieDetails | TvShowDetails>;
 }
 

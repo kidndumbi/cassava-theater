@@ -1,13 +1,11 @@
 import { MovieDetails } from "../../models/movie-detail.model";
-import { VideoDataModel } from "../../models/videoData.model";
-import { fetchFilmDataByIdApi } from "../api/theMovieDb.api";
 
 export const useMovies = () => {
   const updateTMDBId = async (
     filePath: string,
     movie_details: MovieDetails,
   ) => {
-    const extraMovieDetails = await fetchFilmDataByIdApi(
+    const extraMovieDetails = await window.theMovieDbAPI.movieOrTvShow(
       movie_details.id.toString(),
       "movie",
     );
@@ -19,23 +17,7 @@ export const useMovies = () => {
     return extraMovieDetails;
   };
 
-  const updateWatchLater = async (filePath: string, watchLater: boolean) => {
-    await window.videoAPI.saveVideoJsonData({
-      currentVideo: { filePath },
-      newVideoJsonData: { watchLater },
-    });
-  };
-
-  const updateMovieDbData = async (filePath: string, data: VideoDataModel) => {
-    await window.videoAPI.saveVideoJsonData({
-      currentVideo: { filePath },
-      newVideoJsonData: data,
-    });
-  };
-
   return {
     updateTMDBId,
-    updateWatchLater,
-    updateMovieDbData,
   };
 };

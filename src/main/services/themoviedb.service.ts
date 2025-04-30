@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import * as settingsDataDbService from "../services/settingsDataDb.service";
 const BASE_URL = "https://api.themoviedb.org/3";
 
 interface RequestOptions {
@@ -33,9 +33,9 @@ const makeRequest = async <T>(
 export const getMovieOrTvShowById = async <T>(
   id: string,
   queryType: "movie" | "tv" = "movie",
-  authorization: string
 ): Promise<T> => {
   const url = `${BASE_URL}/${queryType}/${id}`;
+  const authorization = await settingsDataDbService.getSetting("theMovieDbApiKey") as string;
   const appendToResponse = queryType === "tv" ? "aggregate_credits" : "credits";
   return makeRequest<T>(url, authorization, { append_to_response: appendToResponse });
 };
@@ -43,9 +43,9 @@ export const getMovieOrTvShowById = async <T>(
 export const getMoviesOrTvShowsByQuery = async <T>(
   query: string,
   queryType: "movie" | "tv" = "movie",
-  authorization: string
 ): Promise<T[]> => {
   const url = `${BASE_URL}/search/${queryType}`;
+  const authorization = await settingsDataDbService.getSetting("theMovieDbApiKey") as string;
   const response = await makeRequest<{ results: T[] }>(
     url,
     authorization,

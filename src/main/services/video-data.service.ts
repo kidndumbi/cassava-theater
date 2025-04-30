@@ -218,7 +218,6 @@ export const fetchVideoDetails = async (
       const movie_details = await getMovieOrTvShowById(
         videoDetails?.movie_details.id.toString(),
         "movie",
-        await settingsDataDbService.getSetting("theMovieDbApiKey"),
       );
 
       await videoDbDataService.putVideo(
@@ -274,7 +273,6 @@ export const fetchFolderDetails = async (
       const tv_show_details = (await getMovieOrTvShowById(
         videoDetails?.tv_show_details.id.toString(),
         "tv",
-        await settingsDataDbService.getSetting("theMovieDbApiKey"),
       )) as TvShowDetails;
 
       await videoDbDataService.putVideo(
