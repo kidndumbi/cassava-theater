@@ -1,19 +1,19 @@
-import React from "react";
-import { Box } from "@mui/material";
+import React, { useState } from "react";
+import { Box, Snackbar, Alert, Button } from "@mui/material";
 import { styled } from "@mui/system";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { removeVidExt, trimFileName } from "../../util/helperFunctions";
 import { PosterCard } from "../common/PosterCard";
 import { AppMore } from "../common/AppMore";
 import { useMovies } from "../../hooks/useMovies";
-import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
-import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 import { useSettings } from "../../hooks/useSettings";
 import { VideoTypeChip } from "../common/VideoTypeChip";
 import { MovieDetails } from "../../../models/movie-detail.model";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
+import { useAppDispatch } from "../../store";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -107,23 +107,52 @@ const MovieList: React.FC<MovieListProps> = ({
   getImageUrl,
   refetchMovies,
 }) => {
-  const {
-    updateTMDBId,
-  } = useMovies();
-  const { showSnackbar } = useSnackbar();
+  const dispatch = useAppDispatch();
+  const { updateTMDBId } = useMovies();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedMovie, setSelectedMovie] =
     React.useState<VideoDataModel | null>(null);
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
     React.useState(false);
-  const { addToConversionQueue } = useMp4Conversion();
   const { settings } = useSettings();
 
   const queryClient = useQueryClient();
 
+  // Snackbar local state
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+    actionText?: string;
+    onAction?: () => void;
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showSnackbar = (
+    message: string,
+    severity: "success" | "error",
+    actionText?: string,
+    onAction?: () => void,
+  ) => {
+    setSnackbar({ open: true, message, severity, actionText, onAction });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
+
   const { mutate: saveVideoJsonData } = useMutation({
     mutationFn: window.videoAPI.saveVideoJsonData,
-    onSuccess: (data: VideoDataModel, variables: { currentVideo: { filePath: string }, newVideoJsonData: VideoDataModel }) => {
+    onSuccess: (
+      data: VideoDataModel,
+      variables: {
+        currentVideo: { filePath: string };
+        newVideoJsonData: VideoDataModel;
+      },
+    ) => {
       queryClient.setQueryData(
         ["videoData", settings?.movieFolderPath, false, "movies"],
         (oldData: VideoDataModel[] = []) =>
@@ -161,7 +190,20 @@ const MovieList: React.FC<MovieListProps> = ({
   });
 
   const handleConvertToMp4 = (fromPath: string) => {
-    addToConversionQueue(fromPath);
+    const result = window.mp4ConversionAPI.addToConversionQueue(fromPath);
+    if (!result) {
+      console.error(`Failed to add ${fromPath} to conversion queue.`);
+      return;
+    }
+    dispatch(
+      mp4ConversionActions.updateConvertToMp4Progress({
+        fromPath,
+        toPath: fromPath.replace(/\.[^/.]+$/, ".mp4"),
+        percent: 0,
+        paused: false,
+        complete: false,
+      }),
+    );
   };
 
   const handleLinkMovieDb = (movie: VideoDataModel) => {
@@ -221,8 +263,35 @@ const MovieList: React.FC<MovieListProps> = ({
           });
         }}
       />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          action={
+            snackbar.actionText ? (
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  if (snackbar.onAction) snackbar.onAction();
+                  handleCloseSnackbar();
+                }}
+              >
+                {snackbar.actionText}
+              </Button>
+            ) : null
+          }
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
 
-export default MovieList;
+export default React.memo(MovieList);

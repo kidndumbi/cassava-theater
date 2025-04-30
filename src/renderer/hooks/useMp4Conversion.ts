@@ -1,6 +1,5 @@
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "../store";
-import { useEffect } from "react";
 import {
   selConvertToMp4Progress,
   selCurrentlyProcessingItem,
@@ -13,7 +12,7 @@ import * as mp4Api from "../store/mp4Conversion/mp4ConversionApi";
 import { ConversionQueueItem } from "../../models/conversion-queue-item.model"; 
 
 export const useMp4Conversion = () => {
-  const convertToMp4Progress = useSelector(selConvertToMp4Progress);
+  const convertToMp4ProgressQueue = useSelector(selConvertToMp4Progress);
   const currentlyProcessingItem = useSelector(selCurrentlyProcessingItem);
   const dispatch = useAppDispatch();
 
@@ -38,9 +37,6 @@ export const useMp4Conversion = () => {
     initializeConversionQueue();
   };
 
-  useEffect(() => {
-    //console.log("useMp4Conversion effect triggered", convertToMp4Progress);
-  }, [convertToMp4Progress]);
 
   const addOrUpdateProgressItem = (progressItem: Mp4ConversionProgress) => {
     dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
@@ -48,7 +44,7 @@ export const useMp4Conversion = () => {
 
   const addToConversionQueue = async (fromPath: string) => {
     if (
-      !convertToMp4Progress.some((progress) => progress.fromPath === fromPath)
+      !convertToMp4ProgressQueue.some((progress) => progress.fromPath === fromPath)
     ) {
       const result = await mp4Api.addToConversionQueueApi(fromPath);
       if (!result) {
@@ -66,11 +62,11 @@ export const useMp4Conversion = () => {
   };
 
   const isConvertingToMp4 = (fromPath: string) =>
-    convertToMp4Progress.some((progress) => progress.fromPath === fromPath);
+    convertToMp4ProgressQueue.some((progress) => progress.fromPath === fromPath);
 
   const pauseConversionItem = async (path: string) => {
     const paused = await mp4Api.pauseConversionItemApi(path);
-    const progressItem = convertToMp4Progress.find(
+    const progressItem = convertToMp4ProgressQueue.find(
       (progress) => progress.fromPath === path,
     );
 
@@ -83,7 +79,7 @@ export const useMp4Conversion = () => {
   };
   const unpauseConversionItem = async (path: string) => {
     const paused = await mp4Api.unpauseConversionItemApi(path);
-    const progressItem = convertToMp4Progress.find(
+    const progressItem = convertToMp4ProgressQueue.find(
       (progress) => progress.fromPath === path,
     );
 
@@ -117,7 +113,7 @@ export const useMp4Conversion = () => {
   };
 
   return {
-    convertToMp4Progress,
+    convertToMp4ProgressQueue,
     currentlyProcessingItem,
     isConvertingToMp4,
     addToConversionQueue,

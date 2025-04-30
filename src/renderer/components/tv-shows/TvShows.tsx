@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Box, useTheme } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { VideoDataModel } from "../../../models/videoData.model";
@@ -35,13 +35,15 @@ export const TvShows: React.FC<TvShowsProps> = ({
     setFilter(event.target.value);
   };
 
-  const filteredTvShows = tvShows?.filter((show) => {
-    return show.fileName?.toLowerCase().includes(filter.toLowerCase()) ?? false;
-  });
+  const filteredTvShows = useMemo(() => {
+    return tvShows?.filter((show) => {
+      return show.fileName?.toLowerCase().includes(filter.toLowerCase()) ?? false;
+    });
+  }, [tvShows, filter]);
 
-  const handlePosterClick = (videoPath: string) => {
+  const handlePosterClick = useCallback((videoPath: string) => {
     navigate(`/video-details?videoPath=${videoPath}&menuId=${menuId}`);
-  };
+  }, [navigate, menuId]);
 
   const handleRefresh = () => {
     refreshTvShows();

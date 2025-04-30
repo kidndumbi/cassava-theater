@@ -35,7 +35,7 @@ interface StatusDisplayProps {
 
 export const StatusDisplay = ({ port }: StatusDisplayProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const { convertToMp4Progress } = useMp4Conversion();
+  const { convertToMp4ProgressQueue } = useMp4Conversion();
 
   return (
     <Box
@@ -52,8 +52,8 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
           setIsProcessing(true);
         }}
       >
-        {convertToMp4Progress.length > 0 &&
-        convertToMp4Progress.some((p) => p.percent < 100) ? (
+        {convertToMp4ProgressQueue.length > 0 &&
+        convertToMp4ProgressQueue.some((p) => p.percent < 100) ? (
           <CircularProgress color="secondary" size="20px" />
         ) : (
           <AppIconButton
@@ -75,7 +75,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         title="Processing..."
         fullScreen={true}
       >
-        <Mp4ProgressList progressList={convertToMp4Progress} />
+        <Mp4ProgressList progressList={convertToMp4ProgressQueue} />
       </AppModal>
     </Box>
   );
