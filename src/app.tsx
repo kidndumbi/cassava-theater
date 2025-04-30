@@ -13,7 +13,7 @@ import {
 } from "react-router-dom";
 import theme from "./renderer/theme";
 import { useSettings } from "./renderer/hooks/useSettings";
-import { store, useAppDispatch } from "./renderer/store";
+import { store } from "./renderer/store";
 import { LandingPage } from "./renderer/pages/landing-page/LandingPage";
 import { VideoDetailsPage } from "./renderer/pages/video-details-page/VideoDetailsPage";
 import { VideoPlayerPage } from "./renderer/pages/video-player-page/VideoPlayerPage";
@@ -29,40 +29,15 @@ import {
 import { AppVideoPlayerHandle } from "./renderer/components/video-player/AppVideoPlayer";
 import { ConfirmationProvider } from "./renderer/contexts/ConfirmationContext";
 import { StatusDisplay } from "./renderer/components/StatusDisplay";
-import {
-  mp4ConversionActions,
-  Mp4ConversionProgress,
-} from "./renderer/store/mp4Conversion/mp4Conversion.slice";
-import { useMp4Conversion } from "./renderer/hooks/useMp4Conversion";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Mp4ConversionEvents } from "./Mp4ConversionEvents";
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 
 const App = () => {
-  const dispatch = useAppDispatch();
   const { fetchAllSettings } = useSettings();
   const { showSnackbar } = useSnackbar();
-  const { currentlyProcessingItem } = useMp4Conversion();
-  const currentlyProcessingItemRef = useRef(currentlyProcessingItem);
-  const { initConverversionQueueFromStore, getConversionQueue } =
-    useMp4Conversion();
-
-  const lastExecutionRef = useRef<number>(0);
-  const pendingProgressRef = useRef<any>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    const initQueue = async () => {
-      const conversionQueue = await getConversionQueue();
-      initConverversionQueueFromStore(conversionQueue);
-    };
-    initQueue();
-  }, []);
-
-  useEffect(() => {
-    currentlyProcessingItemRef.current = currentlyProcessingItem;
-  }, [currentlyProcessingItem]);
 
   const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
 
@@ -80,84 +55,24 @@ const App = () => {
     window.mainNotificationsAPI.userDisconnected((userId: string) => {
       showSnackbar("User disconnected: " + userId, "error");
     });
-
-    // Throttle mp4ConversionProgress handler to fire at most once every 4 seconds
-    window.mainNotificationsAPI.mp4ConversionProgress((progress) => { 
-      pendingProgressRef.current = progress;
-      const now = Date.now();
-      const elapsed = now - lastExecutionRef.current;
-
-      const execute = () => {
-        const progress = pendingProgressRef.current;
-        pendingProgressRef.current = null;
-        lastExecutionRef.current = Date.now();
-
-        const [fromPath, toPath] = progress.file.split(":::") || [];
-        const progressItem: Mp4ConversionProgress = {
-          fromPath,
-          toPath,
-          percent: progress.percent,
-          paused: false,
-          complete: false,
-        };
-
-        dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
-
-        if (
-          progressItem.fromPath !== currentlyProcessingItemRef.current?.fromPath
-        ) {
-          dispatch(
-            mp4ConversionActions.setCurrentlyProcessingItem(progressItem),
-          );
-        }
-      };
-
-      if (elapsed >= 10000) {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
-        execute();
-      } else if (!timeoutRef.current) {
-        timeoutRef.current = setTimeout(() => {
-          timeoutRef.current = null;
-          execute();
-        }, 10000 - elapsed);
-      }
-    });
-
-    window.mainNotificationsAPI.mp4ConversionCompleted((progress) => {
-      const [fromPath, toPath] = progress.file.split(":::") || [];
-      const progressItem: Mp4ConversionProgress = {
-        fromPath,
-        toPath,
-        percent: progress.percent,
-        paused: false,
-        complete: true,
-      };
-
-      dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
-      showSnackbar(`Conversion completed: ${toPath}`, "success");
-    });
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-     <HashRouter>
-      <Box
-        data-testid="box-container"
-        sx={{
-          backgroundColor: theme.customVariables.appDarker,
-        }}
-      >
-        <main>
-          <AppRoutes appVideoPlayerRef={appVideoPlayerRef} />
-        </main>
-      </Box>
-    </HashRouter>
-    <ReactQueryDevtools initialIsOpen={false} />
-  </QueryClientProvider>
-
+      <HashRouter>
+        <Box
+          data-testid="box-container"
+          sx={{
+            backgroundColor: theme.customVariables.appDarker,
+          }}
+        >
+          <main>
+            <AppRoutes appVideoPlayerRef={appVideoPlayerRef} />
+          </main>
+        </Box>
+      </HashRouter>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 };
 
@@ -169,6 +84,7 @@ root.render(
         <CssBaseline />
         <Provider store={store}>
           <App />
+          <Mp4ConversionEvents />
         </Provider>
       </ThemeProvider>
     </ConfirmationProvider>

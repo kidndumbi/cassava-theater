@@ -1,5 +1,5 @@
 import { useTheme } from "@mui/material/styles";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import MainMenu from "../../components/main-menu/MainMenu";
 import { MenuItem } from "../../../models/menu-item.model";
 import {
@@ -25,29 +25,39 @@ export const LandingPage = () => {
 
   const [customFolderPath, setCustomFolderPath] = useState<string>("");
 
+  // Memoize file paths to avoid unnecessary refetches
+  const movieFolderPath = useMemo(() => settings?.movieFolderPath || "", [settings?.movieFolderPath]);
+  const tvShowsFolderPath = useMemo(() => settings?.tvShowsFolderPath || "", [settings?.tvShowsFolderPath]);
+  const customFolderPathMemo = useMemo(() => customFolderPath || "", [customFolderPath]);
+
+  // Memoize query options to keep reference stable
+  const moviesQueryOptions = useMemo(() => ({
+    filePath: movieFolderPath,
+    category: "movies",
+  }), [movieFolderPath]);
+  const tvShowsQueryOptions = useMemo(() => ({
+    filePath: tvShowsFolderPath,
+    category: "tvShows",
+  }), [tvShowsFolderPath]);
+  const customFolderQueryOptions = useMemo(() => ({
+    filePath: customFolderPathMemo,
+    category: "customFolder",
+  }), [customFolderPathMemo]);
+
   const {
     data: movies,
     isLoading: loadingMovies,
     refetch: getMovies,
-  } = useVideoDataQuery({
-    filePath: settings?.movieFolderPath || "",
-    category: "movies",
-  });
+  } = useVideoDataQuery(moviesQueryOptions);
 
-  const { data: tvShows, isLoading: loadingCustomFolderData } =
-    useVideoDataQuery({
-      filePath: settings?.tvShowsFolderPath || "",
-      category: "tvShows",
-    });
+  const { data: tvShows, isLoading: loadingTvShows } =
+    useVideoDataQuery(tvShowsQueryOptions);
 
   const {
     data: customFolderData,
-    isLoading: loadingTvShows,
+    isLoading: loadingCustomFolderData,
     refetch: getTvShows,
-  } = useVideoDataQuery({
-    filePath: customFolderPath || "",
-    category: "customFolder",
-  });
+  } = useVideoDataQuery(customFolderQueryOptions);
 
   const handleMenuClick = (menuItem: MenuItem) => {
     setActiveMenu(menuItem);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Box, Button, Modal, Paper, useTheme } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { VideoDataModel } from "../../../models/videoData.model";
@@ -32,29 +32,28 @@ export const Movies: React.FC<MoviesProps> = ({
 
   const [filter, setFilter] = useState("");
 
-    useEffect(() => {
-      console.log("Movies page rendered");
-    }, []);
+  const handlePosterClick = useCallback(
+    (videoPath: string) => {
+      navigate(`/video-details?videoPath=${videoPath}&menuId=${menuId}`);
+    },
+    [navigate, menuId],
+  );
 
-  const handlePosterClick = (videoPath: string) => {
-    navigate(`/video-details?videoPath=${videoPath}&menuId=${menuId}`); // Add menuId to the query string
-  };
-
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     refreshMovies();
-  };
+  }, [refreshMovies]);
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilter(event.target.value);
   };
 
-  const filteredMovies = movies?.filter((movie) => {
-    const fileNameWithoutExtension =
-    removeVidExt(movie.fileName) || "";
-    return fileNameWithoutExtension
-      .toLowerCase()
-      .includes(filter.toLowerCase());
-  });
+  const filteredMovies = useMemo(() => {
+    const fileNameFilter = filter.toLowerCase();
+    return movies?.filter((movie) => {
+      const fileNameWithoutExtension = removeVidExt(movie.fileName) || "";
+      return fileNameWithoutExtension.toLowerCase().includes(fileNameFilter);
+    });
+  }, [movies, filter]);
 
   const [randomMovie, setRandomMovie] = useState<VideoDataModel | null>(null);
 
@@ -69,14 +68,17 @@ export const Movies: React.FC<MoviesProps> = ({
     }, 2000);
   };
 
-  const getImageUrl = (movie: VideoDataModel) => {
-    if (movie?.poster) {
-      return getUrl("file", movie.poster, null, settings?.port);
-    }
-    if (movie?.movie_details?.poster_path) {
-      return getTmdbImageUrl(movie.movie_details.poster_path);
-    }
-  };
+  const getImageUrl = useCallback(
+    (movie: VideoDataModel) => {
+      if (movie?.poster) {
+        return getUrl("file", movie.poster, null, settings?.port);
+      }
+      if (movie?.movie_details?.poster_path) {
+        return getTmdbImageUrl(movie.movie_details.poster_path);
+      }
+    },
+    [getTmdbImageUrl, settings?.port],
+  );
 
   return (
     <Box style={{ ...style, overflowY: "auto" }}>

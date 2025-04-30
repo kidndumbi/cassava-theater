@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Alert, Box } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Alert, Box, Snackbar, Button } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, trimFileName } from "../../util/helperFunctions";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
@@ -7,7 +7,6 @@ import { PosterCard } from "../common/PosterCard";
 import { useSettings } from "../../hooks/useSettings";
 import { styled } from "@mui/system";
 import { AppMore } from "../common/AppMore";
-import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -34,13 +33,10 @@ const HoverContent = styled(Box)({
   display: "none",
 });
 
-export const TvShowsList: React.FC<TvShowsListProps> = ({
-  shows,
-  handlePosterClick,
-}) => {
+export const TvShowsList = React.memo(function TvShowsList(props: TvShowsListProps) {
+  const { shows, handlePosterClick } = props;
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const { settings } = useSettings();
-  const { showSnackbar } = useSnackbar();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedTvShow, setSelectedTvShow] = useState<VideoDataModel | null>(
     null,
@@ -49,6 +45,31 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
     useState(false);
   const { updateTvShowTMDBId, updateTvShowDbData } = useTvShows();
   const queryClient = useQueryClient();
+
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+    actionText?: string;
+    onAction?: () => void;
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showSnackbar = (
+    message: string,
+    severity: "success" | "error",
+    actionText?: string,
+    onAction?: () => void,
+  ) => {
+    setSnackbar({ open: true, message, severity, actionText, onAction });
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
 
   const { mutate: deleteFolder } = useMutation({
     mutationFn: async (filePath: string) => {
@@ -71,7 +92,6 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
     },
   });
 
-  // Add mutations for TMDB linking and image update
   const { mutate: linkTvShowMutation } = useMutation({
     mutationFn: async ({
       filePath,
@@ -82,7 +102,7 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
     }) => {
       return updateTvShowTMDBId(filePath, tv_show_details);
     },
-    onSuccess: (tv_show_details, {filePath}) => {
+    onSuccess: (tv_show_details, { filePath }) => {
       showSnackbar("Tv Show linked to TMDB successfully", "success");
       queryClient.setQueryData(
         ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
@@ -201,6 +221,34 @@ export const TvShowsList: React.FC<TvShowsListProps> = ({
           updateImageMutation({ data, filePath });
         }}
       />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbar.severity}
+          action={
+            snackbar.actionText ? (
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  if (snackbar.onAction) snackbar.onAction();
+                  handleSnackbarClose();
+                }}
+              >
+                {snackbar.actionText}
+              </Button>
+            ) : null
+          }
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
-};
+});
+export default React.memo(TvShowsList);
