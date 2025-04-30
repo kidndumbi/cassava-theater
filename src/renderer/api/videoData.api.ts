@@ -42,19 +42,6 @@ export async function fetchFolderDetails(
   return window.videoAPI.fetchFolderDetails({ path });
 }
 
-export async function updateVideoData({
-  currentVideo,
-  newVideoJsonData,
-}: {
-  currentVideo: VideoDataModel | undefined;
-  newVideoJsonData: VideoDataModel | undefined;
-}) {
-  return window.videoAPI.saveVideoJsonData({
-    currentVideo,
-    newVideoJsonData,
-  });
-}
-
 export async function addTvShowFolder({
   tvShowName,
   subfolders,

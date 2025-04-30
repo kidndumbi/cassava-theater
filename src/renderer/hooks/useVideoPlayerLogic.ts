@@ -12,7 +12,6 @@ import { useAppDispatch } from "../store";
 import { isEmptyObject } from "../util/helperFunctions";
 import { useState } from "react";
 import { VideoDataModel } from "../../models/videoData.model";
-import { updateVideoData } from "../api/videoData.api";
 
 export const useVideoPlayerLogic = () => {
   const dispatch = useAppDispatch();
@@ -61,7 +60,10 @@ export const useVideoPlayerLogic = () => {
       currentTime: 1,
     };
 
-    return updateVideoData({ currentVideo, newVideoJsonData });
+    return window.videoAPI.saveVideoJsonData({
+      currentVideo,
+      newVideoJsonData,
+    });
   };
 
   return {

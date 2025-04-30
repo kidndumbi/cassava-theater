@@ -5,7 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 import { NoteModel } from "../../models/note.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import { OverviewModel } from "../../models/overview.model";
-import { fetchVideoDetails, updateVideoData } from "../api/videoData.api";
+import { fetchVideoDetails, 
+} from "../api/videoData.api";
 
 export const useNoteListLogic = () => {
   const player = useSelector(selVideoPlayer);
@@ -25,9 +26,17 @@ export const useNoteListLogic = () => {
       ...updatedData,
     };
 
-    updateVideoData({ currentVideo: videoData, newVideoJsonData }).then(() => {
-      callback?.();
-    });
+    window.videoAPI
+      .saveVideoJsonData({
+        currentVideo: videoData,
+        newVideoJsonData,
+      })
+      .then(() => {
+        callback?.();
+      })
+      .catch((error) => {
+        console.error("Error updating video data:", error);
+      });
   };
 
   const updateOverview = (

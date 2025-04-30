@@ -17,7 +17,7 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import CustomDrawer from "../common/CustomDrawer";
 import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 import { useVideoDetailsQuery } from "../../hooks/useVideoData.query";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 
 interface MovieDetailsProps {
@@ -26,8 +26,11 @@ interface MovieDetailsProps {
 }
 
 const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
-  const { updateTMDBId, updateWatchLater, updateMovieDbData } = useMovies();
-    const { showSnackbar } = useSnackbar();
+  const {
+    updateTMDBId,
+    updateWatchLater,
+  } = useMovies();
+  const { showSnackbar } = useSnackbar();
 
   const queryClient = useQueryClient();
 
@@ -36,6 +39,22 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     isLoading: loadingVideoDetails,
     refetch,
   } = useVideoDetailsQuery({ path: videoPath, category: "movies" });
+
+  const { mutate: updateVideoData } = useMutation({
+    mutationFn: window.videoAPI.saveVideoJsonData,
+    onSuccess: (_, { newVideoJsonData }) => {
+      queryClient.setQueryData(
+        ["videoDetails", videoPath, "movies"],
+        (oldData: VideoDataModel) => {
+          return { ...oldData, ...newVideoJsonData };
+        },
+      );
+      showSnackbar("Custom image updated successfully", "success");
+    },
+    onError: () => {
+      showSnackbar("Failed to update custom image", "error");
+    },
+  });
 
   const [imageUrl, setImageUrl] = useState("");
   const { getTmdbImageUrl, getBackgroundGradient } = useTmdbImageUrl();
@@ -168,15 +187,10 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         }}
         handleImageUpdate={async (data: VideoDataModel, filePath: string) => {
           if (!filePath) return;
-          try {
-            await updateMovieDbData(filePath, data);
-            queryClient.invalidateQueries({
-              queryKey: ["videoDetails", filePath, "movies"],
-            });
-            showSnackbar("Custom image updated successfully", "success");
-          } catch (error) {
-            showSnackbar("Failed to update custom image", "error");
-          }
+          updateVideoData({
+            currentVideo: { filePath },
+            newVideoJsonData: data,
+          });
         }}
       />
       <CustomDrawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
