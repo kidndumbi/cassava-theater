@@ -123,7 +123,6 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
 contextBridge.exposeInMainWorld("videoAPI", {
   fetchVideoData: (args: {
     filePath: string;
-    searchText: string | undefined;
     includeThumbnail: boolean;
   }) => {
     return ipcRenderer.invoke(VideoIPCChannels.FetchVideoData, args);
