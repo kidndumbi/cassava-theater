@@ -25,15 +25,13 @@ export const fetchRecentlyWatchedVideosData = async (
       throw new Error("Path is required");
     }
 
-    // Fetch all videos data
     const videosData = await fetchVideosData({
       filePath,
-      searchText: "",
       includeThumbnail: false,
       category: videoType,
     });
 
-    // Filtering and sorting logic similar to useSortedVideos
+
     let filtered: VideoDataModel[];
     if (videoType === "movies") {
       filtered = videosData
@@ -64,12 +62,10 @@ export const fetchRecentlyWatchedVideosData = async (
 
 export const fetchVideosData = async ({
   filePath,
-  searchText,
   includeThumbnail,
   category,
 }: {
   filePath: string;
-  searchText: string | undefined;
   includeThumbnail: boolean;
   category: string;
 }): Promise<VideoDataModel[]> => {
@@ -85,7 +81,6 @@ export const fetchVideosData = async ({
     const videoData: VideoDataModel[] = await videoDataHelpers.getRootVideoData(
       null,
       filePath,
-      searchText || "",
       category,
     );
 

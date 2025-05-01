@@ -145,7 +145,6 @@ export async function initializeSocket(
           const videosdata = await fetchVideosData({
             filePath: requestData?.data?.filepath,
             includeThumbnail: requestData?.data?.includeThumbnail,
-            searchText: "",
             category: requestData?.data?.category,
           });
           callback({ success: true, data: videosdata });

@@ -45,17 +45,6 @@ export const filterByCategory = (
   return videos;
 };
 
-export function shouldProcessFile(
-  file: string,
-  stats: Stats,
-  searchText?: string,
-): boolean {
-  return searchText &&
-    !file.toLowerCase().includes(searchText.toLowerCase()) &&
-    !stats.isDirectory()
-    ? false
-    : true;
-}
 
 export const filterFilesNotMarkedForDeletion = (
   files: string[],
@@ -112,7 +101,7 @@ export async function getVideoThumbnail(
 export const getRootVideoData = async (
   event: Electron.IpcMainInvokeEvent,
   filePath: string,
-  searchText: string,
+  // searchText: string,
   category: string,
 ): Promise<VideoDataModel[]> => {
   const videoData: VideoDataModel[] = [];
@@ -130,7 +119,7 @@ export const getRootVideoData = async (
     await processFiles(
       filteredFiles,
       filePath,
-      searchText,
+      // searchText,
       category,
       videoData,
     );
@@ -145,7 +134,7 @@ export const getRootVideoData = async (
 const processFiles = async (
   files: string[],
   filePath: string,
-  searchText: string,
+  // searchText: string,
   category: string,
   videoData: VideoDataModel[],
 ): Promise<void> => {
@@ -154,13 +143,9 @@ const processFiles = async (
       const fullPath = path.join(filePath, file);
       const stats = await stat(fullPath);
 
-      if (!shouldProcessFile(file, stats, searchText)) {
-        return;
-      }
-
       if (helpers.isVideoFile(file) || stats.isDirectory()) {
         const data = await populateVideoData(file, filePath, stats, category);
-        data.filePath = normalizeFilePath(data.filePath); // Normalize the file path for consistency
+        data.filePath = normalizeFilePath(data.filePath);
         if (data) {
           videoData.push(data);
         }

@@ -51,7 +51,6 @@ export interface MainUtilAPI {
 export interface VideoAPI {
   fetchVideoData: (args: {
     filePath: string;
-    searchText?: string;
     includeThumbnail: boolean;
     category: string;
   }) => Promise<VideoDataModel[]>;

@@ -23,7 +23,6 @@ export const videosIpcHandlers = () => {
       _event: Electron.IpcMainInvokeEvent,
       args: {
         filePath: string;
-        searchText: string | undefined;
         includeThumbnail: boolean;
         category: string;
       },
