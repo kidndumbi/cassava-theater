@@ -5,6 +5,7 @@ import { Episode } from "./episode";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { formatDate } from "../../util/helperFunctions";
 import { useMp4Conversion } from "../../hooks/useMp4Conversion";
+import { useMutation } from "@tanstack/react-query";
 
 interface EpisodesProps {
   loadingEpisodes: boolean;
@@ -18,6 +19,7 @@ interface EpisodesProps {
     newSubtitleFilePath: string,
     episode: VideoDataModel,
   ) => void;
+  episodeDeleted: (filePath: string) => void;
 }
 
 export const Episodes: React.FC<EpisodesProps> = ({
@@ -29,8 +31,19 @@ export const Episodes: React.FC<EpisodesProps> = ({
   overview,
   seasonAirDate,
   handleFilepathChange,
+  episodeDeleted,
 }) => {
   const { addToConversionQueue } = useMp4Conversion();
+
+  const deleteFileMutation = useMutation({
+    mutationFn: async (filePath: string) => {
+      return window.fileManagerAPI.deleteFile(filePath);
+    },
+    onSuccess: (result, filePath) => {
+      console.log("File deleted successfully:", result);
+      episodeDeleted(filePath);
+    },
+  });
 
   const renderEpisodes = () => (
     <Box
@@ -63,6 +76,9 @@ export const Episodes: React.FC<EpisodesProps> = ({
             handleFilepathChange={handleFilepathChange}
             handleConvertToMp4={(filePath) => {
               addToConversionQueue(filePath);
+            }}
+            handleDelete={async (filePath) => {
+              await deleteFileMutation.mutateAsync(filePath);
             }}
           />
         ))

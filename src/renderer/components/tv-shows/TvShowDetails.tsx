@@ -25,7 +25,7 @@ import MovieIcon from "@mui/icons-material/Movie";
 import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import TvShowDetailsButtons from "./TvShowDetailsButtons";
-import { Season } from "../../../models/tv-show-details.model";
+import { Season, TvShowDetails } from "../../../models/tv-show-details.model";
 import { useSettings } from "../../hooks/useSettings";
 import AppIconButton from "../common/AppIconButton";
 import CustomDrawer from "../common/CustomDrawer";
@@ -231,24 +231,30 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
 
   // --- Mutations ---
   const updateTmdbMutation = useMutation({
-    mutationFn: async (tv_show_details: any) => {
+    mutationFn: async (tv_show_details: TvShowDetails) => {
       if (!videoPath || !tv_show_details?.id) return null;
       return updateTvShowTMDBId(videoPath, tv_show_details);
     },
-    onSuccess: (extraTvShowDetails, tv_show_details) => {
+    onSuccess: (extraTvShowDetails) => {
       if (!videoPath || !extraTvShowDetails) return;
       queryClient.setQueryData(
         ["folderDetails", videoPath],
         (oldData: VideoDataModel) => ({
           ...oldData,
           tv_show_details: extraTvShowDetails,
-        })
+        }),
       );
     },
   });
 
   const updateImageMutation = useMutation({
-    mutationFn: async ({ filePath, data }: { filePath: string; data: VideoDataModel }) => {
+    mutationFn: async ({
+      filePath,
+      data,
+    }: {
+      filePath: string;
+      data: VideoDataModel;
+    }) => {
       await updateTvShowDbData(filePath, data);
       return { filePath, data };
     },
@@ -259,11 +265,49 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
         (oldData: VideoDataModel) => ({
           ...oldData,
           ...data,
-        })
+        }),
       );
     },
     onError: () => {
       showSnackbar("Failed to update custom image", "error");
+    },
+  });
+
+  useEffect(() => {
+    console.log("selectedSeason", selectedSeason);
+  }, [selectedSeason]);
+
+  // Add mutation for saveVideoJsonData
+  const saveVideoJsonDataMutation = useMutation({
+    mutationFn: async ({
+      currentVideo,
+      newVideoJsonData,
+    }: {
+      currentVideo: { filePath: string | null };
+      newVideoJsonData: VideoDataModel;
+    }) => {
+      return window.videoAPI.saveVideoJsonData({
+        currentVideo,
+        newVideoJsonData,
+      });
+    },
+    onSuccess: (_, { currentVideo: { filePath }, newVideoJsonData }) => {
+      const currentSelectedSeason = selectedSeason;
+      queryClient.setQueryData(
+        ["folderDetails", filePath],
+        (oldData: VideoDataModel) => ({
+          ...oldData,
+          ...newVideoJsonData,
+        }),
+      );
+
+      setTimeout(() => {
+        setSelectedSeason(currentSelectedSeason);
+        setSeasonDetails(currentSelectedSeason, tvShowDetails);
+      }, 0);
+    },
+    onError: () => {
+      showSnackbar("Failed to update video data", "error");
     },
   });
 
@@ -402,12 +446,35 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
             loadingEpisodes={loadingEpisodes}
             episodes={episodes}
             theme={theme}
-            seasonPosterPath={seasonPosterPath} // Pass seasonPosterPath as a prop
+            seasonPosterPath={seasonPosterPath}
             handleFilepathChange={async (
               newSubtitleFilePath: string,
               episode: VideoDataModel,
             ) => {
               await updateSubtitle(newSubtitleFilePath, episode);
+            }}
+            episodeDeleted={(filepath) => {
+              queryClient.setQueryData(
+                ["videoData", episodesQuery, false, "episodes"],
+                (oldData: VideoDataModel[]) => {
+                  return oldData?.filter(
+                    (episode: VideoDataModel) => episode.filePath !== filepath,
+                  );
+                },
+              );
+              const normalizedLastPlayed =
+                tvShowDetails.lastVideoPlayed.replace(/\\/g, "/");
+              if (filepath === normalizedLastPlayed) {
+                saveVideoJsonDataMutation.mutate({
+                  currentVideo: { filePath: videoPath },
+                  newVideoJsonData: {
+                    lastVideoPlayed: null,
+                    lastVideoPlayedTime: 0,
+                    lastVideoPlayedDate: null,
+                    lastVideoPlayedDuration: 0,
+                  },
+                });
+              }
             }}
           />
         </CustomTabPanel>

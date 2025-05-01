@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Box, Theme } from "@mui/material";
 import FourMpIcon from "@mui/icons-material/FourMp";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import {
   getFileExtension,
@@ -21,6 +22,7 @@ import { useSettings } from "../../hooks/useSettings";
 import { styled } from "@mui/system";
 import { VideoTypeChip } from "../common/VideoTypeChip";
 import { useScreenshot } from "../../hooks/useScreenshot";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 
 interface EpisodeProps {
   episode: VideoDataModel;
@@ -31,6 +33,7 @@ interface EpisodeProps {
     episode: VideoDataModel,
   ) => void;
   handleConvertToMp4?: (filePath: string) => void;
+  handleDelete: (filePath: string) => void;
 }
 
 export const Episode: React.FC<EpisodeProps> = ({
@@ -39,9 +42,11 @@ export const Episode: React.FC<EpisodeProps> = ({
   onEpisodeClick,
   handleFilepathChange,
   handleConvertToMp4,
+  handleDelete,
 }) => {
   const { isConvertingToMp4 } = useMp4Conversion();
   const { settings } = useSettings();
+  const { openDialog, setMessage } = useConfirmation();
 
   const [hover, setHover] = useState(false);
   const [openNotesModal, setOpenNotesModal] = useState(false);
@@ -155,6 +160,18 @@ export const Episode: React.FC<EpisodeProps> = ({
                 <FourMpIcon />
               </AppIconButton>
             )}
+          <AppIconButton
+            tooltip="delete"
+            onClick={async () => {
+              setMessage("Are you sure you want to delete this episode?");
+              const dialogDecision = await openDialog();
+              if (dialogDecision === "Ok") {
+                handleDelete(episode.filePath);
+              }
+            }}
+          >
+            <DeleteIcon />
+          </AppIconButton>
         </Box>
       </Box>
       <NotesModal
