@@ -84,10 +84,11 @@ export const Mp4ConversionEvents = () => {
 
     window.mainNotificationsAPI.mp4ConversionCompleted((progress) => {
       const [fromPath, toPath] = progress.file.split(":::") || [];
+      const { percent } = progress;
       const progressItem: Mp4ConversionProgress = {
         fromPath,
         toPath,
-        percent: progress.percent,
+        percent,
         paused: false,
         complete: true,
       };
@@ -97,5 +98,5 @@ export const Mp4ConversionEvents = () => {
     });
   }, []);
 
-  return <div>Mp4ConversionEvents</div>;
+  return <></>;
 };
