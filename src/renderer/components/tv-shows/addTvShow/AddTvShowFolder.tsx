@@ -13,7 +13,8 @@ import { TvShowDetailsCard } from "./TvShowDetailsCard";
 import { SubfolderList } from "./SubfolderList";
 import { useTvShows } from "../../../hooks/useTvShows";
 import { VideoDataModel } from "../../../../models/videoData.model";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useSnackbar } from "../../../contexts/SnackbarContext";
 
 interface AddTvShowFolderProps {
   tvShows: VideoDataModel[];
@@ -25,6 +26,7 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
   dataSaved,
 }) => {
   const { settings } = useSettings();
+  const {showSnackbar} = useSnackbar();
   const queryClient = useQueryClient();
   const { AddTvShowFolder } = useTvShows();
   const [tvShowName, setTvShowName] = useState("");
@@ -100,19 +102,33 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
     return errors.length === 0;
   };
 
-  const handleCreate = async () => {
-    if (!isFormValid()) return;
-
-    try {
-      const newTvShow = await AddTvShowFolder({
-        tvShowName: tvShowName.trim(),
+  // Use useMutation for AddTvShowFolder
+  const addTvShowMutation = useMutation({
+    mutationFn: async ({
+      tvShowName,
+      subfolders,
+      tvShowDetails,
+      tvShowsFolderPath,
+      poster,
+      backdrop,
+    }: {
+      tvShowName: string;
+      subfolders: string[];
+      tvShowDetails: TvShowDetails | null;
+      tvShowsFolderPath: string | undefined;
+      poster: string;
+      backdrop: string;
+    }) => {
+      return await AddTvShowFolder({
+        tvShowName,
         subfolders,
         tvShowDetails,
-        tvShowsFolderPath: settings?.tvShowsFolderPath?.trim(),
+        tvShowsFolderPath,
         poster,
         backdrop,
       });
-
+    },
+    onSuccess: (newTvShow) => {
       queryClient.setQueryData(
         ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
         (oldData: VideoDataModel[] = []) =>
@@ -123,13 +139,28 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
             }),
           ),
       );
-
       dataSaved();
       setErrors([]);
-    } catch (error) {
+      showSnackbar("TV show folder created successfully.", "success");
+    },
+    onError: (error) => {
       console.error("Error creating TV show folder:", error);
       setErrors(["Failed to create TV show folder. Please try again."]);
-    }
+      showSnackbar("Failed to create TV show folder. Please try again.", "error");
+    },
+  });
+
+  const handleCreate = async () => {
+    if (!isFormValid()) return;
+
+    addTvShowMutation.mutate({
+      tvShowName: tvShowName.trim(),
+      subfolders,
+      tvShowDetails,
+      tvShowsFolderPath: settings?.tvShowsFolderPath?.trim(),
+      poster,
+      backdrop,
+    });
   };
 
   const handleSelectTvShow = async (tvShow: TvShowDetails) => {
