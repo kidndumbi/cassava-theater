@@ -6,8 +6,8 @@ import { getUrl, trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { PosterCard } from "../common/PosterCard";
 import MovieDetailsButtons from "../movies/MovieDetailsButtons";
-import { useSettings } from "../../hooks/useSettings";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface ResumeMovieProps {
   movie: VideoDataModel;
@@ -20,7 +20,7 @@ interface ResumeMovieProps {
 
 const ResumeMovie: React.FC<ResumeMovieProps> = ({ movie, handlePosterClick }) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
-  const { settings } = useSettings();
+    const {data:settings} = useGetAllSettings();
   const { openDialog, setMessage } = useConfirmation();
   const [showActionButtons, setShowActions] = useState(false);
 

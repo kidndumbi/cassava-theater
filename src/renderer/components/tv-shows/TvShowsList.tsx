@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Alert, Box, Snackbar, Button } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, trimFileName } from "../../util/helperFunctions";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { PosterCard } from "../common/PosterCard";
-import { useSettings } from "../../hooks/useSettings";
 import { styled } from "@mui/system";
 import { AppMore } from "../common/AppMore";
 import { useTvShows } from "../../hooks/useTvShows";
@@ -13,6 +12,7 @@ import WarningIcon from "@mui/icons-material/Warning";
 import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TvShowDetails } from "../../../models/tv-show-details.model";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
@@ -36,7 +36,7 @@ const HoverContent = styled(Box)({
 export const TvShowsList = React.memo(function TvShowsList(props: TvShowsListProps) {
   const { shows, handlePosterClick } = props;
   const { getTmdbImageUrl } = useTmdbImageUrl();
-  const { settings } = useSettings();
+    const { data: settings } = useGetAllSettings();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedTvShow, setSelectedTvShow] = useState<VideoDataModel | null>(
     null,

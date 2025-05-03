@@ -12,7 +12,6 @@ import {
   useLocation,
 } from "react-router-dom";
 import theme from "./renderer/theme";
-import { useSettings } from "./renderer/hooks/useSettings";
 import { store } from "./renderer/store";
 import { LandingPage } from "./renderer/pages/landing-page/LandingPage";
 import { VideoDetailsPage } from "./renderer/pages/video-details-page/VideoDetailsPage";
@@ -32,18 +31,15 @@ import { StatusDisplay } from "./renderer/components/StatusDisplay";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Mp4ConversionEvents } from "./Mp4ConversionEvents";
+import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const { fetchAllSettings } = useSettings();
   const { showSnackbar } = useSnackbar();
-
   const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
 
   useEffect(() => {
-    fetchAllSettings();
-
     window.videoCommandsAPI.videoCommand((command: VideoCommands) => {
       videoCommandsHandler(command, appVideoPlayerRef.current);
     });
@@ -98,7 +94,7 @@ function AppRoutes({
 }) {
   const navigate = useNavigate();
   const { handleVideoSelect } = useVideoListLogic();
-  const { settings } = useSettings();
+  const { data: settings } = useGetAllSettings();
 
   const location = useLocation();
   const showStatusDisplay = !["/video-player", "/video-details"].includes(

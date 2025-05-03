@@ -9,7 +9,6 @@ import {
   Folder as FolderIcon,
 } from "@mui/icons-material";
 import { CustomFolderModel } from "../../../models/custom-folder";
-import { useSettings } from "../../hooks/useSettings";
 import Grid from "@mui/material/Grid2";
 import { renderActivePage } from "./RenderActivePage";
 import { useSearchParams } from "react-router-dom";
@@ -17,32 +16,51 @@ import { useSearchParams } from "react-router-dom";
 import { AppModal } from "../../components/common/AppModal";
 import { SettingsPage } from "../../components/settings/SettingsPage";
 import { useVideoDataQuery } from "../../hooks/useVideoData.query";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 export const LandingPage = () => {
   const theme = useTheme();
-  const { settings } = useSettings();
+  const { data: settings } = useGetAllSettings();
   const [searchParams] = useSearchParams();
 
   const [customFolderPath, setCustomFolderPath] = useState<string>("");
 
   // Memoize file paths to avoid unnecessary refetches
-  const movieFolderPath = useMemo(() => settings?.movieFolderPath || "", [settings?.movieFolderPath]);
-  const tvShowsFolderPath = useMemo(() => settings?.tvShowsFolderPath || "", [settings?.tvShowsFolderPath]);
-  const customFolderPathMemo = useMemo(() => customFolderPath || "", [customFolderPath]);
+  const movieFolderPath = useMemo(
+    () => settings?.movieFolderPath || "",
+    [settings?.movieFolderPath],
+  );
+  const tvShowsFolderPath = useMemo(
+    () => settings?.tvShowsFolderPath || "",
+    [settings?.tvShowsFolderPath],
+  );
+  const customFolderPathMemo = useMemo(
+    () => customFolderPath || "",
+    [customFolderPath],
+  );
 
   // Memoize query options to keep reference stable
-  const moviesQueryOptions = useMemo(() => ({
-    filePath: movieFolderPath,
-    category: "movies",
-  }), [movieFolderPath]);
-  const tvShowsQueryOptions = useMemo(() => ({
-    filePath: tvShowsFolderPath,
-    category: "tvShows",
-  }), [tvShowsFolderPath]);
-  const customFolderQueryOptions = useMemo(() => ({
-    filePath: customFolderPathMemo,
-    category: "customFolder",
-  }), [customFolderPathMemo]);
+  const moviesQueryOptions = useMemo(
+    () => ({
+      filePath: movieFolderPath,
+      category: "movies",
+    }),
+    [movieFolderPath],
+  );
+  const tvShowsQueryOptions = useMemo(
+    () => ({
+      filePath: tvShowsFolderPath,
+      category: "tvShows",
+    }),
+    [tvShowsFolderPath],
+  );
+  const customFolderQueryOptions = useMemo(
+    () => ({
+      filePath: customFolderPathMemo,
+      category: "customFolder",
+    }),
+    [customFolderPathMemo],
+  );
 
   const {
     data: movies,

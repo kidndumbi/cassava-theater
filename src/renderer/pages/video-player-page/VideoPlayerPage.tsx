@@ -8,8 +8,8 @@ import AppVideoPlayer, {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { removeLastSegments } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { useSettings } from "../../hooks/useSettings";
 import { useVideoDataQuery } from "../../hooks/useVideoData.query";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 type VideoPlayerPageProps = {
   appVideoPlayerRef?: React.Ref<AppVideoPlayerHandle>;
@@ -47,8 +47,7 @@ export const VideoPlayerPage = ({
     }
   }, [currentVideo]);
 
-  const { settings } = useSettings();
-
+  const { data: settings } = useGetAllSettings();
   const [menuId, setMenuId] = useState("");
   const [resumeId, setResumeId] = useState("");
   const [startFromBeginning, setStartFromBeginning] = useState(false);

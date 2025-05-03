@@ -18,11 +18,11 @@ import { VideoProgressBar } from "../common/VideoProgressBar";
 import { NotesModal } from "../common/NotesModal";
 import AppIconButton from "../common/AppIconButton";
 import { useMp4Conversion } from "../../hooks/useMp4Conversion";
-import { useSettings } from "../../hooks/useSettings";
 import { styled } from "@mui/system";
 import { VideoTypeChip } from "../common/VideoTypeChip";
 import { useScreenshot } from "../../hooks/useScreenshot";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface EpisodeProps {
   episode: VideoDataModel;
@@ -45,9 +45,8 @@ export const Episode: React.FC<EpisodeProps> = ({
   handleDelete,
 }) => {
   const { isConvertingToMp4 } = useMp4Conversion();
-  const { settings } = useSettings();
+  const { data: settings } = useGetAllSettings();
   const { openDialog, setMessage } = useConfirmation();
-
   const [hover, setHover] = useState(false);
   const [openNotesModal, setOpenNotesModal] = useState(false);
   const handleCloseNotesModal = () => setOpenNotesModal(false);
