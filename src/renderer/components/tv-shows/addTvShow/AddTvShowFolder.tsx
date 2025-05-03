@@ -8,13 +8,13 @@ import AppIconButton from "../../common/AppIconButton";
 import { TvShowSuggestionsModal } from "../TvShowSuggestionsModal";
 import { TvShowDetails } from "../../../../models/tv-show-details.model";
 import { trimFileName } from "../../../util/helperFunctions";
-import { useSettings } from "../../../hooks/useSettings";
 import { TvShowDetailsCard } from "./TvShowDetailsCard";
 import { SubfolderList } from "./SubfolderList";
 import { useTvShows } from "../../../hooks/useTvShows";
 import { VideoDataModel } from "../../../../models/videoData.model";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "../../../contexts/SnackbarContext";
+import { useGetAllSettings } from "../../../hooks/settings/useGetAllSettings";
 
 interface AddTvShowFolderProps {
   tvShows: VideoDataModel[];
@@ -25,8 +25,8 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
   tvShows,
   dataSaved,
 }) => {
-  const { settings } = useSettings();
-  const {showSnackbar} = useSnackbar();
+  const { data: settings } = useGetAllSettings();
+  const { showSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
   const { AddTvShowFolder } = useTvShows();
   const [tvShowName, setTvShowName] = useState("");
@@ -146,7 +146,10 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
     onError: (error) => {
       console.error("Error creating TV show folder:", error);
       setErrors(["Failed to create TV show folder. Please try again."]);
-      showSnackbar("Failed to create TV show folder. Please try again.", "error");
+      showSnackbar(
+        "Failed to create TV show folder. Please try again.",
+        "error",
+      );
     },
   });
 

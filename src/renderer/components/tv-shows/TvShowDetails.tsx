@@ -26,7 +26,6 @@ import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import TvShowDetailsButtons from "./TvShowDetailsButtons";
 import { Season, TvShowDetails } from "../../../models/tv-show-details.model";
-import { useSettings } from "../../hooks/useSettings";
 import AppIconButton from "../common/AppIconButton";
 import CustomDrawer from "../common/CustomDrawer";
 import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
@@ -38,6 +37,7 @@ import {
 } from "../../hooks/useVideoData.query";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "../../contexts/SnackbarContext";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -108,7 +108,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     return null;
   }, [episodeLastWatched, episodes]);
 
-  const { settings } = useSettings();
+    const { data: settings } = useGetAllSettings();
 
   const getImageUrl = (show: VideoDataModel) => {
     const { backdrop, tv_show_details } = show;

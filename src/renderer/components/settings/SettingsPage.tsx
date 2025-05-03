@@ -1,21 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { useSettings } from "../../hooks/useSettings";
 import { Container, Box, Tab, Tabs } from "@mui/material";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { SettingsModel } from "../../../models/settings.model";
 import { CustomFoldersSettings } from "./CustomFoldersSettings";
 import { GeneralSettings } from "./GeneralSettings";
 import { a11yProps, CustomTabPanel } from "../common/TabPanel";
-import { useMovies } from "../../hooks/useMovies";
-import { useTvShows } from "../../hooks/useTvShows";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { selectFolder } from "../../util/helperFunctions";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { useSetSetting } from "../../hooks/settings/useSetSetting";
 
 export const SettingsPage: React.FC = () => {
-  const { settings, setSetting } = useSettings();
-  // const { getMovies } = useMovies();
-  // const { getTvShows } = useTvShows();
+  const { data: settings } = useGetAllSettings();
+  const { mutateAsync: setSetting } = useSetSetting();
   const [movieFolderPath, setMovieFolderPath] = useState("");
   const [tvShowsFolderPath, setTvShowsFolderPath] = useState("");
   const [continuousPlay, setContinuousPlay] = useState(false);
@@ -44,7 +42,7 @@ export const SettingsPage: React.FC = () => {
   }, [settings]);
 
   const handleFolderUpdate = async (
-    onFolderPathSelected: (folderPath: string) => Promise<void>
+    onFolderPathSelected: (folderPath: string) => Promise<void>,
   ) => {
     const folderPath = await selectFolder();
     if (folderPath) await onFolderPathSelected(folderPath);
@@ -52,29 +50,33 @@ export const SettingsPage: React.FC = () => {
 
   const handleFolderSelection = async (settingName: keyof SettingsModel) => {
     await handleFolderUpdate(async (folderPath) => {
-      await setSetting(settingName, folderPath);
+      await setSetting({
+        key: settingName,
+        value: folderPath,
+      });
       showSnackbar("Setting updated successfully", "success");
-      // if (settingName === "movieFolderPath") getMovies();
-      // else if (settingName === "tvShowsFolderPath") getTvShows();
     });
   };
 
   const handleCustomFolderFolderSelection = async (
-    customFolder: CustomFolderModel
+    customFolder: CustomFolderModel,
   ) => {
     await handleFolderUpdate(async (folderPath) => {
       const updatedFolder = { ...customFolder, folderPath };
       const updatedFolders = customFolders.map((f) =>
-        f.id === customFolder.id ? updatedFolder : f
+        f.id === customFolder.id ? updatedFolder : f,
       );
-      await setSetting("folders", updatedFolders);
+      await setSetting({
+        key: "folders",
+        value: updatedFolders,
+      });
       showSnackbar("Custom Folder Updated", "success");
     });
   };
 
   const handleUpdateSetting = async (
     settingName: keyof SettingsModel,
-    value: string | boolean | CustomFolderModel[]
+    value: string | boolean | CustomFolderModel[],
   ) => {
     try {
       if (settingName === "port") {
@@ -83,18 +85,21 @@ export const SettingsPage: React.FC = () => {
           showSnackbar("Port number must be between 1024 and 65535", "error");
           return;
         }
-        await setSetting(settingName, value as string);
+        await setSetting({
+          key: settingName,
+          value: value as string,
+        });
         showSnackbar(
           "Port updated successfully. Please restart for change to take effect",
           "success",
           "Restart",
-          () => window.mainUtilAPI.restart()
+          () => window.mainUtilAPI.restart(),
         );
       } else {
-        await setSetting(
-          settingName,
-          value as string | boolean | CustomFolderModel[]
-        );
+        await setSetting({
+          key: settingName,
+          value: value as string | boolean | CustomFolderModel[],
+        });
         showSnackbar("Setting updated successfully", "success");
       }
     } catch (error) {
@@ -104,19 +109,27 @@ export const SettingsPage: React.FC = () => {
 
   const handleSaveFolderName = async (
     customFolder: CustomFolderModel,
-    newName: string
+    newName: string,
   ) => {
     const updatedFolder = { ...customFolder, name: newName };
     const updatedFolders = customFolders.map((f) =>
-      f.id === customFolder.id ? updatedFolder : f
+      f.id === customFolder.id ? updatedFolder : f,
     );
-    await setSetting("folders", updatedFolders);
+
+    await setSetting({
+      key: "folders",
+      value: updatedFolders,
+    });
     showSnackbar("Folder name updated successfully", "success");
   };
 
   const saveNewFolder = async (newFolder: CustomFolderModel) => {
     const updatedFolders = [...customFolders, newFolder];
-    await setSetting("folders", updatedFolders);
+
+    await setSetting({
+      key: "folders",
+      value: updatedFolders,
+    });
     showSnackbar("New folder added successfully", "success");
   };
 
@@ -125,9 +138,13 @@ export const SettingsPage: React.FC = () => {
     const dialogDecision = await openDialog();
     if (dialogDecision === "Ok") {
       const updatedFolders = customFolders.filter(
-        (folder) => folder.id !== folderId
+        (folder) => folder.id !== folderId,
       );
-      await setSetting("folders", updatedFolders);
+
+      await setSetting({
+        key: "folders",
+        value: updatedFolders,
+      });
       showSnackbar("Folder deleted successfully", "success");
     }
   };

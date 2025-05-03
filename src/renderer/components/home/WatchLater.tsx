@@ -5,7 +5,7 @@ import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, trimFileName } from "../../util/helperFunctions";
 import MovieDetailsButtons from "../movies/MovieDetailsButtons";
-import { useSettings } from "../../hooks/useSettings";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface WatchLaterMovieCardProps {
   movie: VideoDataModel;
@@ -22,7 +22,7 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
 }) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [showActionButtons, setShowActions] = useState(false);
-  const { settings } = useSettings();
+  const { data: settings } = useGetAllSettings();
 
   const handlePlay = (startFromBeginning = false) => {
     handlePosterClick("movie", movie, startFromBeginning);
@@ -59,9 +59,7 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
         }
       />
       {showActionButtons && (
-        <Box
-          className="absolute top-[65%] left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-        >
+        <Box className="absolute left-1/2 top-[65%] -translate-x-1/2 -translate-y-1/2 transform">
           <MovieDetailsButtons
             playText=""
             resumeText=""

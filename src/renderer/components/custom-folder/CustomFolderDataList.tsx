@@ -4,7 +4,7 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, hasExtension, removeVidExt } from "../../util/helperFunctions";
 import FolderIcon from "@mui/icons-material/Folder";
 import { PosterCard } from "../common/PosterCard";
-import { useSettings } from "../../hooks/useSettings";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface CustomFolderDataListProps {
   customFolderData: VideoDataModel[];
@@ -17,7 +17,7 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
   getImageUrl,
   customFolderData,
 }) => {
-  const { settings } = useSettings();
+  const { data: settings } = useGetAllSettings();
 
   const getImageUlr = (movie: VideoDataModel) => {
     if (movie.poster?.trim()) {

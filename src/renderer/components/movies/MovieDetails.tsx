@@ -11,7 +11,6 @@ import { CustomTabPanel } from "../common/TabPanel";
 import { AppNotes } from "../AppNotes";
 import MovieDetailsHeader from "./MovieDetailsHeader";
 import MovieDetailsContent from "./MovieDetailsContent";
-import { useSettings } from "../../hooks/useSettings";
 import { getUrl, removeVidExt } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import CustomDrawer from "../common/CustomDrawer";
@@ -20,6 +19,7 @@ import { useVideoDetailsQuery } from "../../hooks/useVideoData.query";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { MovieDetails } from "../../../models/movie-detail.model";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface MovieDetailsProps {
   videoPath: string | null;
@@ -42,7 +42,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     onSuccess: (_, { newVideoJsonData }) => {
       queryClient.setQueryData(
         ["videoDetails", videoPath, "movies"],
-        (oldData: VideoDataModel) => ({ ...oldData, ...newVideoJsonData })
+        (oldData: VideoDataModel) => ({ ...oldData, ...newVideoJsonData }),
       );
       showSnackbar("Custom image updated successfully", "success");
     },
@@ -64,7 +64,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         (oldData: VideoDataModel) => ({
           ...oldData,
           movie_details: extraMovieDetails,
-        })
+        }),
       );
     },
   });
@@ -76,10 +76,9 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const { updateSubtitle } = useSubtitle();
   const [openModal, setOpenModal] = useState(false);
   const [currentTabValue, setCurrentTabValue] = useState(0);
-  const { settings } = useSettings();
+  const { data: settings } = useGetAllSettings();
   const [openDrawer, setOpenDrawer] = useState(false);
 
-  // --- Extracted Handlers ---
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
 
@@ -93,7 +92,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       navigate(
         `/video-player?${
           startFromBeginning ? "startFromBeginning=true&" : ""
-        }&menuId=${menuId}`
+        }&menuId=${menuId}`,
       );
     }
   };
@@ -102,7 +101,10 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     setCurrentTabValue(newValue);
   };
 
-  const handleWatchLaterUpdate = async (filePath: string, watchLater: boolean) => {
+  const handleWatchLaterUpdate = async (
+    filePath: string,
+    watchLater: boolean,
+  ) => {
     await window.videoAPI.saveVideoJsonData({
       currentVideo: { filePath },
       newVideoJsonData: { watchLater },

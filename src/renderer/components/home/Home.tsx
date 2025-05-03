@@ -12,7 +12,7 @@ import {
   useRecentlyWatchedVideosQuery,
   useVideoDataQuery,
 } from "../../hooks/useVideoData.query";
-import { useSettings } from "../../hooks/useSettings";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface HomePageProps {
   style?: React.CSSProperties;
@@ -28,7 +28,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   const theme = useTheme();
   const { setCurrentVideo } = useVideoListLogic();
   const { getSingleEpisodeDetails } = useTvShows();
-  const { settings } = useSettings();
+  const { data: settings } = useGetAllSettings();
 
   useEffect(() => {
     console.log("Homepage rendered");

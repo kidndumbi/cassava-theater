@@ -5,8 +5,8 @@ import { getUrl, removeVidExt, trimFileName } from "../../util/helperFunctions";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { PosterCard } from "../common/PosterCard";
 import TvShowDetailsButtons from "../tv-shows/TvShowDetailsButtons";
-import { useSettings } from "../../hooks/useSettings";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface ResumeTvShowProps {
   tvShow: VideoDataModel;
@@ -26,7 +26,7 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
   loadingItems,
 }) => {
   const [showActionButtons, setShowActions] = React.useState(false);
-  const { settings } = useSettings();
+  const { data: settings } = useGetAllSettings();
   const { openDialog, setMessage } = useConfirmation();
 
   const imageUrl = React.useMemo(() => {
@@ -37,11 +37,18 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
       return getTmdbImageUrl(tvShow.tv_show_details.poster_path);
     }
     return undefined;
-  }, [tvShow.poster, tvShow.tv_show_details?.poster_path, settings?.port, getTmdbImageUrl]);
+  }, [
+    tvShow.poster,
+    tvShow.tv_show_details?.poster_path,
+    settings?.port,
+    getTmdbImageUrl,
+  ]);
 
   const handlePlay = async (startFromBeginning = false) => {
     if (startFromBeginning) {
-      setMessage("Are you sure you want to start the movie from the beginning?");
+      setMessage(
+        "Are you sure you want to start the movie from the beginning?",
+      );
       const dialogDecision = await openDialog();
       if (dialogDecision === "Ok") {
         handlePosterClick("tvShow", tvShow, startFromBeginning);

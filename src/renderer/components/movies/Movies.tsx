@@ -8,7 +8,7 @@ import LoadingIndicator from "../common/LoadingIndicator";
 import { SearchHeader } from "../common/SearchHeader";
 import { PosterCard } from "../common/PosterCard";
 import { getUrl, removeVidExt, trimFileName } from "../../util/helperFunctions";
-import { useSettings } from "../../hooks/useSettings";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface MoviesProps {
   movies: VideoDataModel[];
@@ -28,7 +28,7 @@ export const Movies: React.FC<MoviesProps> = ({
   const theme = useTheme();
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const navigate = useNavigate();
-  const { settings } = useSettings();
+    const {data:settings} = useGetAllSettings();
 
   const [filter, setFilter] = useState("");
 

@@ -8,12 +8,12 @@ import { AppMore } from "../common/AppMore";
 import { useMovies } from "../../hooks/useMovies";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
-import { useSettings } from "../../hooks/useSettings";
 import { VideoTypeChip } from "../common/VideoTypeChip";
 import { MovieDetails } from "../../../models/movie-detail.model";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
 import { useAppDispatch } from "../../store";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -114,11 +114,10 @@ const MovieList: React.FC<MovieListProps> = ({
     React.useState<VideoDataModel | null>(null);
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
     React.useState(false);
-  const { settings } = useSettings();
+    const {data:settings} = useGetAllSettings();
 
   const queryClient = useQueryClient();
 
-  // Snackbar local state
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
