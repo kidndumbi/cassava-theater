@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Container, Box, Tab, Tabs } from "@mui/material";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { SettingsModel } from "../../../models/settings.model";
@@ -12,34 +12,12 @@ import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
 
 export const SettingsPage: React.FC = () => {
-  const { data: settings } = useGetAllSettings();
+  const { data: settings = {} as SettingsModel } = useGetAllSettings();
   const { mutateAsync: setSetting } = useSetSetting();
-  const [movieFolderPath, setMovieFolderPath] = useState("");
-  const [tvShowsFolderPath, setTvShowsFolderPath] = useState("");
-  const [continuousPlay, setContinuousPlay] = useState(false);
-  const [port, setPort] = useState("");
-  const [theMovieDbApiKey, setTheMovieDbApiKey] = useState("");
-  const [customFolders, setCustomFolders] = useState<CustomFolderModel[]>([]);
   const [currentTabValue, setCurrentTabValue] = useState(0);
-  const [showVideoType, setShowVideoType] = useState(true);
 
   const { openDialog, setMessage } = useConfirmation();
-
   const { showSnackbar } = useSnackbar();
-
-  useEffect(() => {
-    if (settings.movieFolderPath) setMovieFolderPath(settings.movieFolderPath);
-    if (settings.tvShowsFolderPath)
-      setTvShowsFolderPath(settings.tvShowsFolderPath);
-    if (settings.port) setPort(settings.port);
-    if (settings.folders)
-      setCustomFolders(settings.folders as CustomFolderModel[]);
-    if (settings.continuousPlay) setContinuousPlay(settings.continuousPlay);
-    if (settings.theMovieDbApiKey)
-      setTheMovieDbApiKey(settings.theMovieDbApiKey);
-    if (typeof settings.showVideoType === "boolean")
-      setShowVideoType(settings.showVideoType);
-  }, [settings]);
 
   const handleFolderUpdate = async (
     onFolderPathSelected: (folderPath: string) => Promise<void>,
@@ -58,12 +36,39 @@ export const SettingsPage: React.FC = () => {
     });
   };
 
+  const handleUpdateSetting = async (
+    settingName: keyof SettingsModel,
+    value: SettingsModel[keyof SettingsModel],
+  ) => {
+    try {
+      if (settingName === "port") {
+        const portNumber = parseInt(value as string, 10);
+        if (isNaN(portNumber) || portNumber < 1024 || portNumber > 65535) {
+          showSnackbar("Port number must be between 1024 and 65535", "error");
+          return;
+        }
+        await setSetting({ key: settingName, value });
+        showSnackbar(
+          "Port updated successfully. Please restart for change to take effect",
+          "success",
+          "Restart",
+          () => window.mainUtilAPI.restart(),
+        );
+      } else {
+        await setSetting({ key: settingName, value });
+        showSnackbar("Setting updated successfully", "success");
+      }
+    } catch {
+      showSnackbar("Failed to update setting", "error");
+    }
+  };
+
   const handleCustomFolderFolderSelection = async (
     customFolder: CustomFolderModel,
   ) => {
     await handleFolderUpdate(async (folderPath) => {
       const updatedFolder = { ...customFolder, folderPath };
-      const updatedFolders = customFolders.map((f) =>
+      const updatedFolders = (settings.folders || []).map((f) =>
         f.id === customFolder.id ? updatedFolder : f,
       );
       await setSetting({
@@ -74,48 +79,14 @@ export const SettingsPage: React.FC = () => {
     });
   };
 
-  const handleUpdateSetting = async (
-    settingName: keyof SettingsModel,
-    value: string | boolean | CustomFolderModel[],
-  ) => {
-    try {
-      if (settingName === "port") {
-        const portNumber = parseInt(value as string, 10);
-        if (isNaN(portNumber) || portNumber < 1024 || portNumber > 65535) {
-          showSnackbar("Port number must be between 1024 and 65535", "error");
-          return;
-        }
-        await setSetting({
-          key: settingName,
-          value: value as string,
-        });
-        showSnackbar(
-          "Port updated successfully. Please restart for change to take effect",
-          "success",
-          "Restart",
-          () => window.mainUtilAPI.restart(),
-        );
-      } else {
-        await setSetting({
-          key: settingName,
-          value: value as string | boolean | CustomFolderModel[],
-        });
-        showSnackbar("Setting updated successfully", "success");
-      }
-    } catch (error) {
-      showSnackbar("Failed to update setting", "error");
-    }
-  };
-
   const handleSaveFolderName = async (
     customFolder: CustomFolderModel,
     newName: string,
   ) => {
     const updatedFolder = { ...customFolder, name: newName };
-    const updatedFolders = customFolders.map((f) =>
+    const updatedFolders = (settings.folders || []).map((f) =>
       f.id === customFolder.id ? updatedFolder : f,
     );
-
     await setSetting({
       key: "folders",
       value: updatedFolders,
@@ -124,8 +95,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   const saveNewFolder = async (newFolder: CustomFolderModel) => {
-    const updatedFolders = [...customFolders, newFolder];
-
+    const updatedFolders = [...(settings.folders || []), newFolder];
     await setSetting({
       key: "folders",
       value: updatedFolders,
@@ -137,10 +107,9 @@ export const SettingsPage: React.FC = () => {
     setMessage("Are you sure you want to delete this folder?");
     const dialogDecision = await openDialog();
     if (dialogDecision === "Ok") {
-      const updatedFolders = customFolders.filter(
+      const updatedFolders = (settings.folders || []).filter(
         (folder) => folder.id !== folderId,
       );
-
       await setSetting({
         key: "folders",
         value: updatedFolders,
@@ -176,27 +145,14 @@ export const SettingsPage: React.FC = () => {
         </Box>
         <CustomTabPanel value={currentTabValue} index={0}>
           <GeneralSettings
-            continuousPlay={continuousPlay}
-            movieFolderPath={movieFolderPath}
-            tvShowsFolderPath={tvShowsFolderPath}
-            theMovieDbApiKey={theMovieDbApiKey}
-            port={port}
+            settings={settings}
             handleFolderSelection={handleFolderSelection}
             handleUpdateSetting={handleUpdateSetting}
-            handleContinuousPlayChange={(value) => {
-              setContinuousPlay(value);
-              handleUpdateSetting("continuousPlay", value);
-            }}
-            showVideoType={showVideoType}
-            handleShowVideoTypeChange={(value: boolean) => {
-              setShowVideoType(value);
-              handleUpdateSetting("showVideoType", value);
-            }}
           />
         </CustomTabPanel>
         <CustomTabPanel value={currentTabValue} index={1}>
           <CustomFoldersSettings
-            customFolders={customFolders}
+            customFolders={settings.folders || []}
             handleCustomFolderFolderSelection={
               handleCustomFolderFolderSelection
             }

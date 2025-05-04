@@ -10,4 +10,8 @@ export interface SettingsModel {
   continuousPlay: boolean;
   showVideoType: boolean;
   theMovieDbApiKey: string;
+  notifications: {
+    mp4ConversionStatus: boolean;
+    userConnectionStatus: boolean;
+  }
 }
