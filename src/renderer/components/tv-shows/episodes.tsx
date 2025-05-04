@@ -5,7 +5,8 @@ import { Episode } from "./episode";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { formatDate } from "../../util/helperFunctions";
 import { useMp4Conversion } from "../../hooks/useMp4Conversion";
-import { useMutation } from "@tanstack/react-query";
+import { useDeleteFile } from "../../hooks/useDeleteFile";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 interface EpisodesProps {
   loadingEpisodes: boolean;
@@ -35,14 +36,11 @@ export const Episodes: React.FC<EpisodesProps> = ({
 }) => {
   const { addToConversionQueue } = useMp4Conversion();
 
-  const deleteFileMutation = useMutation({
-    mutationFn: async (filePath: string) => {
-      return window.fileManagerAPI.deleteFile(filePath);
-    },
-    onSuccess: (result, filePath) => {
-      console.log("File deleted successfully:", result);
-      episodeDeleted(filePath);
-    },
+  const { showSnackbar } = useSnackbar();
+
+  const deleteFileMutation = useDeleteFile((result, filePath) => {
+    showSnackbar("File deleted successfully", "success");
+    episodeDeleted(filePath);
   });
 
   const renderEpisodes = () => (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { VideoDataModel } from "../../models/videoData.model";
 import { useNavigate } from "react-router-dom";
 import { rendererLoggingService as log } from "../util/renderer-logging.service";

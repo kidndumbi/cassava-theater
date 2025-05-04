@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
 import { useAppDispatch } from "../../store";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { useDeleteFile } from "../../hooks/useDeleteFile";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -114,7 +115,7 @@ const MovieList: React.FC<MovieListProps> = ({
     React.useState<VideoDataModel | null>(null);
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
     React.useState(false);
-    const {data:settings} = useGetAllSettings();
+  const { data: settings } = useGetAllSettings();
 
   const queryClient = useQueryClient();
 
@@ -169,24 +170,19 @@ const MovieList: React.FC<MovieListProps> = ({
     },
   });
 
-  const { mutate: deleteFile } = useMutation({
-    mutationFn: window.fileManagerAPI.deleteFile,
-    onSuccess: (data, filePathDeleted) => {
-      if (data.success) {
-        showSnackbar("Movie deleted successfully", "success");
-        queryClient.setQueryData(
-          ["videoData", settings?.movieFolderPath, false, "movies"],
-          (oldData: VideoDataModel[] = []) =>
-            oldData.filter((m) => m.filePath !== filePathDeleted),
-        );
-      } else {
-        showSnackbar(`Failed to delete Movie: ${data.message}`, "error");
-      }
+  const { mutate: deleteFile } = useDeleteFile(
+    (data, filePathDeleted) => {
+      showSnackbar("Movie deleted successfully", "success");
+      queryClient.setQueryData(
+        ["videoData", settings?.movieFolderPath, false, "movies"],
+        (oldData: VideoDataModel[] = []) =>
+          oldData.filter((m) => m.filePath !== filePathDeleted),
+      );
     },
-    onError: (error) => {
-      showSnackbar(`Error deleting Movie: ${error}`, "error");
+    (error) => {
+      showSnackbar(`Error deleting Movie: ${error?.message}`, "error");
     },
-  });
+  );
 
   const handleConvertToMp4 = (fromPath: string) => {
     const result = window.mp4ConversionAPI.addToConversionQueue(fromPath);

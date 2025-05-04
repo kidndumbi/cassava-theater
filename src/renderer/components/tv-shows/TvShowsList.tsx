@@ -13,6 +13,7 @@ import { TvShowSuggestionsModal } from "./TvShowSuggestionsModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TvShowDetails } from "../../../models/tv-show-details.model";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { useDeleteFile } from "../../hooks/useDeleteFile";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
@@ -33,10 +34,12 @@ const HoverContent = styled(Box)({
   display: "none",
 });
 
-export const TvShowsList = React.memo(function TvShowsList(props: TvShowsListProps) {
+export const TvShowsList = React.memo(function TvShowsList(
+  props: TvShowsListProps,
+) {
   const { shows, handlePosterClick } = props;
   const { getTmdbImageUrl } = useTmdbImageUrl();
-    const { data: settings } = useGetAllSettings();
+  const { data: settings } = useGetAllSettings();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedTvShow, setSelectedTvShow] = useState<VideoDataModel | null>(
     null,
@@ -71,26 +74,19 @@ export const TvShowsList = React.memo(function TvShowsList(props: TvShowsListPro
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  const { mutate: deleteFolder } = useMutation({
-    mutationFn: async (filePath: string) => {
-      return window.fileManagerAPI.deleteFile(filePath);
+  const { mutate: deleteFolder } = useDeleteFile(
+    (data, filePathDeleted) => {
+      showSnackbar("Tv Show deleted successfully", "success");
+      queryClient.setQueryData(
+        ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
+        (oldData: VideoDataModel[] = []) =>
+          oldData.filter((m) => m.filePath !== filePathDeleted),
+      );
     },
-    onSuccess: (data, filePathDeleted) => {
-      if (data.success) {
-        showSnackbar("Tv Show deleted successfully", "success");
-        queryClient.setQueryData(
-          ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
-          (oldData: VideoDataModel[] = []) =>
-            oldData.filter((m) => m.filePath !== filePathDeleted),
-        );
-      } else {
-        showSnackbar("Failed to delete Tv Show: " + data.message, "error");
-      }
-    },
-    onError: (error) => {
+    (error) => {
       showSnackbar("Error deleting Tv Show: " + error, "error");
     },
-  });
+  );
 
   const { mutate: linkTvShowMutation } = useMutation({
     mutationFn: async ({
