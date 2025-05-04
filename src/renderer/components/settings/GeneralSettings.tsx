@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Button,
   useTheme,
@@ -13,45 +13,29 @@ import { AppTextField } from "../common/AppTextField";
 import { SettingsModel } from "../../../models/settings.model";
 
 interface GeneralSettingsProps {
-  movieFolderPath: string;
-  tvShowsFolderPath: string;
-  continuousPlay: boolean;
-  port: string;
-  theMovieDbApiKey: string;
-  showVideoType: boolean;
+  settings: SettingsModel;
   handleFolderSelection: (settingName: string) => Promise<void>;
   handleUpdateSetting: (
     settingName: string,
     value: SettingsModel[keyof SettingsModel],
   ) => Promise<void>;
-  handleContinuousPlayChange: (value: boolean) => void;
-  handleShowVideoTypeChange: (value: boolean) => void;
 }
 
 export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
-  movieFolderPath,
-  tvShowsFolderPath,
-  port,
-  theMovieDbApiKey,
+  settings,
   handleFolderSelection,
   handleUpdateSetting,
-  continuousPlay,
-  handleContinuousPlayChange,
-  showVideoType,
-  handleShowVideoTypeChange,
 }) => {
   const theme = useTheme();
-
-  const [componentPort, setComponentPort] = useState(port);
-  const [localApiKey, setLocalApiKey] = useState(theMovieDbApiKey);
-
-  useEffect(() => {
-    setComponentPort(port);
-  }, [port]);
-
-  useEffect(() => {
-    setLocalApiKey(theMovieDbApiKey);
-  }, [theMovieDbApiKey]);
+  const {
+    movieFolderPath,
+    tvShowsFolderPath,
+    port,
+    theMovieDbApiKey,
+    continuousPlay,
+    showVideoType,
+    notifications = { mp4ConversionStatus: false, userConnectionStatus: false },
+  } = settings;
 
   const renderFolderSetting = (
     label: string,
@@ -94,16 +78,15 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
           <Box style={{ display: "flex", alignItems: "center" }}>
             <AppTextField
               label="Port"
-              value={componentPort}
-              onChange={(e) => setComponentPort(e.target.value)}
+              value={port}
+              onChange={(e) => handleUpdateSetting("port", e.target.value)}
               theme={theme}
             />
             <Button
               sx={{ marginLeft: "8px" }}
               variant="contained"
               color="primary"
-              onClick={() => handleUpdateSetting("port", componentPort)}
-              disabled={port === componentPort ? true : false}
+              onClick={() => handleUpdateSetting("port", port)}
             >
               <Save />
             </Button>
@@ -111,8 +94,10 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
           <Box style={{ display: "flex", alignItems: "center" }}>
             <AppTextField
               label="themoviedb API Key"
-              value={localApiKey}
-              onChange={(e) => setLocalApiKey(e.target.value)}
+              value={theMovieDbApiKey}
+              onChange={(e) =>
+                handleUpdateSetting("theMovieDbApiKey", e.target.value)
+              }
               theme={theme}
             />
             <Button
@@ -120,42 +105,82 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
               variant="contained"
               color="primary"
               onClick={() =>
-                handleUpdateSetting("theMovieDbApiKey", localApiKey)
+                handleUpdateSetting("theMovieDbApiKey", theMovieDbApiKey)
               }
             >
               <Save />
             </Button>
           </Box>
-      
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={continuousPlay}
-                  onChange={(e) => handleContinuousPlayChange(e.target.checked)}
-                  color="primary"
-                />
-              }
-              label={
-                <span style={{ color: theme.customVariables.appWhiteSmoke }}>
-                  Continuous Play
-                </span>
-              }
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={showVideoType}
-                  onChange={(e) => handleShowVideoTypeChange(e.target.checked)}
-                  color="primary"
-                />
-              }
-              label={
-                <span style={{ color: theme.customVariables.appWhiteSmoke }}>
-                  Show Video Type
-                </span>
-              }
-            />
-        
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={continuousPlay}
+                onChange={(e) =>
+                  handleUpdateSetting("continuousPlay", e.target.checked)
+                }
+                color="primary"
+              />
+            }
+            label={
+              <span style={{ color: theme.customVariables.appWhiteSmoke }}>
+                Continuous Play
+              </span>
+            }
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={showVideoType}
+                onChange={(e) =>
+                  handleUpdateSetting("showVideoType", e.target.checked)
+                }
+                color="primary"
+              />
+            }
+            label={
+              <span style={{ color: theme.customVariables.appWhiteSmoke }}>
+                Show Video Type
+              </span>
+            }
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={notifications.mp4ConversionStatus}
+                onChange={(e) =>
+                  handleUpdateSetting("notifications", {
+                    ...notifications,
+                    mp4ConversionStatus: e.target.checked,
+                  })
+                }
+                color="primary"
+              />
+            }
+            label={
+              <span style={{ color: theme.customVariables.appWhiteSmoke }}>
+                Notify on MP4 Conversion Status
+              </span>
+            }
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={notifications.userConnectionStatus}
+                onChange={(e) =>
+                  handleUpdateSetting("notifications", {
+                    ...notifications,
+                    userConnectionStatus: e.target.checked,
+                  })
+                }
+                color="primary"
+              />
+            }
+            label={
+              <span style={{ color: theme.customVariables.appWhiteSmoke }}>
+                Notify on User Connection Status 
+              </span>
+            }
+          />
         </Box>
       </CardContent>
     </Card>
