@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { Box, Button, Modal, Paper, useTheme } from "@mui/material";
+import { Alert, Box, Button, Modal, Paper, useTheme } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
@@ -9,6 +9,8 @@ import { SearchHeader } from "../common/SearchHeader";
 import { PosterCard } from "../common/PosterCard";
 import { getUrl, removeVidExt, trimFileName } from "../../util/helperFunctions";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
+import WarningIcon from "@mui/icons-material/Warning";
 
 interface MoviesProps {
   movies: VideoDataModel[];
@@ -28,15 +30,36 @@ export const Movies: React.FC<MoviesProps> = ({
   const theme = useTheme();
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const navigate = useNavigate();
-    const {data:settings} = useGetAllSettings();
+  const { data: settings } = useGetAllSettings();
+  const { openDialog, setMessage } = useConfirmation();
 
   const [filter, setFilter] = useState("");
 
   const handlePosterClick = useCallback(
-    (videoPath: string) => {
+    async (videoPath: string) => {
+      const isNotMp4 = !videoPath.toLowerCase().endsWith(".mp4");
+      if (isNotMp4 && settings && settings.playNonMp4Videos === false) {
+        setMessage(
+          <Alert icon={<WarningIcon fontSize="inherit" />} severity="warning">
+            "Playback of non-MP4 videos is currently disabled in settings. To
+            play this video, please enable playback of non-MP4 videos in the
+            settings."
+          </Alert>,
+        );
+        await openDialog(undefined,true);
+        return;
+      }
+
       navigate(`/video-details?videoPath=${videoPath}&menuId=${menuId}`);
     },
-    [navigate, menuId],
+    [
+      navigate,
+      menuId,
+      settings?.playNonMp4Videos,
+      openDialog,
+      setMessage,
+      settings,
+    ],
   );
 
   const handleRefresh = useCallback(() => {

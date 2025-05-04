@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { VideoDataModel } from "../../models/videoData.model";
 import { useNavigate } from "react-router-dom";
 import { rendererLoggingService as log } from "../util/renderer-logging.service";
@@ -10,6 +10,8 @@ const useHandlePosterClick = (
     path: string,
     category: string,
   ) => Promise<VideoDataModel | null>,
+  playNonMp4Videos: boolean,
+  handlePlayNonMp4Warning?: () => void,
 ) => {
   const navigate = useNavigate();
   const [loadingItems, setLoadingItems] = useState<{
@@ -43,6 +45,13 @@ const useHandlePosterClick = (
     }
     try {
       const selectedVideo = await getSelectedVideo(videoType, video);
+
+      const isNotMp4 = !selectedVideo.filePath?.toLowerCase().endsWith(".mp4");
+
+      if (isNotMp4 && !playNonMp4Videos) {
+        handlePlayNonMp4Warning?.();
+        return;
+      }
 
       const resumeId = videoType === "tvShow" ? "tvShow" : "movie";
       setCurrentVideo(selectedVideo);
