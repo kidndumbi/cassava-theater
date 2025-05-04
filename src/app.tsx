@@ -36,8 +36,15 @@ import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
 const queryClient = new QueryClient();
 
 const App = () => {
+  const { data: settings } = useGetAllSettings();
   const { showSnackbar } = useSnackbar();
   const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
+  const userConnectionStatus = useRef<boolean>(null);
+
+  useEffect(() => {
+    userConnectionStatus.current =
+      settings?.notifications?.userConnectionStatus;
+  }, [settings?.notifications?.userConnectionStatus]);
 
   useEffect(() => {
     window.videoCommandsAPI.videoCommand((command: VideoCommands) => {
@@ -45,30 +52,31 @@ const App = () => {
     });
 
     window.mainNotificationsAPI.userConnected((userId: string) => {
-      showSnackbar("User connected: " + userId, "success");
+      if (userConnectionStatus.current) {
+        showSnackbar("User connected: " + userId, "success");
+      }
     });
 
     window.mainNotificationsAPI.userDisconnected((userId: string) => {
-      showSnackbar("User disconnected: " + userId, "error");
+      if (userConnectionStatus.current) {
+        showSnackbar("User disconnected: " + userId, "error");
+      }
     });
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <HashRouter>
-        <Box
-          data-testid="box-container"
-          sx={{
-            backgroundColor: theme.customVariables.appDarker,
-          }}
-        >
-          <main>
-            <AppRoutes appVideoPlayerRef={appVideoPlayerRef} />
-          </main>
-        </Box>
-      </HashRouter>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <HashRouter>
+      <Box
+        data-testid="box-container"
+        sx={{
+          backgroundColor: theme.customVariables.appDarker,
+        }}
+      >
+        <main>
+          <AppRoutes appVideoPlayerRef={appVideoPlayerRef} />
+        </main>
+      </Box>
+    </HashRouter>
   );
 };
 
@@ -79,8 +87,11 @@ root.render(
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Provider store={store}>
-          <App />
-          <Mp4ConversionEvents />
+          <QueryClientProvider client={queryClient}>
+            <App />
+            <Mp4ConversionEvents />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </QueryClientProvider>
         </Provider>
       </ThemeProvider>
     </ConfirmationProvider>
