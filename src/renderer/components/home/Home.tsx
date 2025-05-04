@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Alert, Box, Typography, useTheme } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useTvShows } from "../../hooks/useTvShows";
 import useHandlePosterClick from "../../hooks/useHandlePosterClick";
@@ -13,6 +13,8 @@ import {
   useVideoDataQuery,
 } from "../../hooks/useVideoData.query";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
+import WarningIcon from "@mui/icons-material/Warning";
 
 interface HomePageProps {
   style?: React.CSSProperties;
@@ -29,6 +31,7 @@ export const HomePage: React.FC<HomePageProps> = ({
   const { setCurrentVideo } = useVideoListLogic();
   const { getSingleEpisodeDetails } = useTvShows();
   const { data: settings } = useGetAllSettings();
+  const { openDialog, setMessage } = useConfirmation();
 
   useEffect(() => {
     console.log("Homepage rendered");
@@ -52,6 +55,16 @@ export const HomePage: React.FC<HomePageProps> = ({
     menuId,
     setCurrentVideo,
     getSingleEpisodeDetails,
+    settings?.playNonMp4Videos,
+    async () => {
+      setMessage(
+        <Alert icon={<WarningIcon fontSize="inherit" />} severity="warning">
+          "Playback of non-MP4 videos is currently disabled in settings. To play
+          this video, please enable playback of non-MP4 videos in the settings."
+        </Alert>,
+      );
+      await openDialog(undefined, true);
+    },
   );
 
   const title = (value: string) => (

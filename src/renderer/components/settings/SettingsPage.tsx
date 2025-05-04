@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Container, Box, Tab, Tabs } from "@mui/material";
+import { Container, Box, Tab, Tabs, Alert } from "@mui/material";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { SettingsModel } from "../../../models/settings.model";
 import { CustomFoldersSettings } from "./CustomFoldersSettings";
@@ -10,6 +10,7 @@ import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { selectFolder } from "../../util/helperFunctions";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
+import WarningIcon from "@mui/icons-material/Warning";
 
 export const SettingsPage: React.FC = () => {
   const { data: settings = {} as SettingsModel } = useGetAllSettings();
@@ -39,6 +40,7 @@ export const SettingsPage: React.FC = () => {
   const handleUpdateSetting = async (
     settingName: keyof SettingsModel,
     value: SettingsModel[keyof SettingsModel],
+    confirmationtext?: string,
   ) => {
     try {
       if (settingName === "port") {
@@ -55,8 +57,21 @@ export const SettingsPage: React.FC = () => {
           () => window.mainUtilAPI.restart(),
         );
       } else {
-        await setSetting({ key: settingName, value });
-        showSnackbar("Setting updated successfully", "success");
+        if (confirmationtext) {
+          setMessage(
+            <Alert icon={<WarningIcon fontSize="inherit" />} severity="warning">
+              {confirmationtext}
+            </Alert>,
+          );
+          const dialogDecision = await openDialog();
+          if (dialogDecision === "Ok") {
+            await setSetting({ key: settingName, value });
+            showSnackbar("Setting updated successfully", "success");
+          }
+        } else {
+          await setSetting({ key: settingName, value });
+          showSnackbar("Setting updated successfully", "success");
+        }
       }
     } catch {
       showSnackbar("Failed to update setting", "error");

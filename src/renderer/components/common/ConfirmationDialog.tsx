@@ -11,6 +11,7 @@ type ConfirmationDialogProps = {
   message: React.ReactNode;
   handleClose: (choice: string) => void;
   procedButtonText?: string;
+  hideOkButton?: boolean;
 };
 
 const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
@@ -18,6 +19,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   message,
   handleClose,
   procedButtonText = "Ok",
+  hideOkButton = false,
 }) => {
   return (
     <Dialog
@@ -41,9 +43,11 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
         <Button onClick={() => handleClose("Cancel")} color="primary">
           Cancel
         </Button>
-        <Button onClick={() => handleClose("Ok")} color="primary">
-          {procedButtonText}
-        </Button>
+        {!hideOkButton && (
+          <Button onClick={() => handleClose("Ok")} color="primary">
+            {procedButtonText}
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );

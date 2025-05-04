@@ -6,9 +6,12 @@ import {
 } from "./renderer/store/mp4Conversion/mp4Conversion.slice";
 import { useMp4Conversion } from "./renderer/hooks/useMp4Conversion";
 import { useSnackbar } from "./renderer/contexts/SnackbarContext";
+import { SettingsModel } from "./models/settings.model";
+import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
 
 export const Mp4ConversionEvents = () => {
   const dispatch = useAppDispatch();
+  const { data: settings = {} as SettingsModel } = useGetAllSettings();
   const {
     currentlyProcessingItem,
     initConverversionQueueFromStore,
@@ -94,7 +97,10 @@ export const Mp4ConversionEvents = () => {
       };
 
       dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
-      showSnackbar(`Conversion completed: ${toPath}`, "success");
+
+      if (settings?.notifications?.mp4ConversionStatus) {
+        showSnackbar(`Conversion completed: ${toPath}`, "success");
+      }
     });
   }, []);
 

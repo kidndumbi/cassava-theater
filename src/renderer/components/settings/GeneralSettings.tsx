@@ -18,6 +18,7 @@ interface GeneralSettingsProps {
   handleUpdateSetting: (
     settingName: string,
     value: SettingsModel[keyof SettingsModel],
+    confirmationtext?: string
   ) => Promise<void>;
 }
 
@@ -28,6 +29,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
 }) => {
   const theme = useTheme();
   const {
+    playNonMp4Videos,
     movieFolderPath,
     tvShowsFolderPath,
     port,
@@ -140,6 +142,28 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
             label={
               <span style={{ color: theme.customVariables.appWhiteSmoke }}>
                 Show Video Type
+              </span>
+            }
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={playNonMp4Videos}
+                onChange={(e) =>
+                  handleUpdateSetting(
+                    "playNonMp4Videos",
+                    e.target.checked,
+                    e.target.checked
+                      ? "Enabling playback of non-MP4 videos may cause compatibility issues. Do you want to continue?"
+                      : undefined
+                  )
+                }
+                color="primary"
+              />
+            }
+            label={
+              <span style={{ color: theme.customVariables.appWhiteSmoke }}>
+                Play Non MP4 Videos
               </span>
             }
           />
