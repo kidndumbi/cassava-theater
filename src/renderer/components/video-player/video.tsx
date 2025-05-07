@@ -2,27 +2,27 @@ import React, { useEffect } from "react";
 
 type VideoProps = {
   videoPlayerRef: React.RefObject<HTMLVideoElement>;
-  getVideoUrl: () => string;
   getSubtitleUrl: () => string;
   subtitleFilePath: string | null;
   isMkv: boolean;
   onClick?: () => void;
   onError: (error: string) => void;
+  videoUrl: string;
 };
 
 const Video: React.FC<VideoProps> = ({
   videoPlayerRef,
-  getVideoUrl,
   getSubtitleUrl,
   subtitleFilePath,
   isMkv,
   onClick,
   onError,
+  videoUrl
 }) => {
   useEffect(() => {
     const fetchVideoUrl = async () => {
       try {
-        const response = await fetch(getVideoUrl());
+        const response = await fetch(videoUrl);
         if (!response.ok) {
           const errorMessage = await response.text();
           onError(errorMessage);
@@ -42,7 +42,7 @@ const Video: React.FC<VideoProps> = ({
       className="h-full w-full object-contain"
       controls={!isMkv}
       playsInline
-      src={getVideoUrl()}
+      src={videoUrl}
       onClick={onClick}
     >
       {subtitleFilePath && subtitleFilePath !== "None" && (

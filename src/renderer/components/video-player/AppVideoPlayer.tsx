@@ -87,6 +87,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const debouncedSliderValue = useDebounce(sliderValue, 300);
     const isMouseActive = useMouseActivity();
     const isNotMp4VideoFormat = currentVideo?.isMkv || currentVideo?.isAvi;
+    const [videoUrl, setVideoUrl] = useState<string>("");
 
     // Video player controls
     const {
@@ -120,6 +121,9 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
         startFromBeginning ? 0 : currentVideo?.currentTime,
         port,
       );
+    useEffect(() => {
+      setVideoUrl(getVideoUrl());
+    }, [currentVideo, startFromBeginning, port]);
     const getSubtitleUrl = () => getUrl("file", subtitleFilePath, null, port);
 
     useEffect(() => {
@@ -259,9 +263,9 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     return (
       <div ref={containerRef} className="video-container">
         <Video
+          videoUrl={videoUrl}
           isMkv={isNotMp4VideoFormat}
           videoPlayerRef={videoPlayerRef}
-          getVideoUrl={getVideoUrl}
           getSubtitleUrl={getSubtitleUrl}
           subtitleFilePath={subtitleFilePath}
           onClick={() => {
@@ -296,7 +300,10 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               toggleCastAndCrew={
                 castAndCrewContent ? handleToggleDrawer : undefined
               }
-              handleCancel={handleCancel}
+              handleCancel={(filePath) => {
+                setVideoUrl("");
+                handleCancel(filePath);
+              }}
               handleNext={
                 isTvShow && nextEpisode
                   ? () => playNextEpisode(nextEpisode)
