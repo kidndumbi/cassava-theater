@@ -82,8 +82,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const [error, setError] = useState<string | null>(null);
     const [openDrawer, setOpenDrawer] = useState(false);
     const [openNotesModal, setOpenNotesModal] = useState(false);
-    const [sliderValue, setSliderValue] = useState<number | null>(null);
-
+    const [sliderValue, setSliderValue] = useState<number | null>(null)
     const debouncedSliderValue = useDebounce(sliderValue, 300);
     const isMouseActive = useMouseActivity();
     const isNotMp4VideoFormat = currentVideo?.isMkv || currentVideo?.isAvi;

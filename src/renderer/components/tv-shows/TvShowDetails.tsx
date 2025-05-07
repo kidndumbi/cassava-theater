@@ -92,7 +92,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   const nextEpisodeRef = useRef<VideoDataModel | null>(null);
 
   const nextEpisode = useMemo(() => {
-    // If nextEpisodeRef.current is already set, keep the same value
     if (nextEpisodeRef.current) {
       return nextEpisodeRef.current;
     }
@@ -108,7 +107,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     return null;
   }, [episodeLastWatched, episodes]);
 
-    const { data: settings } = useGetAllSettings();
+  const { data: settings } = useGetAllSettings();
 
   const getImageUrl = (show: VideoDataModel) => {
     const { backdrop, tv_show_details } = show;
@@ -122,6 +121,18 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
 
   const getFirstChildFolderPath = (tvShowDetails: VideoDataModel) =>
     tvShowDetails?.childFolders?.at(0)?.folderPath ?? "";
+
+  const getSelectedSeason = (tvShowDetails: VideoDataModel): string => {
+    if (tvShowDetails?.lastVideoPlayed) {
+      return tvShowDetails.lastVideoPlayed
+        .replace(/\\/g, "/")
+        .split("/")
+        .slice(0, -1)
+        .join("/");
+    } else {
+      return getFirstChildFolderPath(tvShowDetails);
+    }
+  };
 
   const setSeasonDetails = async (path: string, details: VideoDataModel) => {
     const seasonName = getFilename(path);
@@ -144,20 +155,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
 
     setTvShowBackgroundUrl(backgroundUrl);
 
-    // Determine the selected season from lastVideoPlayed or fallback to the first child folder path
-    let selSeason = "";
-    if (tvShowDetails?.lastVideoPlayed) {
-      selSeason = tvShowDetails.lastVideoPlayed
-        .replace(/\\/g, "/")
-        .split("/")
-        .slice(0, -1)
-        .join("/");
-    } else {
-      selSeason = getFirstChildFolderPath(tvShowDetails);
-    }
+    const selSeason = getSelectedSeason(tvShowDetails);
     setSelectedSeason(selSeason);
 
-    // Set the season details and episodes
     setSeasonDetails(selSeason, tvShowDetails);
   }
 
@@ -168,10 +168,12 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   }, [tvShowDetails]);
 
   useEffect(() => {
+    console.log("episodes", episodes);
     if (
       !tvShowDetails?.lastVideoPlayed ||
-      episodes?.length === 0 ||
-      episodeLastWatched
+      episodes?.length === 0 
+      // ||
+      // episodeLastWatched
     )
       return;
     const normalizedLastPlayed = tvShowDetails.lastVideoPlayed.replace(
@@ -181,6 +183,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     const lastWatchedEpisode = episodes?.find(
       (episode) => episode.filePath === normalizedLastPlayed,
     );
+    
     if (lastWatchedEpisode) {
       setEpisodeLastWatched(lastWatchedEpisode);
     }
@@ -339,7 +342,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                   tooltip="Refresh"
                   onClick={() => {
                     console.log("will be implemented later");
-                    queryClient.invalidateQueries({queryKey: ["folderDetails", videoPath] });
+                    queryClient.invalidateQueries({
+                      queryKey: ["folderDetails", videoPath],
+                    });
                   }}
                 >
                   <RefreshIcon />
