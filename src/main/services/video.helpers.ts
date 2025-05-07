@@ -101,7 +101,6 @@ export async function getVideoThumbnail(
 export const getRootVideoData = async (
   event: Electron.IpcMainInvokeEvent,
   filePath: string,
-  // searchText: string,
   category: string,
 ): Promise<VideoDataModel[]> => {
   const videoData: VideoDataModel[] = [];
@@ -119,7 +118,6 @@ export const getRootVideoData = async (
     await processFiles(
       filteredFiles,
       filePath,
-      // searchText,
       category,
       videoData,
     );
@@ -127,14 +125,13 @@ export const getRootVideoData = async (
     return sortVideoData(videoData);
   } catch (error) {
     log.error("An error occurred while fetching root video data: ", error);
-    return videoData; // Return successfully processed data even if an error occurs
+    return videoData;
   }
 };
 
 const processFiles = async (
   files: string[],
   filePath: string,
-  // searchText: string,
   category: string,
   videoData: VideoDataModel[],
 ): Promise<void> => {

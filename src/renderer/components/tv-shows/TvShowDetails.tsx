@@ -339,6 +339,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                   tooltip="Refresh"
                   onClick={() => {
                     console.log("will be implemented later");
+                    queryClient.invalidateQueries({queryKey: ["folderDetails", videoPath] });
                   }}
                 >
                   <RefreshIcon />
