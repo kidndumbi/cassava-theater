@@ -1,13 +1,94 @@
-import { Box, Typography } from "@mui/material";
-import React from "react";
+import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
+import React, { use, useEffect, useState } from "react";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, hasExtension, removeVidExt } from "../../util/helperFunctions";
 import FolderIcon from "@mui/icons-material/Folder";
 import { PosterCard } from "../common/PosterCard";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { HoverBox } from "../common/HoverBox";
+import { HoverContent } from "../common/HoverContent";
+import { VideoTypeContainer } from "../common/VideoTypeContainer";
+import { VideoTypeChip } from "../common/VideoTypeChip";
+import { AppMore } from "../common/AppMore";
+import { useAppDispatch } from "../../store";
+import { useMovies } from "../../hooks/useMovies";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
+import { MovieDetails } from "../../../models/movie-detail.model";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
+import { useDeleteFile } from "../../hooks/useDeleteFile";
+import { MovieSuggestionsModal } from "../movies/MovieSuggestionsModal";
+import { CustomFolderModel } from "../../../models/custom-folder";
+
+
+
+const CustomFolderItem: React.FC<{
+  video: VideoDataModel;
+  getImageUlr: (movie: VideoDataModel) => string | undefined;
+  handlePosterClick: (videoPath: string) => void;
+  onDelete: (filePath: string) => void;
+  onLinkTheMovieDb: () => void;
+  onConvertToMp4: (filePath: string) => void;
+  alwaysShowVideoType: boolean;
+  
+}> = ({
+  video,
+  getImageUlr,
+  handlePosterClick,
+  onDelete,
+  onLinkTheMovieDb,
+  onConvertToMp4,
+  alwaysShowVideoType,
+}) => {
+  const renderFolderIcon = (item: VideoDataModel) =>
+    item.fileName &&
+    !hasExtension(item.fileName) && (
+      <Box className="absolute left-1 top-1">
+        <FolderIcon color="secondary" />
+      </Box>
+    );
+
+  return (
+    <HoverBox>
+      <PosterCard
+        imageUrl={getImageUlr(video)}
+        altText={video.fileName}
+        onClick={() => video.filePath && handlePosterClick(video.filePath)}
+        footer={renderFolderIcon(video)}
+      />
+
+      <HoverContent className="hover-content">
+        <AppMore
+          isMovie={hasExtension(video.fileName)}
+          handleDelete={() => onDelete(video.filePath)}
+          linkTheMovieDb={onLinkTheMovieDb}
+          isNotMp4={!video.filePath?.endsWith(".mp4")}
+          handleConvertToMp4={() => onConvertToMp4(video.filePath || "")}
+          videoData={video}
+          handleWatchLaterUpdate={async (filePath, watchLater) => {
+            await window.videoAPI.saveVideoJsonData({
+              currentVideo: { filePath },
+              newVideoJsonData: { watchLater },
+            });
+          }}
+        />
+      </HoverContent>
+
+      {hasExtension(video.fileName) && (
+        <VideoTypeContainer
+          className={!alwaysShowVideoType ? "hover-content" : ""}
+          alwaysShow={alwaysShowVideoType}
+        >
+          <VideoTypeChip filePath={video.filePath} />
+        </VideoTypeContainer>
+      )}
+    </HoverBox>
+  );
+};
 
 interface CustomFolderDataListProps {
   customFolderData: VideoDataModel[];
+  customFolder: CustomFolderModel;
   handlePosterClick: (videoPath: string) => void;
   getImageUrl: (path: string) => string;
 }
@@ -16,8 +97,47 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
   handlePosterClick,
   getImageUrl,
   customFolderData,
+  customFolder
 }) => {
   const { data: settings } = useGetAllSettings();
+  const dispatch = useAppDispatch();
+  const { updateTMDBId } = useMovies();
+  const { openDialog, setMessage } = useConfirmation();
+  const [selectedMovie, setSelectedMovie] =
+    React.useState<VideoDataModel | null>(null);
+  const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
+    React.useState(false);
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+   console.log("customFolderPath", customFolder);
+   }, [customFolder]);
+
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+    actionText?: string;
+    onAction?: () => void;
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showSnackbar = (
+    message: string,
+    severity: "success" | "error",
+    actionText?: string,
+    onAction?: () => void,
+  ) => {
+    setSnackbar({ open: true, message, severity, actionText, onAction });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
 
   const getImageUlr = (movie: VideoDataModel) => {
     if (movie.poster?.trim()) {
@@ -28,36 +148,156 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
     }
   };
 
-  const renderPosterImage = (item: VideoDataModel) => (
-    <>
-      <PosterCard
-        imageUrl={getImageUlr(item)}
-        altText={item.fileName}
-        onClick={() => item.filePath && handlePosterClick(item.filePath)}
-        footer={renderFolderIcon(item)}
-      ></PosterCard>
-    </>
+  const { mutate: saveVideoJsonData } = useMutation({
+    mutationFn: window.videoAPI.saveVideoJsonData,
+    onSuccess: (
+      _,
+      variables: {
+        currentVideo: { filePath: string };
+        newVideoJsonData: VideoDataModel;
+      },
+    ) => {
+      queryClient.setQueryData(
+        ["videoData", customFolder.folderPath, false, "customFolder"],
+        (oldData: VideoDataModel[] = []) =>
+          oldData.map((m) => {
+            if (m.filePath === variables.currentVideo.filePath) {
+              return { ...m, ...variables.newVideoJsonData };
+            }
+            return m;
+          }),
+      );
+      showSnackbar("Custom image updated successfully", "success");
+    },
+    onError: () => {
+      showSnackbar("Failed to update custom image", "error");
+    },
+  });
+
+  const { mutate: deleteFile } = useDeleteFile(
+    (data, filePathDeleted) => {
+      showSnackbar("Movie deleted successfully", "success");
+      queryClient.setQueryData(
+        ["videoData", settings?.movieFolderPath, false, "movies"],
+        (oldData: VideoDataModel[] = []) =>
+          oldData.filter((m) => m.filePath !== filePathDeleted),
+      );
+    },
+    (error) => {
+      showSnackbar(`Error deleting Movie: ${error?.message}`, "error");
+    },
   );
 
-  const renderFolderIcon = (item: VideoDataModel) =>
-    item.fileName &&
-    !hasExtension(item.fileName) && (
-      <Box className="absolute right-1 top-1">
-        <FolderIcon color="primary" />
-      </Box>
+  const handleConvertToMp4 = (fromPath: string) => {
+    const result = window.mp4ConversionAPI.addToConversionQueue(fromPath);
+    if (!result) {
+      console.error(`Failed to add ${fromPath} to conversion queue.`);
+      return;
+    }
+    dispatch(
+      mp4ConversionActions.updateConvertToMp4Progress({
+        fromPath,
+        toPath: fromPath.replace(/\.[^/.]+$/, ".mp4"),
+        percent: 0,
+        paused: false,
+        complete: false,
+      }),
     );
+  };
+
+  const handleLinkMovieDb = (movie: VideoDataModel) => {
+    setSelectedMovie(movie);
+    setOpenMovieSuggestionsModal(true);
+  };
+
+  const handleCloseSuggestionsModal = () => {
+    setOpenMovieSuggestionsModal(false);
+    setSelectedMovie(null);
+  };
+
+  const handleSelectMovie = async (movie_details: MovieDetails) => {
+    if (movie_details.id && selectedMovie?.filePath) {
+      await updateTMDBId(selectedMovie.filePath, movie_details);
+      showSnackbar("Movie linked to TMDB successfully", "success");
+      // refetchMovies();
+      setOpenMovieSuggestionsModal(false);
+    }
+  };
 
   return (
-    <Box className="flex flex-wrap gap-1">
-      {customFolderData?.map((item, idx) => (
-        <Box key={idx} className="m-1 max-w-[200px] flex-[1_1_200px]">
-          <Box className="relative">{renderPosterImage(item)}</Box>
-          <Typography variant="subtitle1" align="center" className="break-all">
-            {removeVidExt(item.fileName ?? "")}
-          </Typography>
-        </Box>
-      ))}
-    </Box>
+    <>
+      <Box className="flex flex-wrap gap-1">
+        {customFolderData?.map((video, idx) => (
+          <Box key={idx} className="m-1 max-w-[200px] flex-[1_1_200px]">
+            <Box className="relative">
+              <CustomFolderItem
+                video={video}
+                getImageUlr={getImageUlr}
+                handlePosterClick={handlePosterClick}
+                onDelete={async (filePath) => {
+                  setMessage("Are you sure you want to delete this Movie?");
+                  const dialogDecision = await openDialog("Delete");
+
+                  if (dialogDecision !== "Ok") return;
+                  deleteFile(filePath);
+                }}
+                onLinkTheMovieDb={() => handleLinkMovieDb(video)}
+                onConvertToMp4={handleConvertToMp4}
+                alwaysShowVideoType={settings?.showVideoType}
+              />
+            </Box>
+            <Typography
+              variant="subtitle1"
+              align="center"
+              className="break-all"
+            >
+              {removeVidExt(video.fileName ?? "")}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+      <MovieSuggestionsModal
+        id={selectedMovie?.movie_details?.id?.toString() || ""}
+        open={openMovieSuggestionsModal}
+        handleClose={handleCloseSuggestionsModal}
+        fileName={removeVidExt(selectedMovie?.fileName) || ""}
+        filePath={selectedMovie?.filePath || ""}
+        handleSelectMovie={handleSelectMovie}
+        handleImageUpdate={(data: VideoDataModel, filePath: string) => {
+          if (!filePath) return;
+          saveVideoJsonData({
+            currentVideo: { filePath },
+            newVideoJsonData: data,
+          });
+        }}
+      />
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          action={
+            snackbar.actionText ? (
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => {
+                  if (snackbar.onAction) snackbar.onAction();
+                  handleCloseSnackbar();
+                }}
+              >
+                {snackbar.actionText}
+              </Button>
+            ) : null
+          }
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 

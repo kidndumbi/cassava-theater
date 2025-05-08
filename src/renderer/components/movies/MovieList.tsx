@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Box, Snackbar, Alert, Button } from "@mui/material";
-import { styled } from "@mui/system";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { removeVidExt, trimFileName } from "../../util/helperFunctions";
 import { PosterCard } from "../common/PosterCard";
@@ -15,6 +14,9 @@ import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.sl
 import { useAppDispatch } from "../../store";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
+import { HoverBox } from "../common/HoverBox";
+import { HoverContent } from "../common/HoverContent";
+import { VideoTypeContainer } from "../common/VideoTypeContainer";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -22,32 +24,6 @@ interface MovieListProps {
   getImageUrl: (movie: VideoDataModel) => string;
   refetchMovies: () => void;
 }
-
-const HoverBox = styled(Box)({
-  position: "relative",
-  "&:hover .hover-content": {
-    display: "block",
-  },
-});
-
-const HoverContent = styled(Box)({
-  position: "absolute",
-  top: 9,
-  right: 9,
-  display: "none",
-});
-
-const VideoTypeContainer = styled(Box)(
-  ({ alwaysShow }: { alwaysShow: boolean }) => ({
-    position: "absolute",
-    top: 9,
-    left: 9,
-    display: alwaysShow ? "block" : "none",
-    "&.hover-content": {
-      display: alwaysShow ? "block" : "none",
-    },
-  }),
-);
 
 interface MovieListItemProps {
   movie: VideoDataModel;
