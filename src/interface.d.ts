@@ -68,7 +68,10 @@ export interface VideoAPI {
   saveVideoJsonData: (args: {
     currentVideo: VideoDataModel;
     newVideoJsonData: VideoDataModel;
-  }) => Promise<saveVideoJsonData>;
+  }) => Promise<{
+    currentVideo: VideoDataModel;
+    newVideoJsonData: VideoDataModel;
+  }>;
   AddTvShowFolder: (args: {
     tvShowName: string;
     subfolders: string[];

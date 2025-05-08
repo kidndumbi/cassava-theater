@@ -1,7 +1,7 @@
 import { MovieDetails } from "../../models/movie-detail.model";
 
 export const useMovies = () => {
-  const updateTMDBId = async (
+  const getExtraMovieDetails = async (
     filePath: string,
     movie_details: MovieDetails,
   ) => {
@@ -10,14 +10,10 @@ export const useMovies = () => {
       "movie",
     );
 
-    await window.videoAPI.saveVideoJsonData({
-      currentVideo: { filePath: filePath },
-      newVideoJsonData: { movie_details: extraMovieDetails },
-    });
     return extraMovieDetails;
   };
 
   return {
-    updateTMDBId,
+    getExtraMovieDetails,
   };
 };

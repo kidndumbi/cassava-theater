@@ -20,6 +20,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { MovieDetails } from "../../../models/movie-detail.model";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 
 interface MovieDetailsProps {
   videoPath: string | null;
@@ -27,7 +28,7 @@ interface MovieDetailsProps {
 }
 
 const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
-  const { updateTMDBId } = useMovies();
+  const { getExtraMovieDetails } = useMovies();
   const { showSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
 
@@ -51,23 +52,18 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     },
   });
 
-  // --- Add mutation for TMDB movie selection ---
-  const updateTmdbMutation = useMutation({
-    mutationFn: async (movie_details: MovieDetails) => {
-      if (!videoPath || !movie_details?.id) return null;
-      return updateTMDBId(videoPath, movie_details);
-    },
-    onSuccess: (extraMovieDetails, movie_details) => {
-      if (!videoPath || !extraMovieDetails) return;
+  const { mutateAsync: saveTmdbData } = useSaveJsonData(
+    (data, savedData) => {
+      console.log("saveVideoJsonData", data, savedData);
       queryClient.setQueryData(
         ["videoDetails", videoPath, "movies"],
         (oldData: VideoDataModel) => ({
           ...oldData,
-          movie_details: extraMovieDetails,
+          movie_details: savedData.newVideoJsonData.movie_details,
         }),
       );
     },
-  });
+  );
 
   const [imageUrl, setImageUrl] = useState("");
   const { getTmdbImageUrl, getBackgroundGradient } = useTmdbImageUrl();
@@ -112,8 +108,19 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     refetch();
   };
 
-  const handleMovieSelect = (movie_details: MovieDetails) => {
-    updateTmdbMutation.mutate(movie_details);
+
+
+  const handleMovieSelect = async (movie_details: MovieDetails) => {
+    const extraMovieDetails = await getExtraMovieDetails(
+      videoPath,
+      movie_details,
+    );
+    saveTmdbData({
+      currentVideo: { filePath: videoPath },
+      newVideoJsonData: { movie_details: extraMovieDetails },
+    });
+
+    //updateTmdbMutation.mutate(movie_details);
   };
 
   const handleImageUpdate = async (data: VideoDataModel, filePath: string) => {

@@ -1,5 +1,5 @@
 import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
-import React, { use, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, hasExtension, removeVidExt } from "../../util/helperFunctions";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -14,13 +14,12 @@ import { useAppDispatch } from "../../store";
 import { useMovies } from "../../hooks/useMovies";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { MovieDetails } from "../../../models/movie-detail.model";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
 import { MovieSuggestionsModal } from "../movies/MovieSuggestionsModal";
 import { CustomFolderModel } from "../../../models/custom-folder";
-
-
+import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 
 const CustomFolderItem: React.FC<{
   video: VideoDataModel;
@@ -30,7 +29,6 @@ const CustomFolderItem: React.FC<{
   onLinkTheMovieDb: () => void;
   onConvertToMp4: (filePath: string) => void;
   alwaysShowVideoType: boolean;
-  
 }> = ({
   video,
   getImageUlr,
@@ -97,11 +95,11 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
   handlePosterClick,
   getImageUrl,
   customFolderData,
-  customFolder
+  customFolder,
 }) => {
   const { data: settings } = useGetAllSettings();
   const dispatch = useAppDispatch();
-  const { updateTMDBId } = useMovies();
+  const { getExtraMovieDetails } = useMovies();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedMovie, setSelectedMovie] =
     React.useState<VideoDataModel | null>(null);
@@ -110,9 +108,20 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
 
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-   console.log("customFolderPath", customFolder);
-   }, [customFolder]);
+  const { mutateAsync: saveVideoJsonData } = useSaveJsonData(
+    (data, savedData) => {
+      queryClient.setQueryData(
+        ["videoData", customFolder.folderPath, false, "customFolder"],
+        (oldData: VideoDataModel[] = []) =>
+          oldData.map((m) => {
+            if (m.filePath === savedData.currentVideo.filePath) {
+              return { ...m, ...savedData.newVideoJsonData };
+            }
+            return m;
+          }),
+      );
+    },
+  );
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -147,32 +156,6 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
       return getImageUrl(movie.movie_details.poster_path);
     }
   };
-
-  const { mutate: saveVideoJsonData } = useMutation({
-    mutationFn: window.videoAPI.saveVideoJsonData,
-    onSuccess: (
-      _,
-      variables: {
-        currentVideo: { filePath: string };
-        newVideoJsonData: VideoDataModel;
-      },
-    ) => {
-      queryClient.setQueryData(
-        ["videoData", customFolder.folderPath, false, "customFolder"],
-        (oldData: VideoDataModel[] = []) =>
-          oldData.map((m) => {
-            if (m.filePath === variables.currentVideo.filePath) {
-              return { ...m, ...variables.newVideoJsonData };
-            }
-            return m;
-          }),
-      );
-      showSnackbar("Custom image updated successfully", "success");
-    },
-    onError: () => {
-      showSnackbar("Failed to update custom image", "error");
-    },
-  });
 
   const { mutate: deleteFile } = useDeleteFile(
     (data, filePathDeleted) => {
@@ -217,9 +200,17 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
 
   const handleSelectMovie = async (movie_details: MovieDetails) => {
     if (movie_details.id && selectedMovie?.filePath) {
-      await updateTMDBId(selectedMovie.filePath, movie_details);
+      const extraMovieDetails = await getExtraMovieDetails(
+        selectedMovie.filePath,
+        movie_details,
+      );
+      await saveVideoJsonData({
+        currentVideo: { filePath: selectedMovie.filePath },
+        newVideoJsonData: {
+          movie_details: extraMovieDetails,
+        },
+      });
       showSnackbar("Movie linked to TMDB successfully", "success");
-      // refetchMovies();
       setOpenMovieSuggestionsModal(false);
     }
   };

@@ -46,7 +46,7 @@ export const Movies: React.FC<MoviesProps> = ({
             settings."
           </Alert>,
         );
-        await openDialog(undefined,true);
+        await openDialog(undefined, true);
         return;
       }
 
@@ -132,7 +132,6 @@ export const Movies: React.FC<MoviesProps> = ({
             movies={filteredMovies}
             handlePosterClick={handlePosterClick}
             getImageUrl={getImageUrl}
-            refetchMovies={handleRefresh}
           />
           <Modal open={!!randomMovie} onClose={() => setRandomMovie(null)}>
             <Paper
