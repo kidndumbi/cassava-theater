@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Box, Snackbar, Alert, Button } from "@mui/material";
-import { styled } from "@mui/system";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { removeVidExt, trimFileName } from "../../util/helperFunctions";
 import { PosterCard } from "../common/PosterCard";
@@ -10,44 +9,21 @@ import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
 import { VideoTypeChip } from "../common/VideoTypeChip";
 import { MovieDetails } from "../../../models/movie-detail.model";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
 import { useAppDispatch } from "../../store";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
+import { HoverBox } from "../common/HoverBox";
+import { HoverContent } from "../common/HoverContent";
+import { VideoTypeContainer } from "../common/VideoTypeContainer";
+import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 
 interface MovieListProps {
   movies: VideoDataModel[];
   handlePosterClick: (videoPath: string) => void;
   getImageUrl: (movie: VideoDataModel) => string;
-  refetchMovies: () => void;
 }
-
-const HoverBox = styled(Box)({
-  position: "relative",
-  "&:hover .hover-content": {
-    display: "block",
-  },
-});
-
-const HoverContent = styled(Box)({
-  position: "absolute",
-  top: 9,
-  right: 9,
-  display: "none",
-});
-
-const VideoTypeContainer = styled(Box)(
-  ({ alwaysShow }: { alwaysShow: boolean }) => ({
-    position: "absolute",
-    top: 9,
-    left: 9,
-    display: alwaysShow ? "block" : "none",
-    "&.hover-content": {
-      display: alwaysShow ? "block" : "none",
-    },
-  }),
-);
 
 interface MovieListItemProps {
   movie: VideoDataModel;
@@ -106,10 +82,9 @@ const MovieList: React.FC<MovieListProps> = ({
   movies,
   handlePosterClick,
   getImageUrl,
-  refetchMovies,
 }) => {
   const dispatch = useAppDispatch();
-  const { updateTMDBId } = useMovies();
+  const { getExtraMovieDetails } = useMovies();
   const { openDialog, setMessage } = useConfirmation();
   const [selectedMovie, setSelectedMovie] =
     React.useState<VideoDataModel | null>(null);
@@ -144,15 +119,8 @@ const MovieList: React.FC<MovieListProps> = ({
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  const { mutate: saveVideoJsonData } = useMutation({
-    mutationFn: window.videoAPI.saveVideoJsonData,
-    onSuccess: (
-      data: VideoDataModel,
-      variables: {
-        currentVideo: { filePath: string };
-        newVideoJsonData: VideoDataModel;
-      },
-    ) => {
+  const { mutateAsync: saveVideoJsonData } = useSaveJsonData(
+    (data, variables) => {
       queryClient.setQueryData(
         ["videoData", settings?.movieFolderPath, false, "movies"],
         (oldData: VideoDataModel[] = []) =>
@@ -165,10 +133,10 @@ const MovieList: React.FC<MovieListProps> = ({
       );
       showSnackbar("Custom image updated successfully", "success");
     },
-    onError: () => {
-      showSnackbar("Failed to update custom image", "error");
+    (error) => {
+      showSnackbar(`Error updating custom image: ${error?.message}`, "error");
     },
-  });
+  );
 
   const { mutate: deleteFile } = useDeleteFile(
     (data, filePathDeleted) => {
@@ -213,9 +181,16 @@ const MovieList: React.FC<MovieListProps> = ({
 
   const handleSelectMovie = async (movie_details: MovieDetails) => {
     if (movie_details.id && selectedMovie?.filePath) {
-      await updateTMDBId(selectedMovie.filePath, movie_details);
+      const extraMovieDetails = await getExtraMovieDetails(
+        selectedMovie.filePath,
+        movie_details,
+      );
+      saveVideoJsonData({
+        currentVideo: { filePath: selectedMovie.filePath },
+        newVideoJsonData: { movie_details: extraMovieDetails },
+      });
+
       showSnackbar("Movie linked to TMDB successfully", "success");
-      refetchMovies();
       setOpenMovieSuggestionsModal(false);
     }
   };

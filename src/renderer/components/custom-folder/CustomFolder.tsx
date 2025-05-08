@@ -30,8 +30,6 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const navigate = useNavigate();
 
-    console.log("customFolder", customFolder);
-
   const [filter, setFilter] = useState("");
   const [folderPathNavigation, setFolderPathNavigation] = useState<string[]>([
     customFolder?.folderPath || "",
@@ -68,7 +66,9 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
 
   const getFilteredCustomFolderData = () => {
     return customFolderData?.filter((data) => {
-      const fileNameWithoutExtension = data.fileName ? removeVidExt(data.fileName) : "";
+      const fileNameWithoutExtension = data.fileName
+        ? removeVidExt(data.fileName)
+        : "";
       return fileNameWithoutExtension
         .toLowerCase()
         .includes(filter.toLowerCase());
@@ -98,7 +98,7 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
     const filteredData = getFilteredCustomFolderData();
     if (filteredData?.length === 0) {
       return (
-        <div className="flex justify-center h-screen pt-12">
+        <div className="flex h-screen justify-center pt-12">
           <div className="text-2xl">No Videos to display</div>
         </div>
       );
@@ -106,6 +106,7 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
 
     return (
       <CustomFolderDataList
+        customFolder={customFolder}
         customFolderData={filteredData}
         handlePosterClick={handlePosterClick}
         getImageUrl={getTmdbImageUrl}
