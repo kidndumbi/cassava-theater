@@ -34,18 +34,18 @@ const Title = (value: string) => (
 
 // Toolbar extracted for clarity
 const PlaylistsToolbar = ({
-  onRefresh,
+  // onRefresh,
   isLoading,
   onAdd,
 }: {
-  onRefresh: () => void;
+  // onRefresh: () => void;
   isLoading: boolean;
   onAdd: () => void;
 }) => (
   <Box className="flex gap-2 pb-5">
-    <AppIconButton tooltip="Refresh" onClick={onRefresh} disabled={isLoading}>
+    {/* <AppIconButton tooltip="Refresh" onClick={onRefresh} disabled={isLoading}>
       <RefreshIcon />
-    </AppIconButton>
+    </AppIconButton> */}
     <AppIconButton tooltip="Add new playlist" onClick={onAdd}>
       <AddIcon />
     </AppIconButton>
@@ -148,7 +148,7 @@ export const PlaylistsPage = () => {
     <>
       <Box className="custom-scrollbar mr-5 overflow-y-auto pt-5">
         <PlaylistsToolbar
-          onRefresh={() => refetch()}
+          // onRefresh={() => refetch()}
           isLoading={false}
           onAdd={handleAddPlaylist}
         />

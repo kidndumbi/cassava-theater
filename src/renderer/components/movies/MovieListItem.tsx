@@ -1,7 +1,6 @@
 import React from "react";
 import { trimFileName } from "../../util/helperFunctions";
 import { PosterCard } from "../common/PosterCard";
-import { AppMore } from "../common/AppMore";
 import { HoverBox } from "../common/HoverBox";
 import { HoverContent } from "../common/HoverContent";
 import { VideoTypeContainer } from "../common/VideoTypeContainer";
@@ -17,6 +16,7 @@ interface MovieListItemProps {
   onConvertToMp4: (filePath: string) => void;
   alwaysShowVideoType: boolean;
   handlePlaylistUpdate: (movie: VideoDataModel) => void;
+  onContextMenu?: (event: React.MouseEvent) => void;
 }
 
 export const MovieListItem: React.FC<MovieListItemProps> = ({
@@ -28,34 +28,17 @@ export const MovieListItem: React.FC<MovieListItemProps> = ({
   onConvertToMp4,
   alwaysShowVideoType,
   handlePlaylistUpdate,
+  onContextMenu,
 }) => {
   return (
-    <HoverBox>
+    <HoverBox onContextMenu={onContextMenu}>
       <PosterCard
         imageUrl={getImageUrl(movie)}
         altText={movie.fileName || ""}
         onClick={() => onPosterClick(movie.filePath || "")}
         footer={trimFileName(movie.fileName || "")}
       />
-      <HoverContent className="hover-content">
-        <AppMore
-          isMovie={true}
-          handleDelete={() => onDelete(movie.filePath)}
-          linkTheMovieDb={onLinkTheMovieDb}
-          isNotMp4={!movie.filePath?.endsWith(".mp4")}
-          handleConvertToMp4={() => onConvertToMp4(movie.filePath || "")}
-          videoData={movie}
-          handleWatchLaterUpdate={async (filePath, watchLater) => {
-            await window.videoAPI.saveVideoJsonData({
-              currentVideo: { filePath },
-              newVideoJsonData: { watchLater },
-            });
-          }}
-          handlePlaylistUpdate={() => {
-            handlePlaylistUpdate(movie);
-          }}
-        />
-      </HoverContent>
+      <HoverContent className="hover-content" />
       <VideoTypeContainer
         className={!alwaysShowVideoType ? "hover-content" : ""}
         alwaysShow={alwaysShowVideoType}

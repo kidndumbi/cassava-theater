@@ -17,6 +17,7 @@ import { MovieListItem } from "./MovieListItem";
 import { AppModal } from "../common/AppModal";
 import { PlaylistSelect } from "../playlists/PlaylistSelect";
 import { PlaylistModel } from "../../../models/playlist.model";
+import { AppMore } from "../common/AppMore";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -158,31 +159,47 @@ const MovieList: React.FC<MovieListProps> = ({
     }
   };
 
+  const [contextMenu, setContextMenu] = useState<{
+    mouseX: number;
+    mouseY: number;
+    movie: VideoDataModel | null;
+  } | null>(null);
+
   return (
     <>
       <Box display="flex" flexWrap="wrap" gap="4px">
         {movies?.map((movie) => (
-          <MovieListItem
+          <div
             key={movie.filePath}
-            movie={movie}
-            onPosterClick={handlePosterClick}
-            getImageUrl={getImageUrl}
-            onDelete={async (filePath) => {
-              setMessage("Are you sure you want to delete this Movie?");
-              const dialogDecision = await openDialog("Delete");
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setContextMenu({
+                mouseX: e.clientX + 2,
+                mouseY: e.clientY - 6,
+                movie,
+              });
+            }}
+          >
+            <MovieListItem
+              movie={movie}
+              onPosterClick={handlePosterClick}
+              getImageUrl={getImageUrl}
+              onDelete={async (filePath) => {
+                setMessage("Are you sure you want to delete this Movie?");
+                const dialogDecision = await openDialog("Delete");
 
-              if (dialogDecision !== "Ok") return;
-              deleteFile(filePath);
-            }}
-            onLinkTheMovieDb={() => handleLinkMovieDb(movie)}
-            onConvertToMp4={handleConvertToMp4}
-            alwaysShowVideoType={settings?.showVideoType}
-            handlePlaylistUpdate={async (movie) => {
-              console.log("Movie for playlist update:", movie);
-              setSelectedPlaylistVideo(movie);
-              setOpenPlaylistModal(true);
-            }}
-          />
+                if (dialogDecision !== "Ok") return;
+                deleteFile(filePath);
+              }}
+              onLinkTheMovieDb={() => handleLinkMovieDb(movie)}
+              onConvertToMp4={handleConvertToMp4}
+              alwaysShowVideoType={settings?.showVideoType}
+              handlePlaylistUpdate={async (movie) => {
+                setSelectedPlaylistVideo(movie);
+                setOpenPlaylistModal(true);
+              }}
+            />
+          </div>
         ))}
       </Box>
 
@@ -246,6 +263,46 @@ const MovieList: React.FC<MovieListProps> = ({
           }}
         ></PlaylistSelect>
       </AppModal>
+
+      <AppMore
+        open={!!contextMenu}
+        anchorPosition={
+          contextMenu
+            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+            : null
+        }
+        onClose={() => setContextMenu(null)}
+        isMovie={true}
+        handleDelete={() => {
+          if (contextMenu?.movie?.filePath) {
+            setMessage("Are you sure you want to delete this Movie?");
+            openDialog("Delete").then((dialogDecision) => {
+              if (dialogDecision !== "Ok") return;
+              deleteFile(contextMenu.movie.filePath);
+            });
+          }
+        }}
+        linkTheMovieDb={() => {
+          if (contextMenu?.movie) handleLinkMovieDb(contextMenu.movie);
+        }}
+        isNotMp4={!contextMenu?.movie?.filePath?.endsWith(".mp4")}
+        handleConvertToMp4={() => {
+          if (contextMenu?.movie?.filePath) handleConvertToMp4(contextMenu.movie.filePath);
+        }}
+        videoData={contextMenu?.movie || {}}
+        handleWatchLaterUpdate={async (filePath, watchLater) => {
+          await window.videoAPI.saveVideoJsonData({
+            currentVideo: { filePath },
+            newVideoJsonData: { watchLater },
+          });
+        }}
+        handlePlaylistUpdate={() => {
+          if (contextMenu?.movie) {
+            setSelectedPlaylistVideo(contextMenu.movie);
+            setOpenPlaylistModal(true);
+          }
+        }}
+      />
     </>
   );
 };
