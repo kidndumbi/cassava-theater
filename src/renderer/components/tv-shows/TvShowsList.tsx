@@ -169,32 +169,60 @@ export const TvShowsList = React.memo(function TvShowsList(
     }
   };
 
+  const [contextMenu, setContextMenu] = useState<{
+    mouseX: number;
+    mouseY: number;
+    show: VideoDataModel | null;
+  } | null>(null);
+
   return (
     <>
       <Box display="flex" flexWrap="wrap" gap="4px">
         {shows?.map((show: VideoDataModel, index: number) => (
-          <HoverBox key={show.filePath}>
-            <PosterCard
-              key={index}
-              imageUrl={getImageUlr(show)}
-              altText={show.fileName || ""}
-              onClick={() => show.filePath && handlePosterClick(show.filePath)}
-              footer={trimFileName(show.fileName ?? "")}
-            />
-            <HoverContent className="hover-content">
-              <AppMore
-                isMovie={false}
-                handleDelete={handleDelete.bind(null, show.filePath)}
-                linkTheMovieDb={() => {
-                  setSelectedTvShow(show);
-                  setOpenTvShowSuggestionsModal(true);
-                }}
-                videoData={show}
+          <div
+            key={show.filePath}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setContextMenu({
+                mouseX: e.clientX + 2,
+                mouseY: e.clientY - 6,
+                show,
+              });
+            }}
+          >
+            <HoverBox>
+              <PosterCard
+                key={index}
+                imageUrl={getImageUlr(show)}
+                altText={show.fileName || ""}
+                onClick={() => show.filePath && handlePosterClick(show.filePath)}
+                footer={trimFileName(show.fileName ?? "")}
               />
-            </HoverContent>
-          </HoverBox>
+              <HoverContent className="hover-content" />
+            </HoverBox>
+          </div>
         ))}
       </Box>
+      <AppMore
+        open={!!contextMenu}
+        anchorPosition={
+          contextMenu
+            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+            : null
+        }
+        onClose={() => setContextMenu(null)}
+        isMovie={false}
+        handleDelete={() => {
+          if (contextMenu?.show?.filePath) handleDelete(contextMenu.show.filePath);
+        }}
+        linkTheMovieDb={() => {
+          if (contextMenu?.show) {
+            setSelectedTvShow(contextMenu.show);
+            setOpenTvShowSuggestionsModal(true);
+          }
+        }}
+        videoData={contextMenu?.show || {}}
+      />
 
       <TvShowSuggestionsModal
         id={selectedTvShow?.tv_show_details?.id.toString() || ""}

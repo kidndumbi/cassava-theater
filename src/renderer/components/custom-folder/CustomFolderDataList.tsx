@@ -9,7 +9,6 @@ import { HoverBox } from "../common/HoverBox";
 import { HoverContent } from "../common/HoverContent";
 import { VideoTypeContainer } from "../common/VideoTypeContainer";
 import { VideoTypeChip } from "../common/VideoTypeChip";
-import { AppMore } from "../common/AppMore";
 import { useAppDispatch } from "../../store";
 import { useMovies } from "../../hooks/useMovies";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
@@ -20,22 +19,17 @@ import { useDeleteFile } from "../../hooks/useDeleteFile";
 import { MovieSuggestionsModal } from "../movies/MovieSuggestionsModal";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { useSaveJsonData } from "../../hooks/useSaveJsonData";
+import { AppMore } from "../common/AppMore";
 
 const CustomFolderItem: React.FC<{
   video: VideoDataModel;
   getImageUlr: (movie: VideoDataModel) => string | undefined;
   handlePosterClick: (videoPath: string) => void;
-  onDelete: (filePath: string) => void;
-  onLinkTheMovieDb: () => void;
-  onConvertToMp4: (filePath: string) => void;
   alwaysShowVideoType: boolean;
 }> = ({
   video,
   getImageUlr,
   handlePosterClick,
-  onDelete,
-  onLinkTheMovieDb,
-  onConvertToMp4,
   alwaysShowVideoType,
 }) => {
   const renderFolderIcon = (item: VideoDataModel) =>
@@ -54,24 +48,7 @@ const CustomFolderItem: React.FC<{
         onClick={() => video.filePath && handlePosterClick(video.filePath)}
         footer={renderFolderIcon(video)}
       />
-
-      <HoverContent className="hover-content">
-        <AppMore
-          isMovie={hasExtension(video.fileName)}
-          handleDelete={() => onDelete(video.filePath)}
-          linkTheMovieDb={onLinkTheMovieDb}
-          isNotMp4={!video.filePath?.endsWith(".mp4")}
-          handleConvertToMp4={() => onConvertToMp4(video.filePath || "")}
-          videoData={video}
-          handleWatchLaterUpdate={async (filePath, watchLater) => {
-            await window.videoAPI.saveVideoJsonData({
-              currentVideo: { filePath },
-              newVideoJsonData: { watchLater },
-            });
-          }}
-        />
-      </HoverContent>
-
+      <HoverContent className="hover-content" />
       {hasExtension(video.fileName) && (
         <VideoTypeContainer
           className={!alwaysShowVideoType ? "hover-content" : ""}
@@ -215,38 +192,80 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
     }
   };
 
+  const [contextMenu, setContextMenu] = useState<{
+    mouseX: number;
+    mouseY: number;
+    video: VideoDataModel | null;
+  } | null>(null);
+
   return (
     <>
       <Box className="flex flex-wrap gap-1">
         {customFolderData?.map((video, idx) => (
-          <Box key={idx} className="m-1 max-w-[200px] flex-[1_1_200px]">
-            <Box className="relative">
-              <CustomFolderItem
-                video={video}
-                getImageUlr={getImageUlr}
-                handlePosterClick={handlePosterClick}
-                onDelete={async (filePath) => {
-                  setMessage("Are you sure you want to delete this Movie?");
-                  const dialogDecision = await openDialog("Delete");
-
-                  if (dialogDecision !== "Ok") return;
-                  deleteFile(filePath);
-                }}
-                onLinkTheMovieDb={() => handleLinkMovieDb(video)}
-                onConvertToMp4={handleConvertToMp4}
-                alwaysShowVideoType={settings?.showVideoType}
-              />
+          <div
+            key={idx}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setContextMenu({
+                mouseX: e.clientX + 2,
+                mouseY: e.clientY - 6,
+                video,
+              });
+            }}
+          >
+            <Box className="m-1 max-w-[200px] flex-[1_1_200px]">
+              <Box className="relative">
+                <CustomFolderItem
+                  video={video}
+                  getImageUlr={getImageUlr}
+                  handlePosterClick={handlePosterClick}
+                  alwaysShowVideoType={settings?.showVideoType}
+                />
+              </Box>
+              <Typography
+                variant="subtitle1"
+                align="center"
+                className="break-all"
+              >
+                {removeVidExt(video.fileName ?? "")}
+              </Typography>
             </Box>
-            <Typography
-              variant="subtitle1"
-              align="center"
-              className="break-all"
-            >
-              {removeVidExt(video.fileName ?? "")}
-            </Typography>
-          </Box>
+          </div>
         ))}
       </Box>
+      <AppMore
+        open={!!contextMenu}
+        anchorPosition={
+          contextMenu
+            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+            : null
+        }
+        onClose={() => setContextMenu(null)}
+        isMovie={true}
+        handleDelete={() => {
+          if (contextMenu?.video?.filePath) {
+            setMessage("Are you sure you want to delete this Movie?");
+            openDialog("Delete").then((dialogDecision) => {
+              if (dialogDecision !== "Ok") return;
+              deleteFile(contextMenu.video.filePath);
+            });
+          }
+        }}
+        linkTheMovieDb={() => {
+          if (contextMenu?.video) handleLinkMovieDb(contextMenu.video);
+        }}
+        isNotMp4={!contextMenu?.video?.filePath?.endsWith(".mp4")}
+        handleConvertToMp4={() => {
+          if (contextMenu?.video?.filePath) handleConvertToMp4(contextMenu.video.filePath);
+        }}
+        videoData={contextMenu?.video || {}}
+        handleWatchLaterUpdate={async (filePath, watchLater) => {
+          await window.videoAPI.saveVideoJsonData({
+            currentVideo: { filePath },
+            newVideoJsonData: { watchLater },
+          });
+        }}
+      />
       <MovieSuggestionsModal
         id={selectedMovie?.movie_details?.id?.toString() || ""}
         open={openMovieSuggestionsModal}
