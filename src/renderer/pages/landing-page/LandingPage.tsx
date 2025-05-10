@@ -98,7 +98,7 @@ export const LandingPage = () => {
     {
       id: "app-home",
       label: "Home",
-      icon: <Home />,
+      icon: <Home sx={{ color: theme.palette.primary.main }}/>,
       handler: handleMenuClick,
       menuType: "default" as const,
     },
