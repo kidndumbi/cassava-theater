@@ -1,4 +1,5 @@
 import { ConversionQueueItem } from "./main/services/mp4Conversion.service";
+import { PlaylistModel } from "./models/playlist.model";
 // import { SettingsModel } from "./main/store";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoDataModel } from "./models/videoData.model";
@@ -115,6 +116,13 @@ export interface Mp4ConversionAPI {
   initializeConversionQueue: () => Promise<boolean>;
 }
 
+export interface PlaylistAPI {
+  getPlaylist: (id: string) => Promise<PlaylistModel | null>;
+  getAllPlaylists: () => Promise<PlaylistModel[]>;
+  putPlaylist: (id: string, playlist: PlaylistModel) => Promise<boolean>;
+  deletePlaylist: (id: string) => Promise<boolean>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -127,5 +135,6 @@ declare global {
     theMovieDbAPI: TheMovieDbAPI;
     fileManagerAPI: FileManagerAPI;
     mp4ConversionAPI: Mp4ConversionAPI;
+    playlistAPI: PlaylistAPI;
   }
 }

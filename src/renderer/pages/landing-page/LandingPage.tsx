@@ -7,6 +7,7 @@ import {
   LiveTv,
   Theaters,
   Folder as FolderIcon,
+  FeaturedPlayList
 } from "@mui/icons-material";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import Grid from "@mui/material/Grid2";
@@ -112,6 +113,13 @@ export const LandingPage = () => {
       id: "app-tv-shows",
       label: "Tv Shows",
       icon: <LiveTv />,
+      handler: handleMenuClick,
+      menuType: "default",
+    },
+    {
+      id: "app-playlists",
+      label: "Playlists",
+      icon: <FeaturedPlayList />,
       handler: handleMenuClick,
       menuType: "default",
     },
