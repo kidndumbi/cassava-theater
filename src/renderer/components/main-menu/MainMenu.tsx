@@ -43,6 +43,23 @@ const MainMenu: React.FC<MainMenuProps> = ({
         const activeStyle = isActive
           ? { backgroundColor: theme.palette.primary.main }
           : {};
+
+        // Only clone if icon is a valid ReactElement
+        const icon =
+          isActive &&
+          item.menuType === "default" &&
+          React.isValidElement(item.icon)
+            ? React.cloneElement(item.icon, {
+                // Use 'as any' to bypass TS error for 'sx'
+                sx: {
+                  ...(typeof (item.icon as any).props?.sx === "object"
+                    ? { ...(item.icon as any).props.sx }
+                    : {}),
+                  color: theme.customVariables.appWhiteSmoke,
+                },
+              } as any)
+            : item.icon;
+
         return (
           <Button
             key={item.label}
@@ -61,7 +78,7 @@ const MainMenu: React.FC<MainMenuProps> = ({
                 flexDirection: "column",
               }}
             >
-              {item.icon && item.icon}
+              {icon}
               <span>{item.label}</span>
             </Box>
           </Button>
