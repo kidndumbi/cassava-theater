@@ -17,6 +17,7 @@ interface AppMoreProps {
     filePath: string,
     watchLater: boolean,
   ) => Promise<void>;
+  handlePlaylistUpdate?: () => void;
 }
 
 const iconButtonStyles: SxProps<Theme> = {
@@ -47,6 +48,7 @@ export const AppMore: React.FC<AppMoreProps> = ({
   handleConvertToMp4,
   videoData,
   handleWatchLaterUpdate,
+  handlePlaylistUpdate,
 }) => {
   const [menuItems, setMenuItems] = React.useState<any[]>([]);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -93,6 +95,12 @@ export const AppMore: React.FC<AppMoreProps> = ({
           : "Remove from Watch Later",
         action: () =>
           handleWatchLaterUpdate(videoData.filePath, !videoData.watchLater),
+        sx: menuItemStyles(),
+      });
+
+      items.push({
+        label: "Playlists",
+        action: () => handlePlaylistUpdate(),
         sx: menuItemStyles(),
       });
     }

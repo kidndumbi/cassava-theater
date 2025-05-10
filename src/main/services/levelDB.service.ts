@@ -7,6 +7,7 @@ import { VideoDataModel } from "../../models/videoData.model";
 import { ConversionQueueItem } from "../../models/conversion-queue-item.model";
 import { SettingsModel } from "../../models/settings.model";
 import { VideoScreenshotModel } from "../../models/video-screenshot.model";
+import { PlaylistModel } from "../../models/playlist.model";
 
 // Define your database collections
 type Collections = {
@@ -15,6 +16,7 @@ type Collections = {
   converQueueItems: ConversionQueueItem;
   settings: SettingsModel;
   videoScreenshots: VideoScreenshotModel;
+  playlists: PlaylistModel
 };
 
 type CollectionName = keyof Collections;

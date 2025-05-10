@@ -16,6 +16,8 @@ import { MovieDetails } from "./models/movie-detail.model";
 import { TvShowDetails } from "./models/tv-show-details.model";
 import { FileIPCChannels } from "./enums/fileIPCChannels";
 import { Mp4ConversionIPCChannels } from "./enums/mp4ConversionIPCChannels.enum";
+import { PlaylistIPCChannels } from "./enums/playlist-IPC-Channels.enum";
+import { PlaylistModel } from "./models/playlist.model";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -203,6 +205,21 @@ contextBridge.exposeInMainWorld("fileManagerAPI", {
       success: boolean;
       message: string;
     }>;
+  },
+});
+
+contextBridge.exposeInMainWorld("playlistAPI", {
+  getPlaylist: (id: string): Promise<PlaylistModel | null> => {
+    return ipcRenderer.invoke(PlaylistIPCChannels.GET_PLAYLIST, id);
+  },
+  getAllPlaylists: (): Promise<PlaylistModel[]> => {
+    return ipcRenderer.invoke(PlaylistIPCChannels.GET_ALL_PLAYLISTS);
+  },
+  putPlaylist: (id: string, playlist: PlaylistModel): Promise<boolean> => {
+    return ipcRenderer.invoke(PlaylistIPCChannels.PUT_PLAYLIST, id, playlist);
+  },
+  deletePlaylist: (id: string): Promise<boolean> => {
+    return ipcRenderer.invoke(PlaylistIPCChannels.DELETE_PLAYLIST, id);
   },
 });
 

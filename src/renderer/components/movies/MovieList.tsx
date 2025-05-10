@@ -1,82 +1,28 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Snackbar, Alert, Button } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { removeVidExt, trimFileName } from "../../util/helperFunctions";
-import { PosterCard } from "../common/PosterCard";
-import { AppMore } from "../common/AppMore";
+import { removeVidExt } from "../../util/helperFunctions";
 import { useMovies } from "../../hooks/useMovies";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
-import { VideoTypeChip } from "../common/VideoTypeChip";
 import { MovieDetails } from "../../../models/movie-detail.model";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
 import { useAppDispatch } from "../../store";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
-import { HoverBox } from "../common/HoverBox";
-import { HoverContent } from "../common/HoverContent";
-import { VideoTypeContainer } from "../common/VideoTypeContainer";
 import { useSaveJsonData } from "../../hooks/useSaveJsonData";
+import { usePlaylists } from "../../hooks/usePlaylists";
+import { MovieListItem } from "./MovieListItem";
+import { AppModal } from "../common/AppModal";
+import { PlaylistSelect } from "../playlists/PlaylistSelect";
+import { PlaylistModel } from "../../../models/playlist.model";
 
 interface MovieListProps {
   movies: VideoDataModel[];
   handlePosterClick: (videoPath: string) => void;
   getImageUrl: (movie: VideoDataModel) => string;
 }
-
-interface MovieListItemProps {
-  movie: VideoDataModel;
-  onPosterClick: (videoPath: string) => void;
-  getImageUrl: (movie: VideoDataModel) => string;
-  onDelete: (filePath: string) => void;
-  onLinkTheMovieDb: () => void;
-  onConvertToMp4: (filePath: string) => void;
-  alwaysShowVideoType: boolean;
-}
-
-const MovieListItem: React.FC<MovieListItemProps> = ({
-  movie,
-  onPosterClick,
-  getImageUrl,
-  onDelete,
-  onLinkTheMovieDb,
-  onConvertToMp4,
-  alwaysShowVideoType,
-}) => {
-  return (
-    <HoverBox>
-      <PosterCard
-        imageUrl={getImageUrl(movie)}
-        altText={movie.fileName || ""}
-        onClick={() => onPosterClick(movie.filePath || "")}
-        footer={trimFileName(movie.fileName || "")}
-      />
-      <HoverContent className="hover-content">
-        <AppMore
-          isMovie={true}
-          handleDelete={() => onDelete(movie.filePath)}
-          linkTheMovieDb={onLinkTheMovieDb}
-          isNotMp4={!movie.filePath?.endsWith(".mp4")}
-          handleConvertToMp4={() => onConvertToMp4(movie.filePath || "")}
-          videoData={movie}
-          handleWatchLaterUpdate={async (filePath, watchLater) => {
-            await window.videoAPI.saveVideoJsonData({
-              currentVideo: { filePath },
-              newVideoJsonData: { watchLater },
-            });
-          }}
-        />
-      </HoverContent>
-      <VideoTypeContainer
-        className={!alwaysShowVideoType ? "hover-content" : ""}
-        alwaysShow={alwaysShowVideoType}
-      >
-        <VideoTypeChip filePath={movie.filePath} />
-      </VideoTypeContainer>
-    </HoverBox>
-  );
-};
 
 const MovieList: React.FC<MovieListProps> = ({
   movies,
@@ -90,7 +36,15 @@ const MovieList: React.FC<MovieListProps> = ({
     React.useState<VideoDataModel | null>(null);
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
     React.useState(false);
+  const [openPlaylistModal, setOpenPlaylistModal] = React.useState(false);
+  const [selectedPlaylistVideo, setSelectedPlaylistVideo] =
+    React.useState<VideoDataModel | null>(null);
   const { data: settings } = useGetAllSettings();
+  const { data: playlists, refetch } = usePlaylists();
+
+  useEffect(() => {
+    console.log("Playlists data:", playlists);
+  }, [playlists]);
 
   const queryClient = useQueryClient();
 
@@ -151,6 +105,15 @@ const MovieList: React.FC<MovieListProps> = ({
       showSnackbar(`Error deleting Movie: ${error?.message}`, "error");
     },
   );
+
+  const { mutate: updatePlaylist } = useMutation({
+    mutationFn: (playlist: PlaylistModel) => {
+      return window.playlistAPI.putPlaylist(playlist.id, playlist);
+    },
+    onSuccess: () => {
+      refetch();
+    },
+  });
 
   const handleConvertToMp4 = (fromPath: string) => {
     const result = window.mp4ConversionAPI.addToConversionQueue(fromPath);
@@ -214,6 +177,11 @@ const MovieList: React.FC<MovieListProps> = ({
             onLinkTheMovieDb={() => handleLinkMovieDb(movie)}
             onConvertToMp4={handleConvertToMp4}
             alwaysShowVideoType={settings?.showVideoType}
+            handlePlaylistUpdate={async (movie) => {
+              console.log("Movie for playlist update:", movie);
+              setSelectedPlaylistVideo(movie);
+              setOpenPlaylistModal(true);
+            }}
           />
         ))}
       </Box>
@@ -260,6 +228,24 @@ const MovieList: React.FC<MovieListProps> = ({
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      <AppModal
+        open={openPlaylistModal}
+        onClose={() => {
+          setOpenPlaylistModal(false);
+          setSelectedPlaylistVideo(null); 
+        }}
+        title="Playlists"
+        fullScreen={false}
+      >
+        <PlaylistSelect
+          playlists={playlists}
+          video={selectedPlaylistVideo}
+          updatePlaylist={(playlist) => {
+            updatePlaylist(playlist);
+          }}
+        ></PlaylistSelect>
+      </AppModal>
     </>
   );
 };
