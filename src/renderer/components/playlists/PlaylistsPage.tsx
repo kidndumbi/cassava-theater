@@ -1,13 +1,5 @@
-import {
-  Box,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Paper,
-  Typography,
-} from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { Box, Typography } from "@mui/material";
+import { useEffect, useState, useCallback } from "react";
 import theme from "../../theme";
 import AddIcon from "@mui/icons-material/Add";
 import AppIconButton from "../common/AppIconButton";
@@ -15,10 +7,16 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { AppModal } from "../common/AppModal";
 import { AppButton } from "../common/AppButton";
 import { AppTextField } from "../common/AppTextField";
-import { useMutation } from "@tanstack/react-query";
 import { v4 as uuidv4 } from "uuid";
 import { PlaylistModel } from "../../../models/playlist.model";
 import { usePlaylists } from "../../hooks/usePlaylists";
+import { useQueries, useMutation } from "@tanstack/react-query";
+import { VideoDataModel } from "../../../models/videoData.model";
+import { useTmdbImageUrl } from "../../hooks/useImageUrl";
+import { getUrl } from "../../util/helperFunctions";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { PlaylistVideosPanel } from "./PlaylistVideosPanel";
+import { PlaylistListPanel } from "./PlaylistListPanel";
 
 // Title helper moved outside component
 const Title = (value: string) => (
@@ -55,9 +53,39 @@ const PlaylistsToolbar = ({
 );
 
 export const PlaylistsPage = () => {
+  const { data: settings } = useGetAllSettings();
   const { data: playlists, refetch } = usePlaylists();
 
+  const { getTmdbImageUrl } = useTmdbImageUrl();
 
+  // Store the entire selected playlist object, not just the id
+  const [selectedPlaylist, setSelectedPlaylist] =
+    useState<PlaylistModel | null>(null);
+
+  // Only call .map if selectedPlaylist?.videos is an array
+  const { data: selectedPlaylistVideos } = useQueries({
+    queries: Array.isArray(selectedPlaylist?.videos)
+      ? selectedPlaylist.videos.map((filepath) => ({
+          queryKey: ["videoDetails", filepath, "movies"],
+          queryFn: () =>
+            window.videoAPI.fetchVideoDetails({
+              path: filepath,
+              category: "movies",
+            }),
+          enabled: !!selectedPlaylist,
+        }))
+      : [],
+    combine: (results) => {
+      return {
+        data: results.map((result) => result.data),
+        pending: results.some((result) => result.isPending),
+      };
+    },
+  });
+
+  useEffect(() => {
+    console.log("Playlist videos:", selectedPlaylistVideos);
+  }, [selectedPlaylistVideos]);
 
   const { mutate: createNewPlaylist } = useMutation({
     mutationFn: (name: string) => {
@@ -74,16 +102,24 @@ export const PlaylistsPage = () => {
     },
   });
 
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
-    null,
-  );
-
+  const { mutate: updatePlaylist } = useMutation({
+    mutationFn: (args: { id: string; playlist: PlaylistModel }) => {
+      return window.playlistAPI.putPlaylist(args.playlist.id, args.playlist);
+    },
+    onSuccess: (_, variables) => {
+      setSelectedPlaylist((prev) =>
+        prev && prev.id === variables.playlist.id
+          ? { ...variables.playlist }
+          : prev,
+      );
+    },
+  });
   const [open, setOpen] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
 
   useEffect(() => {
-    console.log("selectedPlaylistId", selectedPlaylistId);
-  }, [selectedPlaylistId]);
+    console.log("selectedPlaylist", selectedPlaylist);
+  }, [selectedPlaylist]);
 
   const handleAddPlaylist = () => {
     setOpen(true);
@@ -96,6 +132,18 @@ export const PlaylistsPage = () => {
     setOpen(false);
   };
 
+  const getImageUrl = useCallback(
+    (movie: VideoDataModel) => {
+      if (movie?.poster) {
+        return getUrl("file", movie.poster, null, settings?.port);
+      }
+      if (movie?.movie_details?.poster_path) {
+        return getTmdbImageUrl(movie.movie_details.poster_path);
+      }
+    },
+    [getTmdbImageUrl, settings?.port],
+  );
+
   return (
     <>
       <Box className="custom-scrollbar mr-5 overflow-y-auto pt-5">
@@ -106,24 +154,21 @@ export const PlaylistsPage = () => {
         />
         {Title("Playlists")}
         <Box display="flex" gap={2} mt={2}>
-          <Paper sx={{ minWidth: 220, maxWidth: 300, flex: "0 0 220px" }}>
-            <List>
-              {playlists?.map((playlist) => (
-                <ListItem key={playlist.id} disablePadding>
-                  <ListItemButton
-                    selected={selectedPlaylistId === playlist.id}
-                    onClick={() => setSelectedPlaylistId(playlist.id)}
-                  >
-                    <ListItemText primary={playlist.name} />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
-          {/* Right: Videos in Playlist (empty for now) */}
-          <Paper sx={{ flex: 1, minHeight: 300, p: 2 }}>
-            {/* Videos will be shown here */}
-          </Paper>
+          <PlaylistListPanel
+            playlists={playlists}
+            selectedPlaylist={selectedPlaylist}
+            setSelectedPlaylist={setSelectedPlaylist}
+          />
+          <Box>
+            <PlaylistVideosPanel
+              videos={selectedPlaylistVideos}
+              getImageUrl={getImageUrl}
+              selectedPlaylist={selectedPlaylist}
+              updatePlaylist={(id: string, playlist: PlaylistModel) =>
+                updatePlaylist({ id, playlist })
+              }
+            />
+          </Box>
         </Box>
       </Box>
       <AppModal
