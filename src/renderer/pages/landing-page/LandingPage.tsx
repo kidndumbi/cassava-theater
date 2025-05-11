@@ -3,11 +3,10 @@ import { useEffect, useState, useMemo } from "react";
 import MainMenu from "../../components/main-menu/MainMenu";
 import { MenuItem } from "../../../models/menu-item.model";
 import {
-  Home,
   LiveTv,
   Theaters,
   Folder as FolderIcon,
-  FeaturedPlayList
+  FeaturedPlayList,
 } from "@mui/icons-material";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import Grid from "@mui/material/Grid2";
@@ -98,7 +97,11 @@ export const LandingPage = () => {
     {
       id: "app-home",
       label: "Home",
-      icon: <Home sx={{ color: theme.palette.primary.main }}/>,
+      icon: (
+        <span style={{ fontSize: "30px" }} role="img" aria-label="rename">
+          🏡
+        </span>
+      ),
       handler: handleMenuClick,
       menuType: "default" as const,
     },
@@ -112,14 +115,14 @@ export const LandingPage = () => {
     {
       id: "app-tv-shows",
       label: "Tv Shows",
-      icon: <LiveTv sx={{ color: theme.palette.primary.main }}/>,
+      icon: <LiveTv sx={{ color: theme.palette.primary.main }} />,
       handler: handleMenuClick,
       menuType: "default",
     },
     {
       id: "app-playlists",
       label: "Playlists",
-      icon: <FeaturedPlayList sx={{ color: theme.palette.primary.main }}/>,
+      icon: <FeaturedPlayList sx={{ color: theme.palette.primary.main }} />,
       handler: handleMenuClick,
       menuType: "default",
     },

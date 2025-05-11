@@ -1,9 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { useEffect, useState, useCallback } from "react";
 import theme from "../../theme";
-import AddIcon from "@mui/icons-material/Add";
-import AppIconButton from "../common/AppIconButton";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import { AppModal } from "../common/AppModal";
 import { AppButton } from "../common/AppButton";
 import { AppTextField } from "../common/AppTextField";
@@ -17,8 +14,10 @@ import { getUrl } from "../../util/helperFunctions";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { PlaylistVideosPanel } from "./PlaylistVideosPanel";
 import { PlaylistListPanel } from "./PlaylistListPanel";
+import { PlaylistsToolbar } from "./PlaylistsToolbar";
+import { SelectedPlaylistToolbar } from "./SelectedPlaylistToolbar";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 
-// Title helper moved outside component
 const Title = (value: string) => (
   <Typography
     variant="h6"
@@ -30,26 +29,6 @@ const Title = (value: string) => (
   >
     {value}
   </Typography>
-);
-
-// Toolbar extracted for clarity
-const PlaylistsToolbar = ({
-  // onRefresh,
-  isLoading,
-  onAdd,
-}: {
-  // onRefresh: () => void;
-  isLoading: boolean;
-  onAdd: () => void;
-}) => (
-  <Box className="flex gap-2 pb-5">
-    {/* <AppIconButton tooltip="Refresh" onClick={onRefresh} disabled={isLoading}>
-      <RefreshIcon />
-    </AppIconButton> */}
-    <AppIconButton tooltip="Add new playlist" onClick={onAdd}>
-      <AddIcon />
-    </AppIconButton>
-  </Box>
 );
 
 export const PlaylistsPage = () => {
@@ -112,10 +91,25 @@ export const PlaylistsPage = () => {
           ? { ...variables.playlist }
           : prev,
       );
+      refetch();
     },
   });
+  const { openDialog, setMessage } = useConfirmation();
+
+  const { mutate: deletePlaylist } = useMutation({
+    mutationFn: (id: string) => window.playlistAPI.deletePlaylist(id),
+    onSuccess: () => {
+      refetch();
+      setSelectedPlaylist(null);
+    },
+  });
+
   const [open, setOpen] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
+
+  // State for rename modal
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
 
   useEffect(() => {
     console.log("selectedPlaylist", selectedPlaylist);
@@ -130,6 +124,30 @@ export const PlaylistsPage = () => {
     createNewPlaylist(newPlaylistName);
     setNewPlaylistName("");
     setOpen(false);
+  };
+
+  const handleDeletePlaylist = async () => {
+    if (!selectedPlaylist) return;
+    setMessage(
+      `Are you sure you want to delete the playlist "${selectedPlaylist.name}"?`,
+    );
+    const decision = await openDialog("Delete");
+    if (decision === "Ok") {
+      deletePlaylist(selectedPlaylist.id);
+    }
+  };
+
+  const handleRenamePlaylist = () => {
+    if (!selectedPlaylist) return;
+    setRenameValue(selectedPlaylist.name);
+    setRenameOpen(true);
+  };
+
+  const handleRenameSubmit = () => {
+    if (!selectedPlaylist) return;
+    const updated = { ...selectedPlaylist, name: renameValue.trim() };
+    updatePlaylist({ id: updated.id, playlist: updated });
+    setRenameOpen(false);
   };
 
   const getImageUrl = useCallback(
@@ -147,11 +165,7 @@ export const PlaylistsPage = () => {
   return (
     <>
       <Box className="custom-scrollbar mr-5 overflow-y-auto pt-5">
-        <PlaylistsToolbar
-          // onRefresh={() => refetch()}
-          isLoading={false}
-          onAdd={handleAddPlaylist}
-        />
+        <PlaylistsToolbar onAdd={handleAddPlaylist} />
         {Title("Playlists")}
         <Box display="flex" gap={2} mt={2}>
           <PlaylistListPanel
@@ -160,6 +174,13 @@ export const PlaylistsPage = () => {
             setSelectedPlaylist={setSelectedPlaylist}
           />
           <Box>
+            {selectedPlaylist && (
+              <SelectedPlaylistToolbar
+                playlist={selectedPlaylist}
+                onRename={handleRenamePlaylist}
+                onDelete={handleDeletePlaylist}
+              />
+            )}
             <PlaylistVideosPanel
               videos={selectedPlaylistVideos}
               getImageUrl={getImageUrl}
@@ -171,6 +192,29 @@ export const PlaylistsPage = () => {
           </Box>
         </Box>
       </Box>
+      {/* New modal for renaming playlist */}
+      <AppModal
+        open={renameOpen}
+        onClose={() => setRenameOpen(false)}
+        title="Rename Playlist"
+        fullScreen={false}
+      >
+        <Box className="flex flex-col gap-2 p-4">
+          <AppTextField
+            label="Playlist Name"
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            theme={theme}
+          />
+          <AppButton
+            disabled={!renameValue.trim()}
+            color="primary"
+            onClick={handleRenameSubmit}
+          >
+            Save
+          </AppButton>
+        </Box>
+      </AppModal>
       <AppModal
         open={open}
         onClose={() => {
