@@ -1,8 +1,8 @@
 import * as React from "react";
-import { Paper, Box, Typography } from "@mui/material";
+import { Paper, Box, Typography, SxProps, Theme } from "@mui/material";
 import theme from "../../theme";
 import { PosterCard } from "../common/PosterCard";
-import { trimFileName } from "../../util/helperFunctions";
+import { removeVidExt, trimFileName } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { PlaylistModel } from "../../../models/playlist.model";
 import Menu from "@mui/material/Menu";
@@ -26,6 +26,16 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
     mouseY: number;
     videoIdx: number | null;
   } | null>(null);
+
+  const menuPaperStyles: SxProps<Theme> = {
+    "& .MuiPaper-root": {
+      backgroundColor: theme.customVariables.appDark,
+    },
+  };
+
+  const menuItemStyles = (color?: string): SxProps<Theme> => ({
+    color: color || theme.customVariables.appWhiteSmoke,
+  });
 
   const handleContextMenu = (event: React.MouseEvent, idx: number) => {
     event.preventDefault();
@@ -101,6 +111,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
           </Typography>
         )}
         <Menu
+          sx={menuPaperStyles}
           open={contextMenu !== null}
           onClose={handleClose}
           anchorReference="anchorPosition"
@@ -110,7 +121,24 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
               : undefined
           }
         >
-          <MenuItem onClick={handleRemove}>Remove</MenuItem>
+          {contextMenu &&
+            typeof contextMenu.videoIdx === "number" &&
+            videos?.[contextMenu.videoIdx] && (
+              <MenuItem
+                disabled
+                sx={{
+                  opacity: 1,
+                  fontWeight: "bold",
+                  pointerEvents: "none",
+                  color: theme.customVariables.appWhiteSmoke,
+                }}
+              >
+                {removeVidExt(videos[contextMenu.videoIdx]?.fileName)}
+              </MenuItem>
+            )}
+          <MenuItem sx={menuItemStyles()} onClick={handleRemove}>
+            Remove
+          </MenuItem>
         </Menu>
       </Box>
     </Paper>

@@ -3,6 +3,7 @@ import { Menu, MenuItem, SxProps, Theme } from "@mui/material";
 import theme from "../../theme";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { ConversionQueueItem } from "../../../models/conversion-queue-item.model";
+import { removeVidExt } from "../../util/helperFunctions";
 
 interface AppMoreProps {
   open: boolean;
@@ -19,6 +20,12 @@ interface AppMoreProps {
     watchLater: boolean,
   ) => Promise<void>;
   handlePlaylistUpdate?: () => void;
+}
+
+interface MenuItemConfig {
+  label: string;
+  action: () => void;
+  sx: SxProps<Theme>;
 }
 
 const menuPaperStyles: SxProps<Theme> = {
@@ -44,7 +51,7 @@ export const AppMore: React.FC<AppMoreProps> = ({
   handleWatchLaterUpdate,
   handlePlaylistUpdate,
 }) => {
-  const [menuItems, setMenuItems] = React.useState<any[]>([]);
+  const [menuItems, setMenuItems] = React.useState<MenuItemConfig[]>([]);
 
   React.useEffect(() => {
     const prepareMenuItems = async () => {
@@ -100,8 +107,15 @@ export const AppMore: React.FC<AppMoreProps> = ({
     if (open) {
       prepareMenuItems();
     }
-    
-  }, [open, isMovie, isNotMp4, videoData, handleConvertToMp4, handleWatchLaterUpdate, handlePlaylistUpdate]);
+  }, [
+    open,
+    isMovie,
+    isNotMp4,
+    videoData,
+    handleConvertToMp4,
+    handleWatchLaterUpdate,
+    handlePlaylistUpdate,
+  ]);
 
   const handleMenuItemClick = (action: () => void) => {
     action();
@@ -113,9 +127,24 @@ export const AppMore: React.FC<AppMoreProps> = ({
       open={open}
       onClose={onClose}
       anchorReference="anchorPosition"
-      anchorPosition={anchorPosition ? { top: anchorPosition.top, left: anchorPosition.left } : undefined}
+      anchorPosition={
+        anchorPosition
+          ? { top: anchorPosition.top, left: anchorPosition.left }
+          : undefined
+      }
       sx={menuPaperStyles}
     >
+      <MenuItem
+        disabled
+        sx={{
+          opacity: 1,
+          fontWeight: "bold",
+          pointerEvents: "none",
+          color: theme.customVariables.appWhiteSmoke,
+        }}
+      >
+        {removeVidExt(videoData?.fileName)}
+      </MenuItem>
       {menuItems.map((item, index) => (
         <MenuItem
           key={index}
