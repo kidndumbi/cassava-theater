@@ -31,6 +31,7 @@ import { Clear } from "@mui/icons-material";
 import CustomDrawer from "../common/CustomDrawer";
 import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
+import { useModalState } from "../../hooks/useModalState";
 
 export type AppVideoPlayerHandle = {
   skipBy?: (seconds: number) => void;
@@ -54,6 +55,7 @@ type AppVideoPlayerProps = {
   playNextEpisode: (episode: VideoDataModel) => void;
   findNextEpisode: (currentFilePath: string) => VideoDataModel | null;
   port: string;
+  openPlaylistControls?:() => void;
 };
 
 const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
@@ -71,24 +73,23 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       playNextEpisode,
       findNextEpisode,
       port,
+      openPlaylistControls
     },
     ref,
   ) => {
-    // Refs and hooks
     const { setPlayer } = useVideoListLogic();
     const { mkvCurrentTime, currentVideo } = useVideoPlayerLogic();
     const videoPlayerRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [error, setError] = useState<string | null>(null);
-    const [openDrawer, setOpenDrawer] = useState(false);
-    const [openNotesModal, setOpenNotesModal] = useState(false);
+    const castAndCrewModal = useModalState(false);
+    const notesModal = useModalState(false);
     const [sliderValue, setSliderValue] = useState<number | null>(null);
     const debouncedSliderValue = useDebounce(sliderValue, 300);
     const isMouseActive = useMouseActivity();
     const isNotMp4VideoFormat = currentVideo?.isMkv || currentVideo?.isAvi;
     const [videoUrl, setVideoUrl] = useState<string>("");
 
-    // Video player controls
     const {
       skipBy,
       play,
@@ -200,21 +201,21 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
 
     const handleOpenNotesModal = () => {
       pause?.();
-      setOpenNotesModal(true);
+      notesModal.setOpen(true);
     };
 
     const handleCloseNotesModal = () => {
-      setOpenNotesModal(false);
+      notesModal.setOpen(false);
       play?.();
     };
 
     const handleToggleDrawer = () => {
       pause();
-      setOpenDrawer(!openDrawer);
+      castAndCrewModal.setOpen(!castAndCrewModal.open);
     };
 
     const handleCloseDrawer = () => {
-      setOpenDrawer(false);
+      castAndCrewModal.setOpen(false);
       play();
     };
 
@@ -307,6 +308,11 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               toggleCastAndCrew={
                 castAndCrewContent ? handleToggleDrawer : undefined
               }
+              togglePlaylistControl={
+                openPlaylistControls
+                  ? openPlaylistControls
+                  : undefined
+              }
               handleCancel={(filePath) => {
                 setVideoUrl("");
                 handleCancel(filePath);
@@ -325,7 +331,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
 
         {currentVideo && (
           <NotesModal
-            open={openNotesModal}
+            open={notesModal.open}
             handleClose={handleCloseNotesModal}
             videoData={currentVideo}
             currentVideoTime={currentTime}
@@ -343,7 +349,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           </>
         )}
 
-        <CustomDrawer open={openDrawer} onClose={handleCloseDrawer}>
+        <CustomDrawer open={castAndCrewModal.open} onClose={handleCloseDrawer}>
           {castAndCrewContent}
         </CustomDrawer>
       </div>

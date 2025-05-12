@@ -20,6 +20,7 @@ import { SelectedPlaylistToolbar } from "./SelectedPlaylistToolbar";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { useGetPlaylistVideoData } from "../../hooks/useGetPlaylistVideoData";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
+import { useModalState } from "../../hooks/useModalState";
 
 const Title = (value: string) => (
   <Typography
@@ -33,14 +34,6 @@ const Title = (value: string) => (
     {value}
   </Typography>
 );
-
-// Custom hook for modal state
-function useModalState(initial = false) {
-  const [open, setOpen] = useState(initial);
-  const openModal = () => setOpen(true);
-  const closeModal = () => setOpen(false);
-  return { open, openModal, closeModal, setOpen };
-}
 
 export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const navigate = useNavigate();
