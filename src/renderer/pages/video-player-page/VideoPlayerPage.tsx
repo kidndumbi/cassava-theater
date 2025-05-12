@@ -6,7 +6,7 @@ import AppVideoPlayer, {
   AppVideoPlayerHandle,
 } from "../../components/video-player/AppVideoPlayer";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { removeLastSegments, removeVidExt } from "../../util/helperFunctions";
+import { removeLastSegments } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useVideoDataQuery } from "../../hooks/useVideoData.query";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
@@ -17,6 +17,7 @@ import CustomDrawer from "../../components/common/CustomDrawer";
 import { useModalState } from "../../hooks/useModalState";
 
 import { PlaylistDrawerPanel } from "../../components/playlists/PlaylistDrawerPanel";
+import { useUpdatePlaylist } from "../../hooks/useUpdatePlaylist";
 
 type VideoPlayerPageProps = {
   appVideoPlayerRef?: React.Ref<AppVideoPlayerHandle>;
@@ -39,6 +40,7 @@ export const VideoPlayerPage = ({
   const [searchParams] = useSearchParams();
 
   const [seasonPath, setSeasonPath] = useState("");
+  const { mutate: updatePlaylist } = useUpdatePlaylist();
 
   const { data: episodes } = useVideoDataQuery({
     filePath: seasonPath || "",
@@ -259,6 +261,14 @@ export const VideoPlayerPage = ({
           onPlayVideo={(video) => {
             setCurrentVideo(video);
             playlistControlPanel.setOpen(false);
+            updatePlaylist({
+              id: playlistId,
+              playlist: {
+                ...playlist,
+                lastVideoPlayed: video.filePath,
+                lastVideoPlayedDate: new Date().toISOString(),
+              },
+            });
           }}
         />
       </CustomDrawer>

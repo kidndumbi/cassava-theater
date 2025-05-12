@@ -1,5 +1,5 @@
 import { Box, Typography } from "@mui/material";
-import {  useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import theme from "../../theme";
 import { AppModal } from "../common/AppModal";
@@ -21,6 +21,7 @@ import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { useGetPlaylistVideoData } from "../../hooks/useGetPlaylistVideoData";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import { useModalState } from "../../hooks/useModalState";
+import { useUpdatePlaylist } from "../../hooks/useUpdatePlaylist";
 
 const Title = (value: string) => (
   <Typography
@@ -42,8 +43,10 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const { setCurrentVideo } = useVideoListLogic();
   const { getTmdbImageUrl } = useTmdbImageUrl();
 
-  const [selectedPlaylist, setSelectedPlaylist] = useState<PlaylistModel | null>(null);
-  const { data: selectedPlaylistVideos } = useGetPlaylistVideoData(selectedPlaylist);
+  const [selectedPlaylist, setSelectedPlaylist] =
+    useState<PlaylistModel | null>(null);
+  const { data: selectedPlaylistVideos } =
+    useGetPlaylistVideoData(selectedPlaylist);
 
   // Modal states
   const newPlaylistModal = useModalState();
@@ -69,18 +72,13 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
     },
   });
 
-  const { mutate: updatePlaylist } = useMutation({
-    mutationFn: (args: { id: string; playlist: PlaylistModel }) => {
-      return window.playlistAPI.putPlaylist(args.playlist.id, args.playlist);
-    },
-    onSuccess: (_, variables) => {
-      setSelectedPlaylist((prev) =>
-        prev && prev.id === variables.playlist.id
-          ? { ...variables.playlist }
-          : prev,
-      );
-      refetch();
-    },
+  const { mutate: updatePlaylist } = useUpdatePlaylist((_, variables) => {
+    setSelectedPlaylist((prev) =>
+      prev && prev.id === variables.playlist.id
+        ? { ...variables.playlist }
+        : prev,
+    );
+    refetch();
   });
 
   const { openDialog, setMessage } = useConfirmation();
@@ -105,7 +103,9 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
 
   const handleDeletePlaylist = async () => {
     if (!selectedPlaylist) return;
-    setMessage(`Are you sure you want to delete the playlist "${selectedPlaylist.name}"?`);
+    setMessage(
+      `Are you sure you want to delete the playlist "${selectedPlaylist.name}"?`,
+    );
     const decision = await openDialog("Delete");
     if (decision === "Ok") {
       deletePlaylist(selectedPlaylist.id);
@@ -182,7 +182,8 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
                 onPlayFromLastWatched={() =>
                   playVideoFromPlaylist(
                     selectedPlaylistVideos.findIndex(
-                      (video) => video.filePath === selectedPlaylist.lastVideoPlayed,
+                      (video) =>
+                        video.filePath === selectedPlaylist.lastVideoPlayed,
                     ),
                   )
                 }
@@ -197,7 +198,9 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
                 updatePlaylist({ id, playlist })
               }
               navToDetails={(videoPath: string) => {
-                navigate(`/video-details?videoPath=${videoPath}&menuId=${menuId}`);
+                navigate(
+                  `/video-details?videoPath=${videoPath}&menuId=${menuId}`,
+                );
               }}
             />
           </Box>
