@@ -13,18 +13,10 @@ import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useQuery } from "@tanstack/react-query";
 import { useGetPlaylistVideoData } from "../../hooks/useGetPlaylistVideoData";
 import CustomDrawer from "../../components/common/CustomDrawer";
-import {
-  Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemAvatar,
-  Avatar,
-  ListItemText,
-  Paper,
-} from "@mui/material";
+
 import { useModalState } from "../../hooks/useModalState";
-import theme from "../../theme";
+
+import { PlaylistDrawerPanel } from "../../components/playlists/PlaylistDrawerPanel";
 
 type VideoPlayerPageProps = {
   appVideoPlayerRef?: React.Ref<AppVideoPlayerHandle>;
@@ -98,10 +90,6 @@ export const VideoPlayerPage = ({
     setShuffle(shuffle);
   }, [location.search, location.hash, player, currentVideo]);
 
-  useEffect(() => {
-    console.log("playlistId:", playlistId);
-  }, [playlistId]);
-
   const parseSearchParams = () => {
     return {
       menuId: searchParams.get("menuId") || "",
@@ -121,7 +109,6 @@ export const VideoPlayerPage = ({
   const { data: receivedPlaylistVideos } = useGetPlaylistVideoData(playlist);
 
   useEffect(() => {
-    console.log("Playlist videos:", receivedPlaylistVideos);
     if (
       receivedPlaylistVideos &&
       receivedPlaylistVideos.length > 0 &&
@@ -202,7 +189,6 @@ export const VideoPlayerPage = ({
           );
           if (idx !== -1 && idx < playlistVideos.length - 1) {
             const nextVideo = playlistVideos[idx + 1];
-            console.log("Next video:", nextVideo);
             setCurrentVideo(nextVideo);
           } else {
             // No more items to play, go to details of current video
@@ -266,76 +252,15 @@ export const VideoPlayerPage = ({
         onClose={playlistControlPanel.setOpen.bind(null, false)}
         anchor="right"
       >
-        <Box sx={{ width: 350, p: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            {playlist?.name || "Playlist"}
-          </Typography>
-          <List>
-            {playlistVideos?.map((video, idx) => {
-              const isCurrent =
-                currentVideo?.filePath &&
-                video?.filePath === currentVideo.filePath;
-              return (
-                <Paper
-                  key={video?.filePath || idx}
-                  sx={{
-                    mb: 1,
-                    backgroundColor: isCurrent
-                      ? theme.palette.primary.main
-                      : theme.customVariables.appDark,
-                  }}
-                >
-                  <ListItem>
-                    <ListItemAvatar>
-                      <Avatar
-                        variant="rounded"
-                        src={video?.videoProgressScreenshot || undefined}
-                        sx={{
-                          width: 120,
-                          height: 68,
-                          mr: 2,
-                        }}
-                        alt={video?.fileName}
-                      >
-                        <Box
-                          sx={{
-                            width: "100%",
-                            height: "100%",
-                            bgcolor: "#bdbdbd",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 12,
-                          }}
-                        >
-                          No Image
-                        </Box>
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography
-                          variant="subtitle1"
-                          fontWeight={isCurrent ? "bold" : "normal"}
-                          sx={{
-                            color: theme.customVariables.appWhiteSmoke,
-                          }}
-                        >
-                          {removeVidExt(video?.fileName) || "Untitled"}
-                        </Typography>
-                      }
-                    />
-                  </ListItem>
-                </Paper>
-              );
-            })}
-            {!playlistVideos?.length && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                No videos in this playlist.
-              </Typography>
-            )}
-          </List>
-        </Box>
+        <PlaylistDrawerPanel
+          playlist={playlist}
+          playlistVideos={playlistVideos}
+          currentVideo={currentVideo}
+          onPlayVideo={(video) => {
+            setCurrentVideo(video);
+            playlistControlPanel.setOpen(false);
+          }}
+        />
       </CustomDrawer>
     </>
   );
