@@ -19,27 +19,41 @@ export function useDeleteFile(
 ) {
   const dispatch = useAppDispatch();
 
+  // Helper to remove file from conversion queue
+  const removeFromConversionQueue = async (filePathDeleted: string) => {
+    const queue = await window.mp4ConversionAPI.getConversionQueue();
+    const queueItem = queue.find((item) => item.inputPath === filePathDeleted);
+    if (queueItem) {
+      window.mp4ConversionAPI.removeFromConversionQueue(queueItem.inputPath);
+      dispatch(
+        mp4ConversionActions.removeFromConversionQueue(queueItem.inputPath),
+      );
+    }
+  };
+
+  // Helper to remove file from all playlists
+  const removeFromPlaylists = async (filePathDeleted: string) => {
+    const playlists = await window.playlistAPI.getAllPlaylists();
+    playlists.forEach((p) => {
+      if (p.videos.includes(filePathDeleted)) {
+        const removedDeleted = p.videos.filter((v) => v !== filePathDeleted);
+        window.playlistAPI.putPlaylist(p.id, {
+          ...p,
+          videos: removedDeleted,
+          lastVideoPlayed:
+            p.lastVideoPlayed === filePathDeleted ? null : p.lastVideoPlayed,
+        });
+      }
+    });
+  };
+
   return useMutation({
     mutationFn: (filePath: string) =>
       window.fileManagerAPI.deleteFile(filePath),
-    onSuccess: (data, filePathDeleted, context) => {
+    onSuccess: async (data, filePathDeleted, context) => {
       if (data.success) {
-        window.mp4ConversionAPI.getConversionQueue().then((queue) => {
-          const queueItem = queue.find(
-            (item) => item.inputPath === filePathDeleted,
-          );
-          if (queueItem) {
-            window.mp4ConversionAPI.removeFromConversionQueue(
-              queueItem.inputPath,
-            );
-            dispatch(
-              mp4ConversionActions.removeFromConversionQueue(
-                queueItem.inputPath,
-              ),
-            );
-          }
-        });
-
+        await removeFromConversionQueue(filePathDeleted);
+        await removeFromPlaylists(filePathDeleted);
         onSuccess?.(data, filePathDeleted, context);
       } else {
         onError?.(new Error(data.message), filePathDeleted, context);
