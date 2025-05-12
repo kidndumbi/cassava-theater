@@ -2,7 +2,11 @@ import * as React from "react";
 import { Paper, Box, Typography, SxProps, Theme } from "@mui/material";
 import theme from "../../theme";
 import { PosterCard } from "../common/PosterCard";
-import { removeVidExt, trimFileName } from "../../util/helperFunctions";
+import {
+  getFilename,
+  removeVidExt,
+  trimFileName,
+} from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { PlaylistModel } from "../../../models/playlist.model";
 import Menu from "@mui/material/Menu";
@@ -13,6 +17,7 @@ interface PlaylistVideosPanelProps {
   getImageUrl: (video: VideoDataModel) => string | undefined;
   selectedPlaylist: PlaylistModel | null;
   updatePlaylist: (id: string, playlist: PlaylistModel) => void;
+  navToDetails: (videoPath: string) => void;
 }
 
 export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
@@ -20,6 +25,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
   getImageUrl,
   selectedPlaylist,
   updatePlaylist,
+  navToDetails,
 }) => {
   const [contextMenu, setContextMenu] = React.useState<{
     mouseX: number;
@@ -76,6 +82,17 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
     handleClose();
   };
 
+  const handleInfo = () => {
+    if (
+      contextMenu &&
+      typeof contextMenu.videoIdx === "number" &&
+      videos?.[contextMenu.videoIdx]
+    ) {
+      navToDetails(videos[contextMenu.videoIdx].filePath);
+    }
+    handleClose();
+  };
+
   return (
     <Paper
       sx={{
@@ -86,6 +103,12 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
         color: theme.customVariables.appWhiteSmoke,
       }}
     >
+      {selectedPlaylist?.lastVideoPlayed && (
+        <Typography sx={{ marginBottom: 2 }} variant="subtitle2">
+          Last Played:{" "}
+          {removeVidExt(getFilename(selectedPlaylist.lastVideoPlayed))}
+        </Typography>
+      )}
       <Box display="flex" flexWrap="wrap" gap={2}>
         {videos?.length > 0 ? (
           videos.map((video, idx) =>
@@ -138,6 +161,9 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
             )}
           <MenuItem sx={menuItemStyles()} onClick={handleRemove}>
             Remove
+          </MenuItem>
+          <MenuItem sx={menuItemStyles()} onClick={handleInfo}>
+            Info
           </MenuItem>
         </Menu>
       </Box>

@@ -87,7 +87,7 @@ export const renderActivePage = (
         activeMenu.id
       );
     case "app-playlists":
-      return <PlaylistsPage />;
+      return <PlaylistsPage menuId={activeMenu.id} />;
     default:
       return (
         <CustomFolder

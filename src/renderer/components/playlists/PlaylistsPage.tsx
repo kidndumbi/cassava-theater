@@ -1,5 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import theme from "../../theme";
 import { AppModal } from "../common/AppModal";
 import { AppButton } from "../common/AppButton";
@@ -7,7 +8,7 @@ import { AppTextField } from "../common/AppTextField";
 import { v4 as uuidv4 } from "uuid";
 import { PlaylistModel } from "../../../models/playlist.model";
 import { usePlaylists } from "../../hooks/usePlaylists";
-import { useQueries, useMutation } from "@tanstack/react-query";
+import {  useMutation } from "@tanstack/react-query";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { getUrl } from "../../util/helperFunctions";
@@ -17,6 +18,8 @@ import { PlaylistListPanel } from "./PlaylistListPanel";
 import { PlaylistsToolbar } from "./PlaylistsToolbar";
 import { SelectedPlaylistToolbar } from "./SelectedPlaylistToolbar";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
+import { useGetPlaylistVideoData } from "../../hooks/useGetPlaylistVideoData";
+import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 
 const Title = (value: string) => (
   <Typography
@@ -31,9 +34,11 @@ const Title = (value: string) => (
   </Typography>
 );
 
-export const PlaylistsPage = () => {
+export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
+  const navigate = useNavigate();
   const { data: settings } = useGetAllSettings();
   const { data: playlists, refetch } = usePlaylists();
+  const { setCurrentVideo } = useVideoListLogic();
 
   const { getTmdbImageUrl } = useTmdbImageUrl();
 
@@ -42,25 +47,8 @@ export const PlaylistsPage = () => {
     useState<PlaylistModel | null>(null);
 
   // Only call .map if selectedPlaylist?.videos is an array
-  const { data: selectedPlaylistVideos } = useQueries({
-    queries: Array.isArray(selectedPlaylist?.videos)
-      ? selectedPlaylist.videos.map((filepath) => ({
-          queryKey: ["videoDetails", filepath, "movies"],
-          queryFn: () =>
-            window.videoAPI.fetchVideoDetails({
-              path: filepath,
-              category: "movies",
-            }),
-          enabled: !!selectedPlaylist,
-        }))
-      : [],
-    combine: (results) => {
-      return {
-        data: results.map((result) => result.data),
-        pending: results.some((result) => result.isPending),
-      };
-    },
-  });
+  const { data: selectedPlaylistVideos } =
+    useGetPlaylistVideoData(selectedPlaylist);
 
   useEffect(() => {
     console.log("Playlist videos:", selectedPlaylistVideos);
@@ -179,6 +167,42 @@ export const PlaylistsPage = () => {
                 playlist={selectedPlaylist}
                 onRename={handleRenamePlaylist}
                 onDelete={handleDeletePlaylist}
+                onPlay={() => {
+                  if (selectedPlaylistVideos.length > 0) {
+                    setCurrentVideo(selectedPlaylistVideos[0]);
+                    updatePlaylist({
+                      id: selectedPlaylist.id,
+                      playlist: {
+                        ...selectedPlaylist,
+                        lastVideoPlayed: selectedPlaylistVideos[0].filePath,
+                      },
+                    });
+
+                    const path = `/video-player?menuId=${menuId}&playlistId=${selectedPlaylist.id}`;
+                    navigate(path);
+                  }
+                }}
+                onShuffle={() => {
+                  if (
+                    selectedPlaylistVideos &&
+                    selectedPlaylistVideos.length > 0
+                  ) {
+                    const randomIdx = Math.floor(
+                      Math.random() * selectedPlaylistVideos.length,
+                    );
+                    const randomVideo = selectedPlaylistVideos[randomIdx];
+                    setCurrentVideo(randomVideo);
+                    updatePlaylist({
+                      id: selectedPlaylist.id,
+                      playlist: {
+                        ...selectedPlaylist,
+                        lastVideoPlayed: randomVideo.filePath,
+                      },
+                    });
+                    const path = `/video-player?menuId=${menuId}&playlistId=${selectedPlaylist.id}`;
+                    navigate(path);
+                  }
+                }}
               />
             )}
             <PlaylistVideosPanel
@@ -188,6 +212,11 @@ export const PlaylistsPage = () => {
               updatePlaylist={(id: string, playlist: PlaylistModel) =>
                 updatePlaylist({ id, playlist })
               }
+              navToDetails={(videoPath: string) => {
+                navigate(
+                  `/video-details?videoPath=${videoPath}&menuId=${menuId}`,
+                );
+              }}
             />
           </Box>
         </Box>

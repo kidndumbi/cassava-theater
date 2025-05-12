@@ -5,11 +5,13 @@ import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import AppVideoPlayer, {
   AppVideoPlayerHandle,
 } from "../../components/video-player/AppVideoPlayer";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import {  useNavigate, useSearchParams } from "react-router-dom";
 import { removeLastSegments } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useVideoDataQuery } from "../../hooks/useVideoData.query";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { useQuery } from "@tanstack/react-query";
+import { useGetPlaylistVideoData } from "../../hooks/useGetPlaylistVideoData";
 
 type VideoPlayerPageProps = {
   appVideoPlayerRef?: React.Ref<AppVideoPlayerHandle>;
@@ -52,6 +54,7 @@ export const VideoPlayerPage = ({
   const [resumeId, setResumeId] = useState("");
   const [startFromBeginning, setStartFromBeginning] = useState(false);
   const [isTvShow, setIsTvShow] = useState(false);
+  const [playlistId, setPlaylistId] = useState("");
 
   useEffect(() => {
     return () => {
@@ -60,21 +63,50 @@ export const VideoPlayerPage = ({
   }, []);
 
   useEffect(() => {
-    const { menuId, startFromBeginning: start, resumeId } = parseSearchParams();
+    const {
+      menuId,
+      startFromBeginning: start,
+      resumeId,
+      playlistId,
+    } = parseSearchParams();
 
     setMenuId(menuId);
     setResumeId(resumeId);
     setStartFromBeginning(start === "true");
     setIsTvShow(menuId === "app-tv-shows" || resumeId === "tvShow");
+    setPlaylistId(playlistId);
   }, [location.search, location.hash, player, currentVideo]);
+
+  useEffect(() => {
+    console.log("playlistId:", playlistId);
+  }, [playlistId]);
 
   const parseSearchParams = () => {
     return {
       menuId: searchParams.get("menuId") || "",
       startFromBeginning: searchParams.get("startFromBeginning"),
       resumeId: searchParams.get("resumeId") || "",
+      playlistId: searchParams.get("playlistId") || "",
     };
   };
+
+  const { data: playlist } = useQuery({
+    queryKey: ["playlist", playlistId],
+    queryFn: () => window.playlistAPI.getPlaylist(playlistId),
+    enabled: !!playlistId,
+  });
+
+  const { data: playlistVideos } = useGetPlaylistVideoData(
+    playlist,
+  );
+
+  // useEffect(() => {
+  //   console.log("Playlist videos:", playlistVideos);
+  // }, [playlistVideos]);
+
+  useEffect(() => {
+    console.log("Playlist data:", playlist);
+  }, [playlist]);
 
   const onSubtitleChange = async (sub: string | null) => {
     await updateSubtitle(sub, currentVideo);
