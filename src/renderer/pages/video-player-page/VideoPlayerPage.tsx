@@ -5,7 +5,7 @@ import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import AppVideoPlayer, {
   AppVideoPlayerHandle,
 } from "../../components/video-player/AppVideoPlayer";
-import {  useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { removeLastSegments } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useVideoDataQuery } from "../../hooks/useVideoData.query";
@@ -55,6 +55,11 @@ export const VideoPlayerPage = ({
   const [startFromBeginning, setStartFromBeginning] = useState(false);
   const [isTvShow, setIsTvShow] = useState(false);
   const [playlistId, setPlaylistId] = useState("");
+  const [shuffle, setShuffle] = useState(false);
+  const [playlistVideos, setPlaylistVideos] = useState<
+    VideoDataModel[] | undefined
+  >();
+  const [playlistShuffled, setPlaylistShuffled] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -68,6 +73,7 @@ export const VideoPlayerPage = ({
       startFromBeginning: start,
       resumeId,
       playlistId,
+      shuffle,
     } = parseSearchParams();
 
     setMenuId(menuId);
@@ -75,6 +81,7 @@ export const VideoPlayerPage = ({
     setStartFromBeginning(start === "true");
     setIsTvShow(menuId === "app-tv-shows" || resumeId === "tvShow");
     setPlaylistId(playlistId);
+    setShuffle(shuffle);
   }, [location.search, location.hash, player, currentVideo]);
 
   useEffect(() => {
@@ -87,6 +94,7 @@ export const VideoPlayerPage = ({
       startFromBeginning: searchParams.get("startFromBeginning"),
       resumeId: searchParams.get("resumeId") || "",
       playlistId: searchParams.get("playlistId") || "",
+      shuffle: searchParams.get("shuffle") === "true",
     };
   };
 
@@ -96,17 +104,41 @@ export const VideoPlayerPage = ({
     enabled: !!playlistId,
   });
 
-  const { data: playlistVideos } = useGetPlaylistVideoData(
-    playlist,
-  );
-
-  // useEffect(() => {
-  //   console.log("Playlist videos:", playlistVideos);
-  // }, [playlistVideos]);
+  const { data: receivedPlaylistVideos } = useGetPlaylistVideoData(playlist);
 
   useEffect(() => {
-    console.log("Playlist data:", playlist);
-  }, [playlist]);
+    if (
+      receivedPlaylistVideos &&
+      receivedPlaylistVideos.length > 0 &&
+      currentVideo
+    ) {
+      if (shuffle && !playlistShuffled) {
+        const currentVideoFilePath = currentVideo.filePath;
+        const videos = [...receivedPlaylistVideos];
+        const currentIdx = videos.findIndex(
+          (v) => v?.filePath === currentVideoFilePath,
+        );
+        let currentVideoItem: VideoDataModel | undefined;
+        if (currentIdx !== -1) {
+          currentVideoItem = videos.splice(currentIdx, 1)[0];
+        }
+        // Fisher-Yates shuffle
+        for (let i = videos.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [videos[i], videos[j]] = [videos[j], videos[i]];
+        }
+        if (currentVideoItem) {
+          setPlaylistVideos([currentVideoItem, ...videos]);
+        } else {
+          setPlaylistVideos(videos);
+        }
+        setPlaylistShuffled(true);
+      } else if (!shuffle) {
+        setPlaylistVideos(receivedPlaylistVideos);
+        setPlaylistShuffled(false);
+      }
+    }
+  }, [receivedPlaylistVideos, shuffle, currentVideo, playlistShuffled]);
 
   const onSubtitleChange = async (sub: string | null) => {
     await updateSubtitle(sub, currentVideo);
@@ -147,7 +179,24 @@ export const VideoPlayerPage = ({
         navigateToVideoDetails(filePath);
       }
     } else {
-      navigateToVideoDetails(filePath);
+      if (playlistId) {
+        // Find the next video in playlistVideos after currentVideo
+        if (playlistVideos && currentVideo) {
+          const idx = playlistVideos.findIndex(
+            (v) => v?.filePath === currentVideo.filePath,
+          );
+          if (idx !== -1 && idx < playlistVideos.length - 1) {
+            const nextVideo = playlistVideos[idx + 1];
+            console.log("Next video:", nextVideo);
+            setCurrentVideo(nextVideo);
+          } else {
+            // No more items to play, go to details of current video
+            navigateToVideoDetails(currentVideo.filePath ?? "");
+          }
+        }
+      } else {
+        navigateToVideoDetails(filePath);
+      }
     }
   };
 
