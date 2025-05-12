@@ -202,6 +202,9 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
                   `/video-details?videoPath=${videoPath}&menuId=${menuId}`,
                 );
               }}
+              onPlayVideo={(videoIndex: number) => {
+                playVideoFromPlaylist(videoIndex);
+              }}
             />
           </Box>
         </Box>

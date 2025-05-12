@@ -18,6 +18,7 @@ interface PlaylistVideosPanelProps {
   selectedPlaylist: PlaylistModel | null;
   updatePlaylist: (id: string, playlist: PlaylistModel) => void;
   navToDetails: (videoPath: string) => void;
+  onPlayVideo: (videoIndex: number) => void;
 }
 
 export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
@@ -26,6 +27,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
   selectedPlaylist,
   updatePlaylist,
   navToDetails,
+  onPlayVideo,
 }) => {
   const [contextMenu, setContextMenu] = React.useState<{
     mouseX: number;
@@ -122,6 +124,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
                   imageUrl={getImageUrl(video)}
                   altText={video.fileName || ""}
                   footer={trimFileName(video.fileName || "")}
+                  onClick={() => onPlayVideo(idx)}
                 />
               </div>
             ) : null,
