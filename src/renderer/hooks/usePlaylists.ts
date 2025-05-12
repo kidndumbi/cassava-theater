@@ -4,5 +4,6 @@ export function usePlaylists() {
   return useQuery({
     queryKey: ["playlists"],
     queryFn: () => window.playlistAPI.getAllPlaylists(),
+    networkMode:"always"
   });
 }
