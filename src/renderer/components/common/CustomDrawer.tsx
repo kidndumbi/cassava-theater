@@ -6,13 +6,20 @@ interface CustomDrawerProps {
   open: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  anchor?: "left" | "right" | "top" | "bottom"; // add anchor prop
 }
 
-const CustomDrawer: React.FC<CustomDrawerProps> = ({ open, onClose, children }) => {
+const CustomDrawer: React.FC<CustomDrawerProps> = ({
+  open,
+  onClose,
+  children,
+  anchor = "left", // default to left
+}) => {
   return (
     <Drawer
       open={open}
       onClose={onClose}
+      anchor={anchor}
       className="custom-scrollbar"
       sx={{
         "& .MuiDrawer-paper": {

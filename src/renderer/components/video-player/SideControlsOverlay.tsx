@@ -6,6 +6,7 @@ import NotesIcon from "@mui/icons-material/Notes";
 import AppIconButton from "../common/AppIconButton";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { removeVidExt } from "../../util/helperFunctions";
+import FeaturedPlayListIcon from "@mui/icons-material/FeaturedPlayList";
 
 interface ControlButton {
   icon: React.ReactNode;
@@ -22,6 +23,7 @@ type SideControlsOverlayProps = {
   handleOpenNotesModal: () => void;
   nextEpisode?: VideoDataModel;
   toggleCastAndCrew?: () => void;
+  togglePlaylistControl?: () => void;
 };
 
 const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
@@ -31,6 +33,7 @@ const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
   handleOpenNotesModal,
   nextEpisode,
   toggleCastAndCrew,
+  togglePlaylistControl,
 }) => {
   const handleCancelClick = () => handleCancel(filePath);
 
@@ -57,6 +60,12 @@ const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
       tooltip: "Cast & Crew",
       onClick: toggleCastAndCrew,
       show: !!toggleCastAndCrew,
+    },
+    {
+      icon: <FeaturedPlayListIcon />,
+      tooltip: "Playlist controls",
+      onClick: togglePlaylistControl,
+      show: !!togglePlaylistControl,
     },
   ];
 
