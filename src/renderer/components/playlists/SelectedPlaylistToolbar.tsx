@@ -54,9 +54,6 @@ export const SelectedPlaylistToolbar = ({
 
   return (
     <Box className="flex items-center gap-2 pb-3">
-      <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-        {playlist.name}
-      </Typography>
       <AppIconButton
         tooltip="play or shuffle playlist"
         onClick={handlePlayClick}
