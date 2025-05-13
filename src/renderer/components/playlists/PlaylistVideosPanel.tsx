@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Paper, Box, Typography, SxProps, Theme } from "@mui/material";
+import { Paper, Box, Typography } from "@mui/material";
 import theme from "../../theme";
 import { PosterCard } from "../common/PosterCard";
 import {
@@ -9,8 +9,7 @@ import {
 } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { PlaylistModel } from "../../../models/playlist.model";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
+import { AppContextMenu } from "../common/AppContextMenu";
 
 interface PlaylistVideosPanelProps {
   videos: VideoDataModel[] | undefined;
@@ -29,48 +28,14 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
   navToDetails,
   onPlayVideo,
 }) => {
-  const [contextMenu, setContextMenu] = React.useState<{
-    mouseX: number;
-    mouseY: number;
-    videoIdx: number | null;
-  } | null>(null);
-
-  const menuPaperStyles: SxProps<Theme> = {
-    "& .MuiPaper-root": {
-      backgroundColor: theme.customVariables.appDark,
-    },
-  };
-
-  const menuItemStyles = (color?: string): SxProps<Theme> => ({
-    color: color || theme.customVariables.appWhiteSmoke,
-  });
-
-  const handleContextMenu = (event: React.MouseEvent, idx: number) => {
-    event.preventDefault();
-    setContextMenu(
-      contextMenu === null
-        ? {
-            mouseX: event.clientX + 2,
-            mouseY: event.clientY - 6,
-            videoIdx: idx,
-          }
-        : null,
-    );
-  };
-
-  const handleClose = () => {
-    setContextMenu(null);
-  };
-
   // Remove video from playlist
-  const handleRemove = () => {
+  const handleRemove = (videoIdx: number) => {
     if (
-      contextMenu &&
-      typeof contextMenu.videoIdx === "number" &&
+      typeof videoIdx === "number" &&
       selectedPlaylist &&
       Array.isArray(selectedPlaylist.videos)
     ) {
-      const videoToRemove = videos?.[contextMenu.videoIdx];
+      const videoToRemove = videos?.[videoIdx];
       if (videoToRemove?.filePath) {
         const updated = {
           ...selectedPlaylist,
@@ -81,18 +46,12 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
         updatePlaylist(updated.id, updated);
       }
     }
-    handleClose();
   };
 
-  const handleInfo = () => {
-    if (
-      contextMenu &&
-      typeof contextMenu.videoIdx === "number" &&
-      videos?.[contextMenu.videoIdx]
-    ) {
-      navToDetails(videos[contextMenu.videoIdx].filePath);
+  const handleInfo = (videoIdx: number) => {
+    if (typeof videoIdx === "number" && videos?.[videoIdx]) {
+      navToDetails(videos[videoIdx].filePath);
     }
-    handleClose();
   };
 
   return (
@@ -115,18 +74,29 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
         {videos?.length > 0 ? (
           videos.map((video, idx) =>
             video ? (
-              <div
+              <AppContextMenu
                 key={video.filePath || idx}
-                onContextMenu={(e) => handleContextMenu(e, idx)}
-                style={{ cursor: "context-menu" }}
+                title={removeVidExt(video.fileName)}
+                menuItems={[
+                  {
+                    label: "Remove",
+                    action: () => handleRemove(idx),
+                  },
+                  {
+                    label: "Info",
+                    action: () => handleInfo(idx),
+                  },
+                ]}
               >
-                <PosterCard
-                  imageUrl={getImageUrl(video)}
-                  altText={video.fileName || ""}
-                  footer={trimFileName(video.fileName || "")}
-                  onClick={() => onPlayVideo(idx)}
-                />
-              </div>
+                <div style={{ cursor: "context-menu" }}>
+                  <PosterCard
+                    imageUrl={getImageUrl(video)}
+                    altText={video.fileName || ""}
+                    footer={trimFileName(video.fileName || "")}
+                    onClick={() => onPlayVideo(idx)}
+                  />
+                </div>
+              </AppContextMenu>
             ) : null,
           )
         ) : (
@@ -136,39 +106,6 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
               : "Select a playlist to view its videos."}
           </Typography>
         )}
-        <Menu
-          sx={menuPaperStyles}
-          open={contextMenu !== null}
-          onClose={handleClose}
-          anchorReference="anchorPosition"
-          anchorPosition={
-            contextMenu !== null
-              ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-              : undefined
-          }
-        >
-          {contextMenu &&
-            typeof contextMenu.videoIdx === "number" &&
-            videos?.[contextMenu.videoIdx] && (
-              <MenuItem
-                disabled
-                sx={{
-                  opacity: 1,
-                  fontWeight: "bold",
-                  pointerEvents: "none",
-                  color: theme.customVariables.appWhiteSmoke,
-                }}
-              >
-                {removeVidExt(videos[contextMenu.videoIdx]?.fileName)}
-              </MenuItem>
-            )}
-          <MenuItem sx={menuItemStyles()} onClick={handleRemove}>
-            Remove
-          </MenuItem>
-          <MenuItem sx={menuItemStyles()} onClick={handleInfo}>
-            Info
-          </MenuItem>
-        </Menu>
       </Box>
     </Paper>
   );
