@@ -13,6 +13,7 @@ interface VideoPlayerActionsContainerProps {
   play: () => void;
   pause: () => void;
   isNotMp4VideoFormat: boolean;
+  onStartFromBeginning: () => void;
 }
 
 const VideoPlayerActionsContainer: React.FC<
@@ -27,6 +28,7 @@ const VideoPlayerActionsContainer: React.FC<
   play,
   pause,
   isNotMp4VideoFormat,
+  onStartFromBeginning
 }) => {
   return (
     <Box className="absolute bottom-7 left-1/2 -translate-x-1/2 transform rounded-md  bg-opacity-80 p-1.5 text-white">
@@ -53,6 +55,7 @@ const VideoPlayerActionsContainer: React.FC<
             play();
           }
         }}
+        onStartFromBeginning={onStartFromBeginning}
       />
     </Box>
   );

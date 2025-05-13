@@ -1,4 +1,4 @@
-import { Box, Typography, Menu, MenuItem, SxProps, Theme } from "@mui/material";
+import { Box, Menu, MenuItem, SxProps, Theme } from "@mui/material";
 import AppIconButton from "../common/AppIconButton";
 import { PlaylistModel } from "../../../models/playlist.model";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
