@@ -87,10 +87,10 @@ const MovieList: React.FC<MovieListProps> = ({
             return m;
           }),
       );
-      showSnackbar("Custom image updated successfully", "success");
+      showSnackbar("Success", "success");
     },
     (error) => {
-      showSnackbar(`Error updating custom image: ${error?.message}`, "error");
+      showSnackbar(`Error updating: ${error?.message}`, "error");
     },
   );
 
@@ -194,9 +194,11 @@ const MovieList: React.FC<MovieListProps> = ({
         ]
       : []),
     {
-      label: !movie.watchLater ? "Add to Watch Later" : "Remove from Watch Later",
+      label: !movie.watchLater
+        ? "Add to Watch Later"
+        : "Remove from Watch Later",
       action: () =>
-        window.videoAPI.saveVideoJsonData({
+        saveVideoJsonData({
           currentVideo: { filePath: movie.filePath },
           newVideoJsonData: { watchLater: !movie.watchLater },
         }),
@@ -206,6 +208,17 @@ const MovieList: React.FC<MovieListProps> = ({
       action: () => {
         setSelectedPlaylistVideo(movie);
         setOpenPlaylistModal(true);
+      },
+    },
+    {
+      label: "Reset time",
+      action: () => {
+        if (movie.filePath) {
+          saveVideoJsonData({
+            currentVideo: { filePath: movie.filePath },
+            newVideoJsonData: { currentTime: 0 },
+          });
+        }
       },
     },
     // Add more menu items as needed
@@ -292,7 +305,7 @@ const MovieList: React.FC<MovieListProps> = ({
         open={openPlaylistModal}
         onClose={() => {
           setOpenPlaylistModal(false);
-          setSelectedPlaylistVideo(null); 
+          setSelectedPlaylistVideo(null);
         }}
         title="Playlists"
         fullScreen={false}
