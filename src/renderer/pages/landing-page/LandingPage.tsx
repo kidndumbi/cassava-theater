@@ -17,6 +17,7 @@ import { AppModal } from "../../components/common/AppModal";
 import { SettingsPage } from "../../components/settings/SettingsPage";
 import { useVideoDataQuery } from "../../hooks/useVideoData.query";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { useModalState } from "../../hooks/useModalState";
 
 export const LandingPage = () => {
   const theme = useTheme();
@@ -24,6 +25,13 @@ export const LandingPage = () => {
   const [searchParams] = useSearchParams();
 
   const [customFolderPath, setCustomFolderPath] = useState<string>("");
+
+  // Modal state
+  const {
+    open: isSettingsModalOpen,
+    openModal: openSettingsModal,
+    closeModal: closeSettingsModal,
+  } = useModalState(false);
 
   // Memoize file paths to avoid unnecessary refetches
   const movieFolderPath = useMemo(
@@ -128,16 +136,6 @@ export const LandingPage = () => {
     },
   ]);
 
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-
-  const handleOpenSettingsModal = () => {
-    setIsSettingsModalOpen(true);
-  };
-
-  const handleCloseSettingsModal = () => {
-    setIsSettingsModalOpen(false);
-  };
-
   useEffect(() => {
     if (settings?.folders) {
       const customFolders = settings?.folders as CustomFolderModel[];
@@ -219,7 +217,7 @@ export const LandingPage = () => {
           menuItems={menuItems}
           onActiveMenuItemChange={setActiveMenu}
           activeMenuItem={activeMenu}
-          onSettingsClick={handleOpenSettingsModal}
+          onSettingsClick={openSettingsModal}
         />
       </Grid>
       <Grid
@@ -246,7 +244,7 @@ export const LandingPage = () => {
       </Grid>
       <AppModal
         open={isSettingsModalOpen}
-        onClose={handleCloseSettingsModal}
+        onClose={closeSettingsModal}
         title="Settings"
         fullScreen={true}
       >
