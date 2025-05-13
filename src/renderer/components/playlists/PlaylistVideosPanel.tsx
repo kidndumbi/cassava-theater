@@ -10,6 +10,8 @@ import {
 import { VideoDataModel } from "../../../models/videoData.model";
 import { PlaylistModel } from "../../../models/playlist.model";
 import { AppContextMenu } from "../common/AppContextMenu";
+import { useDrag, useDrop, DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 interface PlaylistVideosPanelProps {
   videos: VideoDataModel[] | undefined;
@@ -18,6 +20,11 @@ interface PlaylistVideosPanelProps {
   updatePlaylist: (id: string, playlist: PlaylistModel) => void;
   navToDetails: (videoPath: string) => void;
   onPlayVideo: (videoIndex: number) => void;
+}
+
+interface DragItem {
+  index: number;
+  type: string;
 }
 
 export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
@@ -54,59 +61,114 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
     }
   };
 
+  // Handler to move video in the list
+  const moveVideo = (from: number, to: number) => {
+    if (!videos || !selectedPlaylist) return;
+    const updatedVideos = [...videos];
+    const [removed] = updatedVideos.splice(from, 1);
+    updatedVideos.splice(to, 0, removed);
+
+    // Update playlist with new order
+    const updated = {
+      ...selectedPlaylist,
+      videos: updatedVideos.map((v) => v.filePath),
+    };
+    updatePlaylist(updated.id, updated);
+  };
+
+  // Draggable video item component
+  const DraggableVideo: React.FC<{
+    video: VideoDataModel;
+    idx: number;
+  }> = ({ video, idx }) => {
+    const ref = React.useRef<HTMLDivElement>(null);
+
+    const [, drop] = useDrop<DragItem>({
+      accept: "VIDEO",
+      hover(item) {
+        if (item.index === idx) return;
+        moveVideo(item.index, idx);
+        item.index = idx;
+      },
+    });
+
+    const [{ isDragging }, drag] = useDrag({
+      type: "VIDEO",
+      item: { index: idx, type: "VIDEO" },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    });
+
+    drag(drop(ref));
+
+    return (
+      <div
+        ref={ref}
+        style={{
+          opacity: isDragging ? 0.5 : 1,
+          cursor: "move",
+        }}
+      >
+        <AppContextMenu
+          title={removeVidExt(video.fileName)}
+          menuItems={[
+            {
+              label: "Remove",
+              action: () => handleRemove(idx),
+            },
+            {
+              label: "Info",
+              action: () => handleInfo(idx),
+            },
+          ]}
+        >
+          <div>
+            <PosterCard
+              imageUrl={getImageUrl(video)}
+              altText={video.fileName || ""}
+              footer={trimFileName(video.fileName || "")}
+              onClick={() => onPlayVideo(idx)}
+            />
+          </div>
+        </AppContextMenu>
+      </div>
+    );
+  };
+
   return (
-    <Paper
-      sx={{
-        flex: 1,
-        minHeight: 300,
-        p: 2,
-        backgroundColor: theme.customVariables.appDarker,
-        color: theme.customVariables.appWhiteSmoke,
-      }}
-    >
-      {selectedPlaylist?.lastVideoPlayed && (
-        <Typography sx={{ marginBottom: 2 }} variant="subtitle2">
-          Last Played:{" "}
-          {removeVidExt(getFilename(selectedPlaylist.lastVideoPlayed))}
-        </Typography>
-      )}
-      <Box display="flex" flexWrap="wrap" gap={2}>
-        {videos?.length > 0 ? (
-          videos.map((video, idx) =>
-            video ? (
-              <AppContextMenu
-                key={video.filePath || idx}
-                title={removeVidExt(video.fileName)}
-                menuItems={[
-                  {
-                    label: "Remove",
-                    action: () => handleRemove(idx),
-                  },
-                  {
-                    label: "Info",
-                    action: () => handleInfo(idx),
-                  },
-                ]}
-              >
-                <div style={{ cursor: "context-menu" }}>
-                  <PosterCard
-                    imageUrl={getImageUrl(video)}
-                    altText={video.fileName || ""}
-                    footer={trimFileName(video.fileName || "")}
-                    onClick={() => onPlayVideo(idx)}
-                  />
-                </div>
-              </AppContextMenu>
-            ) : null,
-          )
-        ) : (
-          <Typography sx={{ color: theme.customVariables.appWhiteSmoke }}>
-            {selectedPlaylist
-              ? "No videos in this playlist."
-              : "Select a playlist to view its videos."}
+    <DndProvider backend={HTML5Backend}>
+      <Paper
+        sx={{
+          flex: 1,
+          minHeight: 300,
+          p: 2,
+          backgroundColor: theme.customVariables.appDarker,
+          color: theme.customVariables.appWhiteSmoke,
+        }}
+      >
+        {selectedPlaylist?.lastVideoPlayed && (
+          <Typography sx={{ marginBottom: 2 }} variant="subtitle2">
+            Last Played:{" "}
+            {removeVidExt(getFilename(selectedPlaylist.lastVideoPlayed))}
           </Typography>
         )}
-      </Box>
-    </Paper>
+        <Box display="flex" flexWrap="wrap" gap={2}>
+          {videos?.length > 0 ? (
+            videos.map((video, idx) =>
+              video ? (
+                <DraggableVideo key={video.filePath || idx} video={video} idx={idx} />
+              ) : null,
+            )
+          ) : (
+            <Typography sx={{ color: theme.customVariables.appWhiteSmoke }}>
+              {selectedPlaylist
+                ? "No videos in this playlist."
+                : "Select a playlist to view its videos."}
+            </Typography>
+          )}
+        </Box>
+      </Paper>
+    </DndProvider>
   );
 };
