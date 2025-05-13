@@ -16,6 +16,7 @@ interface CustomFolderProps {
   style?: React.CSSProperties;
   customFolder: CustomFolderModel | null;
   menuId: string;
+  refetchCustomFolder: () => void;
 }
 
 const CustomFolder: React.FC<CustomFolderProps> = ({
@@ -25,6 +26,7 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
   refreshCustomFolderData,
   customFolder,
   menuId,
+  refetchCustomFolder,
 }) => {
   const theme = useTheme();
   const { getTmdbImageUrl } = useTmdbImageUrl();
@@ -57,7 +59,8 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
   };
 
   const handleRefresh = () => {
-    refreshCustomFolderData(customFolder?.folderPath || "");
+    //refreshCustomFolderData(customFolder?.folderPath || "");
+    refetchCustomFolder();
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
