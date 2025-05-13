@@ -119,8 +119,6 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       currentVideo: { filePath: videoPath },
       newVideoJsonData: { movie_details: extraMovieDetails },
     });
-
-    //updateTmdbMutation.mutate(movie_details);
   };
 
   const handleImageUpdate = async (data: VideoDataModel, filePath: string) => {
