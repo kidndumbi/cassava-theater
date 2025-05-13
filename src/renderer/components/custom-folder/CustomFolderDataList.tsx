@@ -27,12 +27,7 @@ const CustomFolderItem: React.FC<{
   getImageUlr: (movie: VideoDataModel) => string | undefined;
   handlePosterClick: (videoPath: string) => void;
   alwaysShowVideoType: boolean;
-}> = ({
-  video,
-  getImageUlr,
-  handlePosterClick,
-  alwaysShowVideoType,
-}) => {
+}> = ({ video, getImageUlr, handlePosterClick, alwaysShowVideoType }) => {
   const renderFolderIcon = (item: VideoDataModel) =>
     item.fileName &&
     !hasExtension(item.fileName) && (
@@ -137,15 +132,15 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
 
   const { mutate: deleteFile } = useDeleteFile(
     (data, filePathDeleted) => {
-      showSnackbar("Movie deleted successfully", "success");
+      showSnackbar("Deleted successfully", "success");
       queryClient.setQueryData(
-        ["videoData", settings?.movieFolderPath, false, "movies"],
+        ["videoData", customFolder.folderPath, false, "customFolder"],
         (oldData: VideoDataModel[] = []) =>
           oldData.filter((m) => m.filePath !== filePathDeleted),
       );
     },
     (error) => {
-      showSnackbar(`Error deleting Movie: ${error?.message}`, "error");
+      showSnackbar(`Error deleting: ${error?.message}`, "error");
     },
   );
 
@@ -206,7 +201,7 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
           });
         }
       },
-        sx: { color: theme.palette.error.main },
+      sx: { color: theme.palette.error.main },
       // Optionally add sx for color, e.g. { color: theme.palette.error.main }
     },
     {
@@ -226,7 +221,9 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
         ]
       : []),
     {
-      label: !video.watchLater ? "Add to Watch Later" : "Remove from Watch Later",
+      label: !video.watchLater
+        ? "Add to Watch Later"
+        : "Remove from Watch Later",
       action: () =>
         window.videoAPI.saveVideoJsonData({
           currentVideo: { filePath: video.filePath },

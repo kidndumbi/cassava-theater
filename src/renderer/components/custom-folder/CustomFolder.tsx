@@ -59,7 +59,6 @@ const CustomFolder: React.FC<CustomFolderProps> = ({
   };
 
   const handleRefresh = () => {
-    //refreshCustomFolderData(customFolder?.folderPath || "");
     refetchCustomFolder();
   };
 
