@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import theme from "../../theme";
 import { AppModal } from "../common/AppModal";
 import { AppButton } from "../common/AppButton";
@@ -42,21 +42,42 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const { data: playlists, refetch } = usePlaylists();
   const { setCurrentVideo } = useVideoListLogic();
   const { getTmdbImageUrl } = useTmdbImageUrl();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedPlaylist, setSelectedPlaylist] =
     useState<PlaylistModel | null>(null);
   const { data: selectedPlaylistVideos } =
     useGetPlaylistVideoData(selectedPlaylist);
+  const [playlistIdParam, setPlaylistIdParam] = useState<string | null>(null);
 
-  // Modal states
+  useEffect(() => {
+    const playlistId = searchParams.get("playlistId") || null;
+    setPlaylistIdParam(playlistId);
+
+    if (playlistId) {
+      setSearchParams((prev) => {
+        const params = new URLSearchParams(prev);
+        params.delete("playlistId");
+        return params;
+      });
+    }
+  }, [location.search, location.hash]);
+
+  useEffect(() => {
+    if (playlistIdParam) {
+      const playlist = playlists?.find((p) => p.id === playlistIdParam);
+      if (playlist) {
+        setSelectedPlaylist(playlist);
+      }
+    }
+  }, [playlistIdParam]);
+
   const newPlaylistModal = useModalState();
   const renameModal = useModalState();
 
-  // Text field states
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [renameValue, setRenameValue] = useState("");
 
-  // Mutations
   const { mutate: createNewPlaylist } = useMutation({
     mutationFn: (name: string) => {
       const newPlaylist: PlaylistModel = {
@@ -91,7 +112,6 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
     },
   });
 
-  // Handlers
   const handleAddPlaylist = newPlaylistModal.openModal;
 
   const handleCreatePlaylist = () => {

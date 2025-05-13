@@ -158,6 +158,10 @@ export const VideoPlayerPage = ({
   };
 
   const navigateToVideoDetails = (filePath: string) => {
+    if (playlistId) {
+      navigate("/?menuId=" + menuId + "&playlistId=" + playlistId);
+      return;
+    }
     const buildPath =
       pathBuildingStrategies[menuId] || pathBuildingStrategies.default;
     const path = buildPath(filePath);
