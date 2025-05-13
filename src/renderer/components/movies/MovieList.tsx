@@ -17,7 +17,7 @@ import { MovieListItem } from "./MovieListItem";
 import { AppModal } from "../common/AppModal";
 import { PlaylistSelect } from "../playlists/PlaylistSelect";
 import { PlaylistModel } from "../../../models/playlist.model";
-import { AppMore } from "../common/AppMore";
+import { AppContextMenu } from "../common/AppContextMenu";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -159,47 +159,87 @@ const MovieList: React.FC<MovieListProps> = ({
     }
   };
 
-  const [contextMenu, setContextMenu] = useState<{
-    mouseX: number;
-    mouseY: number;
-    movie: VideoDataModel | null;
-  } | null>(null);
+  // Helper to build context menu items for AppContextMenu
+  const getMenuItems = (movie: VideoDataModel) => [
+    {
+      label: "Delete",
+      action: () => {
+        if (movie?.filePath) {
+          setMessage("Are you sure you want to delete this Movie?");
+          openDialog("Delete").then((dialogDecision) => {
+            if (dialogDecision !== "Ok") return;
+            deleteFile(movie.filePath);
+          });
+        }
+      },
+    },
+    {
+      label: "Link Movie Info",
+      action: () => handleLinkMovieDb(movie),
+    },
+    ...(movie?.filePath && !movie.filePath.endsWith(".mp4")
+      ? [
+          {
+            label: "Convert to MP4",
+            action: () => {
+              if (movie.filePath) {
+                handleConvertToMp4(movie.filePath);
+              } else {
+                console.error("File path is undefined.");
+              }
+            },
+          },
+        ]
+      : []),
+    {
+      label: !movie.watchLater ? "Add to Watch Later" : "Remove from Watch Later",
+      action: () =>
+        window.videoAPI.saveVideoJsonData({
+          currentVideo: { filePath: movie.filePath },
+          newVideoJsonData: { watchLater: !movie.watchLater },
+        }),
+    },
+    {
+      label: "Playlists",
+      action: () => {
+        setSelectedPlaylistVideo(movie);
+        setOpenPlaylistModal(true);
+      },
+    },
+    // Add more menu items as needed
+  ];
 
   return (
     <>
       <Box display="flex" flexWrap="wrap" gap="4px">
         {movies?.map((movie) => (
-          <div
+          <AppContextMenu
             key={movie.filePath}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              setContextMenu({
-                mouseX: e.clientX + 2,
-                mouseY: e.clientY - 6,
-                movie,
-              });
-            }}
+            title={removeVidExt(movie.fileName ?? "")}
+            menuItems={getMenuItems(movie)}
           >
-            <MovieListItem
-              movie={movie}
-              onPosterClick={handlePosterClick}
-              getImageUrl={getImageUrl}
-              onDelete={async (filePath) => {
-                setMessage("Are you sure you want to delete this Movie?");
-                const dialogDecision = await openDialog("Delete");
+            <div>
+              <MovieListItem
+                movie={movie}
+                onPosterClick={handlePosterClick}
+                getImageUrl={getImageUrl}
+                onDelete={async (filePath) => {
+                  setMessage("Are you sure you want to delete this Movie?");
+                  const dialogDecision = await openDialog("Delete");
 
-                if (dialogDecision !== "Ok") return;
-                deleteFile(filePath);
-              }}
-              onLinkTheMovieDb={() => handleLinkMovieDb(movie)}
-              onConvertToMp4={handleConvertToMp4}
-              alwaysShowVideoType={settings?.showVideoType}
-              handlePlaylistUpdate={async (movie) => {
-                setSelectedPlaylistVideo(movie);
-                setOpenPlaylistModal(true);
-              }}
-            />
-          </div>
+                  if (dialogDecision !== "Ok") return;
+                  deleteFile(filePath);
+                }}
+                onLinkTheMovieDb={() => handleLinkMovieDb(movie)}
+                onConvertToMp4={handleConvertToMp4}
+                alwaysShowVideoType={settings?.showVideoType}
+                handlePlaylistUpdate={async (movie) => {
+                  setSelectedPlaylistVideo(movie);
+                  setOpenPlaylistModal(true);
+                }}
+              />
+            </div>
+          </AppContextMenu>
         ))}
       </Box>
 
@@ -263,46 +303,6 @@ const MovieList: React.FC<MovieListProps> = ({
           }}
         ></PlaylistSelect>
       </AppModal>
-
-      <AppMore
-        open={!!contextMenu}
-        anchorPosition={
-          contextMenu
-            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-            : null
-        }
-        onClose={() => setContextMenu(null)}
-        isMovie={true}
-        handleDelete={() => {
-          if (contextMenu?.movie?.filePath) {
-            setMessage("Are you sure you want to delete this Movie?");
-            openDialog("Delete").then((dialogDecision) => {
-              if (dialogDecision !== "Ok") return;
-              deleteFile(contextMenu.movie.filePath);
-            });
-          }
-        }}
-        linkTheMovieDb={() => {
-          if (contextMenu?.movie) handleLinkMovieDb(contextMenu.movie);
-        }}
-        isNotMp4={!contextMenu?.movie?.filePath?.endsWith(".mp4")}
-        handleConvertToMp4={() => {
-          if (contextMenu?.movie?.filePath) handleConvertToMp4(contextMenu.movie.filePath);
-        }}
-        videoData={contextMenu?.movie || {}}
-        handleWatchLaterUpdate={async (filePath, watchLater) => {
-          await window.videoAPI.saveVideoJsonData({
-            currentVideo: { filePath },
-            newVideoJsonData: { watchLater },
-          });
-        }}
-        handlePlaylistUpdate={() => {
-          if (contextMenu?.movie) {
-            setSelectedPlaylistVideo(contextMenu.movie);
-            setOpenPlaylistModal(true);
-          }
-        }}
-      />
     </>
   );
 };

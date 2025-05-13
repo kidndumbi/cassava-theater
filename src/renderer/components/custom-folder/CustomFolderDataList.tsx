@@ -19,7 +19,7 @@ import { useDeleteFile } from "../../hooks/useDeleteFile";
 import { MovieSuggestionsModal } from "../movies/MovieSuggestionsModal";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { useSaveJsonData } from "../../hooks/useSaveJsonData";
-import { AppMore } from "../common/AppMore";
+import { AppContextMenu } from "../common/AppContextMenu";
 
 const CustomFolderItem: React.FC<{
   video: VideoDataModel;
@@ -192,26 +192,56 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
     }
   };
 
-  const [contextMenu, setContextMenu] = useState<{
-    mouseX: number;
-    mouseY: number;
-    video: VideoDataModel | null;
-  } | null>(null);
+  // Helper to build context menu items for AppContextMenu
+  const getMenuItems = (video: VideoDataModel) => [
+    {
+      label: "Delete",
+      action: () => {
+        if (video?.filePath) {
+          setMessage("Are you sure you want to delete this Movie?");
+          openDialog("Delete").then((dialogDecision) => {
+            if (dialogDecision !== "Ok") return;
+            deleteFile(video.filePath);
+          });
+        }
+      },
+      // Optionally add sx for color, e.g. { color: theme.palette.error.main }
+    },
+    {
+      label: "Link Movie Info",
+      action: () => handleLinkMovieDb(video),
+    },
+    ...(video?.filePath && !video.filePath.endsWith(".mp4")
+      ? [
+          {
+            label: "Convert to MP4",
+            action: () => {
+              if (video.filePath) {
+                handleConvertToMp4(video.filePath);
+              }
+            },
+          },
+        ]
+      : []),
+    {
+      label: !video.watchLater ? "Add to Watch Later" : "Remove from Watch Later",
+      action: () =>
+        window.videoAPI.saveVideoJsonData({
+          currentVideo: { filePath: video.filePath },
+          newVideoJsonData: { watchLater: !video.watchLater },
+        }),
+    },
+    // Add more menu items as needed
+  ];
 
   return (
     <>
       <Box className="flex flex-wrap gap-1">
         {customFolderData?.map((video, idx) => (
-          <div
-            key={idx}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              setContextMenu({
-                mouseX: e.clientX + 2,
-                mouseY: e.clientY - 6,
-                video,
-              });
-            }}
+          <AppContextMenu
+            key={video.filePath || idx}
+            title={removeVidExt(video.fileName ?? "")}
+            menuItems={getMenuItems(video)}
           >
             <Box className="m-1 max-w-[200px] flex-[1_1_200px]">
               <Box className="relative">
@@ -230,42 +260,9 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
                 {removeVidExt(video.fileName ?? "")}
               </Typography>
             </Box>
-          </div>
+          </AppContextMenu>
         ))}
       </Box>
-      <AppMore
-        open={!!contextMenu}
-        anchorPosition={
-          contextMenu
-            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-            : null
-        }
-        onClose={() => setContextMenu(null)}
-        isMovie={true}
-        handleDelete={() => {
-          if (contextMenu?.video?.filePath) {
-            setMessage("Are you sure you want to delete this Movie?");
-            openDialog("Delete").then((dialogDecision) => {
-              if (dialogDecision !== "Ok") return;
-              deleteFile(contextMenu.video.filePath);
-            });
-          }
-        }}
-        linkTheMovieDb={() => {
-          if (contextMenu?.video) handleLinkMovieDb(contextMenu.video);
-        }}
-        isNotMp4={!contextMenu?.video?.filePath?.endsWith(".mp4")}
-        handleConvertToMp4={() => {
-          if (contextMenu?.video?.filePath) handleConvertToMp4(contextMenu.video.filePath);
-        }}
-        videoData={contextMenu?.video || {}}
-        handleWatchLaterUpdate={async (filePath, watchLater) => {
-          await window.videoAPI.saveVideoJsonData({
-            currentVideo: { filePath },
-            newVideoJsonData: { watchLater },
-          });
-        }}
-      />
       <MovieSuggestionsModal
         id={selectedMovie?.movie_details?.id?.toString() || ""}
         open={openMovieSuggestionsModal}

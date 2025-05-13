@@ -4,8 +4,7 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, trimFileName } from "../../util/helperFunctions";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { PosterCard } from "../common/PosterCard";
-import { styled } from "@mui/system";
-import { AppMore } from "../common/AppMore";
+import { AppContextMenu } from "../common/AppContextMenu";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -19,20 +18,6 @@ interface TvShowsListProps {
   shows: VideoDataModel[];
   handlePosterClick: (videoPath: string) => void;
 }
-
-const HoverBox = styled(Box)({
-  position: "relative",
-  "&:hover .hover-content": {
-    display: "block",
-  },
-});
-
-const HoverContent = styled(Box)({
-  position: "absolute",
-  top: 9,
-  right: 9,
-  display: "none",
-});
 
 export const TvShowsList = React.memo(function TvShowsList(
   props: TvShowsListProps,
@@ -169,60 +154,43 @@ export const TvShowsList = React.memo(function TvShowsList(
     }
   };
 
-  const [contextMenu, setContextMenu] = useState<{
-    mouseX: number;
-    mouseY: number;
-    show: VideoDataModel | null;
-  } | null>(null);
+  // Helper to build context menu items for AppContextMenu
+  const getMenuItems = (show: VideoDataModel) => [
+    {
+      label: "Delete",
+      action: () => {
+        if (show?.filePath) handleDelete(show.filePath);
+      },
+    },
+    {
+      label: "Link TV Show Info",
+      action: () => {
+        setSelectedTvShow(show);
+        setOpenTvShowSuggestionsModal(true);
+      },
+    },
+    // Add more menu items as needed
+  ];
 
   return (
     <>
       <Box display="flex" flexWrap="wrap" gap="4px">
         {shows?.map((show: VideoDataModel, index: number) => (
-          <div
+          <AppContextMenu
             key={show.filePath}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              setContextMenu({
-                mouseX: e.clientX + 2,
-                mouseY: e.clientY - 6,
-                show,
-              });
-            }}
+            title={trimFileName(show.fileName ?? "")}
+            menuItems={getMenuItems(show)}
           >
-            <HoverBox>
-              <PosterCard
-                key={index}
-                imageUrl={getImageUlr(show)}
-                altText={show.fileName || ""}
-                onClick={() => show.filePath && handlePosterClick(show.filePath)}
-                footer={trimFileName(show.fileName ?? "")}
-              />
-              <HoverContent className="hover-content" />
-            </HoverBox>
-          </div>
+            <PosterCard
+              key={index}
+              imageUrl={getImageUlr(show)}
+              altText={show.fileName || ""}
+              onClick={() => show.filePath && handlePosterClick(show.filePath)}
+              footer={trimFileName(show.fileName ?? "")}
+            />
+          </AppContextMenu>
         ))}
       </Box>
-      <AppMore
-        open={!!contextMenu}
-        anchorPosition={
-          contextMenu
-            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-            : null
-        }
-        onClose={() => setContextMenu(null)}
-        isMovie={false}
-        handleDelete={() => {
-          if (contextMenu?.show?.filePath) handleDelete(contextMenu.show.filePath);
-        }}
-        linkTheMovieDb={() => {
-          if (contextMenu?.show) {
-            setSelectedTvShow(contextMenu.show);
-            setOpenTvShowSuggestionsModal(true);
-          }
-        }}
-        videoData={contextMenu?.show || {}}
-      />
 
       <TvShowSuggestionsModal
         id={selectedTvShow?.tv_show_details?.id.toString() || ""}

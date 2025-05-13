@@ -7,7 +7,7 @@ import {
   Avatar,
   ListItemText,
   Paper,
-  ListItemButton, // <-- add this import
+  ListItemButton,
 } from "@mui/material";
 import theme from "../../theme";
 import { removeVidExt } from "../../util/helperFunctions";
