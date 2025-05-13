@@ -19,13 +19,14 @@ export interface RenderActivePageProps {
   customFolderData: VideoDataModel[];
   loadCustomFolder: (path: string) => void;
   selectedCustomFolder: CustomFolderModel | null;
+  refetchCustomFolder: () => void;
 }
 
 const renderMoviesPage = (
   loadingMovies: boolean,
   movies: VideoDataModel[],
   getMovies: () => void,
-  menuId: string
+  menuId: string,
 ) => {
   return (
     <Movies
@@ -41,7 +42,7 @@ const renderTvShowsPage = (
   loadingTvShows: boolean,
   tvShows: VideoDataModel[],
   getTvShows: () => void,
-  menuId: string
+  menuId: string,
 ) => {
   return (
     <TvShows
@@ -67,16 +68,12 @@ export const renderActivePage = (
     customFolderData,
     loadCustomFolder,
     selectedCustomFolder,
-  }: RenderActivePageProps
+    refetchCustomFolder,
+  }: RenderActivePageProps,
 ) => {
   switch (activeMenu.id) {
     case "app-home":
-      return (
-        <HomePage
-          menuId={activeMenu.id}
-          refreshData={refreshData}
-        />
-      );
+      return <HomePage menuId={activeMenu.id} refreshData={refreshData} />;
     case "app-movies":
       return renderMoviesPage(loadingMovies, movies, getMovies, activeMenu.id);
     case "app-tv-shows":
@@ -84,7 +81,7 @@ export const renderActivePage = (
         loadingTvShows,
         tvShows,
         getTvShows,
-        activeMenu.id
+        activeMenu.id,
       );
     case "app-playlists":
       return <PlaylistsPage menuId={activeMenu.id} />;
@@ -96,6 +93,7 @@ export const renderActivePage = (
           loadingCustomFolderData={loadingCustomFolderData}
           refreshCustomFolderData={loadCustomFolder}
           customFolderData={customFolderData}
+          refetchCustomFolder={refetchCustomFolder}
         ></CustomFolder>
       );
   }

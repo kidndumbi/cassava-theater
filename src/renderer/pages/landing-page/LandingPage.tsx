@@ -76,13 +76,14 @@ export const LandingPage = () => {
     refetch: getMovies,
   } = useVideoDataQuery(moviesQueryOptions);
 
-  const { data: tvShows, isLoading: loadingTvShows } =
+  const { data: tvShows, isLoading: loadingTvShows, refetch: getTvShows, } =
     useVideoDataQuery(tvShowsQueryOptions);
 
   const {
     data: customFolderData,
     isLoading: loadingCustomFolderData,
-    refetch: getTvShows,
+    refetch: refetchCustomFolder,
+    
   } = useVideoDataQuery(customFolderQueryOptions);
 
   const handleMenuClick = (menuItem: MenuItem) => {
@@ -240,6 +241,7 @@ export const LandingPage = () => {
           customFolderData,
           loadCustomFolder,
           selectedCustomFolder,
+          refetchCustomFolder,
         })}
       </Grid>
       <AppModal
