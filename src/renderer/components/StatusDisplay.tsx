@@ -1,6 +1,6 @@
 import { Box, CircularProgress } from "@mui/material";
 import theme from "../theme";
-import { useState } from "react";
+import { useModalState } from "../hooks/useModalState";
 import { AppModal } from "./common/AppModal";
 import AppIconButton from "./common/AppIconButton";
 import CheckIcon from "@mui/icons-material/Check";
@@ -34,7 +34,7 @@ interface StatusDisplayProps {
 }
 
 export const StatusDisplay = ({ port }: StatusDisplayProps) => {
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { open, openModal, closeModal } = useModalState(false);
   const { convertToMp4ProgressQueue } = useMp4Conversion();
 
   return (
@@ -48,9 +48,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
     >
       <StatusDisplayItem>PORT: {port} </StatusDisplayItem>
       <StatusDisplayItem
-        onClick={() => {
-          setIsProcessing(true);
-        }}
+        onClick={openModal}
       >
         {convertToMp4ProgressQueue.length > 0 &&
         convertToMp4ProgressQueue.some((p) => p.percent < 100) ? (
@@ -58,7 +56,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         ) : (
           <AppIconButton
             tooltip="view processes"
-            onClick={setIsProcessing.bind(null, true)}
+            onClick={openModal}
             className="left-0"
             sx={{
               width: 24,
@@ -70,8 +68,8 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         )}
       </StatusDisplayItem>
       <AppModal
-        open={isProcessing}
-        onClose={setIsProcessing.bind(null, false)}
+        open={open}
+        onClose={closeModal}
         title="Processing..."
         fullScreen={true}
       >

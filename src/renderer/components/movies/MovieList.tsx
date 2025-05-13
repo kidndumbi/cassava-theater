@@ -19,6 +19,7 @@ import { PlaylistSelect } from "../playlists/PlaylistSelect";
 import { PlaylistModel } from "../../../models/playlist.model";
 import { AppContextMenu } from "../common/AppContextMenu";
 import theme from "../../theme";
+import { useModalState } from "../../hooks/useModalState";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -38,9 +39,13 @@ const MovieList: React.FC<MovieListProps> = ({
     React.useState<VideoDataModel | null>(null);
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
     React.useState(false);
-  const [openPlaylistModal, setOpenPlaylistModal] = React.useState(false);
   const [selectedPlaylistVideo, setSelectedPlaylistVideo] =
     React.useState<VideoDataModel | null>(null);
+  const {
+    open: openPlaylistModal,
+    openModal: openPlaylistModalOpen,
+    closeModal: closePlaylistModal,
+  } = useModalState(false);
   const { data: settings } = useGetAllSettings();
   const { data: playlists, refetch } = usePlaylists();
 
@@ -207,7 +212,7 @@ const MovieList: React.FC<MovieListProps> = ({
       label: "Playlists",
       action: () => {
         setSelectedPlaylistVideo(movie);
-        setOpenPlaylistModal(true);
+        openPlaylistModalOpen();
       },
     },
     {
@@ -250,7 +255,7 @@ const MovieList: React.FC<MovieListProps> = ({
                 alwaysShowVideoType={settings?.showVideoType}
                 handlePlaylistUpdate={async (movie) => {
                   setSelectedPlaylistVideo(movie);
-                  setOpenPlaylistModal(true);
+                  openPlaylistModalOpen();
                 }}
               />
             </div>
@@ -304,7 +309,7 @@ const MovieList: React.FC<MovieListProps> = ({
       <AppModal
         open={openPlaylistModal}
         onClose={() => {
-          setOpenPlaylistModal(false);
+          closePlaylistModal();
           setSelectedPlaylistVideo(null);
         }}
         title="Playlists"

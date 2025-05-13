@@ -38,6 +38,7 @@ import {
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { useModalState } from "../../hooks/useModalState";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -77,7 +78,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   const [episodeLastWatched, setEpisodeLastWatched] =
     useState<VideoDataModel | null>(null);
   const [openModal, setOpenModal] = useState(false);
-  const [openConvertToMp4Modal, setOpenConvertToMp4Modal] = useState(false);
+  const { open: openConvertToMp4Modal, openModal: openConvertToMp4ModalOpen, closeModal: closeConvertToMp4Modal } = useModalState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
 
   const handleOpenModal = () => setOpenModal(true);
@@ -366,7 +367,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 <AppIconButton
                   tooltip="convert to MP4"
                   onClick={() => {
-                    setOpenConvertToMp4Modal(true);
+                    openConvertToMp4ModalOpen();
                   }}
                 >
                   <FourMpIcon />
@@ -503,12 +504,12 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       />
       <AppModal
         open={openConvertToMp4Modal}
-        onClose={setOpenConvertToMp4Modal.bind(null, false)}
+        onClose={closeConvertToMp4Modal}
         title="Seasons"
       >
         <SeasonConvertSelector
           childFolders={childFolders}
-          close={setOpenConvertToMp4Modal.bind(null, false)}
+          close={closeConvertToMp4Modal}
         />
       </AppModal>
       <CustomDrawer open={openDrawer} onClose={() => setOpenDrawer(false)}>

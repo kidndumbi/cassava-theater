@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import { Box, useTheme } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { VideoDataModel } from "../../../models/videoData.model";
+import { useModalState } from "../../hooks/useModalState";
 
 import { TvShowsList } from "./TvShowsList";
 
@@ -29,7 +30,7 @@ export const TvShows: React.FC<TvShowsProps> = ({
   const navigate = useNavigate();
 
   const [filter, setFilter] = useState("");
-  const [openAddTvShowModal, setOpenAddTvShowModal] = useState(false);
+  const { open: openAddTvShowModal, openModal: openAddTvShowModalOpen, closeModal: closeAddTvShowModal } = useModalState(false);
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilter(event.target.value);
@@ -56,7 +57,7 @@ export const TvShows: React.FC<TvShowsProps> = ({
         filter={filter}
         onFilterChange={handleFilterChange}
         theme={theme}
-        addTvShow={() => setOpenAddTvShowModal(true)}
+        addTvShow={openAddTvShowModalOpen}
       />
 
       {loadingTvShows ? (
@@ -79,15 +80,13 @@ export const TvShows: React.FC<TvShowsProps> = ({
 
       <AppModal
         open={openAddTvShowModal}
-        onClose={() => setOpenAddTvShowModal(false)}
+        onClose={closeAddTvShowModal}
         title="Add TV Show Folder"
         fullScreen={true}
       >
         <AddTvShowFolder
           tvShows={tvShows}
-          dataSaved={() => {
-            setOpenAddTvShowModal(false);
-          }}
+          dataSaved={closeAddTvShowModal}
         />
       </AppModal>
     </Box>
