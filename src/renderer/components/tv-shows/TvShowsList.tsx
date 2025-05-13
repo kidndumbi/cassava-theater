@@ -13,6 +13,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { TvShowDetails } from "../../../models/tv-show-details.model";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
+import theme from "../../theme";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
@@ -161,6 +162,7 @@ export const TvShowsList = React.memo(function TvShowsList(
       action: () => {
         if (show?.filePath) handleDelete(show.filePath);
       },
+        sx: { color: theme.palette.error.main },
     },
     {
       label: "Link TV Show Info",

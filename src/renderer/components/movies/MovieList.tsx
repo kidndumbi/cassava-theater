@@ -18,6 +18,7 @@ import { AppModal } from "../common/AppModal";
 import { PlaylistSelect } from "../playlists/PlaylistSelect";
 import { PlaylistModel } from "../../../models/playlist.model";
 import { AppContextMenu } from "../common/AppContextMenu";
+import theme from "../../theme";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -172,6 +173,7 @@ const MovieList: React.FC<MovieListProps> = ({
           });
         }
       },
+      sx: { color: theme.palette.error.main },
     },
     {
       label: "Link Movie Info",

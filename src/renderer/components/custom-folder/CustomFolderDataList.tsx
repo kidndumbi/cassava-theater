@@ -20,6 +20,7 @@ import { MovieSuggestionsModal } from "../movies/MovieSuggestionsModal";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 import { AppContextMenu } from "../common/AppContextMenu";
+import theme from "../../theme";
 
 const CustomFolderItem: React.FC<{
   video: VideoDataModel;
@@ -205,6 +206,7 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
           });
         }
       },
+        sx: { color: theme.palette.error.main },
       // Optionally add sx for color, e.g. { color: theme.palette.error.main }
     },
     {
