@@ -8,7 +8,11 @@ import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
 import { MovieDetails } from "../../../models/movie-detail.model";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
-import { useAppDispatch } from "../../store";
+import { useAppSelector, useAppDispatch } from "../../store";
+import {
+  setScrollPoint,
+  selectScrollPoint,
+} from "../../store/scrollPoint.slice";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
 import { useSaveJsonData } from "../../hooks/useSaveJsonData";
@@ -27,14 +31,20 @@ interface MovieListProps {
   getImageUrl: (movie: VideoDataModel) => string;
 }
 
+const SCROLL_KEY = "MovieListScroll";
+
 const MovieList: React.FC<MovieListProps> = ({
   movies,
   handlePosterClick,
   getImageUrl,
 }) => {
   const dispatch = useAppDispatch();
+  const scrollPoint = useAppSelector((state) =>
+    selectScrollPoint(state, SCROLL_KEY),
+  );
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const { getExtraMovieDetails } = useMovies();
-  const { openDialog, setMessage } = useConfirmation();
+  const { openDialog } = useConfirmation();
   const [selectedMovie, setSelectedMovie] =
     React.useState<VideoDataModel | null>(null);
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
@@ -169,13 +179,17 @@ const MovieList: React.FC<MovieListProps> = ({
   const getMenuItems = (movie: VideoDataModel) => [
     {
       label: "Delete",
-      action: () => {
+      action: async () => {
         if (movie?.filePath) {
-          setMessage("Are you sure you want to delete this Movie?");
-          openDialog("Delete").then((dialogDecision) => {
-            if (dialogDecision !== "Ok") return;
-            deleteFile(movie.filePath);
-          });
+          if (
+            (await openDialog(
+              "Delete",
+              null,
+              "Are you sure you want to delete this Movie?",
+            )) !== "Ok"
+          )
+            return;
+          deleteFile(movie.filePath);
         }
       },
       sx: { color: theme.palette.error.main },
@@ -229,9 +243,36 @@ const MovieList: React.FC<MovieListProps> = ({
     // Add more menu items as needed
   ];
 
+  // Restore scroll position on mount
+  React.useEffect(() => {
+    if (scrollContainerRef.current && typeof scrollPoint === "number") {
+      scrollContainerRef.current.scrollTop = scrollPoint;
+    }
+  }, [scrollPoint]);
+
+  // Log and save scrollPoint value as user scrolls
+  React.useEffect(() => {
+    const ref = scrollContainerRef.current;
+    if (!ref) return;
+    const handleScroll = () => {
+      const value = ref.scrollTop;
+      dispatch(setScrollPoint({ key: SCROLL_KEY, value }));
+    };
+    ref.addEventListener("scroll", handleScroll);
+    return () => {
+      ref.removeEventListener("scroll", handleScroll);
+    };
+  }, [dispatch]);
+
   return (
     <>
-      <Box display="flex" flexWrap="wrap" gap="4px">
+      <Box
+        display="flex"
+        flexWrap="wrap"
+        gap="4px"
+        ref={scrollContainerRef}
+        sx={{ overflowY: "auto", maxHeight: "calc(100vh - 100px)" }}
+      >
         {movies?.map((movie) => (
           <AppContextMenu
             key={movie.filePath}
@@ -244,10 +285,14 @@ const MovieList: React.FC<MovieListProps> = ({
                 onPosterClick={handlePosterClick}
                 getImageUrl={getImageUrl}
                 onDelete={async (filePath) => {
-                  setMessage("Are you sure you want to delete this Movie?");
-                  const dialogDecision = await openDialog("Delete");
-
-                  if (dialogDecision !== "Ok") return;
+                  if (
+                    (await openDialog(
+                      "Delete",
+                      null,
+                      "Are you sure you want to delete this Movie?",
+                    )) !== "Ok"
+                  )
+                    return;
                   deleteFile(filePath);
                 }}
                 onLinkTheMovieDb={() => handleLinkMovieDb(movie)}

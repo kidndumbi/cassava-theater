@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Alert, Box, Snackbar, Button } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, trimFileName } from "../../util/helperFunctions";
@@ -14,11 +14,15 @@ import { TvShowDetails } from "../../../models/tv-show-details.model";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
 import theme from "../../theme";
+import { useAppSelector, useAppDispatch } from "../../store";
+import { setScrollPoint, selectScrollPoint } from "../../store/scrollPoint.slice";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
   handlePosterClick: (videoPath: string) => void;
 }
+
+const SCROLL_KEY = "TvShowsListScroll";
 
 export const TvShowsList = React.memo(function TvShowsList(
   props: TvShowsListProps,
@@ -34,6 +38,9 @@ export const TvShowsList = React.memo(function TvShowsList(
     useState(false);
   const { updateTvShowTMDBId, updateTvShowDbData } = useTvShows();
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
+  const scrollPoint = useAppSelector((state) => selectScrollPoint(state, SCROLL_KEY));
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -174,9 +181,30 @@ export const TvShowsList = React.memo(function TvShowsList(
     // Add more menu items as needed
   ];
 
+  // Restore scroll position on mount
+  useEffect(() => {
+    if (scrollContainerRef.current && typeof scrollPoint === "number") {
+      scrollContainerRef.current.scrollTop = scrollPoint;
+    }
+  }, [scrollPoint]);
+
+  // Log and save scrollPoint value as user scrolls
+  useEffect(() => {
+    const ref = scrollContainerRef.current;
+    if (!ref) return;
+    const handleScroll = () => {
+      const value = ref.scrollTop;
+      dispatch(setScrollPoint({ key: SCROLL_KEY, value }));
+    };
+    ref.addEventListener("scroll", handleScroll);
+    return () => {
+      ref.removeEventListener("scroll", handleScroll);
+    };
+  }, [dispatch]);
+
   return (
     <>
-      <Box display="flex" flexWrap="wrap" gap="4px">
+      <Box display="flex" flexWrap="wrap" gap="4px" ref={scrollContainerRef} sx={{ overflowY: "auto", maxHeight: "calc(100vh - 100px)" }}>
         {shows?.map((show: VideoDataModel, index: number) => (
           <AppContextMenu
             key={show.filePath}
