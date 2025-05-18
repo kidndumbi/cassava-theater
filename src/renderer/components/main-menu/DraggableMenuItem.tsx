@@ -43,7 +43,7 @@ export const DraggableMenuItem = ({
 
   const ref = React.useRef<HTMLDivElement>(null);
 
-  const [{ isOver }, drop] = useDrop<DragItem, void, { isOver: boolean }>({
+  const [{ isOver, canDrop }, drop] = useDrop<DragItem, void, { isOver: boolean, canDrop:boolean }>({
     accept: "MENUITEM",
     canDrop: () => menu.menuType !== "default",
     drop(item) {
@@ -76,7 +76,7 @@ export const DraggableMenuItem = ({
       style={{
         opacity,
         cursor: "move",
-        border: isOver
+        border: isOver && canDrop
           ? `2px solid ${theme.palette.primary.main}`
           : "2px solid transparent",
         borderRadius: 8,
