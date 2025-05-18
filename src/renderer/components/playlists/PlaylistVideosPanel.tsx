@@ -83,20 +83,26 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
   }> = ({ video, idx }) => {
     const ref = React.useRef<HTMLDivElement>(null);
 
-    const [, drop] = useDrop<DragItem>({
+    const [{ isOver }, drop] = useDrop<DragItem, void, { isOver: boolean }>({
       accept: "VIDEO",
-      hover(item) {
+      drop(item) {
         if (item.index === idx) return;
         moveVideo(item.index, idx);
         item.index = idx;
       },
+      collect: (monitor) => ({
+        isOver: monitor.isOver({ shallow: true }),
+        canDrop: monitor.canDrop(),
+      }),
     });
 
-    const [{ isDragging }, drag] = useDrag({
+    const [{ opacity }, drag] = useDrag({
       type: "VIDEO",
       item: { index: idx, type: "VIDEO" },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
+        opacity: monitor.isDragging() ? 0.5 : 1,
+       
       }),
     });
 
@@ -106,8 +112,13 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
       <div
         ref={ref}
         style={{
-          opacity: isDragging ? 0.5 : 1,
+          opacity,
           cursor: "move",
+          border: isOver
+            ? `2px solid ${theme.palette.primary.main}`
+            : "2px solid transparent",
+          borderRadius: 8,
+          transition: "border-color 0.2s",
         }}
       >
         <AppContextMenu
@@ -157,7 +168,11 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
           {videos?.length > 0 ? (
             videos.map((video, idx) =>
               video ? (
-                <DraggableVideo key={video.filePath || idx} video={video} idx={idx} />
+                <DraggableVideo
+                  key={video.filePath || idx}
+                  video={video}
+                  idx={idx}
+                />
               ) : null,
             )
           ) : (
