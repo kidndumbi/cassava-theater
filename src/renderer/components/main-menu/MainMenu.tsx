@@ -23,7 +23,9 @@ const MainMenu: React.FC<MainMenuProps> = ({
   onActiveMenuItemChange,
   onSettingsClick,
 }) => {
-  const { data: { folders } = {} as SettingsModel } = useGetAllSettings();
+  const {
+    data: { folders } = {} as SettingsModel,
+  } = useGetAllSettings();
   const { mutateAsync: setSetting } = useSetSetting();
 
   const handleButtonClick = (item: MenuItem) => {
@@ -31,31 +33,33 @@ const MainMenu: React.FC<MainMenuProps> = ({
     item.handler(item);
   };
 
+  const switchCustomFolderPosition = (id1: string, id2: string) => {
+    const folder1 = folders?.find((item) => item.id === id1);
+    const folder2 = folders?.find((item) => item.id === id2);
+    if (folder1 && folder2 && Array.isArray(folders)) {
+      const index1 = folders.indexOf(folder1);
+      const index2 = folders.indexOf(folder2);
+      const newFolders = [...folders];
+      newFolders[index1] = folder2;
+      newFolders[index2] = folder1;
+      setSetting({
+        key: "folders",
+        value: newFolders,
+      });
+    }
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <List sx={{ width: "130px", borderRight: "1px solid #ccc" }}>
-        {menuItems.map((menu) => (
+        {menuItems.map((menu, idx) => (
           <DraggableMenuItem
             key={menu.label}
             menu={menu}
-            idx={menuItems.indexOf(menu)}
+            idx={idx}
             activeMenuItem={activeMenuItem}
             handleButtonClick={handleButtonClick}
-            switchCustomFolderPosition={(id1: string, id2: string) => {
-              const folder1 = folders?.find((item) => item.id === id1);
-              const folder2 = folders?.find((item) => item.id === id2);
-              if (folder1 && folder2 && Array.isArray(folders)) {
-                const index1 = folders.indexOf(folder1);
-                const index2 = folders.indexOf(folder2);
-                const newFolders = [...folders];
-                newFolders[index1] = folder2;
-                newFolders[index2] = folder1;
-                setSetting({
-                  key: "folders",
-                  value: newFolders,
-                });
-              }
-            }}
+            switchCustomFolderPosition={switchCustomFolderPosition}
           />
         ))}
 
