@@ -87,6 +87,18 @@ export interface VideoAPI {
     videoType: "movies" | "tvShows";
     limit?: number;
   }) => Promise<VideoDataModel[]>;
+  fetchRecentlyWatchedCustomVideosData: (args: {
+    limit?: number;
+  }) => Promise<
+    {
+      folder: {
+        id: string;
+        name: string;
+        folderPath: string;
+      };
+      videos: VideoDataModel[];
+    }[]
+  >;
 }
 
 export interface TheMovieDbAPI {

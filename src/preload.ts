@@ -170,6 +170,9 @@ contextBridge.exposeInMainWorld("videoAPI", {
   fetchRecentlyWatchedVideosData: (args: { videoType: "movies" | "tvShows"; limit?: number }) => {
     return ipcRenderer.invoke(VideoIPCChannels.FetchRecentlyWatchedVideosData, args);
   },
+  fetchRecentlyWatchedCustomVideosData: (args: { limit?: number }) => {
+    return ipcRenderer.invoke(VideoIPCChannels.FetchRecentlyWatchedCustomVideosData, args);
+  },
 });
 
 contextBridge.exposeInMainWorld("theMovieDbAPI", {

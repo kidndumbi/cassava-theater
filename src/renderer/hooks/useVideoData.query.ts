@@ -55,3 +55,11 @@ export function useRecentlyWatchedVideosQuery(args: {
     networkMode: "always",
   });
 }
+
+export function useRecentlyWatchedCustomVideosQuery(limit?: number) {
+  return useQuery({
+    queryKey: ["recentlyWatchedCustomVideos", limit],
+    queryFn: () => window.videoAPI.fetchRecentlyWatchedCustomVideosData({ limit }),
+    networkMode: "always",
+  });
+}
