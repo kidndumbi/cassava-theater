@@ -30,7 +30,7 @@ export const filterByCategory = (
   videos: VideoDataModel[],
   category: string,
 ): VideoDataModel[] => {
-  const categoriesToFilter = ["movies", "episodes"];
+  const categoriesToFilter = ["movies", "episodes", "customFolder"];
 
   if (categoriesToFilter.includes(category)) {
     return videos.filter((video) => {

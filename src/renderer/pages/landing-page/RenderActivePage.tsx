@@ -91,7 +91,6 @@ export const renderActivePage = (
           menuId={activeMenu.id}
           customFolder={selectedCustomFolder}
           loadingCustomFolderData={loadingCustomFolderData}
-          refreshCustomFolderData={loadCustomFolder}
           customFolderData={customFolderData}
           refetchCustomFolder={refetchCustomFolder}
         ></CustomFolder>
