@@ -9,12 +9,14 @@ import ResumeMovieList from "./ResumeMovieList";
 import { WatchLaterList } from "./WatchLaterList";
 import AppIconButton from "../common/AppIconButton";
 import {
+  useRecentlyWatchedCustomVideosQuery,
   useRecentlyWatchedVideosQuery,
   useVideoDataQuery,
 } from "../../hooks/useVideoData.query";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import WarningIcon from "@mui/icons-material/Warning";
+import LoadingIndicator from "../common/LoadingIndicator";
 
 interface HomePageProps {
   style?: React.CSSProperties;
@@ -37,15 +39,18 @@ export const HomePage: React.FC<HomePageProps> = ({
     console.log("Homepage rendered");
   }, []);
 
-  const { data: sortedMovies, isLoading: loadingMovies } =
+  const { data: resumeMovies, isLoading: loadingResumeMovies } =
     useRecentlyWatchedVideosQuery({
       videoType: "movies",
     });
-  const { data: sortedTvShows, isLoading: loadingTvShows } =
+  const { data: resumeTvShows, isLoading: loadingResumeTvShows } =
     useRecentlyWatchedVideosQuery({
       videoType: "tvShows",
     });
 
+  const { data: resumeCustom, isLoading: isLoadingResumeCustom } =
+    useRecentlyWatchedCustomVideosQuery();
+    
   const { data: movies, isLoading: loadingWatchLater } = useVideoDataQuery({
     filePath: settings?.movieFolderPath || "",
     category: "movies",
@@ -88,7 +93,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       <AppIconButton
         tooltip="Refresh"
         onClick={refreshData}
-        disabled={loadingMovies && loadingTvShows}
+        disabled={loadingResumeMovies && loadingResumeTvShows}
       >
         <RefreshIcon />
       </AppIconButton>
@@ -96,19 +101,43 @@ export const HomePage: React.FC<HomePageProps> = ({
       {title("Resume")}
       <Box>
         <ResumeMovieList
-          loadingMovies={loadingMovies}
-          sortedMovies={sortedMovies}
+          loadingMovies={loadingResumeMovies}
+          sortedMovies={resumeMovies}
           handlePosterClick={handlePosterClick}
         />
       </Box>
       <Box sx={{ marginTop: "20px" }}>
         <ResumeTvShowLists
-          loadingTvShows={loadingTvShows}
-          sortedTvShows={sortedTvShows}
+          loadingTvShows={loadingResumeTvShows}
+          sortedTvShows={resumeTvShows}
           handlePosterClick={handlePosterClick}
           loadingItems={loadingItems}
         />
       </Box>
+
+      {/* Resume Custom Videos */}
+      <Box sx={{ marginTop: "20px" }}>
+        {title("Resume Custom Folders")}
+        {isLoadingResumeCustom ? (
+          <LoadingIndicator message="Loading custom videos..." />
+        ) : (
+          resumeCustom?.map((custom) =>
+            custom?.videos?.length > 0 ? (
+              <Box key={custom.folder.id} sx={{ marginBottom: "20px" }}>
+                <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                  {custom.folder.name}
+                </Typography>
+                <ResumeMovieList
+                  loadingMovies={false}
+                  sortedMovies={custom.videos}
+                  handlePosterClick={handlePosterClick}
+                />
+              </Box>
+            ) : null
+          )
+        )}
+      </Box>
+
       <Box sx={{ marginTop: "20px" }}>{title("Watch Later")}</Box>
       <Box>
         <WatchLaterList

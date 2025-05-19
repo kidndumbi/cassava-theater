@@ -11,6 +11,7 @@ import {
   AddTvShowFolder,
   getFolderFiles,
   fetchRecentlyWatchedVideosData,
+  fetchRecentlyWatchedCustomVideosData,
 } from "../services/video-data.service";
 import { generateThumbnail } from "../services/thumbnail.service";
 import { VideoDataModel } from "../../models/videoData.model";
@@ -100,6 +101,16 @@ export const videosIpcHandlers = () => {
       args: { videoType: "movies" | "tvShows"; limit?: number }
     ) => {
       return fetchRecentlyWatchedVideosData(args.videoType, args.limit);
+    }
+  );
+
+  ipcMain.handle(
+    VideoIPCChannels.FetchRecentlyWatchedCustomVideosData,
+    async (
+      _event: Electron.IpcMainInvokeEvent,
+      args: { limit?: number }
+    ) => {
+      return fetchRecentlyWatchedCustomVideosData(args?.limit);
     }
   );
 };

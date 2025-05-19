@@ -9,4 +9,5 @@ export enum VideoIPCChannels {
   GetFolderFiles = "video:getFolderFiles",
   GetScreenshot = "video:getScreenshot",
   FetchRecentlyWatchedVideosData = "video:fetchRecentlyWatchedVideosData",
+  FetchRecentlyWatchedCustomVideosData = "video:fetchRecentlyWatchedCustomVideosData",
 }

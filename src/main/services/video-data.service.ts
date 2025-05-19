@@ -11,6 +11,62 @@ import * as videoDataHelpers from "./video.helpers";
 import { getMovieOrTvShowById } from "./themoviedb.service";
 import { normalizeFilePath } from "./helpers";
 
+export const fetchRecentlyWatchedCustomVideosData = async (
+  limit = 20,
+): Promise<
+  {
+    folder: {
+      id: string;
+      name: string;
+      folderPath: string;
+    };
+    videos: VideoDataModel[];
+  }[]
+> => {
+  const customFolders = await settingsDataDbService.getSetting("folders");
+  if (!Array.isArray(customFolders)) return [];
+
+  const results: {
+    folder: { id: string; name: string; folderPath: string };
+    videos: VideoDataModel[];
+  }[] = [];
+
+  for (const folder of customFolders) {
+    const folderPath = folder.folderPath;
+    if (!folderPath || !fs.existsSync(folderPath)) continue;
+
+    try {
+      const videosData = await fetchVideosData({
+        filePath: folderPath,
+        includeThumbnail: false,
+        category: "movies",
+      });
+
+      const filtered = videosData
+        .filter((v) => v.lastVideoPlayedDate && (v.currentTime || 0) > 1)
+        .sort(
+          (a, b) =>
+            new Date(b.lastVideoPlayedDate ?? 0).getTime() -
+            new Date(a.lastVideoPlayedDate ?? 0).getTime(),
+        )
+        .slice(0, limit);
+
+      results.push({
+        folder: {
+          id: folder.id,
+          name: folder.name,
+          folderPath,
+        },
+        videos: filtered,
+      });
+    } catch (e) {
+      log.error("Error fetching custom folder videos: ", e);
+    }
+  }
+
+  return results;
+};
+
 export const fetchRecentlyWatchedVideosData = async (
   videoType: "movies" | "tvShows",
   limit = 20,
@@ -30,7 +86,6 @@ export const fetchRecentlyWatchedVideosData = async (
       includeThumbnail: false,
       category: videoType,
     });
-
 
     let filtered: VideoDataModel[];
     if (videoType === "movies") {
