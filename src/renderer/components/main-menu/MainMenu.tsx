@@ -7,6 +7,9 @@ import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
 import { DraggableMenuItem } from "./DraggableMenuItem";
 import buttonStyle from "./buttonStyle";
+import { AppDelete } from "../common/AppDelete";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 interface MainMenuProps {
   menuItems: MenuItem[];
@@ -21,10 +24,12 @@ const MainMenu: React.FC<MainMenuProps> = ({
   onActiveMenuItemChange,
   onSettingsClick,
 }) => {
-  const {
-    data: { folders } = {} as SettingsModel,
-  } = useGetAllSettings();
+  const { data: { folders } = {} as SettingsModel } = useGetAllSettings();
   const { mutateAsync: setSetting } = useSetSetting();
+  const { openDialog } = useConfirmation();
+  const { showSnackbar } = useSnackbar();
+
+  const [draggingIdx, setDraggingIdx] = React.useState<number | null>(null);
 
   const handleButtonClick = (item: MenuItem) => {
     onActiveMenuItemChange(item);
@@ -47,7 +52,26 @@ const MainMenu: React.FC<MainMenuProps> = ({
     }
   };
 
+  const handleDeleteFolder = async (folderId: string) => {
+    const dialogDecision = await openDialog(
+      undefined,
+      undefined,
+      "Are you sure you want to delete this folder?",
+    );
+    if (dialogDecision === "Ok") {
+      const updatedFolders = (folders || []).filter(
+        (folder) => folder.id !== folderId,
+      );
+      await setSetting({
+        key: "folders",
+        value: updatedFolders,
+      });
+      showSnackbar("Folder deleted successfully", "success");
+    }
+  };
+
   return (
+    <>
       <List sx={{ width: "130px", borderRight: "1px solid #ccc" }}>
         {menuItems.map((menu, idx) => (
           <DraggableMenuItem
@@ -57,6 +81,15 @@ const MainMenu: React.FC<MainMenuProps> = ({
             activeMenuItem={activeMenuItem}
             handleButtonClick={handleButtonClick}
             switchCustomFolderPosition={switchCustomFolderPosition}
+            dragging={(isDragging: boolean, dragIdx: number) => {
+              if (isDragging) {
+                setDraggingIdx(dragIdx);
+              } else {
+                setDraggingIdx((current) =>
+                  current === dragIdx ? null : current,
+                );
+              }
+            }}
           />
         ))}
 
@@ -73,6 +106,20 @@ const MainMenu: React.FC<MainMenuProps> = ({
           </Box>
         </Button>
       </List>
+
+      {draggingIdx !== null && (
+        <AppDelete
+          itemDroped={(item: {
+            index: number;
+            type: string;
+            menu: MenuItem;
+          }) => {
+            handleDeleteFolder(item.menu.id);
+          }}
+          accept={["MENUITEM"]}
+        />
+      )}
+    </>
   );
 };
 
