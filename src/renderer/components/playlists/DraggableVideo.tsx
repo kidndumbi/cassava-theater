@@ -9,8 +9,6 @@ import { useDragPreviewImage } from "../../hooks/useDragPreviewImage";
 import { DragVideoItem } from "../../../models/drag-video-item.model";
 import { PlaylistModel } from "../../../models/playlist.model";
 
-
-
 export const DraggableVideo: React.FC<{
   video: VideoDataModel;
   idx: number;
@@ -19,7 +17,8 @@ export const DraggableVideo: React.FC<{
   handleRemove: (videoIdx: number) => void;
   handleInfo: (videoIdx: number) => void;
   moveVideo: (from: number, to: number) => void;
-  currentPlaylist: PlaylistModel
+  currentPlaylist: PlaylistModel;
+  dragging: (isDragging: boolean, idx: number) => void;
 }> = ({
   video,
   idx,
@@ -28,7 +27,8 @@ export const DraggableVideo: React.FC<{
   handleRemove,
   handleInfo,
   moveVideo,
-  currentPlaylist
+  currentPlaylist,
+  dragging,
 }) => {
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -45,9 +45,14 @@ export const DraggableVideo: React.FC<{
     }),
   });
 
-  const [{ opacity }, drag, dragPreview] = useDrag({
+  const [{ opacity, isDragging }, drag, dragPreview] = useDrag({
     type: "VIDEO",
-    item: { index: idx, type: "VIDEO", videoData: video, currentPlaylist: currentPlaylist },
+    item: {
+      index: idx,
+      type: "VIDEO",
+      videoData: video,
+      currentPlaylist: currentPlaylist,
+    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
       opacity: monitor.isDragging() ? 0.5 : 1,
@@ -55,6 +60,10 @@ export const DraggableVideo: React.FC<{
   });
 
   const previewSrc = useDragPreviewImage(video.fileName);
+
+  React.useEffect(() => {
+    dragging(isDragging, idx);
+  }, [isDragging, dragging, idx]);
 
   drag(drop(ref));
 
