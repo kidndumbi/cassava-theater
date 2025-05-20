@@ -99,6 +99,7 @@ export interface VideoAPI {
       videos: VideoDataModel[];
     }[]
   >;
+  fetchWatchlaterVideos: () => Promise<VideoDataModel[]>;
 }
 
 export interface TheMovieDbAPI {

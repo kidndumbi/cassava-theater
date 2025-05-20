@@ -6,24 +6,22 @@ import { Box } from "@mui/material";
 import { WatchLater } from "./WatchLater";
 
 interface WatchLaterProps {
-  movies: VideoDataModel[];
-  loadingMovies: boolean;
+  watchLaterVideos: VideoDataModel[];
+  loadingWatchLater: boolean;
   handlePosterClick: (videoType: string, video: VideoDataModel) => void;
 }
 
 export const WatchLaterList: FC<WatchLaterProps> = ({
-  movies,
-  loadingMovies,
+  watchLaterVideos,
+  loadingWatchLater,
   handlePosterClick,
 }) => {
-  const watchLaterMovies = movies?.filter((movie) => movie.watchLater);
-
   const renderMovies = () => {
-    if (loadingMovies) {
+    if (loadingWatchLater) {
       return <LoadingIndicator message="Loading movies..." />;
     }
 
-    if (!watchLaterMovies || watchLaterMovies.length === 0) {
+    if (!watchLaterVideos || watchLaterVideos.length === 0) {
       return (
         <Box display="flex" justifyContent="center" paddingY="2rem">
           <Box fontSize="2rem">No Movies to display</Box>
@@ -31,7 +29,7 @@ export const WatchLaterList: FC<WatchLaterProps> = ({
       );
     }
 
-    return watchLaterMovies.map((movie) => (
+    return watchLaterVideos.map((movie) => (
       <WatchLater
         key={movie.filePath}
         movie={movie}

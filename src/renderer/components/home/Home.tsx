@@ -11,7 +11,7 @@ import AppIconButton from "../common/AppIconButton";
 import {
   useRecentlyWatchedCustomVideosQuery,
   useRecentlyWatchedVideosQuery,
-  useVideoDataQuery,
+  useWatchlaterVideosQuery,
 } from "../../hooks/useVideoData.query";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
@@ -50,11 +50,9 @@ export const HomePage: React.FC<HomePageProps> = ({
 
   const { data: resumeCustom, isLoading: isLoadingResumeCustom } =
     useRecentlyWatchedCustomVideosQuery();
-    
-  const { data: movies, isLoading: loadingWatchLater } = useVideoDataQuery({
-    filePath: settings?.movieFolderPath || "",
-    category: "movies",
-  });
+
+  const { data: watchLaterVideos, isLoading: isLoadingWatchLaterVideos } =
+    useWatchlaterVideosQuery();
 
   const { handlePosterClick, loadingItems } = useHandlePosterClick(
     menuId,
@@ -133,7 +131,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   handlePosterClick={handlePosterClick}
                 />
               </Box>
-            ) : null
+            ) : null,
           )
         )}
       </Box>
@@ -142,8 +140,8 @@ export const HomePage: React.FC<HomePageProps> = ({
       <Box>
         <WatchLaterList
           handlePosterClick={handlePosterClick}
-          loadingMovies={loadingWatchLater}
-          movies={movies}
+          watchLaterVideos={watchLaterVideos}
+          loadingWatchLater={isLoadingWatchLaterVideos}
         />
       </Box>
     </Box>
