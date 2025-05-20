@@ -15,7 +15,6 @@ export const AppDelete: React.FC<{
     accept,
     canDrop: () => allowDrop,
     drop(item) {
-      console.log("Dropped item:", item);
       itemDroped(item);
     },
     collect: (monitor) => ({

@@ -18,14 +18,13 @@ export const DraggableMenuItem = ({
   handleButtonClick,
   switchCustomFolderPosition,
   dragging,
-  
 }: {
   menu: MenuItem;
   idx: number;
   activeMenuItem: MenuItem;
   handleButtonClick: (item: MenuItem) => void;
   switchCustomFolderPosition: (id1: string, id2: string) => void;
-  dragging: (isDraging: boolean) => void;
+  dragging: (isDragging: boolean, idx: number) => void;
 }) => {
   const isActive = menu.label === activeMenuItem.label;
   const activeStyle = isActive
@@ -73,12 +72,8 @@ export const DraggableMenuItem = ({
   });
 
   React.useEffect(() => {
-    if (isDragging) {
-      dragging(true);
-    } else {
-      dragging(false);
-    }
-  }, [isDragging, dragging]);
+    dragging(isDragging, idx);
+  }, [isDragging, dragging, idx]);
 
   drag(drop(ref));
 
