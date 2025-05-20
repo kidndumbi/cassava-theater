@@ -7,6 +7,9 @@ import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
 import { DraggableMenuItem } from "./DraggableMenuItem";
 import buttonStyle from "./buttonStyle";
+import DeleteIcon from "@mui/icons-material/Delete";
+import theme from "../../theme";
+import { AppDelete } from "../common/AppDelete";
 
 interface MainMenuProps {
   menuItems: MenuItem[];
@@ -21,10 +24,10 @@ const MainMenu: React.FC<MainMenuProps> = ({
   onActiveMenuItemChange,
   onSettingsClick,
 }) => {
-  const {
-    data: { folders } = {} as SettingsModel,
-  } = useGetAllSettings();
+  const { data: { folders } = {} as SettingsModel } = useGetAllSettings();
   const { mutateAsync: setSetting } = useSetSetting();
+
+  const [isDragging, setIsDragging] = React.useState(false);
 
   const handleButtonClick = (item: MenuItem) => {
     onActiveMenuItemChange(item);
@@ -48,6 +51,7 @@ const MainMenu: React.FC<MainMenuProps> = ({
   };
 
   return (
+    <>
       <List sx={{ width: "130px", borderRight: "1px solid #ccc" }}>
         {menuItems.map((menu, idx) => (
           <DraggableMenuItem
@@ -57,6 +61,9 @@ const MainMenu: React.FC<MainMenuProps> = ({
             activeMenuItem={activeMenuItem}
             handleButtonClick={handleButtonClick}
             switchCustomFolderPosition={switchCustomFolderPosition}
+            dragging={(dragState: boolean) => {
+              setIsDragging(dragState);
+            }}
           />
         ))}
 
@@ -73,6 +80,16 @@ const MainMenu: React.FC<MainMenuProps> = ({
           </Box>
         </Button>
       </List>
+
+      {isDragging && (
+        <AppDelete
+          itemDroped={(item) => {
+            console.log("Dropped item:", item);
+          }}
+          accept={["MENUITEM"]}
+        ></AppDelete>
+      )}
+    </>
   );
 };
 

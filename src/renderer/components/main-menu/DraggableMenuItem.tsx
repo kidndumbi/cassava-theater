@@ -17,12 +17,15 @@ export const DraggableMenuItem = ({
   activeMenuItem,
   handleButtonClick,
   switchCustomFolderPosition,
+  dragging,
+  
 }: {
   menu: MenuItem;
   idx: number;
   activeMenuItem: MenuItem;
   handleButtonClick: (item: MenuItem) => void;
   switchCustomFolderPosition: (id1: string, id2: string) => void;
+  dragging: (isDraging: boolean) => void;
 }) => {
   const isActive = menu.label === activeMenuItem.label;
   const activeStyle = isActive
@@ -59,14 +62,23 @@ export const DraggableMenuItem = ({
     }),
   });
 
-  const [{ opacity }, drag] = useDrag({
+  const [{ opacity,isDragging }, drag] = useDrag({
     type: "MENUITEM",
     item: { index: idx, type: "MENUITEM", menu },
     canDrag: () => menu.menuType !== "default",
     collect: (monitor) => ({
       opacity: monitor.isDragging() ? 0.5 : 1,
+      isDragging: monitor.isDragging(),
     }),
   });
+
+  React.useEffect(() => {
+    if (isDragging) {
+      dragging(true);
+    } else {
+      dragging(false);
+    }
+  }, [isDragging, dragging]);
 
   drag(drop(ref));
 
