@@ -24,6 +24,7 @@ import { PlaylistModel } from "../../../models/playlist.model";
 import { AppContextMenu } from "../common/AppContextMenu";
 import theme from "../../theme";
 import { useModalState } from "../../hooks/useModalState";
+import { AppDelete } from "../common/AppDelete";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -64,6 +65,7 @@ const MovieList: React.FC<MovieListProps> = ({
   }, [playlists]);
 
   const queryClient = useQueryClient();
+  const [draggingIdx, setDraggingIdx] = React.useState<number | null>(null);
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -175,23 +177,25 @@ const MovieList: React.FC<MovieListProps> = ({
     }
   };
 
-  // Helper to build context menu items for AppContextMenu
+  // Move delete handler outside getMenuItems
+  const handleDeleteMovie = async (movie: VideoDataModel) => {
+    if (movie?.filePath) {
+      if (
+        (await openDialog(
+          "Delete",
+          null,
+          "Are you sure you want to delete this Movie?",
+        )) !== "Ok"
+      )
+        return;
+      deleteFile(movie.filePath);
+    }
+  };
+
   const getMenuItems = (movie: VideoDataModel) => [
     {
       label: "Delete",
-      action: async () => {
-        if (movie?.filePath) {
-          if (
-            (await openDialog(
-              "Delete",
-              null,
-              "Are you sure you want to delete this Movie?",
-            )) !== "Ok"
-          )
-            return;
-          deleteFile(movie.filePath);
-        }
-      },
+      action: () => handleDeleteMovie(movie),
       sx: { color: theme.palette.error.main },
     },
     {
@@ -271,7 +275,7 @@ const MovieList: React.FC<MovieListProps> = ({
         ref={scrollContainerRef}
         sx={{ overflowY: "auto", maxHeight: "calc(100vh - 100px)" }}
       >
-        {movies?.map((movie) => (
+        {movies?.map((movie, index) => (
           <AppContextMenu
             key={movie.filePath}
             title={removeVidExt(movie.fileName ?? "")}
@@ -279,32 +283,38 @@ const MovieList: React.FC<MovieListProps> = ({
           >
             <div>
               <MovieListItem
+                idx={index}
                 movie={movie}
                 onPosterClick={handlePosterClick}
                 getImageUrl={getImageUrl}
-                onDelete={async (filePath) => {
-                  if (
-                    (await openDialog(
-                      "Delete",
-                      null,
-                      "Are you sure you want to delete this Movie?",
-                    )) !== "Ok"
-                  )
-                    return;
-                  deleteFile(filePath);
-                }}
-                onLinkTheMovieDb={() => handleLinkMovieDb(movie)}
-                onConvertToMp4={handleConvertToMp4}
                 alwaysShowVideoType={settings?.showVideoType}
-                handlePlaylistUpdate={async (movie) => {
-                  setSelectedPlaylistVideo(movie);
-                  openPlaylistModalOpen();
+                dragging={(isDragging: boolean, dragIdx: number) => {
+                  if (isDragging) {
+                    setDraggingIdx(dragIdx);
+                  } else {
+                    setDraggingIdx((current) =>
+                      current === dragIdx ? null : current,
+                    );
+                  }
                 }}
               />
             </div>
           </AppContextMenu>
         ))}
       </Box>
+
+      {draggingIdx !== null && (
+        <AppDelete
+          itemDroped={(item: {
+            index: number;
+            type: string;
+            movie: VideoDataModel;
+          }) => {
+            handleDeleteMovie(item.movie);
+          }}
+          accept={["VIDEO"]}
+        />
+      )}
 
       <MovieSuggestionsModal
         id={selectedMovie?.movie_details?.id?.toString() || ""}
