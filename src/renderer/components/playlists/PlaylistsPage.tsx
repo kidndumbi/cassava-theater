@@ -191,6 +191,9 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
             playlists={playlists}
             selectedPlaylist={selectedPlaylist}
             setSelectedPlaylist={setSelectedPlaylist}
+            updatePlaylist={(id: string, playlist: PlaylistModel) =>
+              updatePlaylist({ id, playlist })
+            }
           />
           <Box>
             {selectedPlaylist && (

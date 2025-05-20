@@ -1,7 +1,5 @@
 import React from "react";
 import { Box, Button, List } from "@mui/material";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { MenuItem } from "../../../models/menu-item.model";
 import { SettingsModel } from "../../../models/settings.model";
@@ -50,7 +48,6 @@ const MainMenu: React.FC<MainMenuProps> = ({
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
       <List sx={{ width: "130px", borderRight: "1px solid #ccc" }}>
         {menuItems.map((menu, idx) => (
           <DraggableMenuItem
@@ -76,7 +73,6 @@ const MainMenu: React.FC<MainMenuProps> = ({
           </Box>
         </Button>
       </List>
-    </DndProvider>
   );
 };
 
