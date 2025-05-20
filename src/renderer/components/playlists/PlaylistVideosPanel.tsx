@@ -5,6 +5,7 @@ import { getFilename, removeVidExt } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { PlaylistModel } from "../../../models/playlist.model";
 import { DraggableVideo } from "./DraggableVideo";
+import { AppDelete } from "../common/AppDelete";
 
 interface PlaylistVideosPanelProps {
   videos: VideoDataModel[] | undefined;
@@ -23,7 +24,8 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
   navToDetails,
   onPlayVideo,
 }) => {
-  // Remove video from playlist
+  const [draggingIdx, setDraggingIdx] = React.useState<number | null>(null);
+
   const handleRemove = (videoIdx: number) => {
     if (
       typeof videoIdx === "number" &&
@@ -65,46 +67,64 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
   };
 
   return (
-    <Paper
-      sx={{
-        flex: 1,
-        minHeight: 300,
-        p: 2,
-        backgroundColor: theme.customVariables.appDarker,
-        color: theme.customVariables.appWhiteSmoke,
-      }}
-    >
-      {selectedPlaylist?.lastVideoPlayed && (
-        <Typography sx={{ marginBottom: 2 }} variant="subtitle2">
-          Last Played:{" "}
-          {removeVidExt(getFilename(selectedPlaylist.lastVideoPlayed))}
-        </Typography>
-      )}
-      <Box display="flex" flexWrap="wrap" gap={2}>
-        {videos?.length > 0 ? (
-          videos.map((video, idx) =>
-            video ? (
-              <DraggableVideo
-                key={video.filePath || idx}
-                currentPlaylist={selectedPlaylist}
-                video={video}
-                idx={idx}
-                getImageUrl={getImageUrl}
-                onPlayVideo={onPlayVideo}
-                handleRemove={handleRemove}
-                handleInfo={handleInfo}
-                moveVideo={moveVideo}
-              />
-            ) : null,
-          )
-        ) : (
-          <Typography sx={{ color: theme.customVariables.appWhiteSmoke }}>
-            {selectedPlaylist
-              ? "No videos in this playlist."
-              : "Select a playlist to view its videos."}
+    <>
+      <Paper
+        sx={{
+          flex: 1,
+          minHeight: 300,
+          p: 2,
+          backgroundColor: theme.customVariables.appDarker,
+          color: theme.customVariables.appWhiteSmoke,
+        }}
+      >
+        {selectedPlaylist?.lastVideoPlayed && (
+          <Typography sx={{ marginBottom: 2 }} variant="subtitle2">
+            Last Played:{" "}
+            {removeVidExt(getFilename(selectedPlaylist.lastVideoPlayed))}
           </Typography>
         )}
-      </Box>
-    </Paper>
+        <Box display="flex" flexWrap="wrap" gap={2}>
+          {videos?.length > 0 ? (
+            videos.map((video, idx) =>
+              video ? (
+                <DraggableVideo
+                  key={video.filePath || idx}
+                  currentPlaylist={selectedPlaylist}
+                  video={video}
+                  idx={idx}
+                  getImageUrl={getImageUrl}
+                  onPlayVideo={onPlayVideo}
+                  handleRemove={handleRemove}
+                  handleInfo={handleInfo}
+                  moveVideo={moveVideo}
+                  dragging={(isDragging, idx) => {
+                    setDraggingIdx(isDragging ? idx : null);
+                  }}
+                />
+              ) : null,
+            )
+          ) : (
+            <Typography sx={{ color: theme.customVariables.appWhiteSmoke }}>
+              {selectedPlaylist
+                ? "No videos in this playlist."
+                : "Select a playlist to view its videos."}
+            </Typography>
+          )}
+        </Box>
+      </Paper>
+
+      {draggingIdx !== null && (
+        <AppDelete
+          itemDroped={(item: {
+            index: number;
+            type: string;
+            currentPlaylist: PlaylistModel;
+          }) => {
+            handleRemove(item.index);
+          }}
+          accept={["VIDEO"]}
+        />
+      )}
+    </>
   );
 };
