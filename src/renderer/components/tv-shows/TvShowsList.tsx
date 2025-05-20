@@ -3,7 +3,6 @@ import { Alert, Box, Snackbar, Button } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, trimFileName } from "../../util/helperFunctions";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
-import { PosterCard } from "../common/PosterCard";
 import { AppContextMenu } from "../common/AppContextMenu";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
@@ -15,7 +14,12 @@ import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
 import theme from "../../theme";
 import { useAppSelector, useAppDispatch } from "../../store";
-import { setScrollPoint, selectScrollPoint } from "../../store/scrollPoint.slice";
+import {
+  setScrollPoint,
+  selectScrollPoint,
+} from "../../store/scrollPoint.slice";
+import TvShowListItem from "./TvShowListItem";
+import { AppDelete } from "../common/AppDelete";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
@@ -39,8 +43,11 @@ export const TvShowsList = React.memo(function TvShowsList(
   const { updateTvShowTMDBId, updateTvShowDbData } = useTvShows();
   const queryClient = useQueryClient();
   const dispatch = useAppDispatch();
-  const scrollPoint = useAppSelector((state) => selectScrollPoint(state, SCROLL_KEY));
+  const scrollPoint = useAppSelector((state) =>
+    selectScrollPoint(state, SCROLL_KEY),
+  );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [draggingIdx, setDraggingIdx] = React.useState<number | null>(null);
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -169,7 +176,7 @@ export const TvShowsList = React.memo(function TvShowsList(
       action: () => {
         if (show?.filePath) handleDelete(show.filePath);
       },
-        sx: { color: theme.palette.error.main },
+      sx: { color: theme.palette.error.main },
     },
     {
       label: "Link TV Show Info",
@@ -204,24 +211,50 @@ export const TvShowsList = React.memo(function TvShowsList(
 
   return (
     <>
-      <Box display="flex" flexWrap="wrap" gap="4px" ref={scrollContainerRef} sx={{ overflowY: "auto", maxHeight: "calc(100vh - 100px)" }}>
+      <Box
+        display="flex"
+        flexWrap="wrap"
+        gap="4px"
+        ref={scrollContainerRef}
+        sx={{ overflowY: "auto", maxHeight: "calc(100vh - 100px)" }}
+      >
         {shows?.map((show: VideoDataModel, index: number) => (
           <AppContextMenu
             key={show.filePath}
             title={trimFileName(show.fileName ?? "")}
             menuItems={getMenuItems(show)}
           >
-            <PosterCard
+            <TvShowListItem
               key={index}
-              imageUrl={getImageUlr(show)}
-              altText={show.fileName || ""}
-              onClick={() => show.filePath && handlePosterClick(show.filePath)}
-              footer={trimFileName(show.fileName ?? "")}
+              show={show}
+              getImageUrl={getImageUlr}
+              handlePosterClick={handlePosterClick}
+              idx={index}
+              dragging={(isDragging: boolean, dragIdx: number) => {
+                if (isDragging) {
+                  setDraggingIdx(dragIdx);
+                } else {
+                  setDraggingIdx((current) =>
+                    current === dragIdx ? null : current,
+                  );
+                }
+              }}
             />
           </AppContextMenu>
         ))}
       </Box>
-
+      {draggingIdx !== null && (
+        <AppDelete
+          itemDroped={(item: {
+            index: number;
+            type: string;
+            show: VideoDataModel;
+          }) => {
+            handleDelete(item?.show?.filePath);
+          }}
+          accept={["VIDEO"]}
+        />
+      )}
       <TvShowSuggestionsModal
         id={selectedTvShow?.tv_show_details?.id.toString() || ""}
         open={openTvShowSuggestionsModal}
