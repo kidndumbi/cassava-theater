@@ -63,3 +63,11 @@ export function useRecentlyWatchedCustomVideosQuery(limit?: number) {
     networkMode: "always",
   });
 }
+
+export function useWatchlaterVideosQuery() {
+  return useQuery<VideoDataModel[]>({
+    queryKey: ["watchlaterVideos"],
+    queryFn: () => window.videoAPI.fetchWatchlaterVideos(),
+    networkMode: "always",
+  });
+}

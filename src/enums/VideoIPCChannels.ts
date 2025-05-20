@@ -10,4 +10,5 @@ export enum VideoIPCChannels {
   GetScreenshot = "video:getScreenshot",
   FetchRecentlyWatchedVideosData = "video:fetchRecentlyWatchedVideosData",
   FetchRecentlyWatchedCustomVideosData = "video:fetchRecentlyWatchedCustomVideosData",
+  FetchWatchlaterVideos = "video:fetchWatchlaterVideos",
 }

@@ -12,6 +12,7 @@ import {
   getFolderFiles,
   fetchRecentlyWatchedVideosData,
   fetchRecentlyWatchedCustomVideosData,
+  fetchWatchlaterVideos,
 } from "../services/video-data.service";
 import { generateThumbnail } from "../services/thumbnail.service";
 import { VideoDataModel } from "../../models/videoData.model";
@@ -111,6 +112,13 @@ export const videosIpcHandlers = () => {
       args: { limit?: number }
     ) => {
       return fetchRecentlyWatchedCustomVideosData(args?.limit);
+    }
+  );
+
+  ipcMain.handle(
+    VideoIPCChannels.FetchWatchlaterVideos,
+    async () => {
+      return fetchWatchlaterVideos();
     }
   );
 };

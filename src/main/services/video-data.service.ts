@@ -11,6 +11,42 @@ import * as videoDataHelpers from "./video.helpers";
 import { getMovieOrTvShowById } from "./themoviedb.service";
 import { normalizeFilePath } from "./helpers";
 
+export const fetchWatchlaterVideos = async (): Promise<VideoDataModel[]> => {
+  const moviesFilePath =
+    await settingsDataDbService.getSetting("movieFolderPath");
+  if (!moviesFilePath) throw new Error("Path is required");
+
+  // Get watchlaters from main movie folder
+  const videosData = await fetchVideosData({
+    filePath: moviesFilePath,
+    includeThumbnail: false,
+    category: "movies",
+  });
+  const mainWatchlaters = videosData.filter(video => video.watchLater);
+
+  // Get watchlaters from all custom folders
+  const customFolders = await settingsDataDbService.getSetting("folders");
+  const customWatchlaters: VideoDataModel[] = [];
+  if (Array.isArray(customFolders)) {
+    for (const folder of customFolders) {
+      const folderPath = folder.folderPath;
+      if (!folderPath || !fs.existsSync(folderPath)) continue;
+      try {
+        const folderVideos = await fetchVideosData({
+          filePath: folderPath,
+          includeThumbnail: false,
+          category: "movies",
+        });
+        customWatchlaters.push(...folderVideos.filter(video => video.watchLater));
+      } catch (e) {
+        log.error("Error fetching watchlater videos from custom folder: ", e);
+      }
+    }
+  }
+
+  return [...mainWatchlaters, ...customWatchlaters];
+};
+
 export const fetchRecentlyWatchedCustomVideosData = async (
   limit = 20,
 ): Promise<
