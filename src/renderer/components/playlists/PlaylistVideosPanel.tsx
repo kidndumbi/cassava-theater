@@ -1,14 +1,9 @@
 import * as React from "react";
 import { Paper, Box, Typography } from "@mui/material";
 import theme from "../../theme";
-import {
-  getFilename,
-  removeVidExt,
-} from "../../util/helperFunctions";
+import { getFilename, removeVidExt } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { PlaylistModel } from "../../../models/playlist.model";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 import { DraggableVideo } from "./DraggableVideo";
 
 interface PlaylistVideosPanelProps {
@@ -70,47 +65,46 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <Paper
-        sx={{
-          flex: 1,
-          minHeight: 300,
-          p: 2,
-          backgroundColor: theme.customVariables.appDarker,
-          color: theme.customVariables.appWhiteSmoke,
-        }}
-      >
-        {selectedPlaylist?.lastVideoPlayed && (
-          <Typography sx={{ marginBottom: 2 }} variant="subtitle2">
-            Last Played:{" "}
-            {removeVidExt(getFilename(selectedPlaylist.lastVideoPlayed))}
+    <Paper
+      sx={{
+        flex: 1,
+        minHeight: 300,
+        p: 2,
+        backgroundColor: theme.customVariables.appDarker,
+        color: theme.customVariables.appWhiteSmoke,
+      }}
+    >
+      {selectedPlaylist?.lastVideoPlayed && (
+        <Typography sx={{ marginBottom: 2 }} variant="subtitle2">
+          Last Played:{" "}
+          {removeVidExt(getFilename(selectedPlaylist.lastVideoPlayed))}
+        </Typography>
+      )}
+      <Box display="flex" flexWrap="wrap" gap={2}>
+        {videos?.length > 0 ? (
+          videos.map((video, idx) =>
+            video ? (
+              <DraggableVideo
+                key={video.filePath || idx}
+                currentPlaylist={selectedPlaylist}
+                video={video}
+                idx={idx}
+                getImageUrl={getImageUrl}
+                onPlayVideo={onPlayVideo}
+                handleRemove={handleRemove}
+                handleInfo={handleInfo}
+                moveVideo={moveVideo}
+              />
+            ) : null,
+          )
+        ) : (
+          <Typography sx={{ color: theme.customVariables.appWhiteSmoke }}>
+            {selectedPlaylist
+              ? "No videos in this playlist."
+              : "Select a playlist to view its videos."}
           </Typography>
         )}
-        <Box display="flex" flexWrap="wrap" gap={2}>
-          {videos?.length > 0 ? (
-            videos.map((video, idx) =>
-              video ? (
-                <DraggableVideo
-                  key={video.filePath || idx}
-                  video={video}
-                  idx={idx}
-                  getImageUrl={getImageUrl}
-                  onPlayVideo={onPlayVideo}
-                  handleRemove={handleRemove}
-                  handleInfo={handleInfo}
-                  moveVideo={moveVideo}
-                />
-              ) : null,
-            )
-          ) : (
-            <Typography sx={{ color: theme.customVariables.appWhiteSmoke }}>
-              {selectedPlaylist
-                ? "No videos in this playlist."
-                : "Select a playlist to view its videos."}
-            </Typography>
-          )}
-        </Box>
-      </Paper>
-    </DndProvider>
+      </Box>
+    </Paper>
   );
 };

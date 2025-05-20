@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import CssBaseline from "@mui/material/CssBaseline";
 import { Box, ThemeProvider } from "@mui/material";
 import { Provider } from "react-redux";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import {
   HashRouter,
   Routes,
@@ -88,8 +90,11 @@ root.render(
         <CssBaseline />
         <Provider store={store}>
           <QueryClientProvider client={queryClient}>
-            <App />
-            <Mp4ConversionEvents />
+            <DndProvider backend={HTML5Backend}>
+              <App />
+              <Mp4ConversionEvents />
+            </DndProvider>
+
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryClientProvider>
         </Provider>
