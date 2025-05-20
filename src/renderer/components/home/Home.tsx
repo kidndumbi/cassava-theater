@@ -17,12 +17,16 @@ import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import WarningIcon from "@mui/icons-material/Warning";
 import LoadingIndicator from "../common/LoadingIndicator";
+import { useAppDispatch, useAppSelector } from "../../store";
+import { setScrollPoint, selectScrollPoint } from "../../store/scrollPoint.slice";
 
 interface HomePageProps {
   style?: React.CSSProperties;
   refreshData: () => void;
   menuId: string;
 }
+
+const SCROLL_KEY = "HomeScroll";
 
 export const HomePage: React.FC<HomePageProps> = ({
   style,
@@ -34,6 +38,9 @@ export const HomePage: React.FC<HomePageProps> = ({
   const { getSingleEpisodeDetails } = useTvShows();
   const { data: settings } = useGetAllSettings();
   const { openDialog, setMessage } = useConfirmation();
+  const dispatch = useAppDispatch();
+  const scrollPoint = useAppSelector((state) => selectScrollPoint(state, SCROLL_KEY));
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     console.log("Homepage rendered");
@@ -83,10 +90,31 @@ export const HomePage: React.FC<HomePageProps> = ({
     </Typography>
   );
 
+  // Restore scroll position on mount
+  React.useEffect(() => {
+    if (scrollContainerRef.current && typeof scrollPoint === "number") {
+      scrollContainerRef.current.scrollTop = scrollPoint;
+    }
+  }, [scrollPoint]);
+
+  React.useEffect(() => {
+    const ref = scrollContainerRef.current;
+    if (!ref) return;
+    const handleScroll = () => {
+      const value = ref.scrollTop;
+      dispatch(setScrollPoint({ key: SCROLL_KEY, value }));
+    };
+    ref.addEventListener("scroll", handleScroll);
+    return () => {
+      ref.removeEventListener("scroll", handleScroll);
+    };
+  }, [dispatch]);
+
   return (
     <Box
       className="custom-scrollbar"
-      style={{ ...style, overflowY: "auto", paddingTop: "20px" }}
+      ref={scrollContainerRef}
+      style={{ ...style, overflowY: "auto", paddingTop: "20px",  maxHeight: "calc(100vh - 50px)"  }}
     >
       <AppIconButton
         tooltip="Refresh"

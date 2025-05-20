@@ -243,14 +243,12 @@ const MovieList: React.FC<MovieListProps> = ({
     // Add more menu items as needed
   ];
 
-  // Restore scroll position on mount
   React.useEffect(() => {
     if (scrollContainerRef.current && typeof scrollPoint === "number") {
       scrollContainerRef.current.scrollTop = scrollPoint;
     }
   }, [scrollPoint]);
 
-  // Log and save scrollPoint value as user scrolls
   React.useEffect(() => {
     const ref = scrollContainerRef.current;
     if (!ref) return;
