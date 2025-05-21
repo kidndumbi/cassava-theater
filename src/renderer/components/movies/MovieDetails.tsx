@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useMovies } from "../../hooks/useMovies";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { Box } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { useSubtitle } from "../../hooks/useSubtitle";
@@ -52,18 +52,15 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     },
   });
 
-  const { mutateAsync: saveTmdbData } = useSaveJsonData(
-    (data, savedData) => {
-      console.log("saveVideoJsonData", data, savedData);
-      queryClient.setQueryData(
-        ["videoDetails", videoPath, "movies"],
-        (oldData: VideoDataModel) => ({
-          ...oldData,
-          movie_details: savedData.newVideoJsonData.movie_details,
-        }),
-      );
-    },
-  );
+  const { mutateAsync: saveTmdbData } = useSaveJsonData((data, savedData) => {
+    queryClient.setQueryData(
+      ["videoDetails", videoPath, "movies"],
+      (oldData: VideoDataModel) => ({
+        ...oldData,
+        movie_details: savedData.newVideoJsonData.movie_details,
+      }),
+    );
+  });
 
   const [imageUrl, setImageUrl] = useState("");
   const { getTmdbImageUrl, getBackgroundGradient } = useTmdbImageUrl();
@@ -78,19 +75,29 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
 
+  const [searchParams] = useSearchParams();
+
   const handleBackClick = () => {
-    navigate("/?menuId=" + menuId);
+    const folderId = searchParams.get("folderId");
+    const isCustomFolder = menuId === "app-custom-folders";
+    let url = `/?menuId=${menuId}`;
+    if (isCustomFolder && folderId) {
+      url += `&folderId=${folderId}`;
+    }
+    navigate(url);
   };
 
   const handlePlay = (startFromBeginning = false) => {
-    if (videoDetails) {
-      setCurrentVideo(videoDetails);
-      navigate(
-        `/video-player?${
-          startFromBeginning ? "startFromBeginning=true&" : ""
-        }&menuId=${menuId}`,
-      );
-    }
+    if (!videoDetails) return;
+    const folderId = searchParams.get("folderId");
+    setCurrentVideo(videoDetails);
+
+    const params = new URLSearchParams();
+    if (startFromBeginning) params.append("startFromBeginning", "true");
+    params.append("menuId", menuId);
+    if (folderId) params.append("folderId", folderId);
+
+    navigate(`/video-player?${params.toString()}`);
   };
 
   const onTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -107,8 +114,6 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     });
     refetch();
   };
-
-
 
   const handleMovieSelect = async (movie_details: MovieDetails) => {
     const extraMovieDetails = await getExtraMovieDetails(
