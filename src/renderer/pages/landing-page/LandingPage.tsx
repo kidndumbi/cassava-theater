@@ -8,6 +8,7 @@ import {
   Folder as FolderIcon,
   FeaturedPlayList,
   Handyman,
+  Home
 } from "@mui/icons-material";
 import Grid from "@mui/material/Grid2";
 import { renderActivePage } from "./RenderActivePage";
@@ -96,11 +97,7 @@ export const LandingPage = () => {
     {
       id: "app-home",
       label: "Home",
-      icon: (
-        <span style={{ fontSize: "30px" }} role="img" aria-label="rename">
-          🏡
-        </span>
-      ),
+      icon: <Home />,
       handler: handleMenuClick,
       menuType: "default" as const,
     },
