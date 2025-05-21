@@ -36,14 +36,12 @@ export const CustomFolderVideosPanel = ({
                   title={removeVidExt(video.fileName)}
                   menuItems={[]}
                 >
-                  <div>
-                    <PosterCard
-                      imageUrl={getImageUrl(video)}
-                      altText={video.fileName || ""}
-                      footer={trimFileName(video.fileName || "")}
-                      onClick={() => onClick(video)}
-                    />
-                  </div>
+                  <PosterCard
+                    imageUrl={getImageUrl(video)}
+                    altText={video.fileName || ""}
+                    footer={trimFileName(video.fileName || "")}
+                    onClick={() => onClick(video)}
+                  />
                 </AppContextMenu>
               ) : null,
             )

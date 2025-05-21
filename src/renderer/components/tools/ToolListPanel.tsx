@@ -6,41 +6,38 @@ import {
   Paper,
 } from "@mui/material";
 import theme from "../../theme";
-import { CustomFolderModel } from "../../../models/custom-folder";
 
-interface CustomFolderListPanelProps {
-  folders: CustomFolderModel[] | undefined;
-  selectedFolder: CustomFolderModel | null;
-  setSelectedFolder: (folder: CustomFolderModel) => void;
-  updateFolder: (id: string, folder: string) => void;
+interface ToolListPanelProps {
+  tools: { id: string; name: string }[] | undefined;
+  selectedTool: { id: string; name: string } | null;
+  setSelectedTool: (tool: { id: string; name: string }) => void;
 }
 
-export const CustomFolderListPanel = ({
-  folders,
-  selectedFolder,
-  setSelectedFolder,
-  updateFolder,
-}: CustomFolderListPanelProps) => {
+export const ToolListPanel = ({
+  tools,
+  selectedTool,
+  setSelectedTool,
+}: ToolListPanelProps) => {
   return (
     <Paper
       sx={{
         minWidth: 220,
         maxWidth: 300,
         flex: "0 0 220px",
-        backgroundColor: theme.palette.primary.main,
+        backgroundColor: theme.customVariables.appDark,
       }}
     >
       <List
         sx={{
           color: theme.customVariables.appWhiteSmoke,
-          bgcolor: theme.palette.primary.main,
+          bgcolor: theme.customVariables.appDark,
         }}
       >
-        {folders?.map((folder) => (
-          <ListItem key={folder.id} disablePadding>
+        {tools?.map((tool) => (
+          <ListItem key={tool.id} disablePadding>
             <ListItemButton
-              selected={selectedFolder?.id === folder.id}
-              onClick={() => setSelectedFolder(folder)}
+              selected={selectedTool?.id === tool.id}
+              onClick={() => setSelectedTool(tool)}
               sx={{
                 color: theme.customVariables.appWhiteSmoke,
                 "&.Mui-selected": {
@@ -54,7 +51,7 @@ export const CustomFolderListPanel = ({
               }}
             >
               <ListItemText
-                primary={folder.name}
+                primary={tool.name}
                 slotProps={{
                   primary: {
                     sx: { color: theme.customVariables.appWhiteSmoke },
