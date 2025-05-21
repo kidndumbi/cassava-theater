@@ -1,6 +1,6 @@
 import { ConversionQueueItem } from "./main/services/mp4Conversion.service";
+import ytdl from '@distube/ytdl-core';
 import { PlaylistModel } from "./models/playlist.model";
-// import { SettingsModel } from "./main/store";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoDataModel } from "./models/videoData.model";
 export interface IElectronAPI {
@@ -137,7 +137,7 @@ export interface PlaylistAPI {
 }
 
 export interface YoutubeAPI {
-  getVideoInfo: (url: string) => Promise<any>;
+  getVideoInfo: (url: string) => Promise<ytdl.videoInfo>;
   downloadVideo: (url: string, destinationPath: string) => Promise<{ success: boolean }>;
 }
 

@@ -5,13 +5,7 @@ import { useState } from "react";
 import { ToolPanel } from "./ToolPanel";
 
 export const ToolsPage = () => {
-  const tools = [
-    { id: "youtube-download", name: "Youtube Download" },
-    { id: "youtube-to-mp3", name: "Youtube to MP3" },
-    { id: "youtube-to-mp4", name: "Youtube to MP4" },
-    { id: "youtube-to-mkv", name: "Youtube to MKV" },
-    { id: "youtube-to-webm", name: "Youtube to WEBM" },
-  ];
+  const tools = [{ id: "youtube-download", name: "Youtube Download" }];
   const [selectedTool, setSelectedTool] = useState(tools[0]);
 
   return (
@@ -26,7 +20,7 @@ export const ToolsPage = () => {
               setSelectedTool(tool);
             }}
           />
-          <Box>
+          <Box sx={{ width: "100%" }}>
             <ToolPanel selectedTool={selectedTool} />
           </Box>
         </Box>
