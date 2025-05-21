@@ -53,7 +53,7 @@ export const renderActivePage = (
     case "app-playlists":
       return <PlaylistsPage menuId={activeMenu.id} />;
     case "app-tools":
-      return <ToolsPage menuId={activeMenu.id} />;
+      return <ToolsPage />;
     case "app-custom-folders":
       return <CustomFolderPage menuId={activeMenu.id} />;
     default:

@@ -4,9 +4,10 @@ import React from "react";
 
 interface AppButtonProps {
   children: React.ReactNode;
-  disabled: boolean;
+  disabled?: boolean;
   color?: "error" | "primary" | "secondary";
   onClick: () => void;
+  sx?: object;
 }
 
 export const AppButton = ({
@@ -14,6 +15,7 @@ export const AppButton = ({
   disabled,
   color,
   onClick,
+  sx,
 }: AppButtonProps) => (
   <Button
     variant="contained"
@@ -24,6 +26,7 @@ export const AppButton = ({
         color: theme.customVariables.appWhiteSmoke,
         backgroundColor: "grey",
       },
+      ...sx, // merge in custom sx
     }}
     onClick={onClick}
   >
