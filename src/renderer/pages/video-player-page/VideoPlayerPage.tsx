@@ -159,14 +159,21 @@ export const VideoPlayerPage = ({
 
   const navigateToVideoDetails = (filePath: string) => {
     if (playlistId) {
-      navigate("/?menuId=" + menuId + "&playlistId=" + playlistId);
+      navigate(`/?menuId=${menuId}&playlistId=${playlistId}`);
       return;
     }
+    const folderId = searchParams.get("folderId");
     const buildPath =
       pathBuildingStrategies[menuId] || pathBuildingStrategies.default;
     const path = buildPath(filePath);
-    const url = `/video-details?menuId=${menuId}&resumeId=${resumeId}&videoPath=${path}`;
-    navigate(url);
+
+    const params = new URLSearchParams();
+    params.append("menuId", menuId);
+    params.append("resumeId", resumeId);
+    params.append("videoPath", path);
+    if (folderId) params.append("folderId", folderId);
+
+    navigate(`/video-details?${params.toString()}`);
   };
 
   const onVideoEnded = async (
