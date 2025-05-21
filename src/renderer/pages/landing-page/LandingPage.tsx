@@ -7,8 +7,8 @@ import {
   Theaters,
   Folder as FolderIcon,
   FeaturedPlayList,
+  Handyman,
 } from "@mui/icons-material";
-import { CustomFolderModel } from "../../../models/custom-folder";
 import Grid from "@mui/material/Grid2";
 import { renderActivePage } from "./RenderActivePage";
 import { useSearchParams } from "react-router-dom";
@@ -76,33 +76,23 @@ export const LandingPage = () => {
     refetch: getMovies,
   } = useVideoDataQuery(moviesQueryOptions);
 
-  const { data: tvShows, isLoading: loadingTvShows, refetch: getTvShows, } =
-    useVideoDataQuery(tvShowsQueryOptions);
+  const {
+    data: tvShows,
+    isLoading: loadingTvShows,
+    refetch: getTvShows,
+  } = useVideoDataQuery(tvShowsQueryOptions);
 
   const {
     data: customFolderData,
     isLoading: loadingCustomFolderData,
     refetch: refetchCustomFolder,
-    
   } = useVideoDataQuery(customFolderQueryOptions);
 
   const handleMenuClick = (menuItem: MenuItem) => {
     setActiveMenu(menuItem);
   };
 
-  const [selectedCustomFolder, setSelectedCustomFolder] =
-    useState<CustomFolderModel | null>(null);
-
-  const handleCustomMenuClick = (menuItem: MenuItem) => {
-    const customFolders = settings?.folders || ([] as CustomFolderModel[]);
-    const selectedFolder = customFolders.find(
-      (folder) => folder.id === menuItem.id,
-    );
-    setSelectedCustomFolder(selectedFolder || null);
-    setActiveMenu(menuItem);
-  };
-
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([
+  const [menuItems] = useState<MenuItem[]>([
     {
       id: "app-home",
       label: "Home",
@@ -117,67 +107,41 @@ export const LandingPage = () => {
     {
       id: "app-movies",
       label: "Movies",
-      icon: <Theaters sx={{ color: theme.palette.primary.main }} />,
+      icon: <Theaters />,
       handler: handleMenuClick,
       menuType: "default",
     },
     {
       id: "app-tv-shows",
       label: "Tv Shows",
-      icon: <LiveTv sx={{ color: theme.palette.primary.main }} />,
+      icon: <LiveTv />,
       handler: handleMenuClick,
       menuType: "default",
     },
     {
       id: "app-playlists",
       label: "Playlists",
-      icon: <FeaturedPlayList sx={{ color: theme.palette.primary.main }} />,
+      icon: <FeaturedPlayList />,
+      handler: handleMenuClick,
+      menuType: "default",
+    },
+    {
+      id: "app-custom-folders",
+      label: "Folders",
+      icon: <FolderIcon />,
+      handler: handleMenuClick,
+      menuType: "default",
+    },
+    {
+      id: "app-tools",
+      label: "Tools",
+      icon: <Handyman />,
       handler: handleMenuClick,
       menuType: "default",
     },
   ]);
 
-  useEffect(() => {
-    if (settings?.folders) {
-      const customFolders = settings?.folders as CustomFolderModel[];
-      const customFoldersMenuItems = customFolders.map((folder) => ({
-        id: folder.id,
-        label: folder.name,
-        icon: <FolderIcon></FolderIcon>,
-        handler: handleCustomMenuClick,
-        menuType: "custom" as const,
-      }));
-      setMenuItems((prevMenuItems) => [
-        ...prevMenuItems.filter((item) => item.menuType !== "custom"),
-        ...customFoldersMenuItems,
-      ]);
-    }
-  }, [settings?.folders]);
-
   const [activeMenu, setActiveMenu] = useState<MenuItem>(menuItems[0]);
-
-  useEffect(() => {
-    const updateSelectedCustomFolder = () => {
-      if (settings?.folders) {
-        const customFolders = settings?.folders as CustomFolderModel[];
-        const selectedFolder = customFolders.find(
-          (folder) => folder.id === activeMenu.id,
-        );
-        setSelectedCustomFolder(selectedFolder || null);
-      }
-    };
-
-    const activeMenuItem = menuItems.find((item) => item.id === activeMenu.id);
-    if (activeMenuItem?.menuType === "custom" && !selectedCustomFolder) {
-      updateSelectedCustomFolder();
-    }
-  }, [menuItems, activeMenu, selectedCustomFolder, settings?.folders]);
-
-  useEffect(() => {
-    if (selectedCustomFolder && selectedCustomFolder.folderPath) {
-      loadCustomFolder(selectedCustomFolder.folderPath);
-    }
-  }, [selectedCustomFolder]);
 
   const refreshData = () => {
     getMovies();
@@ -198,10 +162,6 @@ export const LandingPage = () => {
   useEffect(() => {
     syncActiveMenuFromUrl(menuItems, setActiveMenu);
   }, [searchParams, menuItems]);
-
-  const loadCustomFolder = (path: string) => {
-    setCustomFolderPath(path);
-  };
 
   return (
     <Grid
@@ -237,11 +197,6 @@ export const LandingPage = () => {
           refreshData,
           getMovies,
           getTvShows,
-          loadingCustomFolderData,
-          customFolderData,
-          loadCustomFolder,
-          selectedCustomFolder,
-          refetchCustomFolder,
         })}
       </Grid>
       <AppModal

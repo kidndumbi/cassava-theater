@@ -136,6 +136,11 @@ export interface PlaylistAPI {
   deletePlaylist: (id: string) => Promise<boolean>;
 }
 
+export interface YoutubeAPI {
+  getVideoInfo: (url: string) => Promise<any>;
+  downloadVideo: (url: string, destinationPath: string) => Promise<{ success: boolean }>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -149,5 +154,6 @@ declare global {
     fileManagerAPI: FileManagerAPI;
     mp4ConversionAPI: Mp4ConversionAPI;
     playlistAPI: PlaylistAPI;
+    youtubeAPI: YoutubeAPI;
   }
 }
