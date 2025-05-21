@@ -18,6 +18,7 @@ import { FileIPCChannels } from "./enums/fileIPCChannels";
 import { Mp4ConversionIPCChannels } from "./enums/mp4ConversionIPCChannels.enum";
 import { PlaylistIPCChannels } from "./enums/playlist-IPC-Channels.enum";
 import { PlaylistModel } from "./models/playlist.model";
+import { YoutubeIPCChannels } from "./enums/youtubeIPCChannels.enum";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -226,6 +227,15 @@ contextBridge.exposeInMainWorld("playlistAPI", {
   },
   deletePlaylist: (id: string): Promise<boolean> => {
     return ipcRenderer.invoke(PlaylistIPCChannels.DELETE_PLAYLIST, id);
+  },
+});
+
+contextBridge.exposeInMainWorld("youtubeAPI", {
+  getVideoInfo: (url: string) => {
+    return ipcRenderer.invoke(YoutubeIPCChannels.GetVideoInfo, url);
+  },
+  downloadVideo: (url: string, destinationPath: string) => {
+    return ipcRenderer.invoke(YoutubeIPCChannels.DownloadVideo, url, destinationPath);
   },
 });
 

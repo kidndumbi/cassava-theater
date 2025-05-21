@@ -6,6 +6,7 @@ import { playlistIpcHandlers } from "./playlistIpcHandlers";
 import { settingsIpcHandlers } from "./settingsIpcHandlers";
 import { theMovieDbIpcHandlers } from "./theMovieDbIpcHandlers";
 import { videosIpcHandlers } from "./videosIpcHandlers";
+import { youtubeIpcHandlers } from "./youtubeIpcHandlers";
 
 export function registerIpcHandlers() {
   settingsIpcHandlers();
@@ -16,4 +17,5 @@ export function registerIpcHandlers() {
   fileIpcHandlers();
   mp4ConversionIpcHandlers();
   playlistIpcHandlers();
+  youtubeIpcHandlers();
 }
