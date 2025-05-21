@@ -66,11 +66,28 @@ export const YoutubeDownload = () => {
     },
   });
 
-  const { mutate: saveJsonData } = useSaveJsonData((data, savedData) => {
-    console.log("saveJsonData: ", data, savedData);
+  const { mutate: saveJsonData } = useSaveJsonData(() => {
     setFileName("");
     setUrl("");
     setDestination(null);
+  });
+
+  const { mutateAsync: addToQueue, isPending: isAddingToQueue } = useMutation({
+    mutationFn: (data: {
+      title: string;
+      url: string;
+      destinationPath: string;
+    }) => window.youtubeAPI.addToDownloadQueue(data),
+    onError: (error) => {
+      console.error("Error adding to download queue:", error);
+    },
+    onSuccess: async () => {
+      setFileName("");
+      setUrl("");
+      setDestination(null);
+      const queue = await window.youtubeAPI.getQueue();
+      console.log("Queue: ", queue);
+    },
   });
 
   useEffect(() => {
@@ -225,10 +242,19 @@ export const YoutubeDownload = () => {
                       <AppButton
                         sx={{ width: "fit-content", height: "fit-content" }}
                         disabled={
-                          !fileName.trim() || !destination || isDownloading
+                          !fileName.trim() ||
+                          !destination ||
+                          isDownloading ||
+                          isAddingToQueue
                         }
-                        onClick={() => {
+                        onClick={async () => {
                           console.log("adding to queue");
+                          const filePath = `${destination}\\${fileName}.mp4`;
+                          await addToQueue({
+                            title: fileName,
+                            url: info.videoDetails.video_url,
+                            destinationPath: filePath,
+                          });
                         }}
                       >
                         Add to Queue

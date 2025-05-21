@@ -19,6 +19,7 @@ import { Mp4ConversionIPCChannels } from "./enums/mp4ConversionIPCChannels.enum"
 import { PlaylistIPCChannels } from "./enums/playlist-IPC-Channels.enum";
 import { PlaylistModel } from "./models/playlist.model";
 import { YoutubeIPCChannels } from "./enums/youtubeIPCChannels.enum";
+import { YoutubeDownloadQueueItem } from "./main/services/youtube.service";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -121,13 +122,26 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
       ) => callback(progress),
     );
   },
+  youtubeDownloadCompleted: (
+    callback: (queue: YoutubeDownloadQueueItem[]) => void,
+  ) => {
+    ipcRenderer.on(
+      "youtube-download-completed",
+      (_event, queue: YoutubeDownloadQueueItem[]) => callback(queue),
+    );
+  },
+  youtubeDownloadStarted: (
+    callback: (queue: YoutubeDownloadQueueItem[]) => void,
+  ) => {
+    ipcRenderer.on(
+      "youtube-download-started",
+      (_event, queue: YoutubeDownloadQueueItem[]) => callback(queue),
+    );
+  },
 });
 
 contextBridge.exposeInMainWorld("videoAPI", {
-  fetchVideoData: (args: {
-    filePath: string;
-    includeThumbnail: boolean;
-  }) => {
+  fetchVideoData: (args: { filePath: string; includeThumbnail: boolean }) => {
     return ipcRenderer.invoke(VideoIPCChannels.FetchVideoData, args);
   },
   fetchVideoDetails: (args: { path: string; category: string }) => {
@@ -168,11 +182,20 @@ contextBridge.exposeInMainWorld("videoAPI", {
   getScreenshot: (videoData: VideoDataModel) => {
     return ipcRenderer.invoke(VideoIPCChannels.GetScreenshot, videoData);
   },
-  fetchRecentlyWatchedVideosData: (args: { videoType: "movies" | "tvShows"; limit?: number }) => {
-    return ipcRenderer.invoke(VideoIPCChannels.FetchRecentlyWatchedVideosData, args);
+  fetchRecentlyWatchedVideosData: (args: {
+    videoType: "movies" | "tvShows";
+    limit?: number;
+  }) => {
+    return ipcRenderer.invoke(
+      VideoIPCChannels.FetchRecentlyWatchedVideosData,
+      args,
+    );
   },
   fetchRecentlyWatchedCustomVideosData: (args: { limit?: number }) => {
-    return ipcRenderer.invoke(VideoIPCChannels.FetchRecentlyWatchedCustomVideosData, args);
+    return ipcRenderer.invoke(
+      VideoIPCChannels.FetchRecentlyWatchedCustomVideosData,
+      args,
+    );
   },
   fetchWatchlaterVideos: () => {
     return ipcRenderer.invoke(VideoIPCChannels.FetchWatchlaterVideos);
@@ -180,18 +203,14 @@ contextBridge.exposeInMainWorld("videoAPI", {
 });
 
 contextBridge.exposeInMainWorld("theMovieDbAPI", {
-  search: (query: string, queryType: "movie" | "tv", 
-  ) => {
+  search: (query: string, queryType: "movie" | "tv") => {
     return ipcRenderer.invoke(
       TheMovieDbIPCChannels.Search,
       query,
       queryType,
     ) as Promise<MovieDetails[] | TvShowDetails[]>;
   },
-  movieOrTvShow: (
-    id: string,
-    queryType: "movie" | "tv",
-  ) => {
+  movieOrTvShow: (id: string, queryType: "movie" | "tv") => {
     return ipcRenderer.invoke(
       TheMovieDbIPCChannels.MovieOrTvShow,
       id,
@@ -235,8 +254,25 @@ contextBridge.exposeInMainWorld("youtubeAPI", {
     return ipcRenderer.invoke(YoutubeIPCChannels.GetVideoInfo, url);
   },
   downloadVideo: (url: string, destinationPath: string) => {
-    return ipcRenderer.invoke(YoutubeIPCChannels.DownloadVideo, url, destinationPath);
+    return ipcRenderer.invoke(
+      YoutubeIPCChannels.DownloadVideo,
+      url,
+      destinationPath,
+    );
   },
+  addToDownloadQueue: (queueItem: {
+    title: string;
+    url: string;
+    destinationPath: string;
+  }) => {
+    return ipcRenderer.invoke(YoutubeIPCChannels.AddToDownloadQueue, queueItem);
+  },
+  removeFromQueue: (id: string) =>
+    ipcRenderer.invoke(YoutubeIPCChannels.RemoveFromQueue, id),
+  isProcessingQueue: () =>
+    ipcRenderer.invoke(YoutubeIPCChannels.IsProcessingQueue),
+  clearQueue: () => ipcRenderer.invoke(YoutubeIPCChannels.ClearQueue),
+  getQueue: () => ipcRenderer.invoke(YoutubeIPCChannels.GetQueue),
 });
 
 contextBridge.exposeInMainWorld("mp4ConversionAPI", {
@@ -277,7 +313,7 @@ contextBridge.exposeInMainWorld("mp4ConversionAPI", {
   },
   initializeConversionQueue: () => {
     return ipcRenderer.invoke(
-      Mp4ConversionIPCChannels.InitializeConversionQueue
+      Mp4ConversionIPCChannels.InitializeConversionQueue,
     );
   },
 });

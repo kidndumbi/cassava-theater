@@ -34,6 +34,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Mp4ConversionEvents } from "./Mp4ConversionEvents";
 import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
+import { YoutubeDownloadEvents } from "./YoutubeDownloadEvents";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +94,7 @@ root.render(
             <DndProvider backend={HTML5Backend}>
               <App />
               <Mp4ConversionEvents />
+              <YoutubeDownloadEvents />
             </DndProvider>
 
             <ReactQueryDevtools initialIsOpen={false} />

@@ -5,7 +5,7 @@ import { AppModal } from "./common/AppModal";
 import AppIconButton from "./common/AppIconButton";
 import CheckIcon from "@mui/icons-material/Check";
 import { useMp4Conversion } from "../hooks/useMp4Conversion";
-import { Mp4ProgressList } from "./mp4ConversionUI/Mp4ProgressList";
+import { Processing } from "./processing/Processing";
 
 const StatusDisplayItem = ({
   children,
@@ -47,9 +47,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
       }}
     >
       <StatusDisplayItem>PORT: {port} </StatusDisplayItem>
-      <StatusDisplayItem
-        onClick={openModal}
-      >
+      <StatusDisplayItem onClick={openModal}>
         {convertToMp4ProgressQueue.length > 0 &&
         convertToMp4ProgressQueue.some((p) => p.percent < 100) ? (
           <CircularProgress color="secondary" size="20px" />
@@ -73,7 +71,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         title="Processing..."
         fullScreen={true}
       >
-        <Mp4ProgressList progressList={convertToMp4ProgressQueue} />
+        <Processing progressList={convertToMp4ProgressQueue} />
       </AppModal>
     </Box>
   );

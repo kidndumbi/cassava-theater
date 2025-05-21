@@ -1,4 +1,5 @@
 import { ConversionQueueItem } from "./main/services/mp4Conversion.service";
+import { YoutubeDownloadQueueItem } from "./main/services/youtube.service";
 import ytdl from '@distube/ytdl-core';
 import { PlaylistModel } from "./models/playlist.model";
 import { VideoCommands } from "./models/video-commands.model";
@@ -42,6 +43,8 @@ export interface MainNotificationsAPI {
   mp4ConversionCompleted: (
     callback: (progress: { file: string; percent: number }) => void,
   ) => void;
+  youtubeDownloadCompleted: (callback: (queue: YoutubeDownloadQueueItem[]) => void) => void;
+  youtubeDownloadStarted: (callback: (queue: YoutubeDownloadQueueItem[]) => void) => void;
 }
 
 export interface MainUtilAPI {
@@ -139,6 +142,11 @@ export interface PlaylistAPI {
 export interface YoutubeAPI {
   getVideoInfo: (url: string) => Promise<ytdl.videoInfo>;
   downloadVideo: (url: string, destinationPath: string) => Promise<{ success: boolean }>;
+  addToDownloadQueue: (queueItem: { title: string; url: string; destinationPath: string }) => Promise<{ success: boolean }>;
+  removeFromQueue: (id: string) => Promise<{ success: boolean }>;
+  isProcessingQueue: () => Promise<boolean>;
+  clearQueue: () => Promise<{ success: boolean }>;
+  getQueue: () => Promise<YoutubeDownloadQueueItem[]>;
 }
 
 declare global {
