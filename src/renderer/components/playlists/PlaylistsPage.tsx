@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import theme from "../../theme";
@@ -22,19 +22,7 @@ import { useGetPlaylistVideoData } from "../../hooks/useGetPlaylistVideoData";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import { useModalState } from "../../hooks/useModalState";
 import { useUpdatePlaylist } from "../../hooks/useUpdatePlaylist";
-
-const Title = (value: string) => (
-  <Typography
-    variant="h6"
-    gutterBottom
-    sx={{
-      color: theme.customVariables.appWhiteSmoke,
-      fontWeight: "bold",
-    }}
-  >
-    {value}
-  </Typography>
-);
+import { Title } from "../common/Title";
 
 export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const navigate = useNavigate();
@@ -185,7 +173,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
     <>
       <Box className="custom-scrollbar mr-5 overflow-y-auto pt-5">
         <PlaylistsToolbar onAdd={handleAddPlaylist} />
-        {Title("Playlists")}
+        <Title>Playlists</Title>
         <Box display="flex" gap={2} mt={2}>
           <PlaylistListPanel
             playlists={playlists}
