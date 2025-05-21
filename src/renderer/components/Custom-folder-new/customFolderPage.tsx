@@ -11,6 +11,7 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl } from "../../util/helperFunctions";
 import { useVideoDataQuery } from "../../hooks/useVideoData.query";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { CustomFolderModel } from "../../../models/custom-folder";
 
 interface CustomFolderProps {
   menuId: string;
@@ -26,11 +27,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [selectedFolder, setSelectedFolder] = useState<{
-    id: string;
-    name: string;
-    folderPath: string;
-  } | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<CustomFolderModel | null>(null);
 
   const { data: videos, isLoading } = useVideoDataQuery({
     filePath: selectedFolder?.folderPath || "",
