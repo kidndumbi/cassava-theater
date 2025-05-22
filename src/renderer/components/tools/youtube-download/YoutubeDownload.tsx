@@ -78,6 +78,8 @@ export const YoutubeDownload = () => {
       title: string;
       url: string;
       destinationPath: string;
+      poster: string;
+      backdrop: string;
     }) => window.youtubeAPI.addToDownloadQueue(data),
     onError: (error) => {
       console.error("Error adding to download queue:", error);
@@ -255,6 +257,8 @@ export const YoutubeDownload = () => {
                             title: fileName,
                             url: info.videoDetails.video_url,
                             destinationPath: filePath,
+                            poster: info.videoDetails.thumbnails[4].url,
+                            backdrop: info.videoDetails.thumbnails[4].url,
                           });
                         }}
                       >

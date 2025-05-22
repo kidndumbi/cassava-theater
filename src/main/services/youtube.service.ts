@@ -52,6 +52,8 @@ export interface YoutubeDownloadQueueItem {
   url: string;
   destinationPath: string;
   status: "pending" | "downloading" | "completed" | "error";
+  poster: string;
+  backdrop: string;
 }
 
 class YoutubeDownloadQueue {
@@ -68,8 +70,10 @@ class YoutubeDownloadQueue {
     title: string;
     url: string;
     destinationPath: string;
+    poster: string;
+    backdrop: string;
   }) {
-    const { title, url, destinationPath } = queueItem;
+    const { title, url, destinationPath, poster, backdrop } = queueItem;
 
     if (!url || !destinationPath) {
       throw new Error("URL and destination path are required");
@@ -85,6 +89,8 @@ class YoutubeDownloadQueue {
       url,
       destinationPath,
       status: "pending",
+      poster,
+      backdrop,
     });
     this.processQueue();
   }
@@ -118,10 +124,10 @@ class YoutubeDownloadQueue {
       }
       // Remove the item from the queue after processing
       this.queue.shift();
-      this.mainWindow?.webContents.send(
-        "youtube-download-completed",
-        this.queue,
-      );
+      this.mainWindow?.webContents.send("youtube-download-completed", {
+        queue: this.queue,
+        completedItem: item,
+      });
       // Optionally, you could push the item to a "history" array if you want to keep track
     }
 
