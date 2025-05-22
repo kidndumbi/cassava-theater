@@ -11,12 +11,14 @@ interface AppListPanelProps {
   items: { id: string; name: string }[] | undefined;
   selectedItem: { id: string; name: string } | null;
   setSelectedItem: (item: { id: string; name: string }) => void;
+  backgroundColor?: string;
 }
 
 export const AppListPanel = ({
   items,
   selectedItem,
   setSelectedItem,
+  backgroundColor = theme.customVariables.appDark,
 }: AppListPanelProps) => {
   return (
     <Paper
@@ -24,13 +26,13 @@ export const AppListPanel = ({
         minWidth: 220,
         maxWidth: 300,
         flex: "0 0 220px",
-        backgroundColor: theme.customVariables.appDark,
+        backgroundColor,
       }}
     >
       <List
         sx={{
           color: theme.customVariables.appWhiteSmoke,
-          bgcolor: theme.customVariables.appDark,
+          bgcolor: backgroundColor,
         }}
       >
         {items?.map((item) => (

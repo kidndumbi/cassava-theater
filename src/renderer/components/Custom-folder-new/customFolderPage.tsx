@@ -2,7 +2,6 @@ import { Box } from "@mui/material";
 import { CustomFoldersToolbar } from "./CustomFoldersToolbar";
 import { Title } from "../common/Title";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
-import { CustomFolderListPanel } from "./CustomFolderListPanel";
 import { useCallback, useEffect, useState } from "react";
 import { SelectedCustomFolderToolbar } from "./SelectedCustomFolderToolbar";
 import { CustomFolderVideosPanel } from "./CustomFolderVideosPanel";
@@ -16,6 +15,8 @@ import { AppModal } from "../common/AppModal";
 import { CustomFolderAddEdit } from "./CustomFolderAddEdit";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
+import { AppListPanel } from "../common/AppListPanel";
+import theme from "../../theme";
 
 interface CustomFolderProps {
   menuId: string;
@@ -83,12 +84,14 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
         />
         {<Title>Folders</Title>}
         <Box display="flex" gap={2} mt={2}>
-          <CustomFolderListPanel
-            folders={folders}
-            selectedFolder={selectedFolder}
-            setSelectedFolder={(folder) => {
-              setSelectedFolder(folder);
+          <AppListPanel
+            items={folders}
+            selectedItem={selectedFolder}
+            setSelectedItem={(folder) => {
+              const selectedFolder = folders.find((f) => f.id === folder.id);
+              setSelectedFolder(selectedFolder);
             }}
+            backgroundColor={theme.palette.primary.main}
           />
           <Box>
             {selectedFolder && (
