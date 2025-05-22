@@ -27,7 +27,8 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [selectedFolder, setSelectedFolder] = useState<CustomFolderModel | null>(null);
+  const [selectedFolder, setSelectedFolder] =
+    useState<CustomFolderModel | null>(null);
 
   const { data: videos, isLoading } = useVideoDataQuery({
     filePath: selectedFolder?.folderPath || "",
@@ -94,6 +95,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
               />
             )}
             <CustomFolderVideosPanel
+              selectedFolder={selectedFolder}
               getImageUrl={getImageUrl}
               videos={videos}
               onClick={(video) => {
