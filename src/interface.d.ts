@@ -1,6 +1,6 @@
 import { ConversionQueueItem } from "./main/services/mp4Conversion.service";
 import { YoutubeDownloadQueueItem } from "./main/services/youtube.service";
-import ytdl from '@distube/ytdl-core';
+import ytdl from "@distube/ytdl-core";
 import { PlaylistModel } from "./models/playlist.model";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoDataModel } from "./models/videoData.model";
@@ -43,8 +43,12 @@ export interface MainNotificationsAPI {
   mp4ConversionCompleted: (
     callback: (progress: { file: string; percent: number }) => void,
   ) => void;
-  youtubeDownloadCompleted: (callback: (queue: YoutubeDownloadQueueItem[]) => void) => void;
-  youtubeDownloadStarted: (callback: (queue: YoutubeDownloadQueueItem[]) => void) => void;
+  youtubeDownloadCompleted: (
+    callback: (data: { queue: YoutubeDownloadQueueItem[], completedItem:YoutubeDownloadQueueItem}) => void,
+  ) => void;
+  youtubeDownloadStarted: (
+    callback: (queue: YoutubeDownloadQueueItem[]) => void,
+  ) => void;
 }
 
 export interface MainUtilAPI {
@@ -90,9 +94,7 @@ export interface VideoAPI {
     videoType: "movies" | "tvShows";
     limit?: number;
   }) => Promise<VideoDataModel[]>;
-  fetchRecentlyWatchedCustomVideosData: (args: {
-    limit?: number;
-  }) => Promise<
+  fetchRecentlyWatchedCustomVideosData: (args: { limit?: number }) => Promise<
     {
       folder: {
         id: string;
@@ -141,8 +143,17 @@ export interface PlaylistAPI {
 
 export interface YoutubeAPI {
   getVideoInfo: (url: string) => Promise<ytdl.videoInfo>;
-  downloadVideo: (url: string, destinationPath: string) => Promise<{ success: boolean }>;
-  addToDownloadQueue: (queueItem: { title: string; url: string; destinationPath: string }) => Promise<{ success: boolean }>;
+  downloadVideo: (
+    url: string,
+    destinationPath: string,
+  ) => Promise<{ success: boolean }>;
+  addToDownloadQueue: (queueItem: {
+    title: string;
+    url: string;
+    destinationPath: string;
+    poster: string;
+    backdrop: string;
+  }) => Promise<{ success: boolean }>;
   removeFromQueue: (id: string) => Promise<{ success: boolean }>;
   isProcessingQueue: () => Promise<boolean>;
   clearQueue: () => Promise<{ success: boolean }>;

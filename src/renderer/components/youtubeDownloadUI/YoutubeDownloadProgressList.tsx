@@ -28,7 +28,7 @@ export const YoutubeDownloadProgressList = ({
       {progressList.length > 0 &&
         progressList.map((item) => (
           <Box
-            className="mb-2 flex place-content-between items-center gap-2 rounded-md p-1"
+            className="mb-2 flex place-content-between items-center gap-2 rounded-md p-1 pr-2"
             sx={{
               backgroundColor: theme.customVariables.appDark,
             }}

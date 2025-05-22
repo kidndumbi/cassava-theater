@@ -123,11 +123,20 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
     );
   },
   youtubeDownloadCompleted: (
-    callback: (queue: YoutubeDownloadQueueItem[]) => void,
+    callback: (data: {
+      queue: YoutubeDownloadQueueItem[];
+      completedItem: YoutubeDownloadQueueItem;
+    }) => void,
   ) => {
     ipcRenderer.on(
       "youtube-download-completed",
-      (_event, queue: YoutubeDownloadQueueItem[]) => callback(queue),
+      (
+        _event,
+        data: {
+          queue: YoutubeDownloadQueueItem[];
+          completedItem: YoutubeDownloadQueueItem;
+        },
+      ) => callback(data),
     );
   },
   youtubeDownloadStarted: (

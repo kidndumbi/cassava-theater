@@ -13,15 +13,15 @@ export const Processing = ({
   progressList: Mp4ConversionProgress[];
   youtubeDownloadProgressList: YoutubeDownloadQueueItem[];
 }) => {
-  const [selectedListItem, setSelectedListItem] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-
   const listItems = [
     { id: "youtube-download", name: "Youtube Download" },
     { id: "mp4-conversion", name: "MP4 Conversion" },
   ];
+
+  const [selectedListItem, setSelectedListItem] = useState<{
+    id: string;
+    name: string;
+  } | null>(listItems[0]);
 
   const getView = (id: string) => {
     switch (id) {
@@ -49,9 +49,7 @@ export const Processing = ({
               setSelectedListItem(tool);
             }}
           />
-          <Box sx={{ width: "100%" }}>
-            {getView(selectedListItem?.id || "youtube-download")}
-          </Box>
+          <Box sx={{ width: "100%" }}>{getView(selectedListItem?.id)}</Box>
         </Box>
       </Box>
     </>
