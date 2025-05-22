@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Container, Box, Tab, Tabs, Alert } from "@mui/material";
-import { CustomFolderModel } from "../../../models/custom-folder";
 import { SettingsModel } from "../../../models/settings.model";
-import { CustomFoldersSettings } from "./CustomFoldersSettings";
 import { GeneralSettings } from "./GeneralSettings";
 import { a11yProps, CustomTabPanel } from "../common/TabPanel";
 import { useSnackbar } from "../../contexts/SnackbarContext";
@@ -78,61 +76,6 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-  const handleCustomFolderFolderSelection = async (
-    customFolder: CustomFolderModel,
-  ) => {
-    await handleFolderUpdate(async (folderPath) => {
-      const updatedFolder = { ...customFolder, folderPath };
-      const updatedFolders = (settings.folders || []).map((f) =>
-        f.id === customFolder.id ? updatedFolder : f,
-      );
-      await setSetting({
-        key: "folders",
-        value: updatedFolders,
-      });
-      showSnackbar("Custom Folder Updated", "success");
-    });
-  };
-
-  const handleSaveFolderName = async (
-    customFolder: CustomFolderModel,
-    newName: string,
-  ) => {
-    const updatedFolder = { ...customFolder, name: newName };
-    const updatedFolders = (settings.folders || []).map((f) =>
-      f.id === customFolder.id ? updatedFolder : f,
-    );
-    await setSetting({
-      key: "folders",
-      value: updatedFolders,
-    });
-    showSnackbar("Folder name updated successfully", "success");
-  };
-
-  const saveNewFolder = async (newFolder: CustomFolderModel) => {
-    const updatedFolders = [...(settings.folders || []), newFolder];
-    await setSetting({
-      key: "folders",
-      value: updatedFolders,
-    });
-    showSnackbar("New folder added successfully", "success");
-  };
-
-  const handleDeleteFolder = async (folderId: string) => {
-    setMessage("Are you sure you want to delete this folder?");
-    const dialogDecision = await openDialog();
-    if (dialogDecision === "Ok") {
-      const updatedFolders = (settings.folders || []).filter(
-        (folder) => folder.id !== folderId,
-      );
-      await setSetting({
-        key: "folders",
-        value: updatedFolders,
-      });
-      showSnackbar("Folder deleted successfully", "success");
-    }
-  };
-
   const onTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTabValue(newValue);
   };
@@ -151,11 +94,6 @@ export const SettingsPage: React.FC = () => {
               {...a11yProps(0)}
               sx={{ "&:not(.Mui-selected)": { color: "gray" } }}
             />
-            <Tab
-              label="Custom Folders"
-              {...a11yProps(1)}
-              sx={{ "&:not(.Mui-selected)": { color: "gray" } }}
-            />
           </Tabs>
         </Box>
         <CustomTabPanel value={currentTabValue} index={0}>
@@ -163,17 +101,6 @@ export const SettingsPage: React.FC = () => {
             settings={settings}
             handleFolderSelection={handleFolderSelection}
             handleUpdateSetting={handleUpdateSetting}
-          />
-        </CustomTabPanel>
-        <CustomTabPanel value={currentTabValue} index={1}>
-          <CustomFoldersSettings
-            customFolders={settings.folders || []}
-            handleCustomFolderFolderSelection={
-              handleCustomFolderFolderSelection
-            }
-            handleSaveFolderName={handleSaveFolderName}
-            saveNewFolder={saveNewFolder}
-            handleDeleteFolder={handleDeleteFolder}
           />
         </CustomTabPanel>
       </Container>
