@@ -7,7 +7,8 @@ import {
   YoutubeDownloadProgressListItem,
 } from "./YoutubeDownloadProgressListItem";
 import { useState } from "react";
-import { AppDelete } from "../common/AppDelete";
+import { AppDrop } from "../common/AppDrop";
+import theme from "../../theme";
 
 export const YoutubeDownloadProgressList = ({
   progressList,
@@ -42,55 +43,6 @@ export const YoutubeDownloadProgressList = ({
     dispatch(youtubeDownloadActions.setDownloadProgress(queue));
   };
 
-  // // Test data for 5 items if progressList is not provided
-  // const testData: YoutubeDownloadQueueItem[] = [
-  //   {
-  //     id: "1",
-  //     title: "Test Video 1",
-  //     url: "https://youtube.com/watch?v=1",
-  //     destinationPath: "/downloads/video1.mp4",
-  //     status: "downloading",
-  //     poster: "",
-  //     backdrop: "",
-  //   },
-  //   {
-  //     id: "2",
-  //     title: "Test Video 2",
-  //     url: "https://youtube.com/watch?v=2",
-  //     destinationPath: "/downloads/video2.mp4",
-  //     status: "pending",
-  //     poster: "",
-  //     backdrop: "",
-  //   },
-  //   {
-  //     id: "3",
-  //     title: "Test Video 3",
-  //     url: "https://youtube.com/watch?v=3",
-  //     destinationPath: "/downloads/video3.mp4",
-  //     status: "completed",
-  //     poster: "",
-  //     backdrop: "",
-  //   },
-  //   {
-  //     id: "4",
-  //     title: "Test Video 4",
-  //     url: "https://youtube.com/watch?v=4",
-  //     destinationPath: "/downloads/video4.mp4",
-  //     status: "error",
-  //     poster: "",
-  //     backdrop: "",
-  //   },
-  //   {
-  //     id: "5",
-  //     title: "Test Video 5",
-  //     url: "https://youtube.com/watch?v=5",
-  //     destinationPath: "/downloads/video5.mp4",
-  //     status: "pending",
-  //     poster: "",
-  //     backdrop: "",
-  //   },
-  // ];
-
   const items = progressList;
 
   return (
@@ -102,8 +54,14 @@ export const YoutubeDownloadProgressList = ({
           progressItem={item}
           isRemoving={isRemoving}
           onCancel={handleCancel}
-          dragging={(isDragging, idx) => {
-            setDraggingIdx(isDragging ? idx : null);
+          dragging={(isDragging, dragIdx) => {
+            if (isDragging) {
+              setDraggingIdx(dragIdx);
+            } else {
+              setDraggingIdx((current) =>
+                current === dragIdx ? null : current,
+              );
+            }
           }}
           onSwap={async (id1, id2) => {
             const result = await swapQueueItems({ id1, id2 });
@@ -116,13 +74,16 @@ export const YoutubeDownloadProgressList = ({
         />
       ))}
       {draggingIdx !== null && (
-        <AppDelete
+        <AppDrop
+          conatinerStyle={{
+            top: "6px",
+          }}
           buttonText="Cancel"
           itemDroped={(item: DragProgressItem) => {
-            console.log("Item dropped big button:", item);
-            //handleRemove(item.index);
+            handleCancel(item.progressData);
           }}
           accept={["YOUTUBE_DOWNLOAD"]}
+          backgroundColor={theme.palette.primary.main}
         />
       )}
     </>

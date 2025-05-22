@@ -24,7 +24,7 @@ import { PlaylistModel } from "../../../models/playlist.model";
 import { AppContextMenu } from "../common/AppContextMenu";
 import theme from "../../theme";
 import { useModalState } from "../../hooks/useModalState";
-import { AppDelete } from "../common/AppDelete";
+import { AppDrop } from "../common/AppDrop";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -300,7 +300,7 @@ const MovieList: React.FC<MovieListProps> = ({
       </Box>
 
       {draggingIdx !== null && (
-        <AppDelete
+        <AppDrop
           itemDroped={(item: {
             index: number;
             type: string;
