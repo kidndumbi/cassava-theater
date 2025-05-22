@@ -38,7 +38,7 @@ interface StatusDisplayProps {
 export const StatusDisplay = ({ port }: StatusDisplayProps) => {
   const { open, openModal, closeModal } = useModalState(false);
   const { convertToMp4ProgressQueue } = useMp4Conversion();
-  const youtubeDownloadProgressQueue = useSelector(selYoutubeDownloadProgress)
+  const youtubeDownloadProgressQueue = useSelector(selYoutubeDownloadProgress);
 
   return (
     <Box
@@ -51,8 +51,9 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
     >
       <StatusDisplayItem>PORT: {port} </StatusDisplayItem>
       <StatusDisplayItem onClick={openModal}>
-        {convertToMp4ProgressQueue.length > 0 &&
-        convertToMp4ProgressQueue.some((p) => p.percent < 100) ? (
+        {(convertToMp4ProgressQueue.length > 0 &&
+          convertToMp4ProgressQueue.some((p) => p.percent < 100)) ||
+        youtubeDownloadProgressQueue.length > 0 ? (
           <CircularProgress color="secondary" size="20px" />
         ) : (
           <AppIconButton
@@ -74,9 +75,10 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         title="Processing..."
         fullScreen={true}
       >
-        <Processing progressList={convertToMp4ProgressQueue} 
+        <Processing
+          progressList={convertToMp4ProgressQueue}
           youtubeDownloadProgressList={youtubeDownloadProgressQueue}
-         />
+        />
       </AppModal>
     </Box>
   );
