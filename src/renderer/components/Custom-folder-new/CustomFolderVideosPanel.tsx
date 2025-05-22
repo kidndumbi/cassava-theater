@@ -1,9 +1,7 @@
 import theme from "../../theme";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { AppContextMenu } from "../common/AppContextMenu";
-import { removeVidExt, trimFileName } from "../../util/helperFunctions";
+import { removeVidExt } from "../../util/helperFunctions";
 import { Alert, Box, Button, Snackbar, Paper } from "@mui/material";
-import { PosterCard } from "../common/PosterCard";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
 import { useState } from "react";
@@ -13,8 +11,18 @@ import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.sl
 import { useAppDispatch } from "../../store";
 import { MovieSuggestionsModal } from "../movies/MovieSuggestionsModal";
 import { useMovies } from "../../hooks/useMovies";
-import MovieDetails from "../movies/MovieDetails";
+
 import { useSaveJsonData } from "../../hooks/useSaveJsonData";
+import { CustomFolderVideoCard } from "./CustomFolderVideoCard";
+import { AppDelete } from "../common/AppDelete";
+import { MovieDetails } from "../../../models/movie-detail.model";
+
+// Define MenuItem interface
+export interface OptionsMenuItem {
+  label: string;
+  action: () => void;
+  sx?: object;
+}
 
 interface CustomFolderVideosPanelProps {
   videos: VideoDataModel[] | undefined;
@@ -38,6 +46,7 @@ export const CustomFolderVideosPanel = ({
   );
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
     useState(false);
+  const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -137,18 +146,21 @@ export const CustomFolderVideosPanel = ({
     }
   };
 
-  const getMenuItems = (video: VideoDataModel) => [
+  // Reusable delete handler
+  const handleDeleteMovie = (video: VideoDataModel) => {
+    if (video?.filePath) {
+      setMessage("Are you sure you want to delete this Movie?");
+      openDialog("Delete").then((dialogDecision) => {
+        if (dialogDecision !== "Ok") return;
+        deleteFile(video.filePath);
+      });
+    }
+  };
+
+  const getMenuItems = (video: VideoDataModel): OptionsMenuItem[] => [
     {
       label: "Delete",
-      action: () => {
-        if (video?.filePath) {
-          setMessage("Are you sure you want to delete this Movie?");
-          openDialog("Delete").then((dialogDecision) => {
-            if (dialogDecision !== "Ok") return;
-            deleteFile(video.filePath);
-          });
-        }
-      },
+      action: () => handleDeleteMovie(video),
       sx: { color: theme.palette.error.main },
       // Optionally add sx for color, e.g. { color: theme.palette.error.main }
     },
@@ -196,18 +208,23 @@ export const CustomFolderVideosPanel = ({
           {videos?.length > 0 ? (
             videos.map((video, idx) =>
               video ? (
-                <AppContextMenu
+                <CustomFolderVideoCard
                   key={video.filePath || idx}
-                  title={removeVidExt(video.fileName)}
-                  menuItems={getMenuItems(video)}
-                >
-                  <PosterCard
-                    imageUrl={getImageUrl(video)}
-                    altText={video.fileName || ""}
-                    footer={trimFileName(video.fileName || "")}
-                    onClick={() => onClick(video)}
-                  />
-                </AppContextMenu>
+                  video={video}
+                  idx={idx}
+                  getMenuItems={getMenuItems}
+                  getImageUrl={getImageUrl}
+                  onClick={onClick}
+                  dragging={(isDragging: boolean, dragIdx: number) => {
+                    if (isDragging) {
+                      setDraggingIdx(dragIdx);
+                    } else {
+                      setDraggingIdx((current) =>
+                        current === dragIdx ? null : current,
+                      );
+                    }
+                  }}
+                />
               ) : null,
             )
           ) : (
@@ -215,6 +232,20 @@ export const CustomFolderVideosPanel = ({
           )}
         </Box>
       </Paper>
+
+      {draggingIdx !== null && (
+        <AppDelete
+          itemDroped={(item: {
+            index: number;
+            type: string;
+            video: VideoDataModel;
+          }) => {
+            handleDeleteMovie(item.video);
+          }}
+          accept={["VIDEO"]}
+        />
+      )}
+
       <MovieSuggestionsModal
         id={selectedMovie?.movie_details?.id?.toString() || ""}
         open={openMovieSuggestionsModal}
