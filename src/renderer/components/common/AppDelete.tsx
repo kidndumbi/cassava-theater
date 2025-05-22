@@ -8,7 +8,8 @@ export const AppDelete: React.FC<{
   allowDrop?: boolean;
   itemDroped: (item: any) => void;
   accept?: string[];
-}> = ({ allowDrop = true, itemDroped, accept }) => {
+  buttonText?: string;
+}> = ({ allowDrop = true, itemDroped, accept, buttonText = "DELETE" }) => {
   const ref = React.useRef<HTMLDivElement>(null);
 
   const [{ isOver }, drop] = useDrop({
@@ -48,7 +49,7 @@ export const AppDelete: React.FC<{
         }}
       >
         <DeleteIcon />
-        DELETE
+        {buttonText}
       </Box>
     </div>
   );

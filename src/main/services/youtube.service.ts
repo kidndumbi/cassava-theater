@@ -155,6 +155,22 @@ class YoutubeDownloadQueue {
     }
     this.queue.splice(index, 1);
   }
+
+  public swapQueueItems(id1: string, id2: string) {
+    const index1 = this.queue.findIndex((item) => item.id === id1);
+    const index2 = this.queue.findIndex((item) => item.id === id2);
+    if (index1 === -1 || index2 === -1) {
+      throw new Error("One or both ids not found in queue");
+    }
+    if (
+      this.queue[index1].status !== "pending" ||
+      this.queue[index2].status !== "pending"
+    ) {
+      throw new Error("Both items must be in 'pending' status to swap");
+    }
+    // Swap the items
+    [this.queue[index1], this.queue[index2]] = [this.queue[index2], this.queue[index1]];
+  }
 }
 
 let youtubeQueueInstance: YoutubeDownloadQueue | null = null;

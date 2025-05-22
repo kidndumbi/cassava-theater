@@ -273,6 +273,8 @@ contextBridge.exposeInMainWorld("youtubeAPI", {
     title: string;
     url: string;
     destinationPath: string;
+    poster: string;
+    backdrop: string;
   }) => {
     return ipcRenderer.invoke(YoutubeIPCChannels.AddToDownloadQueue, queueItem);
   },
@@ -282,6 +284,8 @@ contextBridge.exposeInMainWorld("youtubeAPI", {
     ipcRenderer.invoke(YoutubeIPCChannels.IsProcessingQueue),
   clearQueue: () => ipcRenderer.invoke(YoutubeIPCChannels.ClearQueue),
   getQueue: () => ipcRenderer.invoke(YoutubeIPCChannels.GetQueue),
+  swapQueueItems: (id1: string, id2: string) =>
+    ipcRenderer.invoke(YoutubeIPCChannels.SwapQueueItems, id1, id2),
 });
 
 contextBridge.exposeInMainWorld("mp4ConversionAPI", {
