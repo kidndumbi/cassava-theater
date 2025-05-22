@@ -3,12 +3,14 @@ import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux";
 import { videoPlayerSlice } from "./videoPlayer.slice";
 import { mp4ConversionSlice } from "./mp4Conversion/mp4Conversion.slice";
 import scrollPointReducer from "./scrollPoint.slice"; // import reducer
+import { youtubeDownloadSlice } from "./youtubeDownload.slice";
 
 const store = configureStore({
   reducer: {
     videoPlayer: videoPlayerSlice.reducer,
     mp4Conversion: mp4ConversionSlice.reducer,
-    scrollPoint: scrollPointReducer, // add reducer
+    scrollPoint: scrollPointReducer,
+    youtubeDownload: youtubeDownloadSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

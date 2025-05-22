@@ -21,18 +21,20 @@ import {
 import { useGetAllSettings } from "../../../hooks/settings/useGetAllSettings";
 import { selectFolder } from "../../../util/helperFunctions";
 import { useSaveJsonData } from "../../../hooks/useSaveJsonData";
+import { useAppDispatch } from "../../../store";
+import { youtubeDownloadActions } from "../../../store/youtubeDownload.slice";
 
 export const YoutubeDownload = () => {
   const [url, setUrl] = useState("");
 
   const [fileName, setFileName] = useState("");
   const { data: settings } = useGetAllSettings();
+  const dispatch = useAppDispatch();
 
   const destinationOptions = useRef<{ name: string; filePath: string }[]>([]);
   const [destination, setDestination] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("YoutubeDownload settings: ", settings);
     if (settings) {
       const { folders, movieFolderPath, tvShowsFolderPath } = settings;
       const folderOptions = folders.map((folder) => ({
@@ -44,7 +46,6 @@ export const YoutubeDownload = () => {
         { name: "Movies", filePath: movieFolderPath },
         { name: "TV Shows", filePath: tvShowsFolderPath },
       ];
-      console.log("Destination Options: ", destinationOptions.current);
     }
   }, [settings]);
 
@@ -86,7 +87,7 @@ export const YoutubeDownload = () => {
       setUrl("");
       setDestination(null);
       const queue = await window.youtubeAPI.getQueue();
-      console.log("Queue: ", queue);
+      dispatch(youtubeDownloadActions.setDownloadProgress(queue));
     },
   });
 

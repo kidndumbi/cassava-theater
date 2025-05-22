@@ -6,6 +6,8 @@ import AppIconButton from "./common/AppIconButton";
 import CheckIcon from "@mui/icons-material/Check";
 import { useMp4Conversion } from "../hooks/useMp4Conversion";
 import { Processing } from "./processing/Processing";
+import { useSelector } from "react-redux";
+import { selYoutubeDownloadProgress } from "../store/youtubeDownload.slice";
 
 const StatusDisplayItem = ({
   children,
@@ -36,6 +38,7 @@ interface StatusDisplayProps {
 export const StatusDisplay = ({ port }: StatusDisplayProps) => {
   const { open, openModal, closeModal } = useModalState(false);
   const { convertToMp4ProgressQueue } = useMp4Conversion();
+  const youtubeDownloadProgressQueue = useSelector(selYoutubeDownloadProgress)
 
   return (
     <Box
@@ -71,7 +74,9 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         title="Processing..."
         fullScreen={true}
       >
-        <Processing progressList={convertToMp4ProgressQueue} />
+        <Processing progressList={convertToMp4ProgressQueue} 
+          youtubeDownloadProgressList={youtubeDownloadProgressQueue}
+         />
       </AppModal>
     </Box>
   );
