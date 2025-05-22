@@ -19,7 +19,7 @@ import {
   selectScrollPoint,
 } from "../../store/scrollPoint.slice";
 import TvShowListItem from "./TvShowListItem";
-import { AppDelete } from "../common/AppDelete";
+import { AppDrop } from "../common/AppDrop";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
@@ -244,7 +244,7 @@ export const TvShowsList = React.memo(function TvShowsList(
         ))}
       </Box>
       {draggingIdx !== null && (
-        <AppDelete
+        <AppDrop
           itemDroped={(item: {
             index: number;
             type: string;

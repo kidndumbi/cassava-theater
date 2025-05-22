@@ -14,7 +14,7 @@ import { useMovies } from "../../hooks/useMovies";
 
 import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 import { CustomFolderVideoCard } from "./CustomFolderVideoCard";
-import { AppDelete } from "../common/AppDelete";
+import { AppDrop } from "../common/AppDrop";
 import { MovieDetails } from "../../../models/movie-detail.model";
 import { AppModal } from "../common/AppModal";
 import { PlaylistSelect } from "../playlists/PlaylistSelect";
@@ -266,7 +266,7 @@ export const CustomFolderVideosPanel = ({
       </Paper>
 
       {draggingIdx !== null && (
-        <AppDelete
+        <AppDrop
           itemDroped={(item: {
             index: number;
             type: string;

@@ -7,7 +7,7 @@ import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
 import { DraggableMenuItem } from "./DraggableMenuItem";
 import buttonStyle from "./buttonStyle";
-import { AppDelete } from "../common/AppDelete";
+import { AppDrop } from "../common/AppDrop";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 
@@ -108,7 +108,7 @@ const MainMenu: React.FC<MainMenuProps> = ({
       </List>
 
       {draggingIdx !== null && (
-        <AppDelete
+        <AppDrop
           itemDroped={(item: {
             index: number;
             type: string;

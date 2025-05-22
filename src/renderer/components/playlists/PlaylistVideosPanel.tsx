@@ -5,7 +5,7 @@ import { getFilename, removeVidExt } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { PlaylistModel } from "../../../models/playlist.model";
 import { DraggableVideo } from "./DraggableVideo";
-import { AppDelete } from "../common/AppDelete";
+import { AppDrop } from "../common/AppDrop";
 
 interface PlaylistVideosPanelProps {
   videos: VideoDataModel[] | undefined;
@@ -97,8 +97,14 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
                   handleRemove={handleRemove}
                   handleInfo={handleInfo}
                   moveVideo={moveVideo}
-                  dragging={(isDragging, idx) => {
-                    setDraggingIdx(isDragging ? idx : null);
+                  dragging={(isDragging, dragIdx) => {
+                    if (isDragging) {
+                      setDraggingIdx(dragIdx);
+                    } else {
+                      setDraggingIdx((current) =>
+                        current === dragIdx ? null : current,
+                      );
+                    }
                   }}
                 />
               ) : null,
@@ -114,7 +120,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
       </Paper>
 
       {draggingIdx !== null && (
-        <AppDelete
+        <AppDrop
           itemDroped={(item: {
             index: number;
             type: string;
