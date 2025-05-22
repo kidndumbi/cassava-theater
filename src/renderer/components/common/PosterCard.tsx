@@ -39,7 +39,12 @@ export const PosterCard: React.FC<PosterCardProps> = ({
           onError={handleError}
           onClick={onClick}
           className="cursor-pointer rounded-lg"
-          style={{ width, height }}
+          style={{
+            width,
+            height,
+            objectFit: "cover",
+            objectPosition: "70% 50%",
+          }}
         />
       ) : (
         <Box
