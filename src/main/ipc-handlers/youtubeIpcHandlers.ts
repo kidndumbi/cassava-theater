@@ -60,4 +60,17 @@ export const youtubeIpcHandlers = () => {
   ipcMain.handle(YoutubeIPCChannels.GetQueue, async () => {
     return getYoutubeDownloadQueueInstance().getQueue();
   });
+
+  ipcMain.handle(
+    YoutubeIPCChannels.SwapQueueItems,
+    async (_event, id1: string, id2: string) => {
+      try {
+        getYoutubeDownloadQueueInstance().swapQueueItems(id1, id2);
+        return { success: true };
+      } catch (error) {
+        // Optionally log error here
+        return { success: false, error: (error as Error).message };
+      }
+    },
+  );
 };

@@ -158,6 +158,10 @@ export interface YoutubeAPI {
   isProcessingQueue: () => Promise<boolean>;
   clearQueue: () => Promise<{ success: boolean }>;
   getQueue: () => Promise<YoutubeDownloadQueueItem[]>;
+  swapQueueItems: (
+    id1: string,
+    id2: string
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 declare global {
