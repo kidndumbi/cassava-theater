@@ -14,7 +14,6 @@ import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { getUrl } from "../../util/helperFunctions";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { PlaylistVideosPanel } from "./PlaylistVideosPanel";
-import { PlaylistListPanel } from "./PlaylistListPanel";
 import { PlaylistsToolbar } from "./PlaylistsToolbar";
 import { SelectedPlaylistToolbar } from "./SelectedPlaylistToolbar";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
@@ -23,6 +22,7 @@ import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import { useModalState } from "../../hooks/useModalState";
 import { useUpdatePlaylist } from "../../hooks/useUpdatePlaylist";
 import { Title } from "../common/Title";
+import { AppListPanel } from "../common/AppListPanel";
 
 export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const navigate = useNavigate();
@@ -175,13 +175,16 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
         <PlaylistsToolbar onAdd={handleAddPlaylist} />
         <Title>Playlists</Title>
         <Box display="flex" gap={2} mt={2}>
-          <PlaylistListPanel
-            playlists={playlists}
-            selectedPlaylist={selectedPlaylist}
-            setSelectedPlaylist={setSelectedPlaylist}
-            updatePlaylist={(id: string, playlist: PlaylistModel) =>
-              updatePlaylist({ id, playlist })
-            }
+          <AppListPanel
+            items={playlists}
+            selectedItem={selectedPlaylist}
+            setSelectedItem={(playlist) => {
+              const selectedPlaylist = playlists?.find(
+                (p) => p.id === playlist.id,
+              );
+              setSelectedPlaylist(selectedPlaylist);
+            }}
+            backgroundColor={theme.palette.primary.main}
           />
           <Box>
             {selectedPlaylist && (
