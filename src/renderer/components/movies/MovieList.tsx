@@ -60,10 +60,6 @@ const MovieList: React.FC<MovieListProps> = ({
   const { data: settings } = useGetAllSettings();
   const { data: playlists, refetch } = usePlaylists();
 
-  useEffect(() => {
-    console.log("Playlists data:", playlists);
-  }, [playlists]);
-
   const queryClient = useQueryClient();
   const [draggingIdx, setDraggingIdx] = React.useState<number | null>(null);
 
