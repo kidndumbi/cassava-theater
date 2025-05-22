@@ -5,7 +5,7 @@ import { Alert, Box, Button, Snackbar, Paper } from "@mui/material";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
 import { useAppDispatch } from "../../store";
@@ -16,6 +16,11 @@ import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 import { CustomFolderVideoCard } from "./CustomFolderVideoCard";
 import { AppDelete } from "../common/AppDelete";
 import { MovieDetails } from "../../../models/movie-detail.model";
+import { AppModal } from "../common/AppModal";
+import { PlaylistSelect } from "../playlists/PlaylistSelect";
+import { useModalState } from "../../hooks/useModalState";
+import { usePlaylists } from "../../hooks/usePlaylists";
+import { PlaylistModel } from "../../../models/playlist.model";
 
 // Define MenuItem interface
 export interface OptionsMenuItem {
@@ -44,9 +49,18 @@ export const CustomFolderVideosPanel = ({
   const [selectedMovie, setSelectedMovie] = useState<VideoDataModel | null>(
     null,
   );
+  const { data: playlists, refetch } = usePlaylists();
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
     useState(false);
   const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
+  const [selectedPlaylistVideo, setSelectedPlaylistVideo] =
+    useState<VideoDataModel | null>(null);
+
+  const {
+    open: openPlaylistModal,
+    openModal: openPlaylistModalOpen,
+    closeModal: closePlaylistModal,
+  } = useModalState(false);
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -82,6 +96,15 @@ export const CustomFolderVideosPanel = ({
     setOpenMovieSuggestionsModal(false);
     setSelectedMovie(null);
   };
+
+  const { mutate: updatePlaylist } = useMutation({
+    mutationFn: (playlist: PlaylistModel) => {
+      return window.playlistAPI.putPlaylist(playlist.id, playlist);
+    },
+    onSuccess: () => {
+      refetch();
+    },
+  });
 
   const { mutateAsync: saveVideoJsonData } = useSaveJsonData(
     (data, savedData) => {
@@ -149,7 +172,9 @@ export const CustomFolderVideosPanel = ({
   // Reusable delete handler
   const handleDeleteMovie = (video: VideoDataModel) => {
     if (video?.filePath) {
-      setMessage("Are you sure you want to delete this Movie?");
+      setMessage(
+        "Are you sure you want to delete this video? This will permanently remove the actual video file from your disk.",
+      );
       openDialog("Delete").then((dialogDecision) => {
         if (dialogDecision !== "Ok") return;
         deleteFile(video.filePath);
@@ -189,6 +214,13 @@ export const CustomFolderVideosPanel = ({
           currentVideo: { filePath: video.filePath },
           newVideoJsonData: { watchLater: !video.watchLater },
         }),
+    },
+    {
+      label: "Playlists",
+      action: () => {
+        setSelectedPlaylistVideo(video);
+        openPlaylistModalOpen();
+      },
     },
     // Add more menu items as needed
   ];
@@ -287,6 +319,23 @@ export const CustomFolderVideosPanel = ({
           {snackbar.message}
         </Alert>
       </Snackbar>
+      <AppModal
+        open={openPlaylistModal}
+        onClose={() => {
+          closePlaylistModal();
+          setSelectedPlaylistVideo(null);
+        }}
+        title="Playlists"
+        fullScreen={false}
+      >
+        <PlaylistSelect
+          playlists={playlists}
+          video={selectedPlaylistVideo}
+          updatePlaylist={(playlist) => {
+            updatePlaylist(playlist);
+          }}
+        ></PlaylistSelect>
+      </AppModal>
     </>
   );
 };

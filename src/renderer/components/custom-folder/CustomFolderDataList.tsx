@@ -194,7 +194,7 @@ const CustomFolderDataList: React.FC<CustomFolderDataListProps> = ({
       label: "Delete",
       action: () => {
         if (video?.filePath) {
-          setMessage("Are you sure you want to delete this Movie?");
+          setMessage("Are you sure you want to delete this video? This will permanently remove the actual video file from your disk.");
           openDialog("Delete").then((dialogDecision) => {
             if (dialogDecision !== "Ok") return;
             deleteFile(video.filePath);
