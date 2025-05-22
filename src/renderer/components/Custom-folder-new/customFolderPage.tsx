@@ -12,17 +12,28 @@ import { getUrl } from "../../util/helperFunctions";
 import { useVideoDataQuery } from "../../hooks/useVideoData.query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { CustomFolderModel } from "../../../models/custom-folder";
+import { AppModal } from "../common/AppModal";
+import { CustomFolderAddEdit } from "./CustomFolderAddEdit";
+import { useSetSetting } from "../../hooks/settings/useSetSetting";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 
 interface CustomFolderProps {
   menuId: string;
 }
 
 export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
-  const { data } = useGetAllSettings();
-  const folders = data?.folders ?? [];
-  const port = data?.port;
+  const { data: settings } = useGetAllSettings();
+  const folders = settings?.folders ?? [];
+  const port = settings?.port;
+
+  const { openDialog } = useConfirmation();
+
+  const { mutateAsync: setSetting } = useSetSetting();
 
   const navigate = useNavigate();
+
+  const [ediModalOpen, setEditModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
 
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -30,7 +41,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
   const [selectedFolder, setSelectedFolder] =
     useState<CustomFolderModel | null>(null);
 
-  const { data: videos, isLoading } = useVideoDataQuery({
+  const { data: videos } = useVideoDataQuery({
     filePath: selectedFolder?.folderPath || "",
     category: "customFolder",
   });
@@ -67,30 +78,42 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
       <Box className="custom-scrollbar mr-5 overflow-y-auto pt-5">
         <CustomFoldersToolbar
           onAdd={() => {
-            console.log("Add new folder clicked");
+            setAddModalOpen(true);
           }}
         />
         {<Title>Folders</Title>}
         <Box display="flex" gap={2} mt={2}>
           <CustomFolderListPanel
             folders={folders}
-            updateFolder={() => {
-              console.log("Update folder clicked");
-            }}
             selectedFolder={selectedFolder}
             setSelectedFolder={(folder) => {
               setSelectedFolder(folder);
-              console.log("Set selected folder clicked", folder);
             }}
           />
           <Box>
             {selectedFolder && (
               <SelectedCustomFolderToolbar
-                onRename={() => {
-                  console.log("Rename folder clicked");
+                onEdit={() => {
+                  setEditModalOpen(true);
                 }}
-                onDelete={() => {
-                  console.log("Delete folder clicked");
+                onDelete={async () => {
+                  if (
+                    (await openDialog(
+                      undefined,
+                      undefined,
+                      `Are you sure you want to remove this folder link? 
+                      This will only remove the link, not delete the actual folder from your disk.`,
+                    )) === "Ok"
+                  ) {
+                    const updatedFolders = folders.filter(
+                      (folder) => folder.id !== selectedFolder.id,
+                    );
+                    await setSetting({
+                      key: "folders",
+                      value: updatedFolders,
+                    });
+                    setSelectedFolder(null);
+                  }
                 }}
               />
             )}
@@ -107,6 +130,44 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
           </Box>
         </Box>
       </Box>
+      <AppModal
+        open={ediModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+        }}
+        title="Edit Folder"
+      >
+        <CustomFolderAddEdit
+          folder={selectedFolder}
+          onEdit={async (changes) => {
+            if (!selectedFolder || Object.keys(changes).length === 0) return;
+            const updatedFolders = folders.map((f) =>
+              f.id === selectedFolder.id ? { ...f, ...changes } : f,
+            );
+            await setSetting({ key: "folders", value: updatedFolders });
+            setSelectedFolder((prev) =>
+              prev ? { ...prev, ...changes } : prev,
+            );
+            setEditModalOpen(false);
+          }}
+        />
+      </AppModal>
+      <AppModal
+        open={addModalOpen}
+        onClose={() => {
+          setAddModalOpen(false);
+        }}
+        title="Add Folder"
+      >
+        <CustomFolderAddEdit
+          onAdd={async (newFolder) => {
+            const updatedFolders = [...folders, newFolder];
+            await setSetting({ key: "folders", value: updatedFolders });
+            setSelectedFolder(newFolder);
+            setAddModalOpen(false);
+          }}
+        />
+      </AppModal>
     </>
   );
 };

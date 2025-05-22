@@ -12,14 +12,12 @@ interface CustomFolderListPanelProps {
   folders: CustomFolderModel[] | undefined;
   selectedFolder: CustomFolderModel | null;
   setSelectedFolder: (folder: CustomFolderModel) => void;
-  updateFolder: (id: string, folder: string) => void;
 }
 
 export const CustomFolderListPanel = ({
   folders,
   selectedFolder,
   setSelectedFolder,
-  updateFolder,
 }: CustomFolderListPanelProps) => {
   return (
     <Paper

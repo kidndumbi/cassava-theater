@@ -4,17 +4,17 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 interface SelectedCustomFolderToolbarProps {
-  onRename: () => void;
+  onEdit: () => void;
   onDelete: () => void;
 }
 
 export const SelectedCustomFolderToolbar = ({
   onDelete,
-  onRename,
+  onEdit,
 }: SelectedCustomFolderToolbarProps) => {
   return (
     <Box className="flex items-center gap-2 pb-3">
-      <AppIconButton tooltip="Rename folder" onClick={onRename}>
+      <AppIconButton tooltip="Rename folder" onClick={onEdit}>
         <EditIcon />
       </AppIconButton>
       <AppIconButton tooltip="Delete folder" onClick={onDelete}>
