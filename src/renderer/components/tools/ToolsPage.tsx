@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import { Title } from "../common/Title";
-import { ToolListPanel } from "./ToolListPanel";
+import { AppListPanel } from "../common/AppListPanel";
 import { useState } from "react";
 import { ToolPanel } from "./ToolPanel";
 
@@ -13,10 +13,10 @@ export const ToolsPage = () => {
       <Box className="custom-scrollbar mr-5 overflow-y-auto pt-5">
         {<Title>Tools</Title>}
         <Box display="flex" gap={2} mt={2}>
-          <ToolListPanel
-            tools={tools}
-            selectedTool={selectedTool}
-            setSelectedTool={(tool) => {
+          <AppListPanel
+            items={tools}
+            selectedItem={selectedTool}
+            setSelectedItem={(tool) => {
               setSelectedTool(tool);
             }}
           />
