@@ -20,6 +20,7 @@ import {
 } from "../../store/scrollPoint.slice";
 import TvShowListItem from "./TvShowListItem";
 import { AppDrop } from "../common/AppDrop";
+import { useDragState } from "../../hooks/useDragState";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
@@ -47,7 +48,7 @@ export const TvShowsList = React.memo(function TvShowsList(
     selectScrollPoint(state, SCROLL_KEY),
   );
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [draggingIdx, setDraggingIdx] = React.useState<number | null>(null);
+  const { isAnyDragging, setDragging } = useDragState();
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -230,20 +231,12 @@ export const TvShowsList = React.memo(function TvShowsList(
               getImageUrl={getImageUlr}
               handlePosterClick={handlePosterClick}
               idx={index}
-              dragging={(isDragging: boolean, dragIdx: number) => {
-                if (isDragging) {
-                  setDraggingIdx(dragIdx);
-                } else {
-                  setDraggingIdx((current) =>
-                    current === dragIdx ? null : current,
-                  );
-                }
-              }}
+              dragging={setDragging}
             />
           </AppContextMenu>
         ))}
       </Box>
-      {draggingIdx !== null && (
+      {isAnyDragging && (
         <AppDrop
           itemDroped={(item: {
             index: number;

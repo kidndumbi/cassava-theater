@@ -21,6 +21,7 @@ import { PlaylistSelect } from "../playlists/PlaylistSelect";
 import { useModalState } from "../../hooks/useModalState";
 import { usePlaylists } from "../../hooks/usePlaylists";
 import { PlaylistModel } from "../../../models/playlist.model";
+import { useDragState } from "../../hooks/useDragState";
 
 // Define MenuItem interface
 export interface OptionsMenuItem {
@@ -52,7 +53,6 @@ export const CustomFolderVideosPanel = ({
   const { data: playlists, refetch } = usePlaylists();
   const [openMovieSuggestionsModal, setOpenMovieSuggestionsModal] =
     useState(false);
-  const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
   const [selectedPlaylistVideo, setSelectedPlaylistVideo] =
     useState<VideoDataModel | null>(null);
 
@@ -222,8 +222,9 @@ export const CustomFolderVideosPanel = ({
         openPlaylistModalOpen();
       },
     },
-    // Add more menu items as needed
   ];
+
+  const { isAnyDragging, setDragging } = useDragState();
 
   return (
     <>
@@ -247,15 +248,7 @@ export const CustomFolderVideosPanel = ({
                   getMenuItems={getMenuItems}
                   getImageUrl={getImageUrl}
                   onClick={onClick}
-                  dragging={(isDragging: boolean, dragIdx: number) => {
-                    if (isDragging) {
-                      setDraggingIdx(dragIdx);
-                    } else {
-                      setDraggingIdx((current) =>
-                        current === dragIdx ? null : current,
-                      );
-                    }
-                  }}
+                  dragging={setDragging}
                 />
               ) : null,
             )
@@ -265,7 +258,7 @@ export const CustomFolderVideosPanel = ({
         </Box>
       </Paper>
 
-      {draggingIdx !== null && (
+      {isAnyDragging && (
         <AppDrop
           itemDroped={(item: {
             index: number;

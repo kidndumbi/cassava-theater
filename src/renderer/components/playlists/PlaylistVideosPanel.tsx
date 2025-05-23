@@ -6,6 +6,7 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import { PlaylistModel } from "../../../models/playlist.model";
 import { DraggableVideo } from "./DraggableVideo";
 import { AppDrop } from "../common/AppDrop";
+import { useDragState } from "../../hooks/useDragState";
 
 interface PlaylistVideosPanelProps {
   videos: VideoDataModel[] | undefined;
@@ -24,7 +25,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
   navToDetails,
   onPlayVideo,
 }) => {
-  const [draggingIdx, setDraggingIdx] = React.useState<number | null>(null);
+  const { isAnyDragging, setDragging } = useDragState();
 
   const handleRemove = (videoIdx: number) => {
     if (
@@ -97,15 +98,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
                   handleRemove={handleRemove}
                   handleInfo={handleInfo}
                   moveVideo={moveVideo}
-                  dragging={(isDragging, dragIdx) => {
-                    if (isDragging) {
-                      setDraggingIdx(dragIdx);
-                    } else {
-                      setDraggingIdx((current) =>
-                        current === dragIdx ? null : current,
-                      );
-                    }
-                  }}
+                  dragging={setDragging}
                 />
               ) : null,
             )
@@ -119,7 +112,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
         </Box>
       </Paper>
 
-      {draggingIdx !== null && (
+      {isAnyDragging && (
         <AppDrop
           itemDroped={(item: {
             index: number;

@@ -15,8 +15,10 @@ import { AppModal } from "../common/AppModal";
 import { CustomFolderAddEdit } from "./CustomFolderAddEdit";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
-import { AppListPanel } from "../common/AppListPanel";
+import { AppListPanel, DragMenuItem } from "../common/AppListPanel";
 import theme from "../../theme";
+import { useDragState } from "../../hooks/useDragState";
+import { AppDrop } from "../common/AppDrop";
 
 interface CustomFolderProps {
   menuId: string;
@@ -74,6 +76,25 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
     [getTmdbImageUrl, port],
   );
 
+  const { isAnyDragging, setDragging } = useDragState();
+
+  const handleDeleteFolder = async (folderId: string) => {
+    const dialogDecision = await openDialog(
+      undefined,
+      undefined,
+      "Are you sure you want to remove this folder link? This will only remove the link, not delete the actual folder from your disk.",
+    );
+    if (dialogDecision === "Ok") {
+      const updatedFolders = (folders || []).filter(
+        (folder) => folder.id !== folderId,
+      );
+      await setSetting({
+        key: "folders",
+        value: updatedFolders,
+      });
+    }
+  };
+
   return (
     <>
       <Box className="custom-scrollbar mr-5 overflow-y-auto pt-5">
@@ -92,6 +113,22 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
               setSelectedFolder(selectedFolder);
             }}
             backgroundColor={theme.palette.primary.main}
+            dragging={setDragging}
+            onSwitchPosition={async (id1, id2) => {
+              const folder1 = folders?.find((item) => item.id === id1);
+              const folder2 = folders?.find((item) => item.id === id2);
+              if (folder1 && folder2 && Array.isArray(folders)) {
+                const index1 = folders.indexOf(folder1);
+                const index2 = folders.indexOf(folder2);
+                const newFolders = [...folders];
+                newFolders[index1] = folder2;
+                newFolders[index2] = folder1;
+                setSetting({
+                  key: "folders",
+                  value: newFolders,
+                });
+              }
+            }}
           />
           <Box>
             {selectedFolder && (
@@ -171,6 +208,14 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
           }}
         />
       </AppModal>
+      {isAnyDragging && (
+        <AppDrop
+          itemDroped={(item: DragMenuItem) => {
+            handleDeleteFolder(item.menuItem.id);
+          }}
+          accept={["MENUITEM"]}
+        />
+      )}
     </>
   );
 };

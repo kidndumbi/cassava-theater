@@ -5,9 +5,8 @@ import { MenuItem } from "../../../models/menu-item.model";
 import { SettingsModel } from "../../../models/settings.model";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
-import { DraggableMenuItem } from "./DraggableMenuItem";
+import { MainMenuItem } from "./MainMenuItem";
 import buttonStyle from "./buttonStyle";
-import { AppDrop } from "../common/AppDrop";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 
@@ -28,8 +27,6 @@ const MainMenu: React.FC<MainMenuProps> = ({
   const { mutateAsync: setSetting } = useSetSetting();
   const { openDialog } = useConfirmation();
   const { showSnackbar } = useSnackbar();
-
-  const [draggingIdx, setDraggingIdx] = React.useState<number | null>(null);
 
   const handleButtonClick = (item: MenuItem) => {
     onActiveMenuItemChange(item);
@@ -74,22 +71,13 @@ const MainMenu: React.FC<MainMenuProps> = ({
     <>
       <List sx={{ width: "130px", borderRight: "1px solid #ccc" }}>
         {menuItems.map((menu, idx) => (
-          <DraggableMenuItem
+          <MainMenuItem
             key={menu.label}
             menu={menu}
             idx={idx}
             activeMenuItem={activeMenuItem}
             handleButtonClick={handleButtonClick}
             switchCustomFolderPosition={switchCustomFolderPosition}
-            dragging={(isDragging: boolean, dragIdx: number) => {
-              if (isDragging) {
-                setDraggingIdx(dragIdx);
-              } else {
-                setDraggingIdx((current) =>
-                  current === dragIdx ? null : current,
-                );
-              }
-            }}
           />
         ))}
 
@@ -106,19 +94,6 @@ const MainMenu: React.FC<MainMenuProps> = ({
           </Box>
         </Button>
       </List>
-
-      {draggingIdx !== null && (
-        <AppDrop
-          itemDroped={(item: {
-            index: number;
-            type: string;
-            menu: MenuItem;
-          }) => {
-            handleDeleteFolder(item.menu.id);
-          }}
-          accept={["MENUITEM"]}
-        />
-      )}
     </>
   );
 };

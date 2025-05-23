@@ -7,7 +7,7 @@ import { useDrop } from "react-dnd";
 export const AppDrop: React.FC<{
   allowDrop?: boolean;
   itemDroped: (item: any) => void;
-  accept?: string[];
+  accept: string[];
   buttonText?: string;
   conatinerStyle?: React.CSSProperties;
   buttonStyle?: React.CSSProperties;
