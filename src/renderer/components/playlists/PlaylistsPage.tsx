@@ -22,7 +22,9 @@ import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import { useModalState } from "../../hooks/useModalState";
 import { useUpdatePlaylist } from "../../hooks/useUpdatePlaylist";
 import { Title } from "../common/Title";
-import { AppListPanel } from "../common/AppListPanel";
+import { AppListPanel, DragMenuItem } from "../common/AppListPanel";
+import { useDragState } from "../../hooks/useDragState";
+import { AppDrop } from "../common/AppDrop";
 
 export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const navigate = useNavigate();
@@ -109,7 +111,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
     newPlaylistModal.closeModal();
   };
 
-  const handleDeletePlaylist = async () => {
+  const handleDeletePlaylist = async (selectedPlaylist: PlaylistModel) => {
     if (!selectedPlaylist) return;
     setMessage(
       `Are you sure you want to delete the playlist "${selectedPlaylist.name}"?`,
@@ -169,6 +171,8 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
     navigate(url);
   };
 
+  const { isAnyDragging, setDragging } = useDragState();
+
   return (
     <>
       <Box className="custom-scrollbar mr-5 overflow-y-auto pt-5">
@@ -185,13 +189,14 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
               setSelectedPlaylist(selectedPlaylist);
             }}
             backgroundColor={theme.palette.primary.main}
+            dragging={setDragging}
           />
           <Box>
             {selectedPlaylist && (
               <SelectedPlaylistToolbar
                 playlist={selectedPlaylist}
                 onRename={handleRenamePlaylist}
-                onDelete={handleDeletePlaylist}
+                onDelete={handleDeletePlaylist.bind(null, selectedPlaylist)}
                 onPlayFromBeginning={() => playVideoFromPlaylist(0)}
                 onPlayFromLastWatched={() =>
                   playVideoFromPlaylist(
@@ -246,7 +251,6 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
           </AppButton>
         </Box>
       </AppModal>
-      {/* New Playlist Modal */}
       <AppModal
         open={newPlaylistModal.open}
         onClose={() => {
@@ -272,6 +276,14 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
           </AppButton>
         </Box>
       </AppModal>
+      {isAnyDragging && (
+        <AppDrop
+          itemDroped={(item: DragMenuItem) => {
+            handleDeletePlaylist(item.menuItem as PlaylistModel);
+          }}
+          accept={["MENUITEM"]}
+        />
+      )}
     </>
   );
 };
