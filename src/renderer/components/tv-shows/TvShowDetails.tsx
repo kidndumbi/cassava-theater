@@ -78,7 +78,11 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   const [episodeLastWatched, setEpisodeLastWatched] =
     useState<VideoDataModel | null>(null);
   const [openModal, setOpenModal] = useState(false);
-  const { open: openConvertToMp4Modal, openModal: openConvertToMp4ModalOpen, closeModal: closeConvertToMp4Modal } = useModalState(false);
+  const {
+    open: openConvertToMp4Modal,
+    openModal: openConvertToMp4ModalOpen,
+    closeModal: closeConvertToMp4Modal,
+  } = useModalState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
 
   const handleOpenModal = () => setOpenModal(true);
@@ -169,14 +173,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   }, [tvShowDetails]);
 
   useEffect(() => {
-    console.log("episodes", episodes);
-    if (
-      !tvShowDetails?.lastVideoPlayed ||
-      episodes?.length === 0 
-      // ||
-      // episodeLastWatched
-    )
-      return;
+    if (!tvShowDetails?.lastVideoPlayed || episodes?.length === 0) return;
     const normalizedLastPlayed = tvShowDetails.lastVideoPlayed.replace(
       /\\/g,
       "/",
@@ -184,7 +181,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     const lastWatchedEpisode = episodes?.find(
       (episode) => episode.filePath === normalizedLastPlayed,
     );
-    
+
     if (lastWatchedEpisode) {
       setEpisodeLastWatched(lastWatchedEpisode);
     }
@@ -277,10 +274,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     },
   });
 
-  useEffect(() => {
-    console.log("selectedSeason", selectedSeason);
-  }, [selectedSeason]);
-
   // Add mutation for saveVideoJsonData
   const saveVideoJsonDataMutation = useMutation({
     mutationFn: async ({
@@ -342,7 +335,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 <AppIconButton
                   tooltip="Refresh"
                   onClick={() => {
-                    console.log("will be implemented later");
                     queryClient.invalidateQueries({
                       queryKey: ["folderDetails", videoPath],
                     });

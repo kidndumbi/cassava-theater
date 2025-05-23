@@ -72,7 +72,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
       <AppModal
         open={open}
         onClose={closeModal}
-        title="Processing..."
+        title="Processing"
         fullScreen={true}
       >
         <Processing
