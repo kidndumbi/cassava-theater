@@ -25,6 +25,7 @@ import { AppContextMenu } from "../common/AppContextMenu";
 import theme from "../../theme";
 import { useModalState } from "../../hooks/useModalState";
 import { AppDrop } from "../common/AppDrop";
+import { useDragState } from "../../hooks/useDragState";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -61,7 +62,7 @@ const MovieList: React.FC<MovieListProps> = ({
   const { data: playlists, refetch } = usePlaylists();
 
   const queryClient = useQueryClient();
-  const [draggingIdx, setDraggingIdx] = React.useState<number | null>(null);
+  const { isAnyDragging, setDragging } = useDragState();
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -284,22 +285,14 @@ const MovieList: React.FC<MovieListProps> = ({
                 onPosterClick={handlePosterClick}
                 getImageUrl={getImageUrl}
                 alwaysShowVideoType={settings?.showVideoType}
-                dragging={(isDragging: boolean, dragIdx: number) => {
-                  if (isDragging) {
-                    setDraggingIdx(dragIdx);
-                  } else {
-                    setDraggingIdx((current) =>
-                      current === dragIdx ? null : current,
-                    );
-                  }
-                }}
+                dragging={setDragging}
               />
             </div>
           </AppContextMenu>
         ))}
       </Box>
 
-      {draggingIdx !== null && (
+      {isAnyDragging && (
         <AppDrop
           itemDroped={(item: {
             index: number;

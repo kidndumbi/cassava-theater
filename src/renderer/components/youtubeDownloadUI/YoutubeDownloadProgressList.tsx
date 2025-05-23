@@ -6,9 +6,9 @@ import {
   DragProgressItem,
   YoutubeDownloadProgressListItem,
 } from "./YoutubeDownloadProgressListItem";
-import { useState } from "react";
 import { AppDrop } from "../common/AppDrop";
 import theme from "../../theme";
+import { useDragState } from "../../hooks/useDragState";
 
 export const YoutubeDownloadProgressList = ({
   progressList,
@@ -16,7 +16,7 @@ export const YoutubeDownloadProgressList = ({
   progressList?: YoutubeDownloadQueueItem[];
 }) => {
   const dispatch = useAppDispatch();
-  const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
+  const { isAnyDragging, setDragging } = useDragState();
 
   const { mutateAsync: removeFromQueue, isPending: isRemoving } = useMutation({
     mutationFn: (id: string) => window.youtubeAPI.removeFromQueue(id),
@@ -54,15 +54,7 @@ export const YoutubeDownloadProgressList = ({
           progressItem={item}
           isRemoving={isRemoving}
           onCancel={handleCancel}
-          dragging={(isDragging, dragIdx) => {
-            if (isDragging) {
-              setDraggingIdx(dragIdx);
-            } else {
-              setDraggingIdx((current) =>
-                current === dragIdx ? null : current,
-              );
-            }
-          }}
+          dragging={setDragging}
           onSwap={async (id1, id2) => {
             const result = await swapQueueItems({ id1, id2 });
 
@@ -73,7 +65,7 @@ export const YoutubeDownloadProgressList = ({
           }}
         />
       ))}
-      {draggingIdx !== null && (
+      {isAnyDragging && (
         <AppDrop
           conatinerStyle={{
             top: "6px",
