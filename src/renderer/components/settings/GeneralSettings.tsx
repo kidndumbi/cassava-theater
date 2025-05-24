@@ -205,6 +205,25 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
               </span>
             }
           />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={!!notifications.youtubeDownloadStatus}
+                onChange={(e) =>
+                  handleUpdateSetting("notifications", {
+                    ...notifications,
+                    youtubeDownloadStatus: e.target.checked,
+                  })
+                }
+                color="primary"
+              />
+            }
+            label={
+              <span style={{ color: theme.customVariables.appWhiteSmoke }}>
+                Notify on YouTube Download Status
+              </span>
+            }
+          />
         </Box>
       </CardContent>
     </Card>
