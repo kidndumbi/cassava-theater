@@ -7,6 +7,9 @@ import {
   fetchVideoDetails,
   fetchVideosData,
   saveCurrentTime,
+  fetchWatchlaterVideos,
+  fetchRecentlyWatchedCustomVideosData,
+  fetchRecentlyWatchedVideosData,
 } from "./video-data.service";
 import { loggingService as log } from "./main-logging.service";
 import { AppSocketEvents } from "../../enums/app-socket-events.enum";
@@ -237,6 +240,78 @@ export async function initializeSocket(
         } catch (error) {
           console.error("Error setting current time:", error);
           callback({ success: false, error: "Failed to set current time" });
+        }
+      },
+    );
+
+    // New event: fetchWatchlaterVideos
+    socket.on(
+      AppSocketEvents.FETCH_WATCHLATER_VIDEOS,
+      async (
+        _requestData: unknown,
+        callback: (response: {
+          success: boolean;
+          data?: VideoDataModel[];
+          error?: string;
+        }) => void,
+      ) => {
+        try {
+          const videos = await fetchWatchlaterVideos();
+          callback({ success: true, data: videos });
+        } catch (error) {
+          log.error("Error fetching watchlater videos:", error);
+          callback({ success: false, error: "Failed to fetch watchlater videos" });
+        }
+      },
+    );
+
+    // New event: fetchRecentlyWatchedCustomVideosData
+    socket.on(
+      AppSocketEvents.FETCH_RECENTLY_WATCHED_CUSTOM_VIDEOS,
+      async (
+        requestData: { data?: { limit?: number } },
+        callback: (response: {
+          success: boolean;
+          data?: {
+            folder: {
+              id: string;
+              name: string;
+              folderPath: string;
+            };
+            videos: VideoDataModel[];
+          }[];
+          error?: string;
+        }) => void,
+      ) => {
+        try {
+          const limit = requestData?.data?.limit ?? 20;
+          const data = await fetchRecentlyWatchedCustomVideosData(limit);
+          callback({ success: true, data });
+        } catch (error) {
+          log.error("Error fetching recently watched custom videos:", error);
+          callback({ success: false, error: "Failed to fetch recently watched custom videos" });
+        }
+      },
+    );
+
+    // New event: fetchRecentlyWatchedVideosData
+    socket.on(
+      AppSocketEvents.FETCH_RECENTLY_WATCHED_VIDEOS,
+      async (
+        requestData: { data: { videoType: "movies" | "tvShows"; limit?: number } },
+        callback: (response: {
+          success: boolean;
+          data?: VideoDataModel[];
+          error?: string;
+        }) => void,
+      ) => {
+        try {
+          const { videoType, limit = 20 } = requestData.data;
+          const videos = await fetchRecentlyWatchedVideosData(videoType, limit);
+          callback({ success: true, data: videos });
+        } catch (error) {
+          log.error("Error fetching recently watched videos:", error);
+          callback({ success: false, error: "Failed to fetch recently watched videos" });
         }
       },
     );
