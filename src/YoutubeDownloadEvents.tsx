@@ -1,4 +1,4 @@
-import { use, useEffect, useRef } from "react";
+import { useEffect,  useRef } from "react";
 import { useAppDispatch } from "./renderer/store";
 import { youtubeDownloadActions } from "./renderer/store/youtubeDownload.slice";
 import { useSaveJsonData } from "./renderer/hooks/useSaveJsonData";
