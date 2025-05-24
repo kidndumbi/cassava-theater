@@ -9,4 +9,5 @@ export enum AppSocketEvents {
   FETCH_WATCHLATER_VIDEOS = "fetch-watchlater-videos",
   FETCH_RECENTLY_WATCHED_CUSTOM_VIDEOS = "fetch-recently-watched-custom-videos",
   FETCH_RECENTLY_WATCHED_VIDEOS = "fetch-recently-watched-videos",
+  GET_ALL_PLAYLISTS = "get-all-playlists",
 }
