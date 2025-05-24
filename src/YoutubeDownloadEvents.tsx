@@ -1,11 +1,25 @@
-import { useEffect } from "react";
+import { use, useEffect, useRef } from "react";
 import { useAppDispatch } from "./renderer/store";
 import { youtubeDownloadActions } from "./renderer/store/youtubeDownload.slice";
 import { useSaveJsonData } from "./renderer/hooks/useSaveJsonData";
+import { useSnackbar } from "./renderer/contexts/SnackbarContext";
+import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
+import { SettingsModel } from "./models/settings.model";
 
 export const YoutubeDownloadEvents = () => {
   const dispatch = useAppDispatch();
+  const { showSnackbar } = useSnackbar();
+  const { data: settings = {} as SettingsModel } = useGetAllSettings();
   const { mutate: saveJsonData } = useSaveJsonData();
+
+  const youtubeDownloadStatus = useRef(
+    settings?.notifications?.youtubeDownloadStatus,
+  );
+
+  useEffect(() => {
+    youtubeDownloadStatus.current =
+      settings?.notifications?.youtubeDownloadStatus;
+  }, [settings?.notifications?.youtubeDownloadStatus]);
 
   useEffect(() => {
     window.mainNotificationsAPI.youtubeDownloadCompleted((data) => {
@@ -19,10 +33,15 @@ export const YoutubeDownloadEvents = () => {
         },
       });
       dispatch(youtubeDownloadActions.setDownloadProgress(data.queue));
+      if (youtubeDownloadStatus.current) {
+        showSnackbar(
+          `Conversion completed: ${data.completedItem.title}`,
+          "success",
+        );
+      }
     });
 
     window.mainNotificationsAPI.youtubeDownloadStarted((queue) => {
-      console.log("Youtube download started:", queue);
       dispatch(youtubeDownloadActions.setDownloadProgress(queue));
     });
   }, []);

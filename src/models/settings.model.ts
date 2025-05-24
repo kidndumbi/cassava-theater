@@ -14,5 +14,6 @@ export interface SettingsModel {
   notifications: {
     mp4ConversionStatus: boolean;
     userConnectionStatus: boolean;
-  }
+    youtubeDownloadStatus?: boolean;
+  };
 }
