@@ -19,6 +19,8 @@ import * as net from "net";
 import { serveLocalFile } from "./file.service";
 import { handleVideoRequest } from "./video-streaming.service";
 import { SettingsModel } from "../../models/settings.model";
+import { PlaylistModel } from "../../models/playlist.model";
+import * as playlistDbService from "./playlistDb.service";
 
 // Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {
@@ -312,6 +314,27 @@ export async function initializeSocket(
         } catch (error) {
           log.error("Error fetching recently watched videos:", error);
           callback({ success: false, error: "Failed to fetch recently watched videos" });
+        }
+      },
+    );
+
+    // New event: getAllPlaylists
+    socket.on(
+      AppSocketEvents.GET_ALL_PLAYLISTS,
+      async (
+        _requestData: unknown,
+        callback: (response: {
+          success: boolean;
+          data?: PlaylistModel[];
+          error?: string;
+        }) => void,
+      ) => {
+        try {
+          const playlists = await playlistDbService.getAllPlaylists();
+          callback({ success: true, data: playlists });
+        } catch (error) {
+          log.error("Error fetching playlists:", error);
+          callback({ success: false, error: "Failed to fetch playlists" });
         }
       },
     );
