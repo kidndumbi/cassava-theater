@@ -20,6 +20,7 @@ import { PlaylistIPCChannels } from "./enums/playlist-IPC-Channels.enum";
 import { PlaylistModel } from "./models/playlist.model";
 import { YoutubeIPCChannels } from "./enums/youtubeIPCChannels.enum";
 import { YoutubeDownloadQueueItem } from "./main/services/youtube.service";
+import { PlaylistPlayRequestModel } from "./models/playlistPlayRequest.model";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -81,6 +82,14 @@ contextBridge.exposeInMainWorld("videoCommandsAPI", {
     ipcRenderer.on(
       "set-current-video",
       (event: Electron.IpcRendererEvent, data: SetPlayingModel) => {
+        callback(data);
+      },
+    );
+  },
+   setCurrentPlaylist: (callback: (data: PlaylistPlayRequestModel) => void) => {
+    ipcRenderer.on(
+      "set-current-playlist",
+      (event: Electron.IpcRendererEvent, data: PlaylistPlayRequestModel) => {
         callback(data);
       },
     );

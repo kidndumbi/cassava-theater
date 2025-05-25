@@ -35,6 +35,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Mp4ConversionEvents } from "./Mp4ConversionEvents";
 import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
 import { YoutubeDownloadEvents } from "./YoutubeDownloadEvents";
+import { useUpdatePlaylist } from "./renderer/hooks/useUpdatePlaylist";
 
 const queryClient = new QueryClient();
 
@@ -114,6 +115,8 @@ function AppRoutes({
   const { handleVideoSelect } = useVideoListLogic();
   const { data: settings } = useGetAllSettings();
 
+  const { mutate: updatePlaylist } = useUpdatePlaylist();
+
   const location = useLocation();
   const showStatusDisplay = !["/video-player", "/video-details"].includes(
     location.pathname,
@@ -130,6 +133,23 @@ function AppRoutes({
           "&startFromBeginning=" +
           data.queryParams.startFromBeginning,
       );
+    });
+
+    window.videoCommandsAPI.setCurrentPlaylist((data) => {
+      handleVideoSelect(data.video);
+      updatePlaylist({
+        id: data.playlistId,
+        playlist: {
+          ...data.playlist,
+          lastVideoPlayed: data.video.filePath,
+          lastVideoPlayedDate: new Date().toISOString(),
+        },
+      });
+      let url = `/video-player?menuId=${data.menuId}&playlistId=${data.playlistId}`;
+      if (data.shuffle) {
+        url += `&shuffle=true`;
+      }
+      navigate(url);
     });
   }, []);
 
