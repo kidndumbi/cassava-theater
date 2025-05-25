@@ -21,6 +21,7 @@ import { handleVideoRequest } from "./video-streaming.service";
 import { SettingsModel } from "../../models/settings.model";
 import { PlaylistModel } from "../../models/playlist.model";
 import * as playlistDbService from "./playlistDb.service";
+import { PlaylistPlayRequestModel } from "../../models/playlistPlayRequest.model";
 
 // Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {
@@ -107,6 +108,13 @@ export async function initializeSocket(
         };
       }) => {
         mainWindow.webContents.send("set-current-video", data);
+      },
+    );
+
+    socket.on(
+      AppSocketEvents.SET_PLAYING_PLAYLIST,
+      (data: PlaylistPlayRequestModel) => {
+        mainWindow.webContents.send("set-current-playlist", data);
       },
     );
 
@@ -262,7 +270,10 @@ export async function initializeSocket(
           callback({ success: true, data: videos });
         } catch (error) {
           log.error("Error fetching watchlater videos:", error);
-          callback({ success: false, error: "Failed to fetch watchlater videos" });
+          callback({
+            success: false,
+            error: "Failed to fetch watchlater videos",
+          });
         }
       },
     );
@@ -291,7 +302,10 @@ export async function initializeSocket(
           callback({ success: true, data });
         } catch (error) {
           log.error("Error fetching recently watched custom videos:", error);
-          callback({ success: false, error: "Failed to fetch recently watched custom videos" });
+          callback({
+            success: false,
+            error: "Failed to fetch recently watched custom videos",
+          });
         }
       },
     );
@@ -300,7 +314,9 @@ export async function initializeSocket(
     socket.on(
       AppSocketEvents.FETCH_RECENTLY_WATCHED_VIDEOS,
       async (
-        requestData: { data: { videoType: "movies" | "tvShows"; limit?: number } },
+        requestData: {
+          data: { videoType: "movies" | "tvShows"; limit?: number };
+        },
         callback: (response: {
           success: boolean;
           data?: VideoDataModel[];
@@ -313,7 +329,10 @@ export async function initializeSocket(
           callback({ success: true, data: videos });
         } catch (error) {
           log.error("Error fetching recently watched videos:", error);
-          callback({ success: false, error: "Failed to fetch recently watched videos" });
+          callback({
+            success: false,
+            error: "Failed to fetch recently watched videos",
+          });
         }
       },
     );

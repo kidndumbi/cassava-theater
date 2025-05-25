@@ -4,6 +4,7 @@ import ytdl from "@distube/ytdl-core";
 import { PlaylistModel } from "./models/playlist.model";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoDataModel } from "./models/videoData.model";
+import { PlaylistPlayRequestModel } from "./models/playlistPlayRequest.model";
 export interface IElectronAPI {
   desktop: boolean;
 }
@@ -32,6 +33,7 @@ export interface OpenDialogAPI {
 export interface VideoCommandsAPI {
   videoCommand: (callback: (command: VideoCommands) => void) => void;
   setCurrentVideo: (callback: (data: setPlayingModel) => void) => void;
+  setCurrentPlaylist: (callback: (data: PlaylistPlayRequestModel) => void) => void;
 }
 
 export interface MainNotificationsAPI {
@@ -44,7 +46,10 @@ export interface MainNotificationsAPI {
     callback: (progress: { file: string; percent: number }) => void,
   ) => void;
   youtubeDownloadCompleted: (
-    callback: (data: { queue: YoutubeDownloadQueueItem[], completedItem:YoutubeDownloadQueueItem}) => void,
+    callback: (data: {
+      queue: YoutubeDownloadQueueItem[];
+      completedItem: YoutubeDownloadQueueItem;
+    }) => void,
   ) => void;
   youtubeDownloadStarted: (
     callback: (queue: YoutubeDownloadQueueItem[]) => void,
@@ -160,7 +165,7 @@ export interface YoutubeAPI {
   getQueue: () => Promise<YoutubeDownloadQueueItem[]>;
   swapQueueItems: (
     id1: string,
-    id2: string
+    id2: string,
   ) => Promise<{ success: boolean; error?: string }>;
 }
 
