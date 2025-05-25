@@ -5,7 +5,6 @@ export interface PlaylistPlayRequestModel {
   menuId: string;
   playlistId: string | null | undefined;
   shuffle: boolean;
-  playIndex: number;
   video: VideoDataModel;
-   playlist:PlaylistModel;
+  playlist: PlaylistModel;
 }
