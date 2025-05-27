@@ -57,6 +57,8 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
             </Typography>
           </Box>
         }
+        currentTime={movie.currentTime}
+        duration={movie.duration}
       />
       {showActionButtons && (
         <Box className="absolute left-1/2 top-[65%] -translate-x-1/2 -translate-y-1/2 transform">
