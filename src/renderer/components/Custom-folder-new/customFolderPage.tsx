@@ -44,7 +44,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
   const [selectedFolder, setSelectedFolder] =
     useState<CustomFolderModel | null>(null);
 
-  const { data: videos } = useVideoDataQuery({
+  const { data: videos, refetch } = useVideoDataQuery({
     filePath: selectedFolder?.folderPath || "",
     category: "customFolder",
   });
@@ -135,6 +135,9 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
               <SelectedCustomFolderToolbar
                 onEdit={() => {
                   setEditModalOpen(true);
+                }}
+                onRefresh={() => {
+                  refetch();
                 }}
                 onDelete={async () => {
                   if (
