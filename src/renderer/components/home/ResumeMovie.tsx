@@ -18,16 +18,21 @@ interface ResumeMovieProps {
   ) => void;
 }
 
-const ResumeMovie: React.FC<ResumeMovieProps> = ({ movie, handlePosterClick }) => {
+const ResumeMovie: React.FC<ResumeMovieProps> = ({
+  movie,
+  handlePosterClick,
+}) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
-    const {data:settings} = useGetAllSettings();
+  const { data: settings } = useGetAllSettings();
   const { openDialog, setMessage } = useConfirmation();
   const [showActionButtons, setShowActions] = useState(false);
 
   const handlePlay = useCallback(
     async (startFromBeginning = false) => {
       if (startFromBeginning) {
-        setMessage("Are you sure you want to start the movie from the beginning?");
+        setMessage(
+          "Are you sure you want to start the movie from the beginning?",
+        );
         const dialogDecision = await openDialog();
         if (dialogDecision === "Ok") {
           handlePosterClick("movie", movie, startFromBeginning);
@@ -61,9 +66,10 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({ movie, handlePosterClick }) =
       <PosterCard
         imageUrl={imageUrl()}
         altText={movie.fileName}
+        currentTime={movie.currentTime}
+        duration={movie.duration}
         footer={
           <Box className="mt-2">
-            <VideoProgressBar current={movie.currentTime || 0} total={movie.duration || 0} />
             <Typography variant="subtitle1" align="center">
               {trimFileName(movie.fileName ?? "Unknown Title")}
             </Typography>
