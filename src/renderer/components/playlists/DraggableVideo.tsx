@@ -99,6 +99,8 @@ export const DraggableVideo: React.FC<{
             <PosterCard
               imageUrl={getImageUrl(video)}
               altText={video.fileName || ""}
+              currentTime={video.currentTime}
+              duration={video.duration}
               footer={trimFileName(video.fileName || "")}
               onClick={() => onPlayVideo(idx)}
             />

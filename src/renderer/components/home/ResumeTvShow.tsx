@@ -60,10 +60,6 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
 
   const footerContent = (
     <Box className="mt-2">
-      <VideoProgressBar
-        current={tvShow.lastVideoPlayedTime || 0}
-        total={tvShow.lastVideoPlayedDuration || 0}
-      />
       <Typography
         variant="subtitle1"
         align="center"
@@ -104,6 +100,8 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
       <PosterCard
         imageUrl={imageUrl}
         altText={tvShow.fileName}
+        currentTime={tvShow.lastVideoPlayedTime}
+        duration={tvShow.lastVideoPlayedDuration}
         footer={footerContent}
       />
       {loadingOverlay}

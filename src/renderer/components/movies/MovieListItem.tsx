@@ -55,6 +55,8 @@ export const MovieListItem: React.FC<MovieListItemProps> = ({
             imageUrl={getImageUrl(movie)}
             altText={movie.fileName || ""}
             onClick={() => onPosterClick(movie.filePath || "")}
+            currentTime={movie.currentTime}
+            duration={movie.duration}
             footer={trimFileName(movie.fileName || "")}
           />
           <HoverContent className="hover-content" />

@@ -57,6 +57,8 @@ export const CustomFolderVideoCard: React.FC<CustomFolderVideoCardProps> = ({
             altText={video.fileName || ""}
             footer={trimFileName(video.fileName || "")}
             onClick={() => onClick(video)}
+            currentTime={video.currentTime}
+            duration={video.duration}
           />
         </AppContextMenu>
       </div>
