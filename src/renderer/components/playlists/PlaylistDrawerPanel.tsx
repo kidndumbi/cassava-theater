@@ -16,6 +16,8 @@ import { PlaylistModel } from "../../../models/playlist.model";
 import AppIconButton from "../common/AppIconButton";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
+import { VideoProgressBar } from "../common/VideoProgressBar";
+import { useEffect } from "react";
 
 type PlaylistDrawerPanelProps = {
   playlist?: PlaylistModel;
@@ -42,6 +44,10 @@ export const PlaylistDrawerPanel = ({
   const canGoPrevious = hasVideos && currentIndex > 0;
   const canGoNext = hasVideos && currentIndex >= 0 && currentIndex < playlistVideos.length - 1;
 
+  useEffect(() => { 
+    console.log("Current video changed:", currentVideo);
+  }, [ currentVideo]);
+
   const renderVideoItem = (video: VideoDataModel, idx: number) => {
     const isCurrent = currentVideo?.filePath && video?.filePath === currentVideo.filePath;
     return (
@@ -60,35 +66,41 @@ export const PlaylistDrawerPanel = ({
         <ListItem disableGutters>
           <ListItemButton
             onClick={() => {
-              console.log("Clicked video:", video);
               onPlayVideo(video);
             }}
           >
             <ListItemAvatar>
-              <Avatar
-                variant="rounded"
-                src={video?.videoProgressScreenshot || undefined}
-                sx={{
-                  width: 120,
-                  height: 68,
-                  mr: 2,
-                }}
-                alt={video?.fileName}
-              >
-                <Box
+              <Box sx={{ position: "relative", width: 120, height: 68, mr: 2 }}>
+                <Avatar
+                  variant="rounded"
+                  src={video?.videoProgressScreenshot || undefined}
+                  className="absolute top-0 left-0"
                   sx={{
-                    width: "100%",
-                    height: "100%",
-                    bgcolor: "#bdbdbd",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 12,
+                    width: 120,
+                    height: 68,
                   }}
+                  alt={video?.fileName}
                 >
-                  No Image
-                </Box>
-              </Avatar>
+                  <Box
+                    className="w-full h-full flex items-center justify-center"
+                    sx={{
+                      bgcolor: "#bdbdbd",
+                      fontSize: 12,
+                    }}
+                  >
+                    No Image
+                  </Box>
+                </Avatar>
+                {typeof video.currentTime === "number" &&
+                  typeof video.duration === "number" &&
+                  video.duration > 0 && (
+                    <Box
+                      className="absolute left-0 right-0 bottom-0 px-1 pb-1 z-20 w-full"
+                    >
+                      <VideoProgressBar current={video.currentTime} total={video.duration} />
+                    </Box>
+                  )}
+              </Box>
             </ListItemAvatar>
             <ListItemText
               primary={
