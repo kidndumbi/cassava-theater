@@ -3,8 +3,11 @@ import { Paper, Box, Typography } from "@mui/material";
 import theme from "../../theme";
 import { getFilename, removeVidExt } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { PlaylistModel } from "../../../models/playlist.model";
-import { DraggableVideo } from "./DraggableVideo";
+import {
+  PlaylistDisplayType,
+  PlaylistModel,
+} from "../../../models/playlist.model";
+import { PlaylistsVideo } from "./PlaylistsVideo";
 import { AppDrop } from "../common/AppDrop";
 import { useDragState } from "../../hooks/useDragState";
 
@@ -15,6 +18,7 @@ interface PlaylistVideosPanelProps {
   updatePlaylist: (id: string, playlist: PlaylistModel) => void;
   navToDetails: (videoPath: string) => void;
   onPlayVideo: (videoIndex: number) => void;
+  displayType: PlaylistDisplayType;
 }
 
 export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
@@ -24,6 +28,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
   updatePlaylist,
   navToDetails,
   onPlayVideo,
+  displayType = "grid",
 }) => {
   const { isAnyDragging, setDragging } = useDragState();
 
@@ -71,7 +76,6 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
     <>
       <Paper
         sx={{
-          flex: 1,
           minHeight: 300,
           p: 2,
           backgroundColor: theme.customVariables.appDarker,
@@ -84,11 +88,16 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
             {removeVidExt(getFilename(selectedPlaylist.lastVideoPlayed))}
           </Typography>
         )}
-        <Box display="flex" flexWrap="wrap" gap={2}>
+        <Box
+          display="flex"
+          flexWrap={displayType === "grid" ? "wrap" : "nowrap"}
+          flexDirection={displayType === "list" ? "column" : "row"}
+          gap={2}
+        >
           {videos?.length > 0 ? (
             videos.map((video, idx) =>
               video ? (
-                <DraggableVideo
+                <PlaylistsVideo
                   key={video.filePath || idx}
                   currentPlaylist={selectedPlaylist}
                   video={video}
@@ -99,6 +108,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
                   handleInfo={handleInfo}
                   moveVideo={moveVideo}
                   dragging={setDragging}
+                  displayType={displayType}
                 />
               ) : null,
             )

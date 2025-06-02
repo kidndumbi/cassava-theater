@@ -5,4 +5,7 @@ export interface PlaylistModel {
   createdAt: string;
   lastVideoPlayedDate?: string | null;
   lastVideoPlayed?: string | null;
+  display?: PlaylistDisplayType
 }
+
+export type PlaylistDisplayType = "grid" | "list";

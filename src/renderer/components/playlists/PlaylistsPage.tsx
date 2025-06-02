@@ -191,7 +191,11 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
             backgroundColor={theme.palette.primary.main}
             dragging={setDragging}
           />
-          <Box>
+          <Box
+            sx={{
+              width: "100%",
+            }}
+          >
             {selectedPlaylist && (
               <SelectedPlaylistToolbar
                 playlist={selectedPlaylist}
@@ -207,9 +211,13 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
                   )
                 }
                 onShuffle={() => playVideoFromPlaylist(undefined, true)}
+                updatePlaylist={(id: string, playlist: PlaylistModel) =>
+                  updatePlaylist({ id, playlist })
+                }
               />
             )}
             <PlaylistVideosPanel
+              displayType={selectedPlaylist?.display}
               videos={selectedPlaylistVideos}
               getImageUrl={getImageUrl}
               selectedPlaylist={selectedPlaylist}
