@@ -17,6 +17,7 @@ import {
   FormLabel,
   FormControlLabel,
   Button,
+  Alert,
 } from "@mui/material";
 import { useGetAllSettings } from "../../../hooks/settings/useGetAllSettings";
 import { selectFolder } from "../../../util/helperFunctions";
@@ -53,11 +54,16 @@ export const YoutubeDownload = () => {
     data: info,
     refetch,
     isLoading: isLoadingInfo,
+    error,
   } = useQuery({
     queryKey: ["youtube-info", url],
     queryFn: () => window.youtubeAPI.getVideoInfo(url),
     enabled: false,
   });
+
+  useEffect(() => {
+    console.log("Youtube load info Error: ", error);
+  }, [error]);
 
   const { mutateAsync: download, isPending: isDownloading } = useMutation({
     mutationFn: (data: { url: string; destination: string }) =>
@@ -123,6 +129,12 @@ export const YoutubeDownload = () => {
         </AppButton>
       </Box>
       <Box sx={{ mt: 3, width: "100%" }}>
+        {/* Show error if present */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            Error accessing Youtube at this moment. Please try again later.
+          </Alert>
+        )}
         {isLoadingInfo && (
           <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
             <CircularProgress />
@@ -227,7 +239,9 @@ export const YoutubeDownload = () => {
                           // Find the first available thumbnail from index 4 to 0, or fallback to empty string
                           const thumbnails = info.videoDetails.thumbnails;
                           const getBestThumbnail = () =>
-                            [4, 3, 2, 1, 0].map(i => thumbnails[i]?.url).find(Boolean) || "";
+                            [4, 3, 2, 1, 0]
+                              .map((i) => thumbnails[i]?.url)
+                              .find(Boolean) || "";
 
                           await download({
                             url: info.videoDetails.video_url,
@@ -261,7 +275,9 @@ export const YoutubeDownload = () => {
                           // Find the first available thumbnail from index 4 to 0, or fallback to empty string
                           const thumbnails = info.videoDetails.thumbnails;
                           const getBestThumbnail = () =>
-                            [4, 3, 2, 1, 0].map(i => thumbnails[i]?.url).find(Boolean) || "";
+                            [4, 3, 2, 1, 0]
+                              .map((i) => thumbnails[i]?.url)
+                              .find(Boolean) || "";
                           await addToQueue({
                             title: fileName,
                             url: info.videoDetails.video_url,
