@@ -34,6 +34,10 @@ export const useVideoPlayerLogic = () => {
   const updateVideoDBCurrentTime = async (isEpisode = false) => {
     if (isEmptyObject(currentVideo) || !player) return;
 
+    if (player.currentTime > currentVideo.duration) {
+      return;
+    }
+
     const time =
       currentVideo.isMkv || currentVideo.isAvi
         ? mkvCurrentTime
