@@ -224,6 +224,11 @@ export const YoutubeDownload = () => {
                           console.log("Download Video");
                           const filePath = `${destination}\\${fileName}.mp4`;
 
+                          // Find the first available thumbnail from index 4 to 0, or fallback to empty string
+                          const thumbnails = info.videoDetails.thumbnails;
+                          const getBestThumbnail = () =>
+                            [4, 3, 2, 1, 0].map(i => thumbnails[i]?.url).find(Boolean) || "";
+
                           await download({
                             url: info.videoDetails.video_url,
                             destination: filePath,
@@ -234,8 +239,8 @@ export const YoutubeDownload = () => {
                               filePath,
                             },
                             newVideoJsonData: {
-                              poster: info.videoDetails.thumbnails[4].url,
-                              backdrop: info.videoDetails.thumbnails[4].url,
+                              poster: getBestThumbnail(),
+                              backdrop: getBestThumbnail(),
                             },
                           });
                         }}
@@ -253,12 +258,16 @@ export const YoutubeDownload = () => {
                         onClick={async () => {
                           console.log("adding to queue");
                           const filePath = `${destination}\\${fileName}.mp4`;
+                          // Find the first available thumbnail from index 4 to 0, or fallback to empty string
+                          const thumbnails = info.videoDetails.thumbnails;
+                          const getBestThumbnail = () =>
+                            [4, 3, 2, 1, 0].map(i => thumbnails[i]?.url).find(Boolean) || "";
                           await addToQueue({
                             title: fileName,
                             url: info.videoDetails.video_url,
                             destinationPath: filePath,
-                            poster: info.videoDetails.thumbnails[4].url,
-                            backdrop: info.videoDetails.thumbnails[4].url,
+                            poster: getBestThumbnail(),
+                            backdrop: getBestThumbnail(),
                           });
                         }}
                       >
