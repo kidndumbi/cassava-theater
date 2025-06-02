@@ -271,7 +271,6 @@ export const VideoPlayerPage = ({
           currentVideo={currentVideo}
           onPlayVideo={(video) => {
             setCurrentVideo(video);
-            playlistControlPanel.setOpen(false);
             updatePlaylist({
               id: playlistId,
               playlist: {
@@ -280,6 +279,28 @@ export const VideoPlayerPage = ({
                 lastVideoPlayedDate: new Date().toISOString(),
               },
             });
+          }}
+          onNextVideo={() => {
+            if (playlistVideos && currentVideo) {
+              const idx = playlistVideos.findIndex(
+                (v) => v?.filePath === currentVideo.filePath,
+              );
+              if (idx !== -1 && idx < playlistVideos.length - 1) {
+                const nextVideo = playlistVideos[idx + 1];
+                setCurrentVideo(nextVideo);
+              }
+            }
+          }}
+          onPreviousVideo={() => {
+            if (playlistVideos && currentVideo) {
+              const idx = playlistVideos.findIndex(
+                (v) => v?.filePath === currentVideo.filePath,
+              );
+              if (idx > 0) {
+                const previousVideo = playlistVideos[idx - 1];
+                setCurrentVideo(previousVideo);
+              }
+            }
           }}
         />
       </CustomDrawer>
