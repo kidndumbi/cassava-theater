@@ -1,11 +1,17 @@
 import { Box, Menu, MenuItem, SxProps, Theme } from "@mui/material";
 import AppIconButton from "../common/AppIconButton";
-import { PlaylistModel } from "../../../models/playlist.model";
+import {
+  PlaylistDisplayType,
+  PlaylistModel,
+} from "../../../models/playlist.model";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useState } from "react";
+import ArtTrackIcon from "@mui/icons-material/ArtTrack";
+import { useEffect, useState } from "react";
 import theme from "../../theme";
+import ListIcon from "@mui/icons-material/List";
+import GridViewIcon from "@mui/icons-material/GridView";
 
 export const SelectedPlaylistToolbar = ({
   playlist,
@@ -14,6 +20,7 @@ export const SelectedPlaylistToolbar = ({
   onPlayFromBeginning,
   onPlayFromLastWatched,
   onShuffle,
+  updatePlaylist,
 }: {
   playlist: PlaylistModel;
   onRename: () => void;
@@ -21,25 +28,36 @@ export const SelectedPlaylistToolbar = ({
   onPlayFromBeginning: () => void;
   onPlayFromLastWatched: () => void;
   onShuffle: () => void;
+  updatePlaylist: (id: string, playlist: PlaylistModel) => void;
 }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [playAnchorEl, setPlayAnchorEl] = useState<null | HTMLElement>(null);
+  const [displayTypeEl, setDisplayTypeEl] = useState<null | HTMLElement>(null);
+  const [displayType, setDisplayType] = useState<PlaylistDisplayType>(
+    playlist.display || "grid",
+  );
+
+  useEffect(() => {
+    if (playlist.display) {
+      setDisplayType(playlist.display);
+    }
+  }, [playlist.display]);
 
   const handlePlayClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+    setPlayAnchorEl(event.currentTarget);
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
+  const handlePlayMenuClose = () => {
+    setPlayAnchorEl(null);
   };
 
   const handlePlay = () => {
     onPlayFromBeginning();
-    handleMenuClose();
+    handlePlayMenuClose();
   };
 
   const handleShuffle = () => {
     onShuffle();
-    handleMenuClose();
+    handlePlayMenuClose();
   };
 
   const menuPaperStyles: SxProps<Theme> = {
@@ -52,6 +70,12 @@ export const SelectedPlaylistToolbar = ({
     color: color || theme.customVariables.appWhiteSmoke,
   });
 
+  const handleDisplayTypeChange = (type: PlaylistDisplayType) => {
+    setDisplayType(type);
+    updatePlaylist(playlist.id, { ...playlist, display: type });
+    setDisplayTypeEl(null);
+  };
+
   return (
     <Box className="flex items-center gap-2 pb-3">
       <AppIconButton
@@ -61,9 +85,9 @@ export const SelectedPlaylistToolbar = ({
         <PlayArrowIcon />
       </AppIconButton>
       <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
+        anchorEl={playAnchorEl}
+        open={Boolean(playAnchorEl)}
+        onClose={handlePlayMenuClose}
         sx={menuPaperStyles}
       >
         <MenuItem sx={menuItemStyles()} onClick={handlePlay}>
@@ -82,6 +106,47 @@ export const SelectedPlaylistToolbar = ({
       <AppIconButton tooltip="Rename playlist" onClick={onRename}>
         <EditIcon />
       </AppIconButton>
+      <AppIconButton
+        tooltip="Display"
+        onClick={(event) => setDisplayTypeEl(event.currentTarget)}
+      >
+        <ArtTrackIcon />
+      </AppIconButton>
+      <Menu
+        anchorEl={displayTypeEl}
+        open={Boolean(displayTypeEl)}
+        onClose={() => setDisplayTypeEl(null)}
+        sx={menuPaperStyles}
+      >
+        {(["grid", "list"] as PlaylistDisplayType[]).map((type) => {
+          return (
+            <MenuItem
+              key={type}
+              selected={displayType === type}
+              sx={{
+                ...menuItemStyles(),
+                fontWeight: displayType === type ? "bold" : "normal",
+                backgroundColor:
+                  displayType === type ? theme.palette.primary.dark : undefined,
+                borderRadius: displayType === type ? 2 : undefined,
+                "&:hover": {
+                  backgroundColor: theme.palette.primary.main,
+                },
+              }}
+              onClick={() => handleDisplayTypeChange(type)}
+            >
+              <Box className="flex items-center gap-2">
+                {type === "grid" ? (
+                  <GridViewIcon fontSize="small" />
+                ) : (
+                  <ListIcon fontSize="small" />
+                )}
+                <span>{type === "grid" ? "Grid View" : "List View"}</span>
+              </Box>
+            </MenuItem>
+          );
+        })}
+      </Menu>
       <AppIconButton tooltip="Delete playlist" onClick={onDelete}>
         <DeleteIcon />
       </AppIconButton>
