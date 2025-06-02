@@ -38,8 +38,8 @@ export async function downloadYoutubeVideo(
   }
 
   return new Promise((resolve, reject) => {
-    const stream = ytdl(url, { quality: "highest" }).pipe(
-      fs.createWriteStream(destinationPath),
+    const stream = ytdl(url, { quality: "highest", filter: "audioandvideo" }).pipe(
+      fs.createWriteStream(destinationPath), 
     );
     stream.on("finish", resolve);
     stream.on("error", reject);
