@@ -41,11 +41,20 @@ export const VideoPlayerPage = ({
 
   const [seasonPath, setSeasonPath] = useState("");
   const { mutate: updatePlaylist } = useUpdatePlaylist();
+  const [playlistId, setPlaylistId] = useState("");
 
   const { data: episodes } = useVideoDataQuery({
     filePath: seasonPath || "",
     category: "episodes",
   });
+
+  const { data: playlist } = useQuery({
+    queryKey: ["playlist", playlistId],
+    queryFn: () => window.playlistAPI.getPlaylist(playlistId),
+    enabled: !!playlistId,
+  });
+
+  const { data: receivedPlaylistVideos } = useGetPlaylistVideoData(playlist);
 
   useEffect(() => {
     if (currentVideo) {
@@ -54,14 +63,13 @@ export const VideoPlayerPage = ({
         setSeasonPath(removeLastSegments(filePath, 1));
       }
     }
-  }, [currentVideo]);
+  }, [currentVideo, receivedPlaylistVideos]);
 
   const { data: settings } = useGetAllSettings();
   const [menuId, setMenuId] = useState("");
   const [resumeId, setResumeId] = useState("");
   const [startFromBeginning, setStartFromBeginning] = useState(false);
   const [isTvShow, setIsTvShow] = useState(false);
-  const [playlistId, setPlaylistId] = useState("");
   const [shuffle, setShuffle] = useState(false);
   const playlistControlPanel = useModalState(false);
   const [playlistVideos, setPlaylistVideos] = useState<
@@ -101,14 +109,6 @@ export const VideoPlayerPage = ({
       shuffle: searchParams.get("shuffle") === "true",
     };
   };
-
-  const { data: playlist } = useQuery({
-    queryKey: ["playlist", playlistId],
-    queryFn: () => window.playlistAPI.getPlaylist(playlistId),
-    enabled: !!playlistId,
-  });
-
-  const { data: receivedPlaylistVideos } = useGetPlaylistVideoData(playlist);
 
   useEffect(() => {
     if (

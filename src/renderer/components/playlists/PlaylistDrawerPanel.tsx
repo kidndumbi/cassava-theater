@@ -17,7 +17,8 @@ import AppIconButton from "../common/AppIconButton";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import { VideoProgressBar } from "../common/VideoProgressBar";
-import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { selVideoPlayer } from "../../store/videoPlayer.slice";
 
 type PlaylistDrawerPanelProps = {
   playlist?: PlaylistModel;
@@ -36,20 +37,20 @@ export const PlaylistDrawerPanel = ({
   onNextVideo,
   onPreviousVideo,
 }: PlaylistDrawerPanelProps) => {
+  const player = useSelector(selVideoPlayer);
+
   const hasVideos = !!playlistVideos?.length;
   const currentIndex =
     hasVideos && currentVideo
       ? playlistVideos.findIndex((v) => v.filePath === currentVideo.filePath)
       : -1;
   const canGoPrevious = hasVideos && currentIndex > 0;
-  const canGoNext = hasVideos && currentIndex >= 0 && currentIndex < playlistVideos.length - 1;
-
-  useEffect(() => { 
-    console.log("Current video changed:", currentVideo);
-  }, [ currentVideo]);
+  const canGoNext =
+    hasVideos && currentIndex >= 0 && currentIndex < playlistVideos.length - 1;
 
   const renderVideoItem = (video: VideoDataModel, idx: number) => {
-    const isCurrent = currentVideo?.filePath && video?.filePath === currentVideo.filePath;
+    const isCurrent =
+      currentVideo?.filePath && video?.filePath === currentVideo.filePath;
     return (
       <Paper
         elevation={0}
@@ -74,7 +75,7 @@ export const PlaylistDrawerPanel = ({
                 <Avatar
                   variant="rounded"
                   src={video?.videoProgressScreenshot || undefined}
-                  className="absolute top-0 left-0"
+                  className="absolute left-0 top-0"
                   sx={{
                     width: 120,
                     height: 68,
@@ -82,7 +83,7 @@ export const PlaylistDrawerPanel = ({
                   alt={video?.fileName}
                 >
                   <Box
-                    className="w-full h-full flex items-center justify-center"
+                    className="flex h-full w-full items-center justify-center"
                     sx={{
                       bgcolor: "#bdbdbd",
                       fontSize: 12,
@@ -94,10 +95,13 @@ export const PlaylistDrawerPanel = ({
                 {typeof video.currentTime === "number" &&
                   typeof video.duration === "number" &&
                   video.duration > 0 && (
-                    <Box
-                      className="absolute left-0 right-0 bottom-0 px-1 pb-1 z-20 w-full"
-                    >
-                      <VideoProgressBar current={video.currentTime} total={video.duration} />
+                    <Box className="absolute bottom-0 left-0 right-0 z-20 w-full px-1 pb-1">
+                      <VideoProgressBar
+                        current={
+                          isCurrent ? player.currentTime : video.currentTime
+                        }
+                        total={video.duration}
+                      />
                     </Box>
                   )}
               </Box>
@@ -139,14 +143,13 @@ export const PlaylistDrawerPanel = ({
         {playlist?.name || "Playlist"}
       </Typography>
       <List>
-        {hasVideos
-          ? playlistVideos?.map(renderVideoItem)
-          : (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-              No videos in this playlist.
-            </Typography>
-          )
-        }
+        {hasVideos ? (
+          playlistVideos?.map(renderVideoItem)
+        ) : (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            No videos in this playlist.
+          </Typography>
+        )}
       </List>
     </Box>
   );
