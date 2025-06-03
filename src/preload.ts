@@ -23,6 +23,7 @@ import { YoutubeDownloadQueueItem } from "./main/services/youtube.service";
 import { PlaylistPlayRequestModel } from "./models/playlistPlayRequest.model";
 import { PlaylistCommands } from "./models/playlist-commands.model";
 import { AppSocketEvents } from "./enums/app-socket-events.enum";
+import { CurrentlyPlayingIPCChannels } from "./enums/currently-playing-IPCChannels.enum";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -80,6 +81,15 @@ contextBridge.exposeInMainWorld("playlistCommandsAPI", {
   },
 });
 
+contextBridge.exposeInMainWorld("currentlyPlayingAPI", { 
+  setCurrentVideo: (video: VideoDataModel) => {
+    return ipcRenderer.invoke(CurrentlyPlayingIPCChannels.SetCurrentVideo, video);
+  },
+  setCurrentPlaylist: (playlist: PlaylistModel) => {
+    return ipcRenderer.invoke(CurrentlyPlayingIPCChannels.SetCurrentPlaylist, playlist);
+  }
+});
+
 contextBridge.exposeInMainWorld("videoCommandsAPI", {
   videoCommand: (callback: (command: VideoCommands) => void) => {
     ipcRenderer.on(
@@ -97,7 +107,7 @@ contextBridge.exposeInMainWorld("videoCommandsAPI", {
       },
     );
   },
-   setCurrentPlaylist: (callback: (data: PlaylistPlayRequestModel) => void) => {
+  setCurrentPlaylist: (callback: (data: PlaylistPlayRequestModel) => void) => {
     ipcRenderer.on(
       "set-current-playlist",
       (event: Electron.IpcRendererEvent, data: PlaylistPlayRequestModel) => {

@@ -174,6 +174,11 @@ export interface PlaylistCommandsAPI {
   playlistVideoCommand: (callback: (command: PlaylistCommands) => void) => void;
 }
 
+export interface CurrentlyPlayingAPI {
+  setCurrentVideo: (video: VideoDataModel) => Promise<boolean>;
+  setCurrentPlaylist: (playlist: PlaylistModel) => Promise<boolean>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -189,5 +194,6 @@ declare global {
     playlistAPI: PlaylistAPI;
     youtubeAPI: YoutubeAPI;
     playlistCommandsAPI: PlaylistCommandsAPI;
+    currentlyPlayingAPI: CurrentlyPlayingAPI;
   }
 }
