@@ -1,5 +1,7 @@
+import { AppSocketEvents } from "./../../enums/app-socket-events.enum";
 import { PlaylistModel } from "../../models/playlist.model";
 import { VideoDataModel } from "../../models/videoData.model";
+import { getSocketIoGlobal } from "../socketGlobalManager";
 
 class CurrentlyPlayingService {
   private currentVideo: VideoDataModel | null = null;
@@ -7,12 +9,23 @@ class CurrentlyPlayingService {
 
   setCurrentVideo(video: VideoDataModel): void {
     this.currentVideo = video;
+    const socketIo = getSocketIoGlobal();
+    if (socketIo) {
+      socketIo.emit(AppSocketEvents.CURRENT_VIDEO, this.getCurrentVideo());
+    }
   }
   getCurrentVideo(): VideoDataModel | null {
     return this.currentVideo;
   }
   setCurrentPlaylist(playlist: PlaylistModel): void {
     this.currentPlaylist = playlist;
+    const socketIo = getSocketIoGlobal();
+    if (socketIo) {
+      socketIo.emit(
+        AppSocketEvents.CURRENT_PLAYLIST,
+        this.getCurrentPlaylist(),
+      );
+    }
   }
   getCurrentPlaylist(): PlaylistModel | null {
     return this.currentPlaylist;

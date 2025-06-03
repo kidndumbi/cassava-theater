@@ -8,7 +8,7 @@ interface VideoPlayerState {
   mkvCurrentTime: number;
   currentTime: number;
   lastVideoPlayedDate: string;
-  currentVideo: VideoDataModel
+  currentVideo: VideoDataModel | null;
 }
 
 const initialState: VideoPlayerState = {

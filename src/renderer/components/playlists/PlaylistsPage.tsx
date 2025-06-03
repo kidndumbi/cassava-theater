@@ -156,14 +156,16 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
         : Math.floor(Math.random() * selectedPlaylistVideos.length);
     const video = selectedPlaylistVideos[idx];
     setCurrentVideo(video);
-    updatePlaylist({
+    const updatPlaylistdata = {
       id: selectedPlaylist.id,
       playlist: {
         ...selectedPlaylist,
         lastVideoPlayed: video.filePath,
         lastVideoPlayedDate: new Date().toISOString(),
       },
-    });
+    };
+    updatePlaylist(updatPlaylistdata);
+    window.currentlyPlayingAPI.setCurrentPlaylist(updatPlaylistdata.playlist);
     let url = `/video-player?menuId=${menuId}&playlistId=${selectedPlaylist.id}`;
     if (shuffle) {
       url += `&shuffle=true`;

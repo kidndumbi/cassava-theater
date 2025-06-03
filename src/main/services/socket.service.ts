@@ -29,13 +29,9 @@ import {
 } from "../services/youtube.service";
 import { PlaylistCommands } from "../../models/playlist-commands.model";
 import { getCurrentlyPlayingInstance } from "./currentlyPlaying.service";
+import { setSocketIoGlobal } from "../socketGlobalManager";
 
-let socketIoGlobal: Server | null = null;
 const currentlyPlaying = getCurrentlyPlayingInstance();
-
-export function getSocketIoGlobal(): Server | null {
-  return socketIoGlobal;
-}
 
 // Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {
@@ -98,7 +94,7 @@ export async function initializeSocket(
 
   // Initialize Socket.IO server
   const io = new Server(server, { cors: { origin: "*" } });
-  socketIoGlobal = io;
+  setSocketIoGlobal(io);
 
   io.on("connection", (socket) => {
     log.info("A user connected:", socket.id);
@@ -133,10 +129,6 @@ export async function initializeSocket(
         mainWindow.webContents.send("set-current-playlist", data);
         currentlyPlaying.setCurrentPlaylist(data.playlist);
         currentlyPlaying.setCurrentVideo(data.video);
-        io.emit(
-          AppSocketEvents.CURRENT_PLAYLIST,
-          currentlyPlaying.getCurrentPlaylist(),
-        );
       },
     );
 

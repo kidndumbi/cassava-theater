@@ -12,14 +12,15 @@ export const useVideoListLogic = () => {
   const player = useSelector(selVideoPlayer);
   const { updateVideoDBCurrentTime } = useVideoPlayerLogic();
 
-  const setCurrentVideo = (video: VideoDataModel) => {
+  const setCurrentVideo = (video: VideoDataModel | null) => {
     dispatch(videoPlayerActions.setCurrentVideo(video));
+    window.currentlyPlayingAPI.setCurrentVideo(video);
   };
 
   const handleVideoSelect = (video: VideoDataModel) => {
     updateVideoDBCurrentTime();
     if (!video.isDirectory) {
-      dispatch(videoPlayerActions.setCurrentVideo(video));
+      setCurrentVideo(video);
     }
   };
 
@@ -29,6 +30,8 @@ export const useVideoListLogic = () => {
 
   const clearPlayer = () => {
     dispatch(videoPlayerActions.clearVideoPlayer());
+    setCurrentVideo(null);
+    window.currentlyPlayingAPI.setCurrentPlaylist(null);
   };
 
   return {
