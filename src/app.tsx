@@ -17,7 +17,10 @@ import theme from "./renderer/theme";
 import { store } from "./renderer/store";
 import { LandingPage } from "./renderer/pages/landing-page/LandingPage";
 import { VideoDetailsPage } from "./renderer/pages/video-details-page/VideoDetailsPage";
-import { VideoPlayerPage } from "./renderer/pages/video-player-page/VideoPlayerPage";
+import {
+  VideoPlayerPage,
+  VideoPlayerPageHandle,
+} from "./renderer/pages/video-player-page/VideoPlayerPage";
 import { Layout } from "./renderer/pages/Layout";
 import { VideoCommands } from "./models/video-commands.model";
 import { videoCommandsHandler } from "./renderer/util/video-commands-handler";
@@ -36,6 +39,8 @@ import { Mp4ConversionEvents } from "./Mp4ConversionEvents";
 import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
 import { YoutubeDownloadEvents } from "./YoutubeDownloadEvents";
 import { useUpdatePlaylist } from "./renderer/hooks/useUpdatePlaylist";
+import { PlaylistCommands } from "./models/playlist-commands.model";
+import { playlistCommandsHandler } from "./renderer/util/playlist-commands-handler";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +48,7 @@ const App = () => {
   const { data: settings } = useGetAllSettings();
   const { showSnackbar } = useSnackbar();
   const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
+  const videoPlayerPageRef = useRef<VideoPlayerPageHandle>(null);
   const userConnectionStatus = useRef<boolean>(null);
 
   useEffect(() => {
@@ -54,6 +60,12 @@ const App = () => {
     window.videoCommandsAPI.videoCommand((command: VideoCommands) => {
       videoCommandsHandler(command, appVideoPlayerRef.current);
     });
+
+    window.playlistCommandsAPI.playlistVideoCommand(
+      (command: PlaylistCommands) => {
+        playlistCommandsHandler(command, videoPlayerPageRef.current);
+      },
+    );
 
     window.mainNotificationsAPI.userConnected((userId: string) => {
       if (userConnectionStatus.current) {
@@ -77,7 +89,10 @@ const App = () => {
         }}
       >
         <main>
-          <AppRoutes appVideoPlayerRef={appVideoPlayerRef} />
+          <AppRoutes
+            appVideoPlayerRef={appVideoPlayerRef}
+            videoPlayerPageRef={videoPlayerPageRef}
+          />
         </main>
       </Box>
     </HashRouter>
@@ -108,8 +123,10 @@ root.render(
 
 function AppRoutes({
   appVideoPlayerRef,
+  videoPlayerPageRef,
 }: {
   appVideoPlayerRef: React.Ref<AppVideoPlayerHandle>;
+  videoPlayerPageRef: React.Ref<VideoPlayerPageHandle>;
 }) {
   const navigate = useNavigate();
   const { handleVideoSelect } = useVideoListLogic();
@@ -160,7 +177,12 @@ function AppRoutes({
           <Route index element={<LandingPage />} />
           <Route
             path="video-player"
-            element={<VideoPlayerPage appVideoPlayerRef={appVideoPlayerRef} />}
+            element={
+              <VideoPlayerPage
+                ref={videoPlayerPageRef}
+                appVideoPlayerRef={appVideoPlayerRef}
+              />
+            }
           />
           <Route path="video-details" element={<VideoDetailsPage />} />
           <Route path="*" element={<Navigate to="/" />} />

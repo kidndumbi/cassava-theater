@@ -1,5 +1,6 @@
 export enum AppSocketEvents {
   REMOTE_COMMAND = "remote-command",
+  PLAYLIST_REMOTE_COMMAND = "playlist-remote-command",
   SET_PLAYING = "set-playing",
   GET_VIDEOS_DATA = "get-videos-data",
   GET_FOLDER_DETAILS = "get-folder-details",
@@ -11,7 +12,8 @@ export enum AppSocketEvents {
   FETCH_RECENTLY_WATCHED_VIDEOS = "fetch-recently-watched-videos",
   GET_ALL_PLAYLISTS = "get-all-playlists",
   SET_PLAYING_PLAYLIST = "set-playing-playlist",
-
+  CURRENT_PLAYLIST = "current-playlist",
+  CURRENT_VIDEO = "current-video",
   // --- YouTube socket events ---
   YT_GET_VIDEO_INFO = "yt-get-video-info",
   YT_DOWNLOAD_VIDEO = "yt-download-video",

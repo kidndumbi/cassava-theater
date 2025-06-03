@@ -27,6 +27,15 @@ import {
   downloadYoutubeVideo,
   getYoutubeDownloadQueueInstance,
 } from "../services/youtube.service";
+import { PlaylistCommands } from "../../models/playlist-commands.model";
+import { getCurrentlyPlayingInstance } from "./currentlyPlaying.service";
+
+let socketIoGlobal: Server | null = null;
+const currentlyPlaying = getCurrentlyPlayingInstance();
+
+export function getSocketIoGlobal(): Server | null {
+  return socketIoGlobal;
+}
 
 // Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {
@@ -89,6 +98,8 @@ export async function initializeSocket(
 
   // Initialize Socket.IO server
   const io = new Server(server, { cors: { origin: "*" } });
+  socketIoGlobal = io;
+
   io.on("connection", (socket) => {
     log.info("A user connected:", socket.id);
     mainWindow.webContents.send("user-connected", socket.id);
@@ -120,6 +131,22 @@ export async function initializeSocket(
       AppSocketEvents.SET_PLAYING_PLAYLIST,
       (data: PlaylistPlayRequestModel) => {
         mainWindow.webContents.send("set-current-playlist", data);
+        currentlyPlaying.setCurrentPlaylist(data.playlist);
+        currentlyPlaying.setCurrentVideo(data.video);
+        io.emit(
+          AppSocketEvents.CURRENT_PLAYLIST,
+          currentlyPlaying.getCurrentPlaylist(),
+        );
+      },
+    );
+
+    socket.on(
+      AppSocketEvents.PLAYLIST_REMOTE_COMMAND,
+      (command: PlaylistCommands) => {
+        mainWindow.webContents.send(
+          AppSocketEvents.PLAYLIST_REMOTE_COMMAND,
+          command,
+        );
       },
     );
 
@@ -432,7 +459,9 @@ export async function initializeSocket(
         callback: (response: { success: boolean; error?: string }) => void,
       ) => {
         try {
-          getYoutubeDownloadQueueInstance().removeFromQueue(requestData.data.id);
+          getYoutubeDownloadQueueInstance().removeFromQueue(
+            requestData.data.id,
+          );
           callback({ success: true });
         } catch (error) {
           callback({ success: false, error: (error as Error).message });

@@ -1,4 +1,9 @@
-import { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { useSubtitle } from "../../hooks/useSubtitle";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
@@ -19,13 +24,19 @@ import { useModalState } from "../../hooks/useModalState";
 import { PlaylistDrawerPanel } from "../../components/playlists/PlaylistDrawerPanel";
 import { useUpdatePlaylist } from "../../hooks/useUpdatePlaylist";
 
+export type VideoPlayerPageHandle = {
+  handlePreviousPlaylistVideo: () => void;
+  handleNextPlaylistVideo: () => void;
+};
+
 type VideoPlayerPageProps = {
   appVideoPlayerRef?: React.Ref<AppVideoPlayerHandle>;
 };
 
-export const VideoPlayerPage = ({
-  appVideoPlayerRef,
-}: VideoPlayerPageProps) => {
+export const VideoPlayerPage = forwardRef<
+  VideoPlayerPageHandle,
+  VideoPlayerPageProps
+>(({ appVideoPlayerRef }, ref) => {
   const { updateSubtitle, subtitleFilePath, setSubtitleFilePath } =
     useSubtitle();
   const { setCurrentVideo, clearPlayer } = useVideoListLogic();
@@ -230,6 +241,35 @@ export const VideoPlayerPage = ({
     setCurrentVideo(episode);
   };
 
+  const handleNextPlaylistVideo = () => {
+    if (playlistVideos && currentVideo) {
+      const idx = playlistVideos.findIndex(
+        (v) => v?.filePath === currentVideo.filePath,
+      );
+      if (idx !== -1 && idx < playlistVideos.length - 1) {
+        const nextVideo = playlistVideos[idx + 1];
+        setCurrentVideo(nextVideo);
+      }
+    }
+  };
+
+  const handlePreviousPlaylistVideo = () => {
+    if (playlistVideos && currentVideo) {
+      const idx = playlistVideos.findIndex(
+        (v) => v?.filePath === currentVideo.filePath,
+      );
+      if (idx > 0) {
+        const previousVideo = playlistVideos[idx - 1];
+        setCurrentVideo(previousVideo);
+      }
+    }
+  };
+
+  useImperativeHandle(ref, () => ({
+    handlePreviousPlaylistVideo,
+    handleNextPlaylistVideo,
+  }));
+
   return (
     <>
       <AppVideoPlayer
@@ -280,30 +320,10 @@ export const VideoPlayerPage = ({
               },
             });
           }}
-          onNextVideo={() => {
-            if (playlistVideos && currentVideo) {
-              const idx = playlistVideos.findIndex(
-                (v) => v?.filePath === currentVideo.filePath,
-              );
-              if (idx !== -1 && idx < playlistVideos.length - 1) {
-                const nextVideo = playlistVideos[idx + 1];
-                setCurrentVideo(nextVideo);
-              }
-            }
-          }}
-          onPreviousVideo={() => {
-            if (playlistVideos && currentVideo) {
-              const idx = playlistVideos.findIndex(
-                (v) => v?.filePath === currentVideo.filePath,
-              );
-              if (idx > 0) {
-                const previousVideo = playlistVideos[idx - 1];
-                setCurrentVideo(previousVideo);
-              }
-            }
-          }}
+          onNextVideo={handleNextPlaylistVideo}
+          onPreviousVideo={handlePreviousPlaylistVideo}
         />
       </CustomDrawer>
     </>
   );
-};
+});
