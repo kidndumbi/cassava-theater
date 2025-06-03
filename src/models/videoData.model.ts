@@ -1,6 +1,7 @@
 import { MovieDetails } from "./movie-detail.model";
 import { NoteModel } from "./note.model";
 import { OverviewModel } from "./overview.model";
+import { ListDisplayType } from "./playlist.model";
 
 import { TvShowDetails } from "./tv-show-details.model";
 
@@ -39,4 +40,5 @@ export interface VideoDataModel {
   videoDataType?: "movie" | "episode" | null;
   poster?: string | null;
   backdrop?: string | null;
+  display?: ListDisplayType;
 }

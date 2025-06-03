@@ -4,7 +4,7 @@ import theme from "../../theme";
 import { getFilename, removeVidExt } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import {
-  PlaylistDisplayType,
+  ListDisplayType,
   PlaylistModel,
 } from "../../../models/playlist.model";
 import { PlaylistsVideo } from "./PlaylistsVideo";
@@ -18,7 +18,7 @@ interface PlaylistVideosPanelProps {
   updatePlaylist: (id: string, playlist: PlaylistModel) => void;
   navToDetails: (videoPath: string) => void;
   onPlayVideo: (videoIndex: number) => void;
-  displayType: PlaylistDisplayType;
+  displayType: ListDisplayType;
 }
 
 export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({

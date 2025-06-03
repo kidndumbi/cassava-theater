@@ -20,12 +20,13 @@ import theme from "../../theme";
 import { useDragState } from "../../hooks/useDragState";
 import { AppDrop } from "../common/AppDrop";
 import LoadingIndicator from "../common/LoadingIndicator";
+import { QueryClient, useQuery } from "@tanstack/react-query";
+import { useSaveJsonData } from "../../hooks/useSaveJsonData";
+import { ListDisplayType } from "../../../models/playlist.model";
 
 interface CustomFolderProps {
   menuId: string;
 }
-
-
 
 export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
   const { data: settings } = useGetAllSettings();
@@ -37,6 +38,8 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
   const { mutateAsync: setSetting } = useSetSetting();
 
   const navigate = useNavigate();
+
+  const queryClient = new QueryClient();
 
   const [ediModalOpen, setEditModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -55,6 +58,25 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
   } = useVideoDataQuery({
     filePath: selectedFolder?.folderPath || "",
     category: "customFolder",
+  });
+
+  const { data: videoJsonData } = useQuery({
+    queryKey: ["videoJsonData", selectedFolder?.folderPath],
+    queryFn: () => {
+      return window.videoAPI.getVideoJsonData({
+        filePath: selectedFolder.folderPath,
+      });
+    },
+    enabled: !!selectedFolder?.folderPath,
+  });
+
+  const [selectedFolderDisplayType, setSelectedFolderDisplayType] =
+    useState<ListDisplayType>(videoJsonData?.display || "grid");
+
+  const { mutate: saveJsonData } = useSaveJsonData(() => {
+    queryClient.invalidateQueries({
+      queryKey: ["videoJsonData", selectedFolder?.folderPath],
+    });
   });
 
   useEffect(() => {
@@ -138,9 +160,14 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
               }
             }}
           />
-          <Box>
+          <Box
+            sx={{
+              width: "100%",
+            }}
+          >
             {selectedFolder && (
               <SelectedCustomFolderToolbar
+                displayType={selectedFolderDisplayType}
                 onEdit={() => {
                   setEditModalOpen(true);
                 }}
@@ -166,6 +193,20 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
                     setSelectedFolder(null);
                   }
                 }}
+                onUpdateVideoJsonData={async (data) => {
+                  const filePath = selectedFolder.folderPath;
+                  setSelectedFolderDisplayType(data.display);
+
+                  saveJsonData({
+                    currentVideo: {
+                      filePath,
+                    },
+                    newVideoJsonData: {
+                      display: data.display,
+                      filePath,
+                    },
+                  });
+                }}
               />
             )}
 
@@ -175,6 +216,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
 
             {!error && !isVideosLoading && (
               <CustomFolderVideosPanel
+                displayType={selectedFolderDisplayType}
                 selectedFolder={selectedFolder}
                 getImageUrl={getImageUrl}
                 videos={videos}

@@ -4,7 +4,7 @@ import { removeVidExt } from "../../util/helperFunctions";
 import { Alert, Box, Button, Snackbar, Paper } from "@mui/material";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CustomFolderModel } from "../../../models/custom-folder";
 import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
@@ -20,7 +20,7 @@ import { AppModal } from "../common/AppModal";
 import { PlaylistSelect } from "../playlists/PlaylistSelect";
 import { useModalState } from "../../hooks/useModalState";
 import { usePlaylists } from "../../hooks/usePlaylists";
-import { PlaylistModel } from "../../../models/playlist.model";
+import { ListDisplayType, PlaylistModel } from "../../../models/playlist.model";
 import { useDragState } from "../../hooks/useDragState";
 
 // Define MenuItem interface
@@ -35,6 +35,7 @@ interface CustomFolderVideosPanelProps {
   getImageUrl: (video: VideoDataModel) => string | undefined;
   onClick: (video: VideoDataModel) => void;
   selectedFolder: CustomFolderModel;
+  displayType: ListDisplayType;
 }
 
 export const CustomFolderVideosPanel = ({
@@ -42,6 +43,7 @@ export const CustomFolderVideosPanel = ({
   getImageUrl,
   onClick,
   selectedFolder,
+  displayType = "grid",
 }: CustomFolderVideosPanelProps) => {
   const dispatch = useAppDispatch();
   const { openDialog, setMessage } = useConfirmation();
@@ -237,7 +239,12 @@ export const CustomFolderVideosPanel = ({
           color: theme.customVariables.appWhiteSmoke,
         }}
       >
-        <Box display="flex" flexWrap="wrap" gap={2}>
+        <Box
+          display="flex"
+          flexWrap={displayType === "grid" ? "wrap" : "nowrap"}
+          flexDirection={displayType === "list" ? "column" : "row"}
+          gap={2}
+        >
           {videos?.length > 0 ? (
             videos.map((video, idx) =>
               video ? (
@@ -249,6 +256,7 @@ export const CustomFolderVideosPanel = ({
                   getImageUrl={getImageUrl}
                   onClick={onClick}
                   dragging={setDragging}
+                  displayType={displayType}
                 />
               ) : null,
             )

@@ -1,7 +1,7 @@
 import { Box, Menu, MenuItem, SxProps, Theme } from "@mui/material";
 import AppIconButton from "../common/AppIconButton";
 import {
-  PlaylistDisplayType,
+  ListDisplayType,
   PlaylistModel,
 } from "../../../models/playlist.model";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -32,7 +32,7 @@ export const SelectedPlaylistToolbar = ({
 }) => {
   const [playAnchorEl, setPlayAnchorEl] = useState<null | HTMLElement>(null);
   const [displayTypeEl, setDisplayTypeEl] = useState<null | HTMLElement>(null);
-  const [displayType, setDisplayType] = useState<PlaylistDisplayType>(
+  const [displayType, setDisplayType] = useState<ListDisplayType>(
     playlist.display || "grid",
   );
 
@@ -70,7 +70,7 @@ export const SelectedPlaylistToolbar = ({
     color: color || theme.customVariables.appWhiteSmoke,
   });
 
-  const handleDisplayTypeChange = (type: PlaylistDisplayType) => {
+  const handleDisplayTypeChange = (type: ListDisplayType) => {
     setDisplayType(type);
     updatePlaylist(playlist.id, { ...playlist, display: type });
     setDisplayTypeEl(null);
@@ -118,7 +118,7 @@ export const SelectedPlaylistToolbar = ({
         onClose={() => setDisplayTypeEl(null)}
         sx={menuPaperStyles}
       >
-        {(["grid", "list"] as PlaylistDisplayType[]).map((type) => {
+        {(["grid", "list"] as ListDisplayType[]).map((type) => {
           return (
             <MenuItem
               key={type}

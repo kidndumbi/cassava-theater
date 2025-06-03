@@ -7,12 +7,8 @@ import { PosterCard } from "../common/PosterCard";
 import { removeVidExt, trimFileName } from "../../util/helperFunctions";
 import { useDragPreviewImage } from "../../hooks/useDragPreviewImage";
 import { DragVideoItem } from "../../../models/drag-video-item.model";
-import {
-  PlaylistDisplayType,
-  PlaylistModel,
-} from "../../../models/playlist.model";
-import { Avatar, Box } from "@mui/material";
-import { VideoProgressBar } from "../common/VideoProgressBar";
+import { ListDisplayType, PlaylistModel } from "../../../models/playlist.model";
+import { VideoListItem } from "../common/VideoListItem";
 
 export const PlaylistsVideo: React.FC<{
   video: VideoDataModel;
@@ -24,7 +20,7 @@ export const PlaylistsVideo: React.FC<{
   moveVideo: (from: number, to: number) => void;
   currentPlaylist: PlaylistModel;
   dragging: (isDragging: boolean, idx: number) => void;
-  displayType: PlaylistDisplayType;
+  displayType: ListDisplayType;
 }> = ({
   video,
   idx,
@@ -113,51 +109,11 @@ export const PlaylistsVideo: React.FC<{
                 onClick={() => onPlayVideo(idx)}
               />
             ) : (
-              <Box
-                className="flex cursor-pointer gap-1"
+              <VideoListItem
+                video={video}
+                getImageUrl={getImageUrl}
                 onClick={() => onPlayVideo(idx)}
-              >
-                <Avatar
-                  variant="rounded"
-                  src={getImageUrl(video)}
-                  alt={video.fileName || ""}
-                  sx={{ width: 80, height: 80 }}
-                />
-                <Box
-                  className="flex min-w-0 flex-1 flex-col gap-1 rounded p-1"
-                  sx={{
-                    backgroundColor: theme.customVariables.appDark,
-                    color: theme.customVariables.appWhiteSmoke,
-                  }}
-                >
-                  <Box
-                    className="overflow-hidden text-ellipsis whitespace-nowrap text-base font-semibold"
-                    sx={{
-                      color: theme.customVariables.appWhiteSmoke,
-                    }}
-                    title={video.fileName}
-                  >
-                    {removeVidExt(video.fileName)}
-                  </Box>
-                  <Box
-                    className="overflow-hidden text-ellipsis whitespace-nowrap text-sm"
-                    sx={{
-                      color: theme.palette.primary.light,
-                    }}
-                    title={video.fileName}
-                  >
-                    {video.filePath}
-                  </Box>
-                  {typeof video.currentTime === "number" &&
-                    typeof video.duration === "number" &&
-                    video.currentTime > 0 && (
-                      <VideoProgressBar
-                        current={video.currentTime}
-                        total={video.duration}
-                      />
-                    )}
-                </Box>
-              </Box>
+              />
             )}
           </div>
         </AppContextMenu>
