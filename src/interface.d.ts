@@ -5,6 +5,7 @@ import { PlaylistModel } from "./models/playlist.model";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoDataModel } from "./models/videoData.model";
 import { PlaylistPlayRequestModel } from "./models/playlistPlayRequest.model";
+import { PlaylistCommands } from "./models/playlist-commands.model"
 export interface IElectronAPI {
   desktop: boolean;
 }
@@ -169,6 +170,10 @@ export interface YoutubeAPI {
   ) => Promise<{ success: boolean; error?: string }>;
 }
 
+export interface PlaylistCommandsAPI {
+  playlistVideoCommand: (callback: (command: PlaylistCommands) => void) => void;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -183,5 +188,6 @@ declare global {
     mp4ConversionAPI: Mp4ConversionAPI;
     playlistAPI: PlaylistAPI;
     youtubeAPI: YoutubeAPI;
+    playlistCommandsAPI: PlaylistCommandsAPI;
   }
 }

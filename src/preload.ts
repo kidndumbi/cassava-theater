@@ -21,6 +21,8 @@ import { PlaylistModel } from "./models/playlist.model";
 import { YoutubeIPCChannels } from "./enums/youtubeIPCChannels.enum";
 import { YoutubeDownloadQueueItem } from "./main/services/youtube.service";
 import { PlaylistPlayRequestModel } from "./models/playlistPlayRequest.model";
+import { PlaylistCommands } from "./models/playlist-commands.model";
+import { AppSocketEvents } from "./enums/app-socket-events.enum";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -66,6 +68,15 @@ contextBridge.exposeInMainWorld("openDialogAPI", {
     return ipcRenderer.invoke(
       OpenDialogIpcChannels.OPEN_FOLDER_DIALOG,
     ) as Promise<string | null>;
+  },
+});
+
+contextBridge.exposeInMainWorld("playlistCommandsAPI", {
+  playlistVideoCommand: (callback: (command: PlaylistCommands) => void) => {
+    ipcRenderer.on(
+      AppSocketEvents.PLAYLIST_REMOTE_COMMAND,
+      (_event, command: PlaylistCommands) => callback(command),
+    );
   },
 });
 
