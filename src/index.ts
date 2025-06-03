@@ -5,7 +5,7 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { registerIpcHandlers } from "./main/ipc-handlers/ipcHandlers";
 import { loggingService as log } from "./main/services/main-logging.service";
-import { initializeSocket } from "./main/services/socket.service";
+import { initializeSocket } from "./main/services/socket-io/socket.service";
 import * as cleanUp from "./main/services/cleanUp.service";
 import * as appSetup from "./main/services/setup.service";
 import { setMainWindow } from "./main/mainWindowManager";

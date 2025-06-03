@@ -13,8 +13,9 @@ export enum AppSocketEvents {
   GET_ALL_PLAYLISTS = "get-all-playlists",
   SET_PLAYING_PLAYLIST = "set-playing-playlist",
   CURRENT_PLAYLIST = "current-playlist",
+  GET_CURRENT_PLAYLIST = "get-current-playlist",
   CURRENT_VIDEO = "current-video",
-  // --- YouTube socket events ---
+  GET_CURRENT_VIDEO = "get-current-video",
   YT_GET_VIDEO_INFO = "yt-get-video-info",
   YT_DOWNLOAD_VIDEO = "yt-download-video",
   YT_ADD_TO_DOWNLOAD_QUEUE = "yt-add-to-download-queue",
