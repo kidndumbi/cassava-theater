@@ -1,4 +1,5 @@
 import { AppTextField } from "../../common/AppTextField";
+import { useLocalStorage } from "@uidotdev/usehooks";
 import { useEffect, useRef, useState } from "react";
 import theme from "../../../theme";
 import { AppButton } from "../../common/AppButton";
@@ -33,7 +34,7 @@ export const YoutubeDownload = () => {
   const dispatch = useAppDispatch();
 
   const destinationOptions = useRef<{ name: string; filePath: string }[]>([]);
-  const [destination, setDestination] = useState<string | null>(null);
+  const [destination, setDestination] = useLocalStorage<string | null>(null);
 
   useEffect(() => {
     if (settings) {
@@ -61,10 +62,6 @@ export const YoutubeDownload = () => {
     enabled: false,
   });
 
-  useEffect(() => {
-    console.log("Youtube load info Error: ", error);
-  }, [error]);
-
   const { mutateAsync: download, isPending: isDownloading } = useMutation({
     mutationFn: (data: { url: string; destination: string }) =>
       window.youtubeAPI.downloadVideo(data.url, data.destination),
@@ -76,7 +73,6 @@ export const YoutubeDownload = () => {
   const { mutate: saveJsonData } = useSaveJsonData(() => {
     setFileName("");
     setUrl("");
-    setDestination(null);
   });
 
   const { mutateAsync: addToQueue, isPending: isAddingToQueue } = useMutation({
@@ -93,14 +89,12 @@ export const YoutubeDownload = () => {
     onSuccess: async () => {
       setFileName("");
       setUrl("");
-      setDestination(null);
       const queue = await window.youtubeAPI.getQueue();
       dispatch(youtubeDownloadActions.setDownloadProgress(queue));
     },
   });
 
   useEffect(() => {
-    console.log("Youtube Info: ", info);
     if (info) {
       // Remove invalid filename characters: \ / : * ? " < > |
       const safeTitle = info.videoDetails.title.replace(/[\\/:*?"<>|]/g, "");
@@ -233,7 +227,6 @@ export const YoutubeDownload = () => {
                           !fileName.trim() || !destination || isDownloading
                         }
                         onClick={async () => {
-                          console.log("Download Video");
                           const filePath = `${destination}\\${fileName}.mp4`;
 
                           // Find the first available thumbnail from index 4 to 0, or fallback to empty string
@@ -242,6 +235,8 @@ export const YoutubeDownload = () => {
                             [4, 3, 2, 1, 0]
                               .map((i) => thumbnails[i]?.url)
                               .find(Boolean) || "";
+
+                          //setDestinationLocalStorage(destination);
 
                           await download({
                             url: info.videoDetails.video_url,
@@ -270,7 +265,6 @@ export const YoutubeDownload = () => {
                           isAddingToQueue
                         }
                         onClick={async () => {
-                          console.log("adding to queue");
                           const filePath = `${destination}\\${fileName}.mp4`;
                           // Find the first available thumbnail from index 4 to 0, or fallback to empty string
                           const thumbnails = info.videoDetails.thumbnails;
@@ -306,15 +300,6 @@ export const YoutubeDownload = () => {
           </Card>
         )}
       </Box>
-      {/* <AppModal
-        title="Destination"
-        open={destinationModalOpen}
-        onClose={() => {
-          setDestinationModalOpen(false);
-        }}
-      >
-        <Box>HIIIIII</Box>
-      </AppModal> */}
     </>
   );
 };
