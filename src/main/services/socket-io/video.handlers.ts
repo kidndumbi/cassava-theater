@@ -1,12 +1,23 @@
 import { AppSocketEvents } from "../../../enums/app-socket-events.enum";
 import { VideoCommands } from "../../../models/video-commands.model";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { fetchFolderDetails, fetchVideoDetails, fetchVideosData, saveCurrentTime, fetchWatchlaterVideos, fetchRecentlyWatchedCustomVideosData, fetchRecentlyWatchedVideosData } from "../video-data.service";
+import {
+  fetchFolderDetails,
+  fetchVideoDetails,
+  fetchVideosData,
+  saveCurrentTime,
+  fetchWatchlaterVideos,
+  fetchRecentlyWatchedCustomVideosData,
+  fetchRecentlyWatchedVideosData,
+} from "../video-data.service";
 import { loggingService as log } from "../main-logging.service";
 import { Socket } from "socket.io/dist";
 import { BrowserWindow } from "electron";
 
-export function registerVideoHandlers(socket: Socket, mainWindow: BrowserWindow) {
+export function registerVideoHandlers(
+  socket: Socket,
+  mainWindow: BrowserWindow,
+) {
   socket.on(AppSocketEvents.REMOTE_COMMAND, (command: VideoCommands) => {
     mainWindow.webContents.send("video-command", command);
   });
