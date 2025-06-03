@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Alert } from "@mui/material";
 import { CustomFoldersToolbar } from "./CustomFoldersToolbar";
 import { Title } from "../common/Title";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
@@ -7,7 +7,7 @@ import { SelectedCustomFolderToolbar } from "./SelectedCustomFolderToolbar";
 import { CustomFolderVideosPanel } from "./CustomFolderVideosPanel";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { VideoDataModel } from "../../../models/videoData.model";
-import { getUrl } from "../../util/helperFunctions";
+import { getUrl, parseIpcError } from "../../util/helperFunctions";
 import { useVideoDataQuery } from "../../hooks/useVideoData.query";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { CustomFolderModel } from "../../../models/custom-folder";
@@ -19,10 +19,13 @@ import { AppListPanel, DragMenuItem } from "../common/AppListPanel";
 import theme from "../../theme";
 import { useDragState } from "../../hooks/useDragState";
 import { AppDrop } from "../common/AppDrop";
+import LoadingIndicator from "../common/LoadingIndicator";
 
 interface CustomFolderProps {
   menuId: string;
 }
+
+
 
 export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
   const { data: settings } = useGetAllSettings();
@@ -44,7 +47,12 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
   const [selectedFolder, setSelectedFolder] =
     useState<CustomFolderModel | null>(null);
 
-  const { data: videos, refetch } = useVideoDataQuery({
+  const {
+    data: videos,
+    refetch,
+    error,
+    isLoading: isVideosLoading,
+  } = useVideoDataQuery({
     filePath: selectedFolder?.folderPath || "",
     category: "customFolder",
   });
@@ -160,16 +168,35 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
                 }}
               />
             )}
-            <CustomFolderVideosPanel
-              selectedFolder={selectedFolder}
-              getImageUrl={getImageUrl}
-              videos={videos}
-              onClick={(video) => {
-                navigate(
-                  `/video-details?videoPath=${video.filePath}&menuId=${menuId}&folderId=${selectedFolder?.id}`,
-                );
-              }}
-            />
+
+            {isVideosLoading && (
+              <LoadingIndicator message="Loading videos..." />
+            )}
+
+            {!error && !isVideosLoading && (
+              <CustomFolderVideosPanel
+                selectedFolder={selectedFolder}
+                getImageUrl={getImageUrl}
+                videos={videos}
+                onClick={(video) => {
+                  navigate(
+                    `/video-details?videoPath=${video.filePath}&menuId=${menuId}&folderId=${selectedFolder?.id}`,
+                  );
+                }}
+              />
+            )}
+            {error && (
+              <Alert
+                severity="error"
+                sx={{
+                  textAlign: "center",
+                  mt: 2,
+                }}
+              >
+                {parseIpcError(error).message ||
+                  "An error occurred while loading videos."}
+              </Alert>
+            )}
           </Box>
         </Box>
       </Box>

@@ -8,7 +8,7 @@ import {
   Folder as FolderIcon,
   FeaturedPlayList,
   Handyman,
-  Home
+  Home,
 } from "@mui/icons-material";
 import Grid from "@mui/material/Grid2";
 import { renderActivePage } from "./RenderActivePage";
@@ -25,16 +25,12 @@ export const LandingPage = () => {
   const { data: settings } = useGetAllSettings();
   const [searchParams] = useSearchParams();
 
-  const [customFolderPath, setCustomFolderPath] = useState<string>("");
-
-  // Modal state
   const {
     open: isSettingsModalOpen,
     openModal: openSettingsModal,
     closeModal: closeSettingsModal,
   } = useModalState(false);
 
-  // Memoize file paths to avoid unnecessary refetches
   const movieFolderPath = useMemo(
     () => settings?.movieFolderPath || "",
     [settings?.movieFolderPath],
@@ -43,12 +39,7 @@ export const LandingPage = () => {
     () => settings?.tvShowsFolderPath || "",
     [settings?.tvShowsFolderPath],
   );
-  const customFolderPathMemo = useMemo(
-    () => customFolderPath || "",
-    [customFolderPath],
-  );
 
-  // Memoize query options to keep reference stable
   const moviesQueryOptions = useMemo(
     () => ({
       filePath: movieFolderPath,
@@ -63,13 +54,6 @@ export const LandingPage = () => {
     }),
     [tvShowsFolderPath],
   );
-  const customFolderQueryOptions = useMemo(
-    () => ({
-      filePath: customFolderPathMemo,
-      category: "customFolder",
-    }),
-    [customFolderPathMemo],
-  );
 
   const {
     data: movies,
@@ -82,12 +66,6 @@ export const LandingPage = () => {
     isLoading: loadingTvShows,
     refetch: getTvShows,
   } = useVideoDataQuery(tvShowsQueryOptions);
-
-  const {
-    data: customFolderData,
-    isLoading: loadingCustomFolderData,
-    refetch: refetchCustomFolder,
-  } = useVideoDataQuery(customFolderQueryOptions);
 
   const handleMenuClick = (menuItem: MenuItem) => {
     setActiveMenu(menuItem);

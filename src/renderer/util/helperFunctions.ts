@@ -101,6 +101,15 @@ const getFileExtension = (filePath: string): string => {
   return match ? match[1] : "";
 };
 
+function parseIpcError(error: Error) {
+  if (!error?.message) return { name: error?.name, message: error?.message };
+  const match = error.message.match(/: ([A-Za-z0-9]+Error): (.+)$/);
+  if (match) {
+    return { name: match[1], message: match[2] };
+  }
+  return { name: error?.name, message: error?.message };
+}
+
 export {
   secondsTohhmmss,
   isEmptyObject,
@@ -117,4 +126,5 @@ export {
   selectFile,
   removeVidExt,
   getFileExtension,
+  parseIpcError,
 };

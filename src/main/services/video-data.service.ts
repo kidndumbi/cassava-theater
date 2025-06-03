@@ -10,6 +10,10 @@ import * as settingsDataDbService from "../services/settingsDataDb.service";
 import * as videoDataHelpers from "./video.helpers";
 import { getMovieOrTvShowById } from "./themoviedb.service";
 import { normalizeFilePath } from "./helpers";
+import {
+  PathDoesNotExistError,
+  PathRequiredError,
+} from "./custom-errors.service";
 
 export const fetchWatchlaterVideos = async (): Promise<VideoDataModel[]> => {
   const moviesFilePath =
@@ -22,7 +26,7 @@ export const fetchWatchlaterVideos = async (): Promise<VideoDataModel[]> => {
     includeThumbnail: false,
     category: "movies",
   });
-  const mainWatchlaters = videosData.filter(video => video.watchLater);
+  const mainWatchlaters = videosData.filter((video) => video.watchLater);
 
   // Get watchlaters from all custom folders
   const customFolders = await settingsDataDbService.getSetting("folders");
@@ -37,7 +41,9 @@ export const fetchWatchlaterVideos = async (): Promise<VideoDataModel[]> => {
           includeThumbnail: false,
           category: "movies",
         });
-        customWatchlaters.push(...folderVideos.filter(video => video.watchLater));
+        customWatchlaters.push(
+          ...folderVideos.filter((video) => video.watchLater),
+        );
       } catch (e) {
         log.error("Error fetching watchlater videos from custom folder: ", e);
       }
@@ -114,7 +120,7 @@ export const fetchRecentlyWatchedVideosData = async (
         : await settingsDataDbService.getSetting("tvShowsFolderPath");
 
     if (!filePath) {
-      throw new Error("Path is required");
+      throw new PathRequiredError();
     }
 
     const videosData = await fetchVideosData({
@@ -161,11 +167,11 @@ export const fetchVideosData = async ({
   category: string;
 }): Promise<VideoDataModel[]> => {
   if (!filePath) {
-    throw new Error("Path is required");
+    throw new PathRequiredError();
   }
 
   if (!fs.existsSync(filePath)) {
-    throw new Error(`Path does not exist: ${filePath}`);
+    throw new PathDoesNotExistError(filePath);
   }
 
   try {
@@ -219,7 +225,7 @@ export const AddTvShowFolder = async (data: {
   } = data;
 
   if (!fs.existsSync(tvShowsFolderPath)) {
-    throw new Error(`Path does not exist: ${tvShowsFolderPath}`);
+    throw new PathDoesNotExistError(tvShowsFolderPath);
   }
 
   try {
@@ -262,7 +268,7 @@ export const AddTvShowFolder = async (data: {
 
 export const getFolderFiles = (folderPath: string): string[] => {
   if (!fs.existsSync(folderPath)) {
-    throw new Error(`Path does not exist: ${folderPath}`);
+    throw new PathDoesNotExistError(folderPath);
   }
   const entries = fs.readdirSync(folderPath);
   return entries
@@ -275,7 +281,7 @@ export const fetchVideoDetails = async (
   category: string,
 ): Promise<VideoDataModel> => {
   if (!fs.existsSync(filePath)) {
-    throw new Error(`Path does not exist: ${filePath}`);
+    throw new PathDoesNotExistError(filePath);
   }
 
   try {
@@ -331,7 +337,7 @@ export const fetchFolderDetails = async (
   dirPath: string,
 ): Promise<VideoDataModel> => {
   if (!fs.existsSync(dirPath)) {
-    throw new Error(`Path does not exist: ${dirPath}`);
+    throw new PathDoesNotExistError(dirPath);
   }
 
   try {
