@@ -17,7 +17,7 @@ const Video: React.FC<VideoProps> = ({
   isMkv,
   onClick,
   onError,
-  videoUrl
+  videoUrl,
 }) => {
   useEffect(() => {
     const fetchVideoUrl = async () => {
@@ -44,6 +44,14 @@ const Video: React.FC<VideoProps> = ({
       playsInline
       src={videoUrl}
       onClick={onClick}
+      onError={(e) => {
+        const error = e.currentTarget.error;
+        if (error) {
+          const errorMessage = `Video playback error: ${error.message}`;
+          console.error(errorMessage);
+          onError(errorMessage);
+        }
+      }}
     >
       {subtitleFilePath && subtitleFilePath !== "None" && (
         <track
