@@ -12,12 +12,14 @@ interface AppContextMenuProps {
   children: React.ReactNode;
   menuItems?: ContextMenuItemConfig[];
   title?: string;
+  fullWidth?: boolean;
 }
 
 export const AppContextMenu = ({
   children,
   menuItems,
   title,
+  fullWidth = false,
 }: AppContextMenuProps) => {
   const [contextMenu, setContextMenu] = React.useState<{
     mouseX: number;
@@ -37,8 +39,8 @@ export const AppContextMenu = ({
   return (
     <>
       <Box
+        sx={{ width: fullWidth ? "100%" : "auto" }}
         onContextMenu={(event) => {
-          // console.log("Context menu event target", event.target);
           event.preventDefault();
           setContextMenu(
             contextMenu === null

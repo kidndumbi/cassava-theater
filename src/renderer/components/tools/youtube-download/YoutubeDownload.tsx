@@ -25,6 +25,7 @@ import { selectFolder } from "../../../util/helperFunctions";
 import { useSaveJsonData } from "../../../hooks/useSaveJsonData";
 import { useAppDispatch } from "../../../store";
 import { youtubeDownloadActions } from "../../../store/youtubeDownload.slice";
+import { AppContextMenu } from "../../common/AppContextMenu";
 
 export const YoutubeDownload = () => {
   const [url, setUrl] = useState("");
@@ -107,12 +108,35 @@ export const YoutubeDownload = () => {
       <Box
         sx={{ display: "flex", gap: 2, alignItems: "center", width: "100%" }}
       >
-        <AppTextField
-          label="Youtube URL"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          theme={theme}
-        />
+        <AppContextMenu
+          fullWidth={true}
+          menuItems={[
+            {
+              label: "Paste",
+
+              action: () => {
+                window.navigator.clipboard
+                  .readText()
+                  .then((text) => setUrl(text))
+                  .catch((err) =>
+                    console.error("Failed to read clipboard", err),
+                  );
+              },
+            },
+            {
+              label: "Clear",
+              action: () => setUrl(""),
+            },
+          ]}
+        >
+          <AppTextField
+            label="Youtube URL"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            theme={theme}
+          />
+        </AppContextMenu>
+
         <AppButton
           disabled={!url.trim()}
           onClick={() => {
