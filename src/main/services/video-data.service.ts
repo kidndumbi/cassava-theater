@@ -200,7 +200,8 @@ export const fetchVideosData = async ({
       }),
     );
 
-    return videoDataHelpers.filterByCategory(sorted, category);
+    const data = videoDataHelpers.filterByCategory(sorted, category);
+    return data;
   } catch (error) {
     log.error("Error fetching video list: ", error);
     throw new Error("Error fetching video list: " + error);
@@ -387,7 +388,11 @@ export const getVideoJsonData = async (
   currentVideo: VideoDataModel,
 ) => {
   try {
-    const EMPTY_JSON_RESPONSE: VideoDataModel = { notes: [], overview: {} };
+    const EMPTY_JSON_RESPONSE: VideoDataModel = {
+      notes: [],
+      overview: {},
+      filePath: currentVideo.filePath || "",
+    };
 
     if (!currentVideo || !currentVideo.filePath) {
       console.warn(
@@ -396,9 +401,11 @@ export const getVideoJsonData = async (
       return EMPTY_JSON_RESPONSE;
     }
 
-    return await videoDbDataService.getVideo(
+    const data = await videoDbDataService.getVideo(
       normalizeFilePath(currentVideo.filePath),
     );
+    console.log("getVideoJsonData data:::::::: ", data);
+    return data || EMPTY_JSON_RESPONSE;
   } catch (error) {
     console.error("An error occurred:", error);
     return null;
