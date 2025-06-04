@@ -132,6 +132,14 @@ export const useVideoPlayer = (
     [globalVideoPlayer, videoData, updateSourceWithStart],
   );
 
+  const setPlaybackSpeed = useCallback(
+    (speed: number) => {
+      if (!globalVideoPlayer) return;
+      globalVideoPlayer.playbackRate = speed;
+    },
+    [globalVideoPlayer],
+  );
+
   // Start playing video at a specific time
   const startPlayingAt = useCallback(
     (time: number) => {
@@ -245,5 +253,6 @@ export const useVideoPlayer = (
     setVolume,
     paused: globalVideoPlayer?.paused,
     formattedTime,
+    setPlaybackSpeed,
   };
 };

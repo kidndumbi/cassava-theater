@@ -40,6 +40,7 @@ export type AppVideoPlayerHandle = {
   startPlayingAt?: (seconds: number) => void;
   setVolume: React.Dispatch<React.SetStateAction<number>>;
   triggereNextEpisode?: () => void;
+  setPlaybackSpeed: (speed: number) => void;
 };
 
 type AppVideoPlayerProps = {
@@ -101,6 +102,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       formattedTime,
       setVolume,
       isFullScreen,
+      setPlaybackSpeed,
     } = useVideoPlayer(
       () => onVideoEnded(currentVideo?.filePath || "", nextEpisode),
       currentVideo,
@@ -267,7 +269,9 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             alignItems: "center",
           }}
         >
-          <Clear sx={{ fontSize: 48, color: theme.palette.error.main, mb: 1 }} />
+          <Clear
+            sx={{ fontSize: 48, color: theme.palette.error.main, mb: 1 }}
+          />
           <Box
             sx={{
               color: theme.palette.text.primary,
@@ -315,6 +319,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
 
     // Expose methods to parent via ref
     useImperativeHandle(ref, () => ({
+      setPlaybackSpeed,
       skipBy,
       play,
       pause,
