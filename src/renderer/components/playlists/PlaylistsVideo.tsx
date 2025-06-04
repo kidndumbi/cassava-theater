@@ -21,6 +21,7 @@ export const PlaylistsVideo: React.FC<{
   currentPlaylist: PlaylistModel;
   dragging: (isDragging: boolean, idx: number) => void;
   displayType: ListDisplayType;
+  handlResetVideo: (video: VideoDataModel) => void;
 }> = ({
   video,
   idx,
@@ -32,6 +33,7 @@ export const PlaylistsVideo: React.FC<{
   currentPlaylist,
   dragging,
   displayType,
+  handlResetVideo,
 }) => {
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -95,6 +97,12 @@ export const PlaylistsVideo: React.FC<{
             {
               label: "Info",
               action: () => handleInfo(idx),
+            },
+            {
+              label: "Reset time",
+              action: () => {
+                handlResetVideo(video);
+              },
             },
           ]}
         >

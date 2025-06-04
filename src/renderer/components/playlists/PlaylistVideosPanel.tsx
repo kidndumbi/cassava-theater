@@ -3,10 +3,7 @@ import { Paper, Box, Typography } from "@mui/material";
 import theme from "../../theme";
 import { getFilename, removeVidExt } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
-import {
-  ListDisplayType,
-  PlaylistModel,
-} from "../../../models/playlist.model";
+import { ListDisplayType, PlaylistModel } from "../../../models/playlist.model";
 import { PlaylistsVideo } from "./PlaylistsVideo";
 import { AppDrop } from "../common/AppDrop";
 import { useDragState } from "../../hooks/useDragState";
@@ -19,6 +16,7 @@ interface PlaylistVideosPanelProps {
   navToDetails: (videoPath: string) => void;
   onPlayVideo: (videoIndex: number) => void;
   displayType: ListDisplayType;
+  handlResetVideo: (videoData: VideoDataModel) => void;
 }
 
 export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
@@ -29,6 +27,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
   navToDetails,
   onPlayVideo,
   displayType = "grid",
+  handlResetVideo,
 }) => {
   const { isAnyDragging, setDragging } = useDragState();
 
@@ -109,6 +108,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
                   moveVideo={moveVideo}
                   dragging={setDragging}
                   displayType={displayType}
+                  handlResetVideo={handlResetVideo}
                 />
               ) : null,
             )
