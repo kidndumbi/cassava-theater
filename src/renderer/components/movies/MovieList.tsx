@@ -158,7 +158,10 @@ const MovieList: React.FC<MovieListProps> = ({
     setSelectedMovie(null);
   };
 
-  const handleSelectMovie = async (movie_details: MovieDetails) => {
+  const handleSelectMovie = async (
+    movie_details: MovieDetails,
+    selectedMovie: VideoDataModel,
+  ) => {
     if (movie_details.id && selectedMovie?.filePath) {
       const extraMovieDetails = await getExtraMovieDetails(
         selectedMovie.filePath,
@@ -189,60 +192,86 @@ const MovieList: React.FC<MovieListProps> = ({
     }
   };
 
-  const getMenuItems = (movie: VideoDataModel) => [
-    {
-      label: "Delete",
-      action: () => handleDeleteMovie(movie),
-      sx: { color: theme.palette.error.main },
-    },
-    {
-      label: "Link Movie Info",
-      action: () => handleLinkMovieDb(movie),
-    },
-    ...(movie?.filePath && !movie.filePath.endsWith(".mp4")
-      ? [
-          {
-            label: "Convert to MP4",
-            action: () => {
-              if (movie.filePath) {
-                handleConvertToMp4(movie.filePath);
-              } else {
-                console.error("File path is undefined.");
-              }
-            },
-          },
-        ]
-      : []),
-    {
-      label: !movie.watchLater
-        ? "Add to Watch Later"
-        : "Remove from Watch Later",
-      action: () =>
-        saveVideoJsonData({
-          currentVideo: { filePath: movie.filePath },
-          newVideoJsonData: { watchLater: !movie.watchLater },
-        }),
-    },
-    {
-      label: "Playlists",
-      action: () => {
-        setSelectedPlaylistVideo(movie);
-        openPlaylistModalOpen();
+  const getMenuItems = (movie: VideoDataModel) => {
+    const menuItems = [
+      {
+        label: "Delete",
+        action: () => handleDeleteMovie(movie),
+        sx: { color: theme.palette.error.main },
       },
-    },
-    {
-      label: "Reset time",
-      action: () => {
-        if (movie.filePath) {
+      {
+        label: "Link Movie Info",
+        action: () => handleLinkMovieDb(movie),
+      },
+      ...(movie?.filePath && !movie.filePath.endsWith(".mp4")
+        ? [
+            {
+              label: "Convert to MP4",
+              action: () => {
+                if (movie.filePath) {
+                  handleConvertToMp4(movie.filePath);
+                } else {
+                  console.error("File path is undefined.");
+                }
+              },
+            },
+          ]
+        : []),
+      {
+        label: !movie.watchLater
+          ? "Add to Watch Later"
+          : "Remove from Watch Later",
+        action: () =>
           saveVideoJsonData({
             currentVideo: { filePath: movie.filePath },
-            newVideoJsonData: { currentTime: 0 },
-          });
-        }
+            newVideoJsonData: { watchLater: !movie.watchLater },
+          }),
       },
-    },
-    // Add more menu items as needed
-  ];
+      {
+        label: "Playlists",
+        action: () => {
+          setSelectedPlaylistVideo(movie);
+          openPlaylistModalOpen();
+        },
+      },
+      {
+        label: "Reset time",
+        action: () => {
+          if (movie.filePath) {
+            saveVideoJsonData({
+              currentVideo: { filePath: movie.filePath },
+              newVideoJsonData: { currentTime: 0 },
+            });
+          }
+        },
+      },
+
+      // Add more menu items as needed
+    ];
+
+    if (movie.movie_details) {
+      menuItems.push({
+        label: "Clear Movie Info",
+        action: () => {
+          if (movie.filePath) {
+            saveVideoJsonData({
+              currentVideo: { filePath: movie.filePath },
+              newVideoJsonData: { movie_details: null },
+            });
+          }
+        },
+      });
+
+      menuItems.push({
+        label: "Refresh Movie Info",
+        action: () => {
+          handleSelectMovie(movie.movie_details, movie);
+        },
+      });
+    }
+
+    return menuItems;
+  };
 
   React.useEffect(() => {
     if (scrollContainerRef.current && typeof scrollPoint === "number") {
@@ -311,7 +340,9 @@ const MovieList: React.FC<MovieListProps> = ({
         handleClose={handleCloseSuggestionsModal}
         fileName={removeVidExt(selectedMovie?.fileName) || ""}
         filePath={selectedMovie?.filePath || ""}
-        handleSelectMovie={handleSelectMovie}
+        handleSelectMovie={(movie_details: MovieDetails) =>
+          handleSelectMovie(movie_details, selectedMovie)
+        }
         handleImageUpdate={(data: VideoDataModel, filePath: string) => {
           if (!filePath) return;
           saveVideoJsonData({
