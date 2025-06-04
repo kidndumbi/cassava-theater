@@ -43,7 +43,7 @@ export const CustomFolderVideosPanel = ({
   getImageUrl,
   onClick,
   selectedFolder,
-  displayType = "grid",
+  displayType 
 }: CustomFolderVideosPanelProps) => {
   const dispatch = useAppDispatch();
   const { openDialog, setMessage } = useConfirmation();
