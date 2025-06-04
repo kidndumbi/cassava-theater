@@ -39,6 +39,33 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const { data: selectedPlaylistVideos } =
     useGetPlaylistVideoData(selectedPlaylist);
   const [playlistIdParam, setPlaylistIdParam] = useState<string | null>(null);
+  const [selectedPlaylistVideosCleaned, setSelectedPlaylistVideosCleaned] =
+    useState<VideoDataModel[]>([]);
+  const [nonExistentVideos, setNonExistentVideos] = useState<string[]>([]);
+
+  useEffect(() => {
+    const undefinedVideosIndexs = selectedPlaylistVideos?.reduce(
+      (acc, video, index) => {
+        if (!video) {
+          acc.push(index);
+        }
+        return acc;
+      },
+      [] as number[],
+    );
+
+    const undefinedVideosPaths = undefinedVideosIndexs?.map(
+      (index) => selectedPlaylist?.videos[index],
+    );
+
+    setNonExistentVideos(undefinedVideosPaths || []);
+
+    const cleanedVideos = selectedPlaylistVideos?.filter(
+      (video) => video !== undefined && video !== null,
+    );
+
+    setSelectedPlaylistVideosCleaned(cleanedVideos || []);
+  }, [selectedPlaylistVideos, selectedPlaylist]);
 
   useEffect(() => {
     const playlistId = searchParams.get("playlistId") || null;
@@ -83,7 +110,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
     },
   });
 
-  const { mutate: updatePlaylist } = useUpdatePlaylist((_, variables) => {
+  const { mutateAsync: updatePlaylist } = useUpdatePlaylist((_, variables) => {
     setSelectedPlaylist((prev) =>
       prev && prev.id === variables.playlist.id
         ? { ...variables.playlist }
@@ -149,12 +176,12 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
 
   // Helper to play a video (by index or random)
   const playVideoFromPlaylist = (videoIndex?: number, shuffle = false) => {
-    if (!selectedPlaylist || !selectedPlaylistVideos.length) return;
+    if (!selectedPlaylist || !selectedPlaylistVideosCleaned.length) return;
     const idx =
       typeof videoIndex === "number"
         ? videoIndex
-        : Math.floor(Math.random() * selectedPlaylistVideos.length);
-    const video = selectedPlaylistVideos[idx];
+        : Math.floor(Math.random() * selectedPlaylistVideosCleaned.length);
+    const video = selectedPlaylistVideosCleaned[idx];
     setCurrentVideo(video);
     const updatPlaylistdata = {
       id: selectedPlaylist.id,
@@ -201,12 +228,13 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
             {selectedPlaylist && (
               <SelectedPlaylistToolbar
                 playlist={selectedPlaylist}
+                nonExistentVideos={nonExistentVideos}
                 onRename={handleRenamePlaylist}
                 onDelete={handleDeletePlaylist.bind(null, selectedPlaylist)}
                 onPlayFromBeginning={() => playVideoFromPlaylist(0)}
                 onPlayFromLastWatched={() =>
                   playVideoFromPlaylist(
-                    selectedPlaylistVideos.findIndex(
+                    selectedPlaylistVideosCleaned.findIndex(
                       (video) =>
                         video.filePath === selectedPlaylist.lastVideoPlayed,
                     ),
@@ -216,11 +244,24 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
                 updatePlaylist={(id: string, playlist: PlaylistModel) =>
                   updatePlaylist({ id, playlist })
                 }
+                onClearMissingVideos={async () => {
+         
+                  await updatePlaylist({
+                    id: selectedPlaylist.id,
+                    playlist: {
+                      ...selectedPlaylist,
+                      videos: selectedPlaylist.videos.filter(
+                        (video) => !nonExistentVideos.includes(video),
+                      ),
+                    },
+                  });
+                  setNonExistentVideos([]);
+                }}
               />
             )}
             <PlaylistVideosPanel
               displayType={selectedPlaylist?.display}
-              videos={selectedPlaylistVideos}
+              videos={selectedPlaylistVideosCleaned}
               getImageUrl={getImageUrl}
               selectedPlaylist={selectedPlaylist}
               updatePlaylist={(id: string, playlist: PlaylistModel) =>
