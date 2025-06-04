@@ -60,7 +60,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
     category: "customFolder",
   });
 
-  const { data: videoJsonData } = useQuery({
+  const { data: videoJsonData, isLoading: isVideoJsonLoading } = useQuery({
     queryKey: ["videoJsonData", selectedFolder?.folderPath],
     queryFn: () => {
       return window.videoAPI.getVideoJsonData({
@@ -71,7 +71,13 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
   });
 
   const [selectedFolderDisplayType, setSelectedFolderDisplayType] =
-    useState<ListDisplayType>(videoJsonData?.display || "grid");
+    useState<ListDisplayType>(null);
+
+  useEffect(() => {
+    if (videoJsonData) {
+      setSelectedFolderDisplayType(videoJsonData?.display || "grid");
+    }
+  }, [videoJsonData]);
 
   const { mutate: saveJsonData } = useSaveJsonData(() => {
     queryClient.invalidateQueries({
@@ -214,7 +220,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
               <LoadingIndicator message="Loading videos..." />
             )}
 
-            {!error && !isVideosLoading && (
+            {!error && !isVideosLoading && !isVideoJsonLoading && (
               <CustomFolderVideosPanel
                 displayType={selectedFolderDisplayType}
                 selectedFolder={selectedFolder}

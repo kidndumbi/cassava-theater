@@ -55,7 +55,7 @@ export const CustomFolderVideoCard: React.FC<CustomFolderVideoCardProps> = ({
           title={removeVidExt(video.fileName)}
           menuItems={getMenuItems(video)}
         >
-          {displayType === "grid" ? (
+          {displayType === "grid" && (
             <PosterCard
               imageUrl={getImageUrl(video)}
               altText={video.fileName || ""}
@@ -64,7 +64,9 @@ export const CustomFolderVideoCard: React.FC<CustomFolderVideoCardProps> = ({
               currentTime={video.currentTime}
               duration={video.duration}
             />
-          ) : (
+          )}
+
+          {displayType === "list" && (
             <VideoListItem
               video={video}
               getImageUrl={getImageUrl}
