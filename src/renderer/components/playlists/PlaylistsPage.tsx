@@ -8,7 +8,7 @@ import { AppTextField } from "../common/AppTextField";
 import { v4 as uuidv4 } from "uuid";
 import { PlaylistModel } from "../../../models/playlist.model";
 import { usePlaylists } from "../../hooks/usePlaylists";
-import { useMutation } from "@tanstack/react-query";
+import { QueryClient, useMutation } from "@tanstack/react-query";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { getUrl } from "../../util/helperFunctions";
@@ -25,6 +25,7 @@ import { Title } from "../common/Title";
 import { AppListPanel, DragMenuItem } from "../common/AppListPanel";
 import { useDragState } from "../../hooks/useDragState";
 import { AppDrop } from "../common/AppDrop";
+import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 
 export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const navigate = useNavigate();
@@ -121,12 +122,20 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
 
   const { openDialog, setMessage } = useConfirmation();
 
-  const { mutate: deletePlaylist } = useMutation({
+  const { mutateAsync: deletePlaylist } = useMutation({
     mutationFn: (id: string) => window.playlistAPI.deletePlaylist(id),
     onSuccess: () => {
       refetch();
       setSelectedPlaylist(null);
     },
+  });
+
+  const queryClient = new QueryClient();
+
+  const { mutate: saveJsonData } = useSaveJsonData((_, variables) => {
+    queryClient.invalidateQueries({
+      queryKey: ["videoDetails", variables.currentVideo.filePath, "movies"],
+    });
   });
 
   const handleAddPlaylist = newPlaylistModal.openModal;
@@ -245,7 +254,6 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
                   updatePlaylist({ id, playlist })
                 }
                 onClearMissingVideos={async () => {
-         
                   await updatePlaylist({
                     id: selectedPlaylist.id,
                     playlist: {
@@ -274,6 +282,21 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
               }}
               onPlayVideo={(videoIndex: number) => {
                 playVideoFromPlaylist(videoIndex);
+              }}
+              handlResetVideo={async (videoData: VideoDataModel) => {
+                console.log("Reset video:", videoData);
+                await saveJsonData({
+                  currentVideo: { filePath: videoData.filePath },
+                  newVideoJsonData: { currentTime: 0 },
+                });
+                // Immediately update the local state for UI responsiveness
+                setSelectedPlaylistVideosCleaned((prev) =>
+                  prev.map((v) =>
+                    v.filePath === videoData.filePath
+                      ? { ...v, currentTime: 0 }
+                      : v,
+                  ),
+                );
               }}
             />
           </Box>
