@@ -106,7 +106,6 @@ class YoutubeDownloadQueue {
 
       // Update status to "downloading"
       item.status = "downloading";
-      console.log("current queue:", this.queue);
 
       const { url, destinationPath } = item;
       try {
