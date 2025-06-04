@@ -43,7 +43,7 @@ export const CustomFolderVideosPanel = ({
   getImageUrl,
   onClick,
   selectedFolder,
-  displayType 
+  displayType,
 }: CustomFolderVideosPanelProps) => {
   const dispatch = useAppDispatch();
   const { openDialog, setMessage } = useConfirmation();
@@ -222,6 +222,17 @@ export const CustomFolderVideosPanel = ({
       action: () => {
         setSelectedPlaylistVideo(video);
         openPlaylistModalOpen();
+      },
+    },
+    {
+      label: "Reset time",
+      action: () => {
+        if (video.filePath) {
+          saveVideoJsonData({
+            currentVideo: { filePath: video.filePath },
+            newVideoJsonData: { currentTime: 0 },
+          });
+        }
       },
     },
   ];
