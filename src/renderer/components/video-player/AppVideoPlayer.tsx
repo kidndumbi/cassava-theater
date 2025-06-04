@@ -55,7 +55,7 @@ type AppVideoPlayerProps = {
   playNextEpisode: (episode: VideoDataModel) => void;
   findNextEpisode: (currentFilePath: string) => VideoDataModel | null;
   port: string;
-  openPlaylistControls?:() => void;
+  openPlaylistControls?: () => void;
 };
 
 const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
@@ -73,7 +73,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       playNextEpisode,
       findNextEpisode,
       port,
-      openPlaylistControls
+      openPlaylistControls,
     },
     ref,
   ) => {
@@ -240,14 +240,76 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     );
 
     const renderErrorState = () => (
-      <Box className="video-error-container">
-        <p>{error}</p>
-        <IconButton
-          sx={{ color: theme.customVariables.appWhite }}
-          onClick={handleCancel.bind(null, currentVideo?.filePath || "")}
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        height="100vh"
+        width="100vw"
+        position="fixed"
+        top={0}
+        left={0}
+        sx={{
+          background: "rgba(20, 20, 20, 0.96)",
+          zIndex: 2000,
+        }}
+      >
+        <Box
+          sx={{
+            background: theme.palette.background.paper,
+            borderRadius: 3,
+            boxShadow: 3,
+            p: 4,
+            minWidth: 320,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
         >
-          <Clear />
-        </IconButton>
+          <Clear sx={{ fontSize: 48, color: theme.palette.error.main, mb: 1 }} />
+          <Box
+            sx={{
+              color: theme.palette.text.primary,
+              fontWeight: 600,
+              fontSize: 20,
+              mb: 1,
+              textAlign: "center",
+            }}
+          >
+            Video Playback Error
+          </Box>
+          <Box
+            sx={{
+              color: theme.palette.text.secondary,
+              mb: 3,
+              textAlign: "center",
+              fontSize: 16,
+            }}
+          >
+            {error}
+          </Box>
+          <IconButton
+            sx={{
+              color: theme.palette.error.main,
+              border: "1px solid",
+              borderColor: theme.palette.error.main,
+              borderRadius: 2,
+              px: 3,
+              py: 1,
+              fontWeight: 600,
+              fontSize: 16,
+              transition: "background 0.2s",
+              "&:hover": {
+                background: theme.palette.error.light,
+              },
+            }}
+            onClick={handleCancel.bind(null, currentVideo?.filePath || "")}
+          >
+            <Clear sx={{ mr: 1 }} />
+            Dismiss
+          </IconButton>
+        </Box>
       </Box>
     );
 
@@ -312,9 +374,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
                 castAndCrewContent ? handleToggleDrawer : undefined
               }
               togglePlaylistControl={
-                openPlaylistControls
-                  ? openPlaylistControls
-                  : undefined
+                openPlaylistControls ? openPlaylistControls : undefined
               }
               handleCancel={(filePath) => {
                 setVideoUrl("");
