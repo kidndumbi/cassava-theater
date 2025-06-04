@@ -21,6 +21,7 @@ import {
 import TvShowListItem from "./TvShowListItem";
 import { AppDrop } from "../common/AppDrop";
 import { useDragState } from "../../hooks/useDragState";
+import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 
 interface TvShowsListProps {
   shows: VideoDataModel[];
@@ -86,6 +87,25 @@ export const TvShowsList = React.memo(function TvShowsList(
     },
     (error) => {
       showSnackbar("Error deleting Tv Show: " + error, "error");
+    },
+  );
+
+  const { mutateAsync: saveVideoJsonData } = useSaveJsonData(
+    (data, variables) => {
+      queryClient.setQueryData(
+        ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
+        (oldData: VideoDataModel[] = []) =>
+          oldData.map((m) => {
+            if (m.filePath === variables.currentVideo.filePath) {
+              return { ...m, ...variables.newVideoJsonData };
+            }
+            return m;
+          }),
+      );
+      showSnackbar("Success", "success");
+    },
+    (error) => {
+      showSnackbar(`Error updating: ${error?.message}`, "error");
     },
   );
 
@@ -171,23 +191,53 @@ export const TvShowsList = React.memo(function TvShowsList(
   };
 
   // Helper to build context menu items for AppContextMenu
-  const getMenuItems = (show: VideoDataModel) => [
-    {
-      label: "Delete",
-      action: () => {
-        if (show?.filePath) handleDelete(show.filePath);
+  const getMenuItems = (show: VideoDataModel) => {
+    const menuItems = [
+      {
+        label: "Delete",
+        action: () => {
+          if (show?.filePath) handleDelete(show.filePath);
+        },
+        sx: { color: theme.palette.error.main },
       },
-      sx: { color: theme.palette.error.main },
-    },
-    {
-      label: "Link TV Show Info",
-      action: () => {
-        setSelectedTvShow(show);
-        setOpenTvShowSuggestionsModal(true);
+      {
+        label: "Link TV Show Info",
+        action: () => {
+          setSelectedTvShow(show);
+          setOpenTvShowSuggestionsModal(true);
+        },
       },
-    },
-    // Add more menu items as needed
-  ];
+      // Add more menu items as needed
+    ];
+
+    if (show.tv_show_details) {
+      menuItems.push({
+        label: "Clear TV Show Info",
+        action: () => {
+          if (show.filePath) {
+            saveVideoJsonData({
+              currentVideo: { filePath: show.filePath },
+              newVideoJsonData: { tv_show_details: null },
+            });
+          }
+        },
+      });
+
+      menuItems.push({
+        label: "Refresh TV Show Info",
+        action: () => {
+          if (show.tv_show_details.id) {
+            linkTvShowMutation({
+              filePath: show.filePath || "",
+              tv_show_details: show.tv_show_details,
+            });
+          }
+        },
+      });
+    }
+
+    return menuItems;
+  };
 
   // Restore scroll position on mount
   useEffect(() => {

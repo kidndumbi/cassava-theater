@@ -32,6 +32,15 @@ export const videoCommandsHandler = (
     case "nextEpisode":
       playerHandle?.triggereNextEpisode();
       break;
+    case "speed-1":
+    case "speed-1.25":
+    case "speed-1.5":
+    case "speed-1.75":
+    case "speed-2": {
+      const speed = parseFloat(command.split("-")[1]);
+      playerHandle?.setPlaybackSpeed(speed);
+      break;
+    }
     default:
       log.error(`Unknown command: ${command}`);
   }
