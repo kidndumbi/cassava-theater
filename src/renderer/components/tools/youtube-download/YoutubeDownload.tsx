@@ -97,8 +97,8 @@ export const YoutubeDownload = () => {
 
   useEffect(() => {
     if (info) {
-      // Remove invalid filename characters: \ / : * ? " < > |
-      const safeTitle = info.videoDetails.title.replace(/[\\/:*?"<>|]/g, "");
+      // Remove invalid filename characters: \ / : * ? " < > | +
+      const safeTitle = info.videoDetails.title.replace(/[\\/:*?"<>|+]/g, "");
       setFileName(safeTitle);
     }
   }, [info]);
