@@ -87,6 +87,9 @@ contextBridge.exposeInMainWorld("currentlyPlayingAPI", {
   },
   setCurrentPlaylist: (playlist: PlaylistModel) => {
     return ipcRenderer.invoke(CurrentlyPlayingIPCChannels.SetCurrentPlaylist, playlist);
+  },
+  setCurrentTime: (currentTime: number) => {
+    return ipcRenderer.invoke(CurrentlyPlayingIPCChannels.SET_CURRENTLY_PLAYING_CURRENTTIME, currentTime);
   }
 });
 

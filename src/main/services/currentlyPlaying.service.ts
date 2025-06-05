@@ -30,6 +30,14 @@ class CurrentlyPlayingService {
   getCurrentPlaylist(): PlaylistModel | null {
     return this.currentPlaylist;
   }
+
+  setCurrentTime(currentTime: number) {
+    const socketIo = getSocketIoGlobal();
+    if (socketIo) {
+      this.currentVideo.currentTime = currentTime;
+      socketIo.emit(AppSocketEvents.CURRENTLY_PLAYING_CURRENTTIME, currentTime);
+    }
+  }
 }
 
 let CurrentlyPlayingServiceInstance: CurrentlyPlayingService | null = null;
