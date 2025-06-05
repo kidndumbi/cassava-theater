@@ -79,7 +79,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
     }
   }, [videoJsonData]);
 
-  const { mutate: saveJsonData } = useSaveJsonData(() => {
+  const { mutateAsync: saveJsonData } = useSaveJsonData(() => {
     queryClient.invalidateQueries({
       queryKey: ["videoJsonData", selectedFolder?.folderPath],
     });
@@ -129,6 +129,24 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
         value: updatedFolders,
       });
     }
+  };
+
+  const resetAllVideosCurrentTime = async () => {
+    if (!selectedFolder) return;
+
+    const promises = videos.map((videoData) => {
+      return saveJsonData({
+        currentVideo: { filePath: videoData.filePath },
+        newVideoJsonData: { currentTime: 0 },
+      });
+    });
+    await Promise.all(promises)
+      .then(() => {
+        refetch();
+      })
+      .catch((error) => {
+        console.error("Error resetting video current time:", error);
+      });
   };
 
   return (
@@ -213,6 +231,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
                     },
                   });
                 }}
+                onResetTime={resetAllVideosCurrentTime}
               />
             )}
 
