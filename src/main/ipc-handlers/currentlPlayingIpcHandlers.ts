@@ -14,4 +14,9 @@ export const currentlPlayingIpcHandlers = () => {
     getCurrentlyPlayingInstance().setCurrentPlaylist(playlist);
     return true;
   });
+
+  ipcMain.handle(CurrentlyPlayingIPCChannels.SET_CURRENTLY_PLAYING_CURRENTTIME, (_event, currentTime: number) => {
+    getCurrentlyPlayingInstance().setCurrentTime(currentTime);
+    return true;
+  });
 }

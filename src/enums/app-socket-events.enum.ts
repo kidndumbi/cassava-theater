@@ -6,6 +6,7 @@ export enum AppSocketEvents {
   GET_FOLDER_DETAILS = "get-folder-details",
   GET_VIDEO_DETAILS = "get-video-details",
   SET_CURRENTTIME = "set-currenttime",
+  CURRENTLY_PLAYING_CURRENTTIME = "currently-playing-currenttime",
   GET_SETTINGS = "get-settings",
   FETCH_WATCHLATER_VIDEOS = "fetch-watchlater-videos",
   FETCH_RECENTLY_WATCHED_CUSTOM_VIDEOS = "fetch-recently-watched-custom-videos",

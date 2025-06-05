@@ -191,6 +191,7 @@ export const useVideoPlayer = (
 
     const onEnded = () => videoEnded?.(globalVideoPlayer.src);
     const onTimeUpdate = () => {
+      window.currentlyPlayingAPI.setCurrentTime(globalVideoPlayer.currentTime);
       setCurrentTime(globalVideoPlayer.currentTime);
       setPlayedPercentage(
         parseFloat(

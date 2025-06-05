@@ -177,6 +177,7 @@ export interface PlaylistCommandsAPI {
 export interface CurrentlyPlayingAPI {
   setCurrentVideo: (video: VideoDataModel) => Promise<boolean>;
   setCurrentPlaylist: (playlist: PlaylistModel) => Promise<boolean>;
+  setCurrentTime: (currentTime: number) => Promise<{ success: boolean; error?: string }>;
 }
 
 declare global {
