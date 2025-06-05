@@ -219,14 +219,15 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
                 }}
                 onUpdateVideoJsonData={async (data) => {
                   const filePath = selectedFolder.folderPath;
-                  setSelectedFolderDisplayType(data.display);
+                  const { display } = data;
+                  setSelectedFolderDisplayType(display);
 
                   saveJsonData({
                     currentVideo: {
                       filePath,
                     },
                     newVideoJsonData: {
-                      display: data.display,
+                      display,
                       filePath,
                     },
                   });
