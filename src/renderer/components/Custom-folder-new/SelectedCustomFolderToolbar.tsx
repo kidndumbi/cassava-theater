@@ -8,6 +8,7 @@ import ArtTrackIcon from "@mui/icons-material/ArtTrack";
 import theme from "../../../renderer/theme";
 import ListIcon from "@mui/icons-material/List";
 import GridViewIcon from "@mui/icons-material/GridView";
+import RestoreIcon from "@mui/icons-material/Restore";
 import { useState } from "react";
 import { VideoDataModel } from "../../../models/videoData.model";
 
@@ -15,8 +16,9 @@ interface SelectedCustomFolderToolbarProps {
   displayType: ListDisplayType;
   onEdit: () => void;
   onDelete: () => void;
-  onRefresh?: () => void;
+  onRefresh: () => void;
   onUpdateVideoJsonData: (data: VideoDataModel) => void;
+  onResetTime: () => void;
 }
 
 export const SelectedCustomFolderToolbar = ({
@@ -25,6 +27,7 @@ export const SelectedCustomFolderToolbar = ({
   onEdit,
   onRefresh,
   onUpdateVideoJsonData,
+  onResetTime,
 }: SelectedCustomFolderToolbarProps) => {
   const [displayTypeEl, setDisplayTypeEl] = useState<null | HTMLElement>(null);
   const [displayType, setDisplayType] =
@@ -99,7 +102,9 @@ export const SelectedCustomFolderToolbar = ({
           );
         })}
       </Menu>
-
+      <AppIconButton tooltip="Reset time" onClick={onResetTime}>
+        <RestoreIcon />
+      </AppIconButton>
       <AppIconButton tooltip="Delete folder" onClick={onDelete}>
         <DeleteIcon />
       </AppIconButton>

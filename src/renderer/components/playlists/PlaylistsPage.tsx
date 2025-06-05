@@ -132,7 +132,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
 
   const queryClient = new QueryClient();
 
-  const { mutate: saveJsonData } = useSaveJsonData((_, variables) => {
+  const { mutateAsync: saveJsonData } = useSaveJsonData((_, variables) => {
     queryClient.invalidateQueries({
       queryKey: ["videoDetails", variables.currentVideo.filePath, "movies"],
     });

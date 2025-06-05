@@ -140,14 +140,13 @@ export const YoutubeDownload = () => {
         <AppButton
           disabled={!url.trim()}
           onClick={() => {
-            refetch(); // trigger fetching manually
+            refetch();
           }}
         >
           Verify
         </AppButton>
       </Box>
       <Box sx={{ mt: 3, width: "100%" }}>
-        {/* Show error if present */}
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             Error accessing Youtube at this moment. Please try again later.
