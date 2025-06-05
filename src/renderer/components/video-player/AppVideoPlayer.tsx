@@ -25,13 +25,11 @@ import {
 import { AppSlider } from "../common/AppSlider";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import { useDebounce } from "@uidotdev/usehooks";
-import theme from "../../theme";
-import IconButton from "@mui/material/IconButton";
-import { Clear } from "@mui/icons-material";
 import CustomDrawer from "../common/CustomDrawer";
 import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
 import { useModalState } from "../../hooks/useModalState";
+import { FullscreenErrorOverlay } from "../common/FullscreenErrorOverlay";
 
 export type AppVideoPlayerHandle = {
   skipBy?: (seconds: number) => void;
@@ -242,79 +240,11 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     );
 
     const renderErrorState = () => (
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        height="100vh"
-        width="100vw"
-        position="fixed"
-        top={0}
-        left={0}
-        sx={{
-          background: "rgba(20, 20, 20, 0.96)",
-          zIndex: 2000,
-        }}
-      >
-        <Box
-          sx={{
-            background: theme.palette.background.paper,
-            borderRadius: 3,
-            boxShadow: 3,
-            p: 4,
-            minWidth: 320,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Clear
-            sx={{ fontSize: 48, color: theme.palette.error.main, mb: 1 }}
-          />
-          <Box
-            sx={{
-              color: theme.palette.text.primary,
-              fontWeight: 600,
-              fontSize: 20,
-              mb: 1,
-              textAlign: "center",
-            }}
-          >
-            Video Playback Error
-          </Box>
-          <Box
-            sx={{
-              color: theme.palette.text.secondary,
-              mb: 3,
-              textAlign: "center",
-              fontSize: 16,
-            }}
-          >
-            {error}
-          </Box>
-          <IconButton
-            sx={{
-              color: theme.palette.error.main,
-              border: "1px solid",
-              borderColor: theme.palette.error.main,
-              borderRadius: 2,
-              px: 3,
-              py: 1,
-              fontWeight: 600,
-              fontSize: 16,
-              transition: "background 0.2s",
-              "&:hover": {
-                background: theme.palette.error.light,
-              },
-            }}
-            onClick={handleCancel.bind(null, currentVideo?.filePath || "")}
-          >
-            <Clear sx={{ mr: 1 }} />
-            Dismiss
-          </IconButton>
-        </Box>
-      </Box>
+      <FullscreenErrorOverlay
+        title="Video Playback Error"
+        message={error || ""}
+        onButtonClick={handleCancel.bind(null, currentVideo?.filePath || "")}
+      />
     );
 
     // Expose methods to parent via ref
@@ -348,11 +278,11 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               paused ? play?.() : pause?.();
             }
           }}
-          onError={(error) => {
+          onError={() => {
             setError(
               `An error occurred while loading the video: ${
-                error || "Unknown error"
-              }`,
+                currentVideo?.filePath
+              }. \nPlease check if the file exists or is supported.`,
             );
           }}
         />
