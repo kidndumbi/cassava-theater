@@ -5,7 +5,7 @@ import { getSocketIoGlobal } from "../socketGlobalManager";
 
 class CurrentlyPlayingService {
   private currentVideo: VideoDataModel | null = null;
-  private currentPlaylist: PlaylistModel | null = null;
+  private currentPlaylist: Partial<PlaylistModel> | null = null;
 
   setCurrentVideo(video: VideoDataModel): void {
     this.currentVideo = video;
@@ -17,8 +17,8 @@ class CurrentlyPlayingService {
   getCurrentVideo(): VideoDataModel | null {
     return this.currentVideo;
   }
-  setCurrentPlaylist(playlist: PlaylistModel): void {
-    this.currentPlaylist = playlist;
+  setCurrentPlaylist(playlist: Partial<PlaylistModel>): void {
+    this.currentPlaylist = !playlist ? playlist : {...this.currentPlaylist, ...playlist};
     const socketIo = getSocketIoGlobal();
     if (socketIo) {
       socketIo.emit(
@@ -27,7 +27,7 @@ class CurrentlyPlayingService {
       );
     }
   }
-  getCurrentPlaylist(): PlaylistModel | null {
+  getCurrentPlaylist(): Partial<PlaylistModel> | null {
     return this.currentPlaylist;
   }
 

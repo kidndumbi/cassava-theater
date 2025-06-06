@@ -30,7 +30,7 @@ export function registerCurrentlyPlayingHandlers(socket: Socket) {
       _requestData: unknown,
       callback: (response: {
         success: boolean;
-        data?: PlaylistModel | null;
+        data?: Partial<PlaylistModel> | null;
         error?: string;
       }) => void,
     ) => {

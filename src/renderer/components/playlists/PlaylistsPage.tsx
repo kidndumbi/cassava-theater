@@ -284,7 +284,6 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
                 playVideoFromPlaylist(videoIndex);
               }}
               handlResetVideo={async (videoData: VideoDataModel) => {
-                console.log("Reset video:", videoData);
                 await saveJsonData({
                   currentVideo: { filePath: videoData.filePath },
                   newVideoJsonData: { currentTime: 0 },

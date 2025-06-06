@@ -10,7 +10,7 @@ export const currentlPlayingIpcHandlers = () => {
     return true;
   });
 
-  ipcMain.handle(CurrentlyPlayingIPCChannels.SetCurrentPlaylist, (_event, playlist: PlaylistModel) => {
+  ipcMain.handle(CurrentlyPlayingIPCChannels.SetCurrentPlaylist, (_event, playlist: Partial<PlaylistModel>) => {
     getCurrentlyPlayingInstance().setCurrentPlaylist(playlist);
     return true;
   });
