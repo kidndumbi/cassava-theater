@@ -1,4 +1,3 @@
-import { app } from "electron";
 import fsPromise, { access } from "fs/promises";
 import * as fs from "fs";
 import * as path from "path";
@@ -11,6 +10,24 @@ export const DEFAULT_THUMBNAIL_URL =
 
 export function normalizeFilePath(filePath: string): string {
   return filePath.replace(/\\/g, "/");
+}
+
+export function secondsToHms(value: number | null | undefined): string {
+  if (value == null || isNaN(value) || value < 0) {
+    return "00:00:00";
+  }
+
+  const totalSeconds = Math.round(value); // No division by 1000 needed
+  const hours = Math.floor(totalSeconds / 3600);
+  const remainingSeconds = totalSeconds % 3600;
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+
+  return [
+    hours.toString().padStart(2, "0"),
+    minutes.toString().padStart(2, "0"),
+    seconds.toString().padStart(2, "0"),
+  ].join(":");
 }
 
 export const isVideoFile = (file: string): boolean => {
