@@ -143,9 +143,16 @@ export const VideoPlayerPage = forwardRef<
           [videos[i], videos[j]] = [videos[j], videos[i]];
         }
         if (currentVideoItem) {
-          setPlaylistVideos([currentVideoItem, ...videos]);
+          const combinedVideos = [currentVideoItem, ...videos];
+          setPlaylistVideos(combinedVideos);
+          window.currentlyPlayingAPI.setCurrentPlaylist({
+            videos: getVideoPaths(combinedVideos),
+          });
         } else {
           setPlaylistVideos(videos);
+          window.currentlyPlayingAPI.setCurrentPlaylist({
+            videos: getVideoPaths(videos),
+          });
         }
         setPlaylistShuffled(true);
       } else if (!shuffle) {
@@ -154,6 +161,10 @@ export const VideoPlayerPage = forwardRef<
       }
     }
   }, [receivedPlaylistVideos, shuffle, currentVideo, playlistShuffled]);
+
+  const getVideoPaths = (videos: VideoDataModel[] | undefined) => {
+    return videos?.map((video) => video.filePath).filter(Boolean) || [];
+  };
 
   const onSubtitleChange = async (sub: string | null) => {
     await updateSubtitle(sub, currentVideo);
