@@ -30,7 +30,7 @@ import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const navigate = useNavigate();
   const { data: settings } = useGetAllSettings();
-  const { data: playlists, refetch } = usePlaylists();
+  const { data: playlists, refetch: refetchPlaylists } = usePlaylists();
   const { setCurrentVideo } = useVideoListLogic();
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -107,7 +107,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
       return window.playlistAPI.putPlaylist(newPlaylist.id, newPlaylist);
     },
     onSuccess: () => {
-      refetch();
+      refetchPlaylists();
     },
   });
 
@@ -117,7 +117,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
         ? { ...variables.playlist }
         : prev,
     );
-    refetch();
+    refetchPlaylists();
   });
 
   const { openDialog, setMessage } = useConfirmation();
@@ -125,7 +125,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const { mutateAsync: deletePlaylist } = useMutation({
     mutationFn: (id: string) => window.playlistAPI.deletePlaylist(id),
     onSuccess: () => {
-      refetch();
+      refetchPlaylists();
       setSelectedPlaylist(null);
     },
   });
@@ -209,6 +209,30 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
     navigate(url);
   };
 
+  const resetAllVideosCurrentTime = async () => {
+    if (!selectedPlaylist?.videos.length) return;
+
+    await Promise.all(
+      selectedPlaylist.videos.map(async (filePath) => {
+        await saveJsonData({
+          currentVideo: { filePath },
+          newVideoJsonData: { currentTime: 0 },
+        });
+      }),
+    )
+      .then(() => {
+        setSelectedPlaylistVideosCleaned((prev) =>
+          prev.map((v) => ({
+            ...v,
+            currentTime: 0,
+          })),
+        );
+      })
+      .catch((error) => {
+        console.error("Error resetting video current time:", error);
+      });
+  };
+
   const { isAnyDragging, setDragging } = useDragState();
 
   return (
@@ -265,6 +289,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
                   });
                   setNonExistentVideos([]);
                 }}
+                onResetTime={resetAllVideosCurrentTime}
               />
             )}
             <PlaylistVideosPanel

@@ -52,7 +52,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
 
   const {
     data: videos,
-    refetch,
+    refetch:refetchVideos,
     error,
     isLoading: isVideosLoading,
   } = useVideoDataQuery({
@@ -142,7 +142,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
     });
     await Promise.all(promises)
       .then(() => {
-        refetch();
+        refetchVideos();
       })
       .catch((error) => {
         console.error("Error resetting video current time:", error);
@@ -196,7 +196,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
                   setEditModalOpen(true);
                 }}
                 onRefresh={() => {
-                  refetch();
+                  refetchVideos();
                 }}
                 onDelete={async () => {
                   if (
