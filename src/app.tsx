@@ -59,7 +59,7 @@ const App = () => {
   useEffect(() => {
     window.videoCommandsAPI.videoCommand((command: VideoCommands) => {
       videoCommandsHandler(command, appVideoPlayerRef.current);
-    });
+    }); 
 
     window.playlistCommandsAPI.playlistVideoCommand(
       (command: PlaylistCommands) => {
