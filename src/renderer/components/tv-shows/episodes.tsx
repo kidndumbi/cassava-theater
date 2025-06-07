@@ -50,6 +50,38 @@ export const Episodes: React.FC<EpisodesProps> = ({
     episodeDeleted(filePath);
   });
 
+  // Refactored handler for episode click
+  const handleEpisodeClick = async (episode: VideoDataModel) => {
+    if (
+      !settings?.playNonMp4Videos &&
+      !episode.filePath?.toLowerCase().endsWith(".mp4")
+    ) {
+      const queued = await isInMp4ConversionQueue(episode.filePath);
+      const baseMsg = "This video is not in MP4 format and cannot be played directly.";
+      const message = !queued
+        ? `${baseMsg} Please click OK to convert it to MP4 format.`
+        : `${baseMsg} This video is already in the conversion queue. Please wait for it to finish converting.`;
+
+      setMessage(
+        <Alert
+          icon={<WarningIcon fontSize="inherit" />}
+          severity="warning"
+        >
+          {message}
+        </Alert>,
+      );
+      const dialogDecision = await openDialog(
+        "Convert to MP4",
+        queued ? true : false,
+      );
+      if (dialogDecision === "Ok") {
+        addToConversionQueue(episode.filePath);
+      }
+      return;
+    }
+    onEpisodeClick(episode);
+  };
+
   const renderEpisodes = () => (
     <Box
       sx={{
@@ -77,37 +109,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
             key={episode.filePath}
             episode={episode}
             theme={theme}
-            onEpisodeClick={async () => {
-              if (
-                !settings?.playNonMp4Videos &&
-                !episode.filePath?.toLowerCase().endsWith(".mp4")
-              ) {
-                const queued = await isInMp4ConversionQueue(episode.filePath);
-                const message = !queued
-                  ? `This video is not in MP4 format and cannot be played
-                    directly. Please click OK to convert it to MP4 format.`
-                  : `This video is not in MP4 format and cannot be played
-                    directly. This video is already in the conversion queue. Please wait for it to finish converting.`;
-
-                setMessage(
-                  <Alert
-                    icon={<WarningIcon fontSize="inherit" />}
-                    severity="warning"
-                  >
-                    {message}
-                  </Alert>,
-                );
-                const dialogDecision = await openDialog(
-                  "Convert to MP4",
-                  queued ? true : false,
-                );
-                if (dialogDecision === "Ok") {
-                  addToConversionQueue(episode.filePath);
-                }
-                return;
-              }
-              onEpisodeClick(episode);
-            }}
+            onEpisodeClick={() => handleEpisodeClick(episode)}
             handleFilepathChange={handleFilepathChange}
             handleConvertToMp4={(filePath) => {
               addToConversionQueue(filePath);
