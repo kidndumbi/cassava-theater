@@ -2,7 +2,11 @@ import { createContext, FC, useContext, useState } from "react";
 import ConfirmationDialog from "../components/common/ConfirmationDialog";
 
 type ConfirmationContextType = {
-  openDialog: (procedButtonText?: string, hideOkButton?: boolean, message?:string) => Promise<string>;
+  openDialog: (
+    procedButtonText?: string,
+    hideOkButton?: boolean,
+    message?: string,
+  ) => Promise<string>;
   setMessage: React.Dispatch<React.SetStateAction<React.ReactNode>>;
 };
 
@@ -13,12 +17,17 @@ export const ConfirmationProvider: FC<{ children: React.ReactNode }> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("Are you sure");
-  const [procedButtonText, setProcedButtonText] = useState("Ok");
+  const [procedButtonText, setProcedButtonText] = useState("");
   const [hideOkButton, setHideOkButton] = useState(false);
   const [resolve, setResolve] =
     useState<(value: string | PromiseLike<string>) => void>();
 
-  const openDialog = (procedButtonText?: string, hideOkButton?: boolean, message?:string): Promise<string> => {
+  const openDialog = (
+    procedButtonText?: string,
+    hideOkButton?: boolean,
+    message?: string,
+  ): Promise<string> => {
+    setProcedButtonText("Ok");
 
     if (message) {
       setMessage(message);
