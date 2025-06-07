@@ -81,16 +81,30 @@ export const Episodes: React.FC<EpisodesProps> = ({
                 !settings?.playNonMp4Videos &&
                 !episode.filePath?.toLowerCase().endsWith(".mp4")
               ) {
+                const converSionQueue =
+                  await window.mp4ConversionAPI.getConversionQueue();
+                const queued = converSionQueue.find(
+                  (q) =>
+                    q.inputPath === episode.filePath && q.status !== "failed",
+                );
+                const message = !queued
+                  ? `This video is not in MP4 format and cannot be played
+                    directly. Please click OK to convert it to MP4 format.`
+                  : `This video is not in MP4 format and cannot be played
+                    directly. This video is already in the conversion queue. Please wait for it to finish converting.`;
+
                 setMessage(
                   <Alert
                     icon={<WarningIcon fontSize="inherit" />}
                     severity="warning"
                   >
-                    This video is not in MP4 format and cannot be played
-                    directly. Please click OK to convert it to MP4 format.
+                    {message}
                   </Alert>,
                 );
-                const dialogDecision = await openDialog();
+                const dialogDecision = await openDialog(
+                  undefined,
+                  queued ? true : false,
+                );
                 if (dialogDecision === "Ok") {
                   addToConversionQueue(episode.filePath);
                 }
