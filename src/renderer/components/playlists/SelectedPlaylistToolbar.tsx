@@ -1,6 +1,7 @@
 import { Box, Menu, MenuItem, SxProps, Theme } from "@mui/material";
 import AppIconButton from "../common/AppIconButton";
 import { ListDisplayType, PlaylistModel } from "../../../models/playlist.model";
+import RestoreIcon from "@mui/icons-material/Restore";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -23,6 +24,7 @@ export const SelectedPlaylistToolbar = ({
   updatePlaylist,
   nonExistentVideos,
   onClearMissingVideos,
+  onResetTime,
 }: {
   playlist: PlaylistModel;
   onRename: () => void;
@@ -33,6 +35,7 @@ export const SelectedPlaylistToolbar = ({
   updatePlaylist: (id: string, playlist: PlaylistModel) => void;
   nonExistentVideos: string[];
   onClearMissingVideos: () => void;
+  onResetTime: () => void;
 }) => {
   const [playAnchorEl, setPlayAnchorEl] = useState<null | HTMLElement>(null);
   const [displayTypeEl, setDisplayTypeEl] = useState<null | HTMLElement>(null);
@@ -166,7 +169,9 @@ export const SelectedPlaylistToolbar = ({
             <PriorityHighIcon color="error" />
           </AppIconButton>
         )}
-
+        <AppIconButton tooltip="Reset time" onClick={onResetTime}>
+          <RestoreIcon />
+        </AppIconButton>
         <AppIconButton tooltip="Delete playlist" onClick={onDelete}>
           <DeleteIcon />
         </AppIconButton>

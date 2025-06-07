@@ -404,7 +404,6 @@ export const getVideoJsonData = async (
     const data = await videoDbDataService.getVideo(
       normalizeFilePath(currentVideo.filePath),
     );
-    console.log("getVideoJsonData data:::::::: ", data);
     return data || EMPTY_JSON_RESPONSE;
   } catch (error) {
     console.error("An error occurred:", error);
