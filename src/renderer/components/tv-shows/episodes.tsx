@@ -102,7 +102,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
                   </Alert>,
                 );
                 const dialogDecision = await openDialog(
-                  undefined,
+                  "Convert to MP4",
                   queued ? true : false,
                 );
                 if (dialogDecision === "Ok") {
