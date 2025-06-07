@@ -1,5 +1,7 @@
 import React from "react";
-import { Box, Theme } from "@mui/material";
+import { Alert, Box, Theme } from "@mui/material";
+import WarningIcon from "@mui/icons-material/Warning";
+
 import { VideoDataModel } from "../../../models/videoData.model";
 import { Episode } from "./episode";
 import LoadingIndicator from "../common/LoadingIndicator";
@@ -7,6 +9,8 @@ import { formatDate } from "../../util/helperFunctions";
 import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
 import { useSnackbar } from "../../contexts/SnackbarContext";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 
 interface EpisodesProps {
   loadingEpisodes: boolean;
@@ -35,8 +39,10 @@ export const Episodes: React.FC<EpisodesProps> = ({
   episodeDeleted,
 }) => {
   const { addToConversionQueue } = useMp4Conversion();
+  const { data: settings } = useGetAllSettings();
 
   const { showSnackbar } = useSnackbar();
+  const { openDialog, setMessage } = useConfirmation();
 
   const deleteFileMutation = useDeleteFile((result, filePath) => {
     showSnackbar("File deleted successfully", "success");
@@ -70,7 +76,28 @@ export const Episodes: React.FC<EpisodesProps> = ({
             key={episode.filePath}
             episode={episode}
             theme={theme}
-            onEpisodeClick={onEpisodeClick}
+            onEpisodeClick={async () => {
+              if (
+                !settings?.playNonMp4Videos &&
+                !episode.filePath?.toLowerCase().endsWith(".mp4")
+              ) {
+                setMessage(
+                  <Alert
+                    icon={<WarningIcon fontSize="inherit" />}
+                    severity="warning"
+                  >
+                    This video is not in MP4 format and cannot be played
+                    directly. Please click OK to convert it to MP4 format.
+                  </Alert>,
+                );
+                const dialogDecision = await openDialog();
+                if (dialogDecision === "Ok") {
+                  addToConversionQueue(episode.filePath);
+                }
+                return;
+              }
+              onEpisodeClick(episode);
+            }}
             handleFilepathChange={handleFilepathChange}
             handleConvertToMp4={(filePath) => {
               addToConversionQueue(filePath);

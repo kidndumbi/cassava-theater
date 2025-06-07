@@ -52,11 +52,11 @@ export const SnackbarProvider = ({ children }: { children: ReactNode }) => {
       >
         <Alert onClose={handleClose} severity={snackbar.severity} action={
           snackbar.actionText ? (
-            <Button color="inherit" size="small" onClick={() => {
+            <Button color="primary" size="small" onClick={() => {
               if (snackbar.onAction) snackbar.onAction();
               handleClose();
             }}>
-              {snackbar.actionText}
+              {snackbar.actionText} 
             </Button>
           ) : null
         }>
