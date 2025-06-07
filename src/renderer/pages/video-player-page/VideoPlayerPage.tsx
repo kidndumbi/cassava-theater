@@ -226,8 +226,7 @@ export const VideoPlayerPage = forwardRef<
             const nextVideo = playlistVideos[idx + 1];
             setCurrentVideo(nextVideo);
           } else {
-            // No more items to play, go to details of current video
-            navigateToVideoDetails(currentVideo.filePath ?? "");
+            playlistControlPanel.setOpen(true);
           }
         }
       } else {
