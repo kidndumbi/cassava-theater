@@ -11,6 +11,7 @@ import { useDeleteFile } from "../../hooks/useDeleteFile";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
+import { isInMp4ConversionQueue } from "../../util/mp4ConversionAPI-helpers";
 
 interface EpisodesProps {
   loadingEpisodes: boolean;
@@ -81,12 +82,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
                 !settings?.playNonMp4Videos &&
                 !episode.filePath?.toLowerCase().endsWith(".mp4")
               ) {
-                const converSionQueue =
-                  await window.mp4ConversionAPI.getConversionQueue();
-                const queued = converSionQueue.find(
-                  (q) =>
-                    q.inputPath === episode.filePath && q.status !== "failed",
-                );
+                const queued = await isInMp4ConversionQueue(episode.filePath);
                 const message = !queued
                   ? `This video is not in MP4 format and cannot be played
                     directly. Please click OK to convert it to MP4 format.`

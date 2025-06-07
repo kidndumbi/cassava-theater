@@ -17,12 +17,12 @@ import "./episode.css";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { NotesModal } from "../common/NotesModal";
 import AppIconButton from "../common/AppIconButton";
-import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 import { styled } from "@mui/system";
 import { VideoTypeChip } from "../common/VideoTypeChip";
 import { useScreenshot } from "../../hooks/useScreenshot";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { isInMp4ConversionQueue } from "../../util/mp4ConversionAPI-helpers";
 
 interface EpisodeProps {
   episode: VideoDataModel;
@@ -44,11 +44,11 @@ export const Episode: React.FC<EpisodeProps> = ({
   handleConvertToMp4,
   handleDelete,
 }) => {
-  const { isConvertingToMp4 } = useMp4Conversion();
   const { data: settings } = useGetAllSettings();
   const { openDialog, setMessage } = useConfirmation();
   const [hover, setHover] = useState(false);
   const [openNotesModal, setOpenNotesModal] = useState(false);
+  const [isInQueue, setIsInQueue] = useState(false);
   const handleCloseNotesModal = () => setOpenNotesModal(false);
 
   const handleMouseEnter = () => setHover(true);
@@ -84,6 +84,15 @@ export const Episode: React.FC<EpisodeProps> = ({
       },
     }),
   );
+
+  React.useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      const result = await isInMp4ConversionQueue(episode.filePath);
+      if (isMounted) setIsInQueue(result);
+    })();
+    return () => { isMounted = false; };
+  }, [episode.filePath]);
 
   return (
     <Box key={episode.filePath} className="episode-container">
@@ -151,7 +160,7 @@ export const Episode: React.FC<EpisodeProps> = ({
           </AppIconButton>
 
           {getFileExtension(episode.filePath) !== "mp4" &&
-            !isConvertingToMp4(episode.filePath) && (
+            !isInQueue && (
               <AppIconButton
                 tooltip="Convert to MP4"
                 onClick={handleConvertToMp4?.bind(null, episode.filePath || "")}
