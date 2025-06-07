@@ -11,6 +11,7 @@ import * as appSetup from "./main/services/setup.service";
 import { setMainWindow } from "./main/mainWindowManager";
 import { levelDBService } from "./main/services/levelDB.service";
 import * as settingsDataDbService from "./main/services/settingsDataDb.service";
+import { getCurrentlyPlayingInstance } from "./main/services/currentlyPlaying.service";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -80,6 +81,9 @@ app.on("ready", async () => {
 app.on("before-quit", async () => {
   try {
     await levelDBService.close();
+    const currentlyPlaying = getCurrentlyPlayingInstance();
+    currentlyPlaying.setCurrentVideo(null);
+    currentlyPlaying.setCurrentPlaylist(null);
     log.info("Application shutdown completed");
   } catch (err) {
     log.error("Failed to cleanly shutdown:", err);
