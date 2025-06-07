@@ -4,9 +4,8 @@ import { VideoDataModel } from "../../../models/videoData.model";
 import { TvShows } from "../../components/tv-shows/TvShows";
 import { HomePage } from "../../components/home/Home";
 import { PlaylistsPage } from "../../components/playlists/PlaylistsPage";
-
 import { ToolsPage } from "../../components/tools/ToolsPage";
-import { CustomFolderPage } from "../../components/Custom-folder-new/CustomFolderPage";
+import { CustomFolderPage } from "../../components/Custom-folder-new/customFolderPage";
 
 export interface RenderActivePageProps {
   loadingMovies: boolean;
