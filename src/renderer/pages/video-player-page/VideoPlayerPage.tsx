@@ -163,7 +163,7 @@ export const VideoPlayerPage = forwardRef<
   }, [receivedPlaylistVideos, shuffle, currentVideo, playlistShuffled]);
 
   const getVideoPaths = (videos: VideoDataModel[] | undefined) => {
-    return videos?.map((video) => video.filePath).filter(Boolean) || [];
+    return videos?.map((video) => video?.filePath).filter(Boolean) || [];
   };
 
   const onSubtitleChange = async (sub: string | null) => {
