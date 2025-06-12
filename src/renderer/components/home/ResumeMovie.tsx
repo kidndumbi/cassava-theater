@@ -2,12 +2,12 @@ import React, { useCallback, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
-import { getUrl, trimFileName } from "../../util/helperFunctions";
-import { VideoProgressBar } from "../common/VideoProgressBar";
+import { getUrl, removeVidExt, trimFileName } from "../../util/helperFunctions";
 import { PosterCard } from "../common/PosterCard";
 import MovieDetailsButtons from "../movies/MovieDetailsButtons";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { AppContextMenu } from "../common/AppContextMenu";
 
 interface ResumeMovieProps {
   movie: VideoDataModel;
@@ -16,11 +16,13 @@ interface ResumeMovieProps {
     video: VideoDataModel,
     startFromBeginning: boolean,
   ) => void;
+  handleResetTime: (video: VideoDataModel) => void;
 }
 
 const ResumeMovie: React.FC<ResumeMovieProps> = ({
   movie,
   handlePosterClick,
+  handleResetTime,
 }) => {
   const { getTmdbImageUrl } = useTmdbImageUrl();
   const { data: settings } = useGetAllSettings();
@@ -57,25 +59,44 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
   const handleMouseEnter = useCallback(() => setShowActions(true), []);
   const handleMouseLeave = useCallback(() => setShowActions(false), []);
 
+  const getMenuItems = useCallback(
+    (movie: VideoDataModel) => [
+      {
+        label: "Reset time",
+        action: () => {
+          handleResetTime(movie);
+        },
+      },
+    ],
+    [movie],
+  );
+
   return (
     <Box
       className="relative max-w-[200px]"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <PosterCard
-        imageUrl={imageUrl()}
-        altText={movie.fileName}
-        currentTime={movie.currentTime}
-        duration={movie.duration}
-        footer={
-          <Box className="mt-2">
-            <Typography variant="subtitle1" align="center">
-              {trimFileName(movie.fileName ?? "Unknown Title")}
-            </Typography>
-          </Box>
-        }
-      />
+      <AppContextMenu
+        key={movie.filePath}
+        title={removeVidExt(movie.fileName ?? "")}
+        menuItems={getMenuItems(movie)}
+      >
+        <PosterCard
+          imageUrl={imageUrl()}
+          altText={movie.fileName}
+          currentTime={movie.currentTime}
+          duration={movie.duration}
+          footer={
+            <Box className="mt-2">
+              <Typography variant="subtitle1" align="center">
+                {trimFileName(movie.fileName ?? "Unknown Title")}
+              </Typography>
+            </Box>
+          }
+        />
+      </AppContextMenu>
+
       {showActionButtons && (
         <Box className="absolute left-1/2 top-[65%] -translate-x-1/2 -translate-y-1/2">
           <MovieDetailsButtons

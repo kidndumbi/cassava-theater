@@ -40,6 +40,7 @@ export function useSaveJsonData(
     },
     onError: (error, variables, context) => {
       onError?.(error, variables, context);
+      console.error("Error saving JSON data:", error);
     },
   });
 }
