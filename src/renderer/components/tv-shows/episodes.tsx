@@ -12,6 +12,12 @@ import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { isInMp4ConversionQueue } from "../../util/mp4ConversionAPI-helpers";
+import { AppModal } from "../common/AppModal";
+import { PlaylistSelect } from "../playlists/PlaylistSelect";
+import { useModalState } from "../../hooks/useModalState";
+import { usePlaylists } from "../../hooks/usePlaylists";
+import { PlaylistModel } from "../../../models/playlist.model";
+import { useMutation } from "@tanstack/react-query";
 
 interface EpisodesProps {
   loadingEpisodes: boolean;
@@ -41,13 +47,31 @@ export const Episodes: React.FC<EpisodesProps> = ({
 }) => {
   const { addToConversionQueue } = useMp4Conversion();
   const { data: settings } = useGetAllSettings();
+  const { data: playlists, refetch } = usePlaylists();
+  const [selectedPlaylistVideo, setSelectedPlaylistVideo] =
+    React.useState<VideoDataModel | null>(null);
 
   const { showSnackbar } = useSnackbar();
   const { openDialog, setMessage } = useConfirmation();
 
+  const {
+    open: openPlaylistModal,
+    openModal: openPlaylistModalOpen,
+    closeModal: closePlaylistModal,
+  } = useModalState(false);
+
   const deleteFileMutation = useDeleteFile((result, filePath) => {
     showSnackbar("File deleted successfully", "success");
     episodeDeleted(filePath);
+  });
+
+  const { mutate: updatePlaylist } = useMutation({
+    mutationFn: (playlist: PlaylistModel) => {
+      return window.playlistAPI.putPlaylist(playlist.id, playlist);
+    },
+    onSuccess: () => {
+      refetch();
+    },
   });
 
   // Refactored handler for episode click
@@ -57,16 +81,14 @@ export const Episodes: React.FC<EpisodesProps> = ({
       !episode.filePath?.toLowerCase().endsWith(".mp4")
     ) {
       const queued = await isInMp4ConversionQueue(episode.filePath);
-      const baseMsg = "This video is not in MP4 format and cannot be played directly.";
+      const baseMsg =
+        "This video is not in MP4 format and cannot be played directly.";
       const message = !queued
         ? `${baseMsg} Please click OK to convert it to MP4 format.`
         : `${baseMsg} This video is already in the conversion queue. Please wait for it to finish converting.`;
 
       setMessage(
-        <Alert
-          icon={<WarningIcon fontSize="inherit" />}
-          severity="warning"
-        >
+        <Alert icon={<WarningIcon fontSize="inherit" />} severity="warning">
           {message}
         </Alert>,
       );
@@ -117,6 +139,10 @@ export const Episodes: React.FC<EpisodesProps> = ({
             handleDelete={async (filePath) => {
               await deleteFileMutation.mutateAsync(filePath);
             }}
+            onPlaylistSelect={(video) => {
+              setSelectedPlaylistVideo(video);
+              openPlaylistModalOpen();
+            }}
           />
         ))
       )}
@@ -133,6 +159,24 @@ export const Episodes: React.FC<EpisodesProps> = ({
       ) : (
         renderEpisodes()
       )}
+
+      <AppModal
+        open={openPlaylistModal}
+        onClose={() => {
+          closePlaylistModal();
+          setSelectedPlaylistVideo(null);
+        }}
+        title="Playlists"
+        fullScreen={false}
+      >
+        <PlaylistSelect
+          playlists={playlists}
+          video={selectedPlaylistVideo}
+          updatePlaylist={(playlist) => {
+            updatePlaylist(playlist);
+          }}
+        ></PlaylistSelect>
+      </AppModal>
     </>
   );
 };

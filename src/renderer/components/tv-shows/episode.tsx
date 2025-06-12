@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Box, Theme } from "@mui/material";
 import FourMpIcon from "@mui/icons-material/FourMp";
 import DeleteIcon from "@mui/icons-material/Delete";
+import FeaturedPlayListIcon from "@mui/icons-material/FeaturedPlayList";
 
 import {
   getFileExtension,
@@ -34,6 +35,7 @@ interface EpisodeProps {
   ) => void;
   handleConvertToMp4?: (filePath: string) => void;
   handleDelete: (filePath: string) => void;
+  onPlaylistSelect: (episode: VideoDataModel) => void;
 }
 
 export const Episode: React.FC<EpisodeProps> = ({
@@ -43,6 +45,7 @@ export const Episode: React.FC<EpisodeProps> = ({
   handleFilepathChange,
   handleConvertToMp4,
   handleDelete,
+  onPlaylistSelect,
 }) => {
   const { data: settings } = useGetAllSettings();
   const { openDialog, setMessage } = useConfirmation();
@@ -91,7 +94,9 @@ export const Episode: React.FC<EpisodeProps> = ({
       const result = await isInMp4ConversionQueue(episode.filePath);
       if (isMounted) setIsInQueue(result);
     })();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [episode.filePath]);
 
   return (
@@ -159,15 +164,14 @@ export const Episode: React.FC<EpisodeProps> = ({
             <NotesIcon />
           </AppIconButton>
 
-          {getFileExtension(episode.filePath) !== "mp4" &&
-            !isInQueue && (
-              <AppIconButton
-                tooltip="Convert to MP4"
-                onClick={handleConvertToMp4?.bind(null, episode.filePath || "")}
-              >
-                <FourMpIcon />
-              </AppIconButton>
-            )}
+          {getFileExtension(episode.filePath) !== "mp4" && !isInQueue && (
+            <AppIconButton
+              tooltip="Convert to MP4"
+              onClick={handleConvertToMp4?.bind(null, episode.filePath || "")}
+            >
+              <FourMpIcon />
+            </AppIconButton>
+          )}
           <AppIconButton
             tooltip="delete"
             onClick={async () => {
@@ -179,6 +183,12 @@ export const Episode: React.FC<EpisodeProps> = ({
             }}
           >
             <DeleteIcon />
+          </AppIconButton>
+          <AppIconButton
+            tooltip="Add to Playlist"
+            onClick={() => onPlaylistSelect(episode)}
+          >
+            <FeaturedPlayListIcon />
           </AppIconButton>
         </Box>
       </Box>
