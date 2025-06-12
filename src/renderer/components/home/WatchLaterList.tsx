@@ -9,12 +9,14 @@ interface WatchLaterProps {
   watchLaterVideos: VideoDataModel[];
   loadingWatchLater: boolean;
   handlePosterClick: (videoType: string, video: VideoDataModel) => void;
+  onRemoveFromWatchLater: (video: VideoDataModel) => void;
 }
 
 export const WatchLaterList: FC<WatchLaterProps> = ({
   watchLaterVideos,
   loadingWatchLater,
   handlePosterClick,
+  onRemoveFromWatchLater,
 }) => {
   const renderMovies = () => {
     if (loadingWatchLater) {
@@ -34,6 +36,7 @@ export const WatchLaterList: FC<WatchLaterProps> = ({
         key={movie.filePath}
         movie={movie}
         handlePosterClick={handlePosterClick}
+        onRemoveFromWatchLater={onRemoveFromWatchLater} // Pass the remove function
       />
     ));
   };

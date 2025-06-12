@@ -1,6 +1,7 @@
 import { Box, Menu, MenuItem, SxProps, Theme } from "@mui/material";
 import React from "react";
 import theme from "../../theme";
+import { trimFileName } from "../../util/helperFunctions";
 
 export interface ContextMenuItemConfig {
   label: string;
@@ -75,7 +76,7 @@ export const AppContextMenu = ({
               color: theme.customVariables.appWhiteSmoke,
             }}
           >
-            {title}
+            { trimFileName(title)}
           </MenuItem>
         )}
         {menuItems?.map((item, index) => (

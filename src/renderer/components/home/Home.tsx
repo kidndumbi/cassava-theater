@@ -66,8 +66,11 @@ export const HomePage: React.FC<HomePageProps> = ({
     refetch: refetchRecentCustomVideos,
   } = useRecentlyWatchedCustomVideosQuery();
 
-  const { data: watchLaterVideos, isLoading: isLoadingWatchLaterVideos } =
-    useWatchlaterVideosQuery();
+  const {
+    data: watchLaterVideos,
+    isLoading: isLoadingWatchLaterVideos,
+    refetch: refetchWatchLater,
+  } = useWatchlaterVideosQuery();
 
   const { handlePosterClick, loadingItems } = useHandlePosterClick(
     menuId,
@@ -199,6 +202,13 @@ export const HomePage: React.FC<HomePageProps> = ({
           handlePosterClick={handlePosterClick}
           watchLaterVideos={watchLaterVideos}
           loadingWatchLater={isLoadingWatchLaterVideos}
+          onRemoveFromWatchLater={async (video) => {
+            await saveMovieData({
+              currentVideo: { filePath: video.filePath },
+              newVideoJsonData: { watchLater: false },
+            });
+            refetchWatchLater();
+          }}
         />
       </Box>
     </Box>
