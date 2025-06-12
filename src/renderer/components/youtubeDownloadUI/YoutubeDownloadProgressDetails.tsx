@@ -34,8 +34,11 @@ export const YoutubeDownloadProgressDetails = ({
         className="overflow-hidden text-ellipsis whitespace-nowrap text-sm"
         sx={{
           color: theme.palette.primary.light,
+          cursor: "pointer",
+          textDecoration: "underline",
         }}
         title={item.url}
+        onClick={() => window.mainUtilAPI.openExternalLink(item.url)}
       >
         {item.url}
       </Box>
