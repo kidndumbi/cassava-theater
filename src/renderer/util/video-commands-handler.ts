@@ -30,7 +30,9 @@ export const videoCommandsHandler = (
       playerHandle?.setVolume((prev) => Math.min(prev + 0.1, 1));
       break;
     case "nextEpisode":
-      playerHandle?.triggereNextEpisode();
+      if (playerHandle && playerHandle.triggereNextEpisode) {
+        playerHandle.triggereNextEpisode();
+      }
       break;
     case "speed-1":
     case "speed-1.25":
