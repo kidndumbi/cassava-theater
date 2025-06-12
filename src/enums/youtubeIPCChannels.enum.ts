@@ -7,4 +7,6 @@ export enum YoutubeIPCChannels {
   ClearQueue = "youtube:clearQueue",
   GetQueue = "youtube:getQueue",
   SwapQueueItems = "youtube:swapQueueItems",
+  ProcessQueue = "youtube:processQueue",
+  SetIsProcessing = "youtube:setIsProcessing",
 }

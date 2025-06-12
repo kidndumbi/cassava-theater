@@ -274,6 +274,9 @@ contextBridge.exposeInMainWorld("fileManagerAPI", {
       message: string;
     }>;
   },
+  fileExists: (path: string) => {
+    return ipcRenderer.invoke(FileIPCChannels.FILE_EXISTS, path) as Promise<{ exists: boolean }>;
+  },
 });
 
 contextBridge.exposeInMainWorld("playlistAPI", {
@@ -299,7 +302,7 @@ contextBridge.exposeInMainWorld("youtubeAPI", {
     return ipcRenderer.invoke(
       YoutubeIPCChannels.DownloadVideo,
       url,
-      destinationPath,
+      destinationPath, 
     );
   },
   addToDownloadQueue: (queueItem: {
@@ -319,6 +322,10 @@ contextBridge.exposeInMainWorld("youtubeAPI", {
   getQueue: () => ipcRenderer.invoke(YoutubeIPCChannels.GetQueue),
   swapQueueItems: (id1: string, id2: string) =>
     ipcRenderer.invoke(YoutubeIPCChannels.SwapQueueItems, id1, id2),
+  processQueue: () =>
+    ipcRenderer.invoke(YoutubeIPCChannels.ProcessQueue),
+  setIsProcessing: (isProcessing: boolean) =>
+    ipcRenderer.invoke(YoutubeIPCChannels.SetIsProcessing, isProcessing),
 });
 
 contextBridge.exposeInMainWorld("mp4ConversionAPI", {

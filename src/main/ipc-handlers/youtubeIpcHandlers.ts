@@ -73,4 +73,20 @@ export const youtubeIpcHandlers = () => {
       }
     },
   );
+
+  ipcMain.handle(
+    YoutubeIPCChannels.ProcessQueue,
+    async () => {
+      await getYoutubeDownloadQueueInstance().processQueue();
+      return { success: true };
+    },
+  );
+
+  ipcMain.handle(
+    YoutubeIPCChannels.SetIsProcessing,
+    async (_event, isProcessing: boolean) => {
+      getYoutubeDownloadQueueInstance().setIsProcessing(isProcessing);
+      return { success: true };
+    },
+  );
 };
