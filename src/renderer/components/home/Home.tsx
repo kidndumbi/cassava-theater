@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Alert, Box, Typography, useTheme } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useTvShows } from "../../hooks/useTvShows";
@@ -18,7 +18,11 @@ import { useConfirmation } from "../../contexts/ConfirmationContext";
 import WarningIcon from "@mui/icons-material/Warning";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { useAppDispatch, useAppSelector } from "../../store";
-import { setScrollPoint, selectScrollPoint } from "../../store/scrollPoint.slice";
+import {
+  setScrollPoint,
+  selectScrollPoint,
+} from "../../store/scrollPoint.slice";
+import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 
 interface HomePageProps {
   style?: React.CSSProperties;
@@ -39,24 +43,28 @@ export const HomePage: React.FC<HomePageProps> = ({
   const { data: settings } = useGetAllSettings();
   const { openDialog, setMessage } = useConfirmation();
   const dispatch = useAppDispatch();
-  const scrollPoint = useAppSelector((state) => selectScrollPoint(state, SCROLL_KEY));
+  const scrollPoint = useAppSelector((state) =>
+    selectScrollPoint(state, SCROLL_KEY),
+  );
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    console.log("Homepage rendered");
-  }, []);
-
-  const { data: resumeMovies, isLoading: loadingResumeMovies } =
-    useRecentlyWatchedVideosQuery({
-      videoType: "movies",
-    });
+  const {
+    data: resumeMovies,
+    isLoading: loadingResumeMovies,
+    refetch: refetchRecentMovies,
+  } = useRecentlyWatchedVideosQuery({
+    videoType: "movies",
+  });
   const { data: resumeTvShows, isLoading: loadingResumeTvShows } =
     useRecentlyWatchedVideosQuery({
       videoType: "tvShows",
     });
 
-  const { data: resumeCustom, isLoading: isLoadingResumeCustom } =
-    useRecentlyWatchedCustomVideosQuery();
+  const {
+    data: resumeCustom,
+    isLoading: isLoadingResumeCustom,
+    refetch: refetchRecentCustomVideos,
+  } = useRecentlyWatchedCustomVideosQuery();
 
   const { data: watchLaterVideos, isLoading: isLoadingWatchLaterVideos } =
     useWatchlaterVideosQuery();
@@ -110,11 +118,18 @@ export const HomePage: React.FC<HomePageProps> = ({
     };
   }, [dispatch]);
 
+  const { mutateAsync: saveMovieData } = useSaveJsonData();
+
   return (
     <Box
       className="custom-scrollbar"
       ref={scrollContainerRef}
-      style={{ ...style, overflowY: "auto", paddingTop: "20px",  maxHeight: "calc(100vh - 50px)"  }}
+      style={{
+        ...style,
+        overflowY: "auto",
+        paddingTop: "20px",
+        maxHeight: "calc(100vh - 50px)",
+      }}
     >
       <AppIconButton
         tooltip="Refresh"
@@ -130,6 +145,13 @@ export const HomePage: React.FC<HomePageProps> = ({
           loadingMovies={loadingResumeMovies}
           sortedMovies={resumeMovies}
           handlePosterClick={handlePosterClick}
+          handleResetTime={async (video) => {
+            await saveMovieData({
+              currentVideo: { filePath: video.filePath },
+              newVideoJsonData: { currentTime: 0 },
+            });
+            refetchRecentMovies();
+          }}
         />
       </Box>
       <Box sx={{ marginTop: "20px" }}>
@@ -157,6 +179,13 @@ export const HomePage: React.FC<HomePageProps> = ({
                   loadingMovies={false}
                   sortedMovies={custom.videos}
                   handlePosterClick={handlePosterClick}
+                  handleResetTime={async (video) => {
+                    await saveMovieData({
+                      currentVideo: { filePath: video.filePath },
+                      newVideoJsonData: { currentTime: 0 },
+                    });
+                    refetchRecentCustomVideos();
+                  }}
                 />
               </Box>
             ) : null,

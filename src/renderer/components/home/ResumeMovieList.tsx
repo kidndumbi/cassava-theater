@@ -9,12 +9,14 @@ interface ResumeMovieListProps {
   sortedMovies: VideoDataModel[];
   handlePosterClick: (videoType: string, video: VideoDataModel) => void;
   loadingMovies: boolean;
+    handleResetTime: (video: VideoDataModel) => void;
 }
 
 const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
   sortedMovies,
   handlePosterClick,
   loadingMovies,
+  handleResetTime,
 }) => {
   const renderMovies = () => {
     if (loadingMovies) {
@@ -32,15 +34,14 @@ const ResumeMovieList: React.FC<ResumeMovieListProps> = ({
         key={movie.filePath}
         movie={movie}
         handlePosterClick={handlePosterClick}
+        handleResetTime={() =>
+          handleResetTime(movie)
+        }
       />
     ));
   };
 
-  return (
-    <PosterList>
-      {renderMovies()}
-    </PosterList>
-  );
+  return <PosterList>{renderMovies()}</PosterList>;
 };
 
 export default ResumeMovieList;
