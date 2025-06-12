@@ -38,11 +38,14 @@ export async function downloadYoutubeVideo(
   }
 
   return new Promise((resolve, reject) => {
-    const stream = ytdl(url, { quality: "highest", filter: "audioandvideo" }).pipe(
-      fs.createWriteStream(destinationPath), 
-    );
+    const stream = ytdl(url, {
+      quality: "highest",
+      filter: "audioandvideo",
+    }).pipe(fs.createWriteStream(destinationPath));
     stream.on("finish", resolve);
-    stream.on("error", reject);
+    stream.on("error", (error) => {
+      reject(error);
+    });
   });
 }
 
@@ -60,10 +63,15 @@ class YoutubeDownloadQueue {
   private queue: YoutubeDownloadQueueItem[] = [];
   private isProcessing = false;
   private mainWindow = getMainWindow();
+  private currentDownloadStream: fs.WriteStream | null = null; // Track current stream
 
   constructor() {
     this.queue = [];
     this.isProcessing = false;
+  }
+
+  public setIsProcessing(isProcessing: boolean) {
+    this.isProcessing = isProcessing;
   }
 
   public addToQueue(queueItem: {
@@ -94,7 +102,7 @@ class YoutubeDownloadQueue {
     });
     this.processQueue();
   }
-  private async processQueue() {
+  public async processQueue() {
     if (this.isProcessing || this.queue.length === 0) {
       return;
     }
@@ -113,7 +121,23 @@ class YoutubeDownloadQueue {
           "youtube-download-started",
           this.queue,
         );
-        await downloadYoutubeVideo(url, destinationPath);
+        // --- Begin: Track the current download stream ---
+        await new Promise<void>((resolve, reject) => {
+          const stream = ytdl(url, {
+            quality: "highest",
+            filter: "audioandvideo",
+          }).pipe(fs.createWriteStream(destinationPath));
+          this.currentDownloadStream = stream;
+          stream.on("finish", () => {
+            this.currentDownloadStream = null;
+            resolve();
+          });
+          stream.on("error", (error) => {
+            this.currentDownloadStream = null;
+            reject(error);
+          });
+        });
+        // --- End: Track the current download stream ---
         // Update status to "completed" after successful download
         item.status = "completed";
       } catch (error) {
@@ -152,7 +176,23 @@ class YoutubeDownloadQueue {
     if (index === -1) {
       throw new Error("Item with specified id not found in queue");
     }
+    // If the item is currently downloading (first in queue and status is 'downloading'), cancel the stream
+    if (
+      index === 0 &&
+      this.queue[0].status === "downloading" &&
+      this.currentDownloadStream
+    ) {
+      this.currentDownloadStream.destroy();
+      this.currentDownloadStream = null;
+      // Attempt to remove the partially downloaded file
+      const filePath = this.queue[0].destinationPath;
+      fsPromises.unlink(filePath).catch(() => {
+        // Ignore error if file does not exist or can't be deleted
+      });
+      this.isProcessing = false; // Reset processing state
+    }
     this.queue.splice(index, 1);
+    this.processQueue(); // Process the queue after removal
   }
 
   public swapQueueItems(id1: string, id2: string) {
@@ -168,7 +208,10 @@ class YoutubeDownloadQueue {
       throw new Error("Both items must be in 'pending' status to swap");
     }
     // Swap the items
-    [this.queue[index1], this.queue[index2]] = [this.queue[index2], this.queue[index1]];
+    [this.queue[index1], this.queue[index2]] = [
+      this.queue[index2],
+      this.queue[index1],
+    ];
   }
 }
 

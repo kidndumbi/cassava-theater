@@ -1,6 +1,7 @@
 import { ipcMain } from "electron";
 import { convertSrtToVtt, deleteFile } from "../services/file.service";
 import { FileIPCChannels } from "../../enums/fileIPCChannels";
+import * as fsPromises from "fs/promises";
 
 export const fileIpcHandlers = () => {
   ipcMain.handle(
@@ -25,6 +26,21 @@ export const fileIpcHandlers = () => {
         } else {
           throw new Error("Error deleting file: Unknown error");
         }
+      }
+    }
+  );
+
+  ipcMain.handle(
+    FileIPCChannels.FILE_EXISTS,
+    async (_event: Electron.IpcMainInvokeEvent, path: string) => {
+      if (!path) {
+        throw new Error("File path is not provided.");
+      }
+      try {
+        await fsPromises.access(path);
+        return { exists: true };
+      } catch {
+        return { exists: false };
       }
     }
   );

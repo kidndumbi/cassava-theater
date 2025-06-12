@@ -33,6 +33,7 @@ export const YoutubeDownload = () => {
   const [fileName, setFileName] = useState("");
   const { data: settings } = useGetAllSettings();
   const dispatch = useAppDispatch();
+  const [fileExists, setFileExists] = useState(false);
 
   const destinationOptions = useRef<{ name: string; filePath: string }[]>([]);
   const [destination, setDestination] = useLocalStorage<string | null>(null);
@@ -140,6 +141,7 @@ export const YoutubeDownload = () => {
         <AppButton
           disabled={!url.trim()}
           onClick={() => {
+            setFileExists(false);
             refetch();
           }}
         >
@@ -150,6 +152,11 @@ export const YoutubeDownload = () => {
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             Error accessing Youtube at this moment. Please try again later.
+          </Alert>
+        )}
+        {fileExists && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            File already exists. Please choose a different name or location.
           </Alert>
         )}
         {isLoadingInfo && (
@@ -295,6 +302,17 @@ export const YoutubeDownload = () => {
                             [4, 3, 2, 1, 0]
                               .map((i) => thumbnails[i]?.url)
                               .find(Boolean) || "";
+
+                          setFileExists(false);
+
+                          const fileExists =
+                            await window.fileManagerAPI.fileExists(filePath);
+
+                          if (fileExists.exists) {
+                            setFileExists(true);
+                            return;
+                          }
+
                           await addToQueue({
                             title: fileName,
                             url: info.videoDetails.video_url,
@@ -302,6 +320,8 @@ export const YoutubeDownload = () => {
                             poster: getBestThumbnail(),
                             backdrop: getBestThumbnail(),
                           });
+
+                          await window.youtubeAPI.isProcessingQueue();
                         }}
                       >
                         Add to Queue

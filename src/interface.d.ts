@@ -127,6 +127,7 @@ export interface TheMovieDbAPI {
 export interface FileManagerAPI {
   convertSrtToVtt: (path: string) => Promise<string>;
   deleteFile: (path: string) => Promise<{ success: boolean; message: string }>;
+  fileExists: (path: string) => Promise<{ exists: boolean }>;
 }
 
 export interface Mp4ConversionAPI {
@@ -168,6 +169,8 @@ export interface YoutubeAPI {
     id1: string,
     id2: string,
   ) => Promise<{ success: boolean; error?: string }>;
+  processQueue: () => Promise<{ success: boolean }>;
+  setIsProcessing: (isProcessing: boolean) => Promise<{ success: boolean }>;
 }
 
 export interface PlaylistCommandsAPI {

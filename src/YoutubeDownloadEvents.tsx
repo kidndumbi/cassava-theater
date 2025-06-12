@@ -1,4 +1,4 @@
-import { useEffect,  useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useAppDispatch } from "./renderer/store";
 import { youtubeDownloadActions } from "./renderer/store/youtubeDownload.slice";
 import { useSaveJsonData } from "./renderer/hooks/useSaveJsonData";
@@ -22,7 +22,10 @@ export const YoutubeDownloadEvents = () => {
   }, [settings?.notifications?.youtubeDownloadStatus]);
 
   useEffect(() => {
-    window.mainNotificationsAPI.youtubeDownloadCompleted((data) => {
+    window.youtubeAPI.getQueue().then(async (queue) => {
+      dispatch(youtubeDownloadActions.setDownloadProgress(queue));
+    });
+    +window.mainNotificationsAPI.youtubeDownloadCompleted((data) => {
       saveJsonData({
         currentVideo: {
           filePath: data.completedItem.destinationPath,
