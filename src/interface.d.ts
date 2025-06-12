@@ -68,6 +68,7 @@ export interface MainNotificationsAPI {
 export interface MainUtilAPI {
   isPackaged: () => Promise<boolean>;
   restart: () => void;
+  openExternalLink: (url: string) => Promise<void>;
 }
 
 export interface VideoAPI {
