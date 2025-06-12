@@ -81,16 +81,25 @@ contextBridge.exposeInMainWorld("playlistCommandsAPI", {
   },
 });
 
-contextBridge.exposeInMainWorld("currentlyPlayingAPI", { 
+contextBridge.exposeInMainWorld("currentlyPlayingAPI", {
   setCurrentVideo: (video: VideoDataModel) => {
-    return ipcRenderer.invoke(CurrentlyPlayingIPCChannels.SetCurrentVideo, video);
+    return ipcRenderer.invoke(
+      CurrentlyPlayingIPCChannels.SetCurrentVideo,
+      video,
+    );
   },
   setCurrentPlaylist: (playlist: Partial<PlaylistModel>) => {
-    return ipcRenderer.invoke(CurrentlyPlayingIPCChannels.SetCurrentPlaylist, playlist);
+    return ipcRenderer.invoke(
+      CurrentlyPlayingIPCChannels.SetCurrentPlaylist,
+      playlist,
+    );
   },
   setCurrentTime: (currentTime: number) => {
-    return ipcRenderer.invoke(CurrentlyPlayingIPCChannels.SET_CURRENTLY_PLAYING_CURRENTTIME, currentTime);
-  }
+    return ipcRenderer.invoke(
+      CurrentlyPlayingIPCChannels.SET_CURRENTLY_PLAYING_CURRENTTIME,
+      currentTime,
+    );
+  },
 });
 
 contextBridge.exposeInMainWorld("videoCommandsAPI", {
@@ -153,6 +162,18 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
         event: Electron.IpcRendererEvent,
         progress: { file: string; percent: number },
       ) => callback(progress),
+    );
+  },
+  youtubeDownloadProgress: (
+    callback: (progress: {
+      item: YoutubeDownloadQueueItem;
+      percent: number;
+    }) => void,
+  ) => {
+    ipcRenderer.on(
+      "youtube-download-progress",
+      (_event, progress: { item: YoutubeDownloadQueueItem; percent: number }) =>
+        callback(progress),
     );
   },
   youtubeDownloadCompleted: (
@@ -275,7 +296,9 @@ contextBridge.exposeInMainWorld("fileManagerAPI", {
     }>;
   },
   fileExists: (path: string) => {
-    return ipcRenderer.invoke(FileIPCChannels.FILE_EXISTS, path) as Promise<{ exists: boolean }>;
+    return ipcRenderer.invoke(FileIPCChannels.FILE_EXISTS, path) as Promise<{
+      exists: boolean;
+    }>;
   },
 });
 
@@ -302,7 +325,7 @@ contextBridge.exposeInMainWorld("youtubeAPI", {
     return ipcRenderer.invoke(
       YoutubeIPCChannels.DownloadVideo,
       url,
-      destinationPath, 
+      destinationPath,
     );
   },
   addToDownloadQueue: (queueItem: {
@@ -322,10 +345,13 @@ contextBridge.exposeInMainWorld("youtubeAPI", {
   getQueue: () => ipcRenderer.invoke(YoutubeIPCChannels.GetQueue),
   swapQueueItems: (id1: string, id2: string) =>
     ipcRenderer.invoke(YoutubeIPCChannels.SwapQueueItems, id1, id2),
-  processQueue: () =>
-    ipcRenderer.invoke(YoutubeIPCChannels.ProcessQueue),
+  processQueue: () => ipcRenderer.invoke(YoutubeIPCChannels.ProcessQueue),
   setIsProcessing: (isProcessing: boolean) =>
     ipcRenderer.invoke(YoutubeIPCChannels.SetIsProcessing, isProcessing),
+  setProgressIntervalMs: (ms: number) =>
+    ipcRenderer.invoke(YoutubeIPCChannels.SetProgressIntervalMs, ms),
+  getProgressIntervalMs: () =>
+    ipcRenderer.invoke(YoutubeIPCChannels.GetProgressIntervalMs),
 });
 
 contextBridge.exposeInMainWorld("mp4ConversionAPI", {
