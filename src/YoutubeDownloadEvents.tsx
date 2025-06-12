@@ -5,6 +5,7 @@ import { useSaveJsonData } from "./renderer/hooks/useSaveJsonData";
 import { useSnackbar } from "./renderer/contexts/SnackbarContext";
 import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
 import { SettingsModel } from "./models/settings.model";
+import { YoutubeDownloadQueueItem } from "./main/services/youtube.service";
 
 export const YoutubeDownloadEvents = () => {
   const dispatch = useAppDispatch();
@@ -47,6 +48,24 @@ export const YoutubeDownloadEvents = () => {
     window.mainNotificationsAPI.youtubeDownloadStarted((queue) => {
       dispatch(youtubeDownloadActions.setDownloadProgress(queue));
     });
+
+    window.mainNotificationsAPI.youtubeDownloadProgress(
+      async (progress: { item: YoutubeDownloadQueueItem; percent: number }) => {
+        const queue: YoutubeDownloadQueueItem[] =
+          await window.youtubeAPI.getQueue();
+        const updatedQueue = queue.map((item) => {
+          if (item.id === progress.item.id) {
+            return {
+              ...item,
+              percent: progress.percent,
+            };
+          }
+          return item;
+        });
+
+        dispatch(youtubeDownloadActions.setDownloadProgress(updatedQueue));
+      },
+    );
   }, []);
 
   return <> </>;

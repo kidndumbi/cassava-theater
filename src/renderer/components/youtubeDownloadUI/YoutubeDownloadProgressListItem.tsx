@@ -1,4 +1,4 @@
-import { Box, CircularProgress } from "@mui/material";
+import { Box } from "@mui/material";
 import theme from "../../theme";
 import { YoutubeDownloadQueueItem } from "../../../main/services/youtube.service";
 import { AppButton } from "../common/AppButton";
@@ -6,6 +6,7 @@ import { YoutubeDownloadProgressDetails } from "./YoutubeDownloadProgressDetails
 import { DragPreviewImage, useDrag, useDrop } from "react-dnd";
 import { useEffect, useRef } from "react";
 import { useDragPreviewImage } from "../../hooks/useDragPreviewImage";
+import { CircularProgressWithLabel } from "../common/CircularProgressWithLabel";
 
 export interface DragProgressItem {
   index: number;
@@ -36,14 +37,11 @@ export function YoutubeDownloadProgressListItem({
     { isOver: boolean; canDrop: boolean }
   >({
     accept: "YOUTUBE_DOWNLOAD",
-    canDrop: () =>
-      progressItem.status !== "downloading",
+    canDrop: () => progressItem.status !== "downloading",
     drop(item) {
       if (item.index === idx) return;
       console.log("Dropped item:", item);
       onSwap(item.progressData.id, progressItem.id);
-
-      //moveVideo(item.index, idx);
       item.index = idx;
     },
     collect: (monitor) => ({
@@ -95,7 +93,7 @@ export function YoutubeDownloadProgressListItem({
           <Box className="flex items-center justify-center gap-2">
             <Box>
               {progressItem.status === "downloading" && (
-                <CircularProgress size={24} color="primary" />
+                <CircularProgressWithLabel value={progressItem.percent} />
               )}
             </Box>
             <AppButton

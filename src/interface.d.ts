@@ -5,7 +5,7 @@ import { PlaylistModel } from "./models/playlist.model";
 import { VideoCommands } from "./models/video-commands.model";
 import { VideoDataModel } from "./models/videoData.model";
 import { PlaylistPlayRequestModel } from "./models/playlistPlayRequest.model";
-import { PlaylistCommands } from "./models/playlist-commands.model"
+import { PlaylistCommands } from "./models/playlist-commands.model";
 export interface IElectronAPI {
   desktop: boolean;
 }
@@ -34,7 +34,9 @@ export interface OpenDialogAPI {
 export interface VideoCommandsAPI {
   videoCommand: (callback: (command: VideoCommands) => void) => void;
   setCurrentVideo: (callback: (data: setPlayingModel) => void) => void;
-  setCurrentPlaylist: (callback: (data: PlaylistPlayRequestModel) => void) => void;
+  setCurrentPlaylist: (
+    callback: (data: PlaylistPlayRequestModel) => void,
+  ) => void;
 }
 
 export interface MainNotificationsAPI {
@@ -45,6 +47,12 @@ export interface MainNotificationsAPI {
   ) => void;
   mp4ConversionCompleted: (
     callback: (progress: { file: string; percent: number }) => void,
+  ) => void;
+  youtubeDownloadProgress: (
+    callback: (progress: {
+      item: YoutubeDownloadQueueItem;
+      percent: number;
+    }) => void,
   ) => void;
   youtubeDownloadCompleted: (
     callback: (data: {
@@ -171,6 +179,8 @@ export interface YoutubeAPI {
   ) => Promise<{ success: boolean; error?: string }>;
   processQueue: () => Promise<{ success: boolean }>;
   setIsProcessing: (isProcessing: boolean) => Promise<{ success: boolean }>;
+  setProgressIntervalMs: (ms: number) => Promise<{ success: boolean }>;
+  getProgressIntervalMs: () => Promise<{ success: boolean; ms: number }>;
 }
 
 export interface PlaylistCommandsAPI {
@@ -180,7 +190,9 @@ export interface PlaylistCommandsAPI {
 export interface CurrentlyPlayingAPI {
   setCurrentVideo: (video: VideoDataModel) => Promise<boolean>;
   setCurrentPlaylist: (playlist: Partial<PlaylistModel>) => Promise<boolean>;
-  setCurrentTime: (currentTime: number) => Promise<{ success: boolean; error?: string }>;
+  setCurrentTime: (
+    currentTime: number,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 declare global {

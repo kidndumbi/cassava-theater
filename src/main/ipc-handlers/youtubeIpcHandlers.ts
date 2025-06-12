@@ -89,4 +89,20 @@ export const youtubeIpcHandlers = () => {
       return { success: true };
     },
   );
+
+  ipcMain.handle(
+    YoutubeIPCChannels.SetProgressIntervalMs,
+    async (_event, ms: number) => {
+      getYoutubeDownloadQueueInstance().setProgressIntervalMs(ms);
+      return { success: true };
+    },
+  );
+
+  ipcMain.handle(
+    YoutubeIPCChannels.GetProgressIntervalMs,
+    async () => {
+      const ms = getYoutubeDownloadQueueInstance().getProgressIntervalMs();
+      return { success: true, ms };
+    },
+  );
 };

@@ -57,6 +57,7 @@ export interface YoutubeDownloadQueueItem {
   status: "pending" | "downloading" | "completed" | "error";
   poster: string;
   backdrop: string;
+  percent?: number;
 }
 
 class YoutubeDownloadQueue {
@@ -64,6 +65,7 @@ class YoutubeDownloadQueue {
   private isProcessing = false;
   private mainWindow = getMainWindow();
   private currentDownloadStream: fs.WriteStream | null = null; // Track current stream
+  private progressIntervalMs = 2000; // Interval for progress updates in ms
 
   constructor() {
     this.queue = [];
@@ -123,16 +125,40 @@ class YoutubeDownloadQueue {
         );
         // --- Begin: Track the current download stream ---
         await new Promise<void>((resolve, reject) => {
-          const stream = ytdl(url, {
+          const ytdlStream = ytdl(url, {
             quality: "highest",
             filter: "audioandvideo",
-          }).pipe(fs.createWriteStream(destinationPath));
+          });
+
+          //const progressIntervalMs = 2000; // Set your interval here (in ms)
+          let lastProgressTime = 0;
+
+          ytdlStream.on("progress", (_, downloaded, total) => {
+            const now = Date.now();
+            if (
+              now - lastProgressTime >= this.progressIntervalMs ||
+              downloaded === total
+            ) {
+              lastProgressTime = now;
+              const percent = total
+                ? ((downloaded / total) * 100).toFixed(2)
+                : "0";
+
+              this.mainWindow?.webContents.send("youtube-download-progress", {
+                item,
+                percent: Number(percent),
+              });
+            }
+          });
+
+          const stream = ytdlStream.pipe(fs.createWriteStream(destinationPath));
           this.currentDownloadStream = stream;
           stream.on("finish", () => {
             this.currentDownloadStream = null;
             resolve();
           });
           stream.on("error", (error) => {
+            console.error("Download error:", error);
             this.currentDownloadStream = null;
             reject(error);
           });
@@ -212,6 +238,14 @@ class YoutubeDownloadQueue {
       this.queue[index2],
       this.queue[index1],
     ];
+  }
+
+  public setProgressIntervalMs(ms: number) {
+    this.progressIntervalMs = ms;
+  }
+
+  public getProgressIntervalMs(): number {
+    return this.progressIntervalMs;
   }
 }
 
