@@ -39,6 +39,8 @@ import { useUpdatePlaylist } from "./renderer/hooks/useUpdatePlaylist";
 import { PlaylistCommands } from "./models/playlist-commands.model";
 import { playlistCommandsHandler } from "./renderer/util/playlist-commands-handler";
 import { VideoDataModel } from "./models/videoData.model";
+import { emit } from "./renderer/util/appEvents";
+import { PlaylistModel } from "./models/playlist.model";
 
 const queryClient = new QueryClient();
 
@@ -165,6 +167,8 @@ function AppRoutes({
           playlist,
           shuffle,
         });
+
+      emit<PlaylistModel>("plalylistSet", playlist);
 
       const videoToPlay = shuffle
         ? currentPlaylist?.videosDetails.find(

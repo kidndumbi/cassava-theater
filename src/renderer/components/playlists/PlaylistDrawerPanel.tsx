@@ -22,6 +22,7 @@ import { selVideoPlayer } from "../../store/videoPlayer.slice";
 import { useEffect, useState } from "react";
 import { useUpdatePlaylist } from "../../hooks/useUpdatePlaylist";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
+import { on } from "../../util/appEvents";
 
 type PlaylistDrawerPanelProps = {
   playlist?: PlaylistModel;
@@ -40,26 +41,17 @@ export const PlaylistDrawerPanel = ({
   const [playlistVideos, setPlaylistVideos] = useState<VideoDataModel[]>([]);
   const { mutate: updatePlaylist } = useUpdatePlaylist();
 
-  const REFRESH_DELAY_MS = 500;
   useEffect(() => {
     getPlaylistVideos();
-    let timeoutId: NodeJS.Timeout;
-    window.videoCommandsAPI.setCurrentPlaylist(async () => {
-      timeoutId = setTimeout(() => {
-        getPlaylistVideos();
-      }, REFRESH_DELAY_MS);
+    on<PlaylistModel>("plalylistSet", () => {
+      getPlaylistVideos();
     });
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
   }, []);
 
-  const getPlaylistVideos = () => {
-    window.currentlyPlayingAPI
-      .getPlaylistVideos()
-      .then((videos: VideoDataModel[]) => {
-        setPlaylistVideos(videos);
-      });
+  const getPlaylistVideos = async () => {
+    const videos: VideoDataModel[] =
+      await window.currentlyPlayingAPI.getPlaylistVideos();
+    setPlaylistVideos(videos);
   };
 
   const hasVideos = playlistVideos?.length > 0;
