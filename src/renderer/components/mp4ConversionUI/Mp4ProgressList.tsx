@@ -5,9 +5,12 @@ import { ConversionQueueItem } from "../../../models/conversion-queue-item.model
 import { useAppDispatch } from "../../store";
 import { mp4ConversionNewActions } from "../../store/mp4ConversionNew.slice";
 import { Mp4ProgressListItem } from "./Mp4ProgressListItem";
-
-const filterFailed = (queue: ConversionQueueItem[]) =>
-  queue.filter((q) => q.status !== "failed");
+import {
+  pauseConversionItem,
+  removeFromConversionQueue,
+  sortConversionQueue,
+  unpauseConversionItem,
+} from "../../util/mp4ConversionAPI-helpers";
 
 interface Mp4ProgressListProps {
   mp4ConversionProgress: ConversionQueueItem[];
@@ -20,11 +23,7 @@ export const Mp4ProgressList = ({
   const dispatch = useAppDispatch();
 
   const sortedMp4ConversionProgress = React.useMemo(() => {
-    return [...mp4ConversionProgress].sort((a, b) => {
-      if (a.status === "processing" && b.status !== "processing") return -1;
-      if (a.status !== "processing" && b.status === "processing") return 1;
-      return 0;
-    });
+    return [...mp4ConversionProgress].sort(sortConversionQueue);
   }, [mp4ConversionProgress]);
 
   if (mp4ConversionProgress.length === 0) {
@@ -32,18 +31,13 @@ export const Mp4ProgressList = ({
   }
 
   const handlePause = async (inputPath: string) => {
-    const result = await window.mp4ConversionAPI.pauseConversionItem(inputPath);
-    dispatch(
-      mp4ConversionNewActions.setConversionProgress(filterFailed(result.queue)),
-    );
+    const result = await pauseConversionItem(inputPath);
+    dispatch(mp4ConversionNewActions.setConversionProgress(result.queue));
   };
 
   const handleResume = async (inputPath: string) => {
-    const result =
-      await window.mp4ConversionAPI.unpauseConversionItem(inputPath);
-    dispatch(
-      mp4ConversionNewActions.setConversionProgress(filterFailed(result.queue)),
-    );
+    const result = await unpauseConversionItem(inputPath);
+    dispatch(mp4ConversionNewActions.setConversionProgress(result.queue));
   };
 
   const handleCancel = async (inputPath: string) => {
@@ -53,13 +47,8 @@ export const Mp4ProgressList = ({
       "Are you want to cancel?",
     );
     if (dialogDecision === "Ok") {
-      const result =
-        await window.mp4ConversionAPI.removeFromConversionQueue(inputPath);
-      dispatch(
-        mp4ConversionNewActions.setConversionProgress(
-          filterFailed(result.queue),
-        ),
-      );
+      const result = await removeFromConversionQueue(inputPath);
+      dispatch(mp4ConversionNewActions.setConversionProgress(result.queue));
     }
   };
 

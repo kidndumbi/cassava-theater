@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { mp4ConversionNewActions } from "../store/mp4ConversionNew.slice";
+import { removeFromConversionQueue } from "../util/mp4ConversionAPI-helpers";
 
 export function useDeleteFile(
   onSuccess?: (
@@ -16,17 +16,11 @@ export function useDeleteFile(
     context?: unknown,
   ) => Promise<unknown> | unknown,
 ) {
-  const removeFromConversionQueue = async (filePathDeleted: string) => {
+  const removeFromConversion = async (filePathDeleted: string) => {
     const queue = await window.mp4ConversionAPI.getConversionQueue();
     const queueItem = queue.find((item) => item.inputPath === filePathDeleted);
     if (queueItem) {
-      mp4ConversionNewActions.setConversionProgress(
-        (
-          await window.mp4ConversionAPI.removeFromConversionQueue(
-            queueItem.inputPath,
-          )
-        ).queue.filter((q) => q.status !== "failed"),
-      );
+      removeFromConversionQueue(filePathDeleted);
     }
   };
 
@@ -50,7 +44,7 @@ export function useDeleteFile(
       window.fileManagerAPI.deleteFile(filePath),
     onSuccess: async (data, filePathDeleted, context) => {
       if (data.success) {
-        await removeFromConversionQueue(filePathDeleted);
+        await removeFromConversion(filePathDeleted);
         await removeFromPlaylists(filePathDeleted);
         onSuccess?.(data, filePathDeleted, context);
       } else {
