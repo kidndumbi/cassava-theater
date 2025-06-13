@@ -89,9 +89,15 @@ class ConversionQueue {
         item.inputPath,
         this.queue[itemIndex],
       );
-      return true;
+      return {
+        success: true,
+        queue: this.queue,
+      };
     }
-    return false;
+    return {
+      success: false,
+      queue: this.queue,
+    };
   }
 
   unpauseItem(inputPath: string) {
@@ -108,15 +114,24 @@ class ConversionQueue {
         this.queue[itemIndex],
       );
       this.processQueue();
-      return true;
+      return {
+        success: true,
+        queue: this.queue,
+      };
     }
-    return false;
+    return {
+      success: false,
+      queue: this.queue,
+    };
   }
 
-  removeItem(inputPath: string): boolean {
+  removeItem(inputPath: string): {
+    success: boolean;
+    queue: ConversionQueueItem[];
+  } {
     const itemIndex = this.queue.findIndex((i) => i.inputPath === inputPath);
 
-    if (itemIndex === -1) return false;
+    if (itemIndex === -1) return { success: false, queue: this.queue };
 
     if (this.currentProcessingItem?.inputPath === inputPath) {
       this.cancelCurrentProcessing();
@@ -124,7 +139,10 @@ class ConversionQueue {
 
     this.queue.splice(itemIndex, 1);
     conversionQueueDataService.deleteQueueItem(inputPath);
-    return true;
+    return {
+      success: true,
+      queue: this.queue,
+    };
   }
 
   private cancelCurrentProcessing() {
@@ -223,15 +241,24 @@ export async function addToConversionQueue(inputPath: string) {
   };
 }
 
-export function pauseConversionItem(inputPath: string): boolean {
+export function pauseConversionItem(inputPath: string): {
+  success: boolean;
+  queue: ConversionQueueItem[];
+} {
   return getConversionQueueInstance().pauseItem(inputPath);
 }
 
-export function unpauseConversionItem(inputPath: string): boolean {
+export function unpauseConversionItem(inputPath: string): {
+  success: boolean;
+  queue: ConversionQueueItem[];
+} {
   return getConversionQueueInstance().unpauseItem(inputPath);
 }
 
-export function removeFromConversionQueue(inputPath: string): boolean {
+export function removeFromConversionQueue(inputPath: string): {
+  success: boolean;
+  queue: ConversionQueueItem[];
+} {
   return getConversionQueueInstance().removeItem(inputPath);
 }
 

@@ -1,6 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useAppDispatch } from "../store";
-// import { mp4ConversionActions } from "../store/mp4Conversion/mp4Conversion.slice";
+import { mp4ConversionNewActions } from "../store/mp4ConversionNew.slice";
 
 export function useDeleteFile(
   onSuccess?: (
@@ -17,21 +16,20 @@ export function useDeleteFile(
     context?: unknown,
   ) => Promise<unknown> | unknown,
 ) {
-  // const dispatch = useAppDispatch();
-
-  // Helper to remove file from conversion queue
   const removeFromConversionQueue = async (filePathDeleted: string) => {
     const queue = await window.mp4ConversionAPI.getConversionQueue();
     const queueItem = queue.find((item) => item.inputPath === filePathDeleted);
     if (queueItem) {
-      window.mp4ConversionAPI.removeFromConversionQueue(queueItem.inputPath);
-      // dispatch(
-      //   mp4ConversionActions.removeFromConversionQueue(queueItem.inputPath),
-      // );
+      mp4ConversionNewActions.setConversionProgress(
+        (
+          await window.mp4ConversionAPI.removeFromConversionQueue(
+            queueItem.inputPath,
+          )
+        ).queue.filter((q) => q.status !== "failed"),
+      );
     }
   };
 
-  // Helper to remove file from all playlists
   const removeFromPlaylists = async (filePathDeleted: string) => {
     const playlists = await window.playlistAPI.getAllPlaylists();
     playlists.forEach((p) => {

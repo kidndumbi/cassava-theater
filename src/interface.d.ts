@@ -148,12 +148,21 @@ export interface Mp4ConversionAPI {
     success: boolean;
     queue: ConversionQueueItem[];
   }>;
-  pauseConversionItem: (inputPath: string) => Promise<boolean>;
-  unpauseConversionItem: (inputPath: string) => Promise<boolean>;
+  pauseConversionItem: (inputPath: string) => Promise<{
+    success: boolean;
+    queue: ConversionQueueItem[];
+  }>;
+  unpauseConversionItem: (inputPath: string) => Promise<{
+    success: boolean;
+    queue: ConversionQueueItem[];
+  }>;
   isItemPaused: (inputPath: string) => Promise<boolean>;
   getCurrentProcessingItem: () => Promise<ConversionQueueItem>;
   getConversionQueue: () => Promise<ConversionQueueItem[]>;
-  removeFromConversionQueue: (inputPath: string) => Promise<boolean>;
+  removeFromConversionQueue: (inputPath: string) => Promise<{
+    success: boolean;
+    queue: ConversionQueueItem[];
+}>;
   initializeConversionQueue: () => Promise<boolean>;
 }
 
