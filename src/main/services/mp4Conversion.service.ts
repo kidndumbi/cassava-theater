@@ -241,6 +241,36 @@ export async function addToConversionQueue(inputPath: string) {
   };
 }
 
+export async function addToConversionQueueBulk(
+  inputPaths: string[],
+): Promise<{
+  success: boolean;
+  queue: ConversionQueueItem[];
+}> {
+  const validPaths = await Promise.all(
+    inputPaths.map(async (inputPath) => ({
+      inputPath,
+      isValid: await isConvertibleVideoFile(inputPath),
+    })),
+  );
+
+  const validInputPaths = validPaths
+    .filter((item) => item.isValid)
+    .map((item) => item.inputPath);
+
+  if (validInputPaths.length > 0) {
+    validInputPaths.forEach((inputPath) => getConversionQueueInstance().add(inputPath));
+    return {
+      success: true,
+      queue: getConversionQueueInstance().getQueue(),
+    };
+  }
+  return {
+    success: false,
+    queue: getConversionQueueInstance().getQueue(),
+  };
+} 
+
 export function pauseConversionItem(inputPath: string): {
   success: boolean;
   queue: ConversionQueueItem[];

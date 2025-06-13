@@ -1,5 +1,6 @@
 export enum Mp4ConversionIPCChannels { 
     AddToConversionQueue = "video:addToConversionQueue",
+    AddToConversionQueueBulk = "video:addToConversionQueueBulk",
     PauseConversionItem = "video:pauseConversionItem",
     UnpauseConversionItem = "video:unpauseConversionItem",
     IsItemPaused = "video:isItemPaused",

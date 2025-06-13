@@ -2,6 +2,7 @@ import { ipcMain } from "electron";
 import { Mp4ConversionIPCChannels } from "../../enums/mp4ConversionIPCChannels.enum";
 import {
   addToConversionQueue,
+  addToConversionQueueBulk,
   pauseConversionItem,
   unpauseConversionItem,
   isItemPaused,
@@ -16,6 +17,12 @@ export const mp4ConversionIpcHandlers = () => {
     Mp4ConversionIPCChannels.AddToConversionQueue,
     async (_event: Electron.IpcMainInvokeEvent, inputPath: string) => {
       return addToConversionQueue(inputPath);
+    },
+  );
+  ipcMain.handle(
+    Mp4ConversionIPCChannels.AddToConversionQueueBulk,
+    async (_event: Electron.IpcMainInvokeEvent, inputPaths: string[]) => {
+      return addToConversionQueueBulk(inputPaths);
     },
   );
   ipcMain.handle(
