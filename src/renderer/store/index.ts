@@ -1,16 +1,16 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux";
 import { videoPlayerSlice } from "./videoPlayer.slice";
-import { mp4ConversionSlice } from "./mp4Conversion/mp4Conversion.slice";
-import scrollPointReducer from "./scrollPoint.slice"; // import reducer
+import scrollPointReducer from "./scrollPoint.slice";
 import { youtubeDownloadSlice } from "./youtubeDownload.slice";
+import { mp4ConversionNewSlice } from "./mp4ConversionNew.slice";
 
 const store = configureStore({
   reducer: {
     videoPlayer: videoPlayerSlice.reducer,
-    mp4Conversion: mp4ConversionSlice.reducer,
     scrollPoint: scrollPointReducer,
     youtubeDownload: youtubeDownloadSlice.reducer,
+    mp4ConversionNew: mp4ConversionNewSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -24,5 +24,5 @@ export type AppDispatch = typeof store.dispatch;
 export function useAppDispatch() {
   return useDispatch<AppDispatch>();
 }
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector; // add selector hook
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 export { store };

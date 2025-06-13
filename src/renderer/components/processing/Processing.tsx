@@ -1,17 +1,17 @@
 import { Box } from "@mui/material";
 import { YoutubeDownloadQueueItem } from "../../../main/services/youtube.service";
-import { Mp4ConversionProgress } from "../../store/mp4Conversion/mp4Conversion.slice";
 import { Mp4ProgressList } from "../mp4ConversionUI/Mp4ProgressList";
 import { YoutubeDownloadProgressList } from "../youtubeDownloadUI/YoutubeDownloadProgressList";
 import { AppListPanel } from "../common/AppListPanel";
 import { useState } from "react";
+import { ConversionQueueItem } from "../../../models/conversion-queue-item.model";
 
 export const Processing = ({
-  progressList,
   youtubeDownloadProgressList,
+  mp4ConversionProgress,
 }: {
-  progressList: Mp4ConversionProgress[];
   youtubeDownloadProgressList: YoutubeDownloadQueueItem[];
+  mp4ConversionProgress: ConversionQueueItem[];
 }) => {
   const listItems = [
     { id: "youtube-download", name: "Youtube Download" },
@@ -32,7 +32,9 @@ export const Processing = ({
           />
         );
       case "mp4-conversion":
-        return <Mp4ProgressList progressList={progressList} />;
+        return (
+          <Mp4ProgressList mp4ConversionProgress={mp4ConversionProgress} />
+        );
       default:
         return null;
     }

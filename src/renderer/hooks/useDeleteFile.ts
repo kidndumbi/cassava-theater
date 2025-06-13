@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useAppDispatch } from "../store";
-import { mp4ConversionActions } from "../store/mp4Conversion/mp4Conversion.slice";
+// import { mp4ConversionActions } from "../store/mp4Conversion/mp4Conversion.slice";
 
 export function useDeleteFile(
   onSuccess?: (
@@ -17,7 +17,7 @@ export function useDeleteFile(
     context?: unknown,
   ) => Promise<unknown> | unknown,
 ) {
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
 
   // Helper to remove file from conversion queue
   const removeFromConversionQueue = async (filePathDeleted: string) => {
@@ -25,9 +25,9 @@ export function useDeleteFile(
     const queueItem = queue.find((item) => item.inputPath === filePathDeleted);
     if (queueItem) {
       window.mp4ConversionAPI.removeFromConversionQueue(queueItem.inputPath);
-      dispatch(
-        mp4ConversionActions.removeFromConversionQueue(queueItem.inputPath),
-      );
+      // dispatch(
+      //   mp4ConversionActions.removeFromConversionQueue(queueItem.inputPath),
+      // );
     }
   };
 

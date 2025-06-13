@@ -1,12 +1,10 @@
 import React from "react";
 import { Alert, Box, Theme } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
-
 import { VideoDataModel } from "../../../models/videoData.model";
 import { Episode } from "./episode";
 import LoadingIndicator from "../common/LoadingIndicator";
 import { formatDate } from "../../util/helperFunctions";
-import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
@@ -18,6 +16,8 @@ import { useModalState } from "../../hooks/useModalState";
 import { usePlaylists } from "../../hooks/usePlaylists";
 import { PlaylistModel } from "../../../models/playlist.model";
 import { useMutation } from "@tanstack/react-query";
+import { mp4ConversionNewActions } from "../../store/mp4ConversionNew.slice";
+import { useAppDispatch } from "../../store";
 
 interface EpisodesProps {
   loadingEpisodes: boolean;
@@ -45,7 +45,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
   handleFilepathChange,
   episodeDeleted,
 }) => {
-  const { addToConversionQueue } = useMp4Conversion();
+  const dispatch = useAppDispatch();
   const { data: settings } = useGetAllSettings();
   const { data: playlists, refetch } = usePlaylists();
   const [selectedPlaylistVideo, setSelectedPlaylistVideo] =
@@ -97,7 +97,14 @@ export const Episodes: React.FC<EpisodesProps> = ({
         queued ? true : false,
       );
       if (dialogDecision === "Ok") {
-        addToConversionQueue(episode.filePath);
+        const { queue } = await window.mp4ConversionAPI.addToConversionQueue(
+          episode.filePath,
+        );
+        dispatch(
+          mp4ConversionNewActions.setConversionProgress(
+            queue.filter((q) => q.status !== "failed"),
+          ),
+        );
       }
       return;
     }
@@ -134,7 +141,15 @@ export const Episodes: React.FC<EpisodesProps> = ({
             onEpisodeClick={() => handleEpisodeClick(episode)}
             handleFilepathChange={handleFilepathChange}
             handleConvertToMp4={(filePath) => {
-              addToConversionQueue(filePath);
+              window.mp4ConversionAPI
+                .addToConversionQueue(filePath)
+                .then(async ({ queue }) => {
+                  dispatch(
+                    mp4ConversionNewActions.setConversionProgress(
+                      queue.filter((q) => q.status !== "failed"),
+                    ),
+                  );
+                });
             }}
             handleDelete={async (filePath) => {
               await deleteFileMutation.mutateAsync(filePath);

@@ -8,7 +8,6 @@ import {
   useTheme,
   Alert,
 } from "@mui/material";
-import { useMp4Conversion } from "../../hooks/useMp4Conversion";
 
 type ChildFolder = {
   folderPath: string;
@@ -26,7 +25,7 @@ const SeasonConvertSelector: React.FC<SeasonConvertSelectorProps> = ({
   close,
 }) => {
   const theme = useTheme();
-  const { addToConversionQueue } = useMp4Conversion();
+  //const { addToConversionQueue } = useMp4Conversion();
   const [noFilesToConvert, setNoFilesToConvert] = useState(false);
   const [selectedSeasonsToConvert, setSelectedSeasonsToConvert] = useState<
     string[]
@@ -59,7 +58,8 @@ const SeasonConvertSelector: React.FC<SeasonConvertSelectorProps> = ({
     }
 
     allFiles.forEach((file) => {
-      addToConversionQueue(file);
+      //addToConversionQueue(file);
+
     });
     setNoFilesToConvert(false);
 
