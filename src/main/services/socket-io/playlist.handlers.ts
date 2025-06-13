@@ -3,20 +3,18 @@ import { PlaylistModel } from "../../../models/playlist.model";
 import { PlaylistCommands } from "../../../models/playlist-commands.model";
 import { PlaylistPlayRequestModel } from "../../../models/playlistPlayRequest.model";
 import * as playlistDbService from "../playlistDb.service";
-import { getCurrentlyPlayingInstance } from "../currentlyPlaying.service";
 import { loggingService as log } from "../main-logging.service";
 import { Socket } from "socket.io/dist";
 import { BrowserWindow } from "electron";
 
-const currentlyPlaying = getCurrentlyPlayingInstance();
-
-export function registerPlaylistHandlers(socket: Socket, mainWindow: BrowserWindow) {
+export function registerPlaylistHandlers(
+  socket: Socket,
+  mainWindow: BrowserWindow,
+) {
   socket.on(
     AppSocketEvents.SET_PLAYING_PLAYLIST,
     (data: PlaylistPlayRequestModel) => {
       mainWindow.webContents.send("set-current-playlist", data);
-      currentlyPlaying.setCurrentPlaylist(data.playlist);
-      currentlyPlaying.setCurrentVideo(data.video);
     },
   );
 

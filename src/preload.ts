@@ -94,16 +94,44 @@ contextBridge.exposeInMainWorld("currentlyPlayingAPI", {
       video,
     );
   },
-  setCurrentPlaylist: (playlist: Partial<PlaylistModel>) => {
+  setCurrentPlaylist: (args: {
+    playlist: Partial<PlaylistModel>;
+    shuffle?: boolean;
+  }) => {
     return ipcRenderer.invoke(
       CurrentlyPlayingIPCChannels.SetCurrentPlaylist,
-      playlist,
+      args,
     );
   },
   setCurrentTime: (currentTime: number) => {
     return ipcRenderer.invoke(
       CurrentlyPlayingIPCChannels.SET_CURRENTLY_PLAYING_CURRENTTIME,
       currentTime,
+    );
+  },
+  getCurrentPlaylist: () => {
+    return ipcRenderer.invoke(
+      CurrentlyPlayingIPCChannels.GetCurrentPlaylist
+    );
+  },
+  getPlaylistVideos: () => {
+    return ipcRenderer.invoke(
+      CurrentlyPlayingIPCChannels.GetPlaylistVideos
+    );
+  },
+  getNextPlaylistVideo: () => {
+    return ipcRenderer.invoke(
+      CurrentlyPlayingIPCChannels.GetNextPlaylistVideo
+    );
+  },
+  getPreviousPlaylistVideo: () => {
+    return ipcRenderer.invoke(
+      CurrentlyPlayingIPCChannels.GetPreviousPlaylistVideo
+    );
+  },
+  getCurrentVideo: () => {
+    return ipcRenderer.invoke(
+      CurrentlyPlayingIPCChannels.GetCurrentVideo
     );
   },
 });

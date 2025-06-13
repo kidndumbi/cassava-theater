@@ -17,10 +17,7 @@ import theme from "./renderer/theme";
 import { store } from "./renderer/store";
 import { LandingPage } from "./renderer/pages/landing-page/LandingPage";
 import { VideoDetailsPage } from "./renderer/pages/video-details-page/VideoDetailsPage";
-import {
-  VideoPlayerPage,
-  VideoPlayerPageHandle,
-} from "./renderer/pages/video-player-page/VideoPlayerPage";
+import { VideoPlayerPage } from "./renderer/pages/video-player-page/VideoPlayerPage";
 import { Layout } from "./renderer/pages/Layout";
 import { VideoCommands } from "./models/video-commands.model";
 import { videoCommandsHandler } from "./renderer/util/video-commands-handler";
@@ -41,6 +38,7 @@ import { YoutubeDownloadEvents } from "./YoutubeDownloadEvents";
 import { useUpdatePlaylist } from "./renderer/hooks/useUpdatePlaylist";
 import { PlaylistCommands } from "./models/playlist-commands.model";
 import { playlistCommandsHandler } from "./renderer/util/playlist-commands-handler";
+import { VideoDataModel } from "./models/videoData.model";
 
 const queryClient = new QueryClient();
 
@@ -48,8 +46,8 @@ const App = () => {
   const { data: settings } = useGetAllSettings();
   const { showSnackbar } = useSnackbar();
   const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
-  const videoPlayerPageRef = useRef<VideoPlayerPageHandle>(null);
   const userConnectionStatus = useRef<boolean>(null);
+  const { setCurrentVideo } = useVideoListLogic();
 
   useEffect(() => {
     userConnectionStatus.current =
@@ -59,11 +57,19 @@ const App = () => {
   useEffect(() => {
     window.videoCommandsAPI.videoCommand((command: VideoCommands) => {
       videoCommandsHandler(command, appVideoPlayerRef.current);
-    }); 
+    });
 
     window.playlistCommandsAPI.playlistVideoCommand(
       (command: PlaylistCommands) => {
-        playlistCommandsHandler(command, videoPlayerPageRef.current);
+        playlistCommandsHandler(
+          command,
+          (nextVideo: VideoDataModel) => {
+            setCurrentVideo(nextVideo);
+          },
+          (previousVideo: VideoDataModel) => {
+            setCurrentVideo(previousVideo);
+          },
+        );
       },
     );
 
@@ -89,10 +95,7 @@ const App = () => {
         }}
       >
         <main>
-          <AppRoutes
-            appVideoPlayerRef={appVideoPlayerRef}
-            videoPlayerPageRef={videoPlayerPageRef}
-          />
+          <AppRoutes appVideoPlayerRef={appVideoPlayerRef} />
         </main>
       </Box>
     </HashRouter>
@@ -123,13 +126,11 @@ root.render(
 
 function AppRoutes({
   appVideoPlayerRef,
-  videoPlayerPageRef,
 }: {
   appVideoPlayerRef: React.Ref<AppVideoPlayerHandle>;
-  videoPlayerPageRef: React.Ref<VideoPlayerPageHandle>;
 }) {
   const navigate = useNavigate();
-  const { handleVideoSelect } = useVideoListLogic();
+  const { handleVideoSelect, setCurrentVideo } = useVideoListLogic();
   const { data: settings } = useGetAllSettings();
 
   const { mutate: updatePlaylist } = useUpdatePlaylist();
@@ -152,21 +153,40 @@ function AppRoutes({
       );
     });
 
-    window.videoCommandsAPI.setCurrentPlaylist((data) => {
-      handleVideoSelect(data.video);
+    window.videoCommandsAPI.setCurrentPlaylist(async (data) => {
+      const goToPlayer = () => {
+        const url = `/video-player?menuId=${menuId}`;
+        navigate(url);
+      };
+
+      const { shuffle, video, playlist, menuId, playlistId } = data;
+      const currentPlaylist =
+        await window.currentlyPlayingAPI.setCurrentPlaylist({
+          playlist,
+          shuffle,
+        });
+
+      const videoToPlay = shuffle
+        ? currentPlaylist?.videosDetails.find(
+            (v) => v.filePath === currentPlaylist.videos[0],
+          )
+        : video;
+
+      if (!videoToPlay) {
+        console.error("No video found to play");
+        return;
+      }
+
+      setCurrentVideo(videoToPlay);
       updatePlaylist({
-        id: data.playlistId,
+        id: playlistId,
         playlist: {
-          ...data.playlist,
-          lastVideoPlayed: data.video.filePath,
+          ...playlist,
+          lastVideoPlayed: videoToPlay.filePath,
           lastVideoPlayedDate: new Date().toISOString(),
         },
       });
-      let url = `/video-player?menuId=${data.menuId}&playlistId=${data.playlistId}`;
-      if (data.shuffle) {
-        url += `&shuffle=true`;
-      }
-      navigate(url);
+      goToPlayer();
     });
   }, []);
 
@@ -177,12 +197,7 @@ function AppRoutes({
           <Route index element={<LandingPage />} />
           <Route
             path="video-player"
-            element={
-              <VideoPlayerPage
-                ref={videoPlayerPageRef}
-                appVideoPlayerRef={appVideoPlayerRef}
-              />
-            }
+            element={<VideoPlayerPage appVideoPlayerRef={appVideoPlayerRef} />}
           />
           <Route path="video-details" element={<VideoDetailsPage />} />
           <Route path="*" element={<Navigate to="/" />} />

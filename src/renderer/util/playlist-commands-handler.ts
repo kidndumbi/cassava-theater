@@ -1,20 +1,30 @@
+import { VideoDataModel } from "../../models/videoData.model";
 import { PlaylistCommands } from "../../models/playlist-commands.model";
-import { VideoPlayerPageHandle } from "../pages/video-player-page/VideoPlayerPage";
 
 export const playlistCommandsHandler = (
   command: PlaylistCommands,
-  videoPlayerPageHandle: VideoPlayerPageHandle,
+  next: (video: VideoDataModel) => void,
+  previous: (video: VideoDataModel) => void,
 ) => {
   switch (command) {
     case "next":
-      if (videoPlayerPageHandle) {
-        videoPlayerPageHandle.handleNextPlaylistVideo();
+      {
+        window.currentlyPlayingAPI.getNextPlaylistVideo().then((nextVideo) => {
+          if (nextVideo) {
+            next(nextVideo);
+          }
+        });
       }
-
       break;
     case "previous":
-      if (videoPlayerPageHandle) {
-        videoPlayerPageHandle.handlePreviousPlaylistVideo();
+      {
+        window.currentlyPlayingAPI
+          .getPreviousPlaylistVideo()
+          .then((previousVideo) => {
+            if (previousVideo) {
+              previous(previousVideo);
+            }
+          });
       }
 
       break;
