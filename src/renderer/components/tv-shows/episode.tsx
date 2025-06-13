@@ -167,7 +167,10 @@ export const Episode: React.FC<EpisodeProps> = ({
           {getFileExtension(episode.filePath) !== "mp4" && !isInQueue && (
             <AppIconButton
               tooltip="Convert to MP4"
-              onClick={handleConvertToMp4?.bind(null, episode.filePath || "")}
+              onClick={() => {
+                handleConvertToMp4?.(episode.filePath || "");
+                setIsInQueue(true);
+              }}
             >
               <FourMpIcon />
             </AppIconButton>
