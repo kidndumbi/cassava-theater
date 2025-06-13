@@ -19,38 +19,62 @@ import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { useSelector } from "react-redux";
 import { selVideoPlayer } from "../../store/videoPlayer.slice";
+import { useEffect, useState } from "react";
+import { useUpdatePlaylist } from "../../hooks/useUpdatePlaylist";
+import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 
 type PlaylistDrawerPanelProps = {
   playlist?: PlaylistModel;
-  playlistVideos?: VideoDataModel[];
   currentVideo?: VideoDataModel | null;
   onPlayVideo: (video: VideoDataModel) => void;
-  onNextVideo: () => void;
-  onPreviousVideo: () => void;
 };
 
 export const PlaylistDrawerPanel = ({
   playlist,
-  playlistVideos,
   currentVideo,
   onPlayVideo,
-  onNextVideo,
-  onPreviousVideo,
 }: PlaylistDrawerPanelProps) => {
   const player = useSelector(selVideoPlayer);
+  const { setCurrentVideo } = useVideoListLogic();
 
-  const hasVideos = !!playlistVideos?.length;
+  const [playlistVideos, setPlaylistVideos] = useState<VideoDataModel[]>([]);
+  const { mutate: updatePlaylist } = useUpdatePlaylist();
+
+  const REFRESH_DELAY_MS = 500;
+  useEffect(() => {
+    getPlaylistVideos();
+    let timeoutId: NodeJS.Timeout;
+    window.videoCommandsAPI.setCurrentPlaylist(async () => {
+      timeoutId = setTimeout(() => {
+        getPlaylistVideos();
+      }, REFRESH_DELAY_MS);
+    });
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
+
+  const getPlaylistVideos = () => {
+    window.currentlyPlayingAPI
+      .getPlaylistVideos()
+      .then((videos: VideoDataModel[]) => {
+        setPlaylistVideos(videos);
+      });
+  };
+
+  const hasVideos = playlistVideos?.length > 0;
   const currentIndex =
     hasVideos && currentVideo
-      ? playlistVideos.findIndex((v) => v.filePath === currentVideo.filePath)
+      ? playlistVideos?.findIndex((v) => v?.filePath === currentVideo?.filePath)
       : -1;
   const canGoPrevious = hasVideos && currentIndex > 0;
   const canGoNext =
-    hasVideos && currentIndex >= 0 && currentIndex < playlistVideos.length - 1;
+    hasVideos && currentIndex >= 0 && currentIndex < playlistVideos?.length - 1;
 
   const renderVideoItem = (video: VideoDataModel, idx: number) => {
     const isCurrent =
       currentVideo?.filePath && video?.filePath === currentVideo.filePath;
+
     return (
       <Paper
         elevation={0}
@@ -129,12 +153,46 @@ export const PlaylistDrawerPanel = ({
     <Box sx={{ width: 350, p: 2 }}>
       <Box className="flex items-center gap-2 pb-3">
         {canGoPrevious && (
-          <AppIconButton tooltip="play previous" onClick={onPreviousVideo}>
+          <AppIconButton
+            tooltip="play previous"
+            onClick={async () => {
+              const previousVideo =
+                await window.currentlyPlayingAPI.getPreviousPlaylistVideo();
+              if (previousVideo) {
+                setCurrentVideo(previousVideo);
+                updatePlaylist({
+                  id: playlist.id,
+                  playlist: {
+                    ...playlist,
+                    lastVideoPlayed: previousVideo.filePath,
+                    lastVideoPlayedDate: new Date().toISOString(),
+                  },
+                });
+              }
+            }}
+          >
             <SkipPreviousIcon />
           </AppIconButton>
         )}
         {canGoNext && (
-          <AppIconButton tooltip="play next" onClick={onNextVideo}>
+          <AppIconButton
+            tooltip="play next"
+            onClick={async () => {
+              const nextVideo =
+                await window.currentlyPlayingAPI.getNextPlaylistVideo();
+              if (nextVideo) {
+                setCurrentVideo(nextVideo);
+                updatePlaylist({
+                  id: playlist.id,
+                  playlist: {
+                    ...playlist,
+                    lastVideoPlayed: nextVideo.filePath,
+                    lastVideoPlayedDate: new Date().toISOString(),
+                  },
+                });
+              }
+            }}
+          >
             <SkipNextIcon />
           </AppIconButton>
         )}

@@ -210,10 +210,15 @@ export interface PlaylistCommandsAPI {
 
 export interface CurrentlyPlayingAPI {
   setCurrentVideo: (video: VideoDataModel) => Promise<boolean>;
-  setCurrentPlaylist: (playlist: Partial<PlaylistModel>) => Promise<boolean>;
+  setCurrentPlaylist: (args:{playlist: Partial<PlaylistModel | null>, shuffle?: boolean}) => Promise<PlaylistModel>;
   setCurrentTime: (
     currentTime: number,
   ) => Promise<{ success: boolean; error?: string }>;
+  getCurrentPlaylist: () => Promise<Partial<PlaylistModel> | null>;
+  getPlaylistVideos: () => Promise<VideoDataModel[]>;
+  getNextPlaylistVideo: () => Promise<VideoDataModel | null>;
+  getPreviousPlaylistVideo: () => Promise<VideoDataModel | null>;
+  getCurrentVideo: () => Promise<VideoDataModel | null>;
 }
 
 declare global {

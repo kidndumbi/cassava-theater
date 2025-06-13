@@ -59,7 +59,6 @@ const selLastVideoPlayedDate = (state: RootState) =>
   state.videoPlayer.lastVideoPlayedDate;
 const selCurrentVideo = (state: RootState) => state.videoPlayer.currentVideo;
 
-
 export {
   videoPlayerSlice,
   videoPlayerActions,
@@ -68,5 +67,5 @@ export {
   selMkvCurrentTime,
   selCurrentTime,
   selLastVideoPlayedDate,
-  selCurrentVideo
+  selCurrentVideo,
 };

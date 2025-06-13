@@ -183,30 +183,56 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
     [getTmdbImageUrl, settings?.port],
   );
 
-  // Helper to play a video (by index or random)
-  const playVideoFromPlaylist = (videoIndex?: number, shuffle = false) => {
+  const playVideoFromPlaylist = async (
+    videoIndex?: number,
+    shuffle = false,
+  ) => {
     if (!selectedPlaylist || !selectedPlaylistVideosCleaned.length) return;
-    const idx =
-      typeof videoIndex === "number"
-        ? videoIndex
-        : Math.floor(Math.random() * selectedPlaylistVideosCleaned.length);
-    const video = selectedPlaylistVideosCleaned[idx];
-    setCurrentVideo(video);
-    const updatPlaylistdata = {
+
+    const goToPlayer = () => {
+      const url = `/video-player?menuId=${menuId}`;
+      navigate(url);
+    };
+
+    const buildPlaylistUpdate = (video: VideoDataModel) => ({
       id: selectedPlaylist.id,
       playlist: {
         ...selectedPlaylist,
         lastVideoPlayed: video.filePath,
         lastVideoPlayedDate: new Date().toISOString(),
       },
-    };
-    updatePlaylist(updatPlaylistdata);
-    window.currentlyPlayingAPI.setCurrentPlaylist(updatPlaylistdata.playlist);
-    let url = `/video-player?menuId=${menuId}&playlistId=${selectedPlaylist.id}`;
+    });
+
     if (shuffle) {
-      url += `&shuffle=true`;
+      const currentPlaylist =
+        await window.currentlyPlayingAPI.setCurrentPlaylist({
+          playlist: {
+            ...selectedPlaylist,
+            videos: selectedPlaylistVideosCleaned.map((c) => c.filePath),
+          },
+          shuffle,
+        });
+      const video = currentPlaylist.videosDetails.find(
+        (v) => v.filePath === currentPlaylist.videos[0],
+      );
+      if (video) {
+        setCurrentVideo(video);
+        updatePlaylist(buildPlaylistUpdate(video));
+        goToPlayer();
+      }
+    } else if (typeof videoIndex === "number") {
+      const video = selectedPlaylistVideosCleaned[videoIndex];
+      if (video) {
+        setCurrentVideo(video);
+        const updateData = buildPlaylistUpdate(video);
+        updatePlaylist(updateData);
+        window.currentlyPlayingAPI.setCurrentPlaylist({
+          playlist: updateData.playlist,
+          shuffle,
+        });
+        goToPlayer();
+      }
     }
-    navigate(url);
   };
 
   const resetAllVideosCurrentTime = async () => {

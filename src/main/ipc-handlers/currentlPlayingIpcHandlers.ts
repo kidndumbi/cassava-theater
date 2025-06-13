@@ -10,13 +10,33 @@ export const currentlPlayingIpcHandlers = () => {
     return true;
   });
 
-  ipcMain.handle(CurrentlyPlayingIPCChannels.SetCurrentPlaylist, (_event, playlist: Partial<PlaylistModel>) => {
-    getCurrentlyPlayingInstance().setCurrentPlaylist(playlist);
-    return true;
+  ipcMain.handle(CurrentlyPlayingIPCChannels.SetCurrentPlaylist, (_event, args:{playlist: Partial<PlaylistModel | null>, shuffle?: boolean}) => {
+    return getCurrentlyPlayingInstance().setCurrentPlaylist(args?.playlist, args?.shuffle);
+    //return true;
   });
 
   ipcMain.handle(CurrentlyPlayingIPCChannels.SET_CURRENTLY_PLAYING_CURRENTTIME, (_event, currentTime: number) => {
     getCurrentlyPlayingInstance().setCurrentTime(currentTime);
     return true;
+  });
+
+  ipcMain.handle(CurrentlyPlayingIPCChannels.GetCurrentPlaylist, () => {
+    return getCurrentlyPlayingInstance().getCurrentPlaylist();
+  });
+
+  ipcMain.handle(CurrentlyPlayingIPCChannels.GetPlaylistVideos, async () => {
+    return getCurrentlyPlayingInstance().getPlaylistVideos();
+  });
+
+  ipcMain.handle(CurrentlyPlayingIPCChannels.GetNextPlaylistVideo, () => {
+    return getCurrentlyPlayingInstance().getNextPlaylistVideo();
+  });
+
+  ipcMain.handle(CurrentlyPlayingIPCChannels.GetPreviousPlaylistVideo, () => {
+    return getCurrentlyPlayingInstance().getPreviousPlaylistVideo();
+  });
+
+  ipcMain.handle(CurrentlyPlayingIPCChannels.GetCurrentVideo, () => {
+    return getCurrentlyPlayingInstance().getCurrentVideo();
   });
 }

@@ -1,9 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-  forwardRef,
-  useImperativeHandle,
-} from "react";
+import React, { useEffect, useState, forwardRef } from "react";
 import { useSubtitle } from "../../hooks/useSubtitle";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
@@ -15,28 +10,20 @@ import { removeLastSegments } from "../../util/helperFunctions";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useVideoDataQuery } from "../../hooks/useVideoData.query";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
-import { useQuery } from "@tanstack/react-query";
-import { useGetPlaylistVideoData } from "../../hooks/useGetPlaylistVideoData";
 import CustomDrawer from "../../components/common/CustomDrawer";
-
 import { useModalState } from "../../hooks/useModalState";
-
-import { PlaylistDrawerPanel } from "../../components/playlists/PlaylistDrawerPanel";
 import { useUpdatePlaylist } from "../../hooks/useUpdatePlaylist";
-
-export type VideoPlayerPageHandle = {
-  handlePreviousPlaylistVideo: () => void;
-  handleNextPlaylistVideo: () => void;
-};
+import { PlaylistDrawerPanel } from "../../components/playlists/PlaylistDrawerPanel";
+import { PlaylistModel } from "../../../models/playlist.model";
 
 type VideoPlayerPageProps = {
   appVideoPlayerRef?: React.Ref<AppVideoPlayerHandle>;
 };
 
 export const VideoPlayerPage = forwardRef<
-  VideoPlayerPageHandle,
+  AppVideoPlayerHandle,
   VideoPlayerPageProps
->(({ appVideoPlayerRef }, ref) => {
+>(({ appVideoPlayerRef }) => {
   const { updateSubtitle, subtitleFilePath, setSubtitleFilePath } =
     useSubtitle();
   const { setCurrentVideo, clearPlayer } = useVideoListLogic();
@@ -51,21 +38,22 @@ export const VideoPlayerPage = forwardRef<
   const [searchParams] = useSearchParams();
 
   const [seasonPath, setSeasonPath] = useState("");
-  const { mutate: updatePlaylist } = useUpdatePlaylist();
-  const [playlistId, setPlaylistId] = useState("");
+  const [playlist, setPlaylist] = useState<PlaylistModel | null>();
+
+  useEffect(() => {
+    window.currentlyPlayingAPI
+      .getCurrentPlaylist()
+      .then((playlist: PlaylistModel) => {
+        if (playlist) {
+          setPlaylist(playlist);
+        }
+      });
+  }, []);
 
   const { data: episodes } = useVideoDataQuery({
     filePath: seasonPath || "",
     category: "episodes",
   });
-
-  const { data: playlist } = useQuery({
-    queryKey: ["playlist", playlistId],
-    queryFn: () => window.playlistAPI.getPlaylist(playlistId),
-    enabled: !!playlistId,
-  });
-
-  const { data: receivedPlaylistVideos } = useGetPlaylistVideoData(playlist);
 
   useEffect(() => {
     if (currentVideo) {
@@ -74,19 +62,15 @@ export const VideoPlayerPage = forwardRef<
         setSeasonPath(removeLastSegments(filePath, 1));
       }
     }
-  }, [currentVideo, receivedPlaylistVideos]);
+  }, [currentVideo]);
 
   const { data: settings } = useGetAllSettings();
   const [menuId, setMenuId] = useState("");
   const [resumeId, setResumeId] = useState("");
   const [startFromBeginning, setStartFromBeginning] = useState(false);
   const [isTvShow, setIsTvShow] = useState(false);
-  const [shuffle, setShuffle] = useState(false);
   const playlistControlPanel = useModalState(false);
-  const [playlistVideos, setPlaylistVideos] = useState<
-    VideoDataModel[] | undefined
-  >();
-  const [playlistShuffled, setPlaylistShuffled] = useState(false);
+  const { mutate: updatePlaylist } = useUpdatePlaylist();
 
   useEffect(() => {
     return () => {
@@ -95,20 +79,12 @@ export const VideoPlayerPage = forwardRef<
   }, []);
 
   useEffect(() => {
-    const {
-      menuId,
-      startFromBeginning: start,
-      resumeId,
-      playlistId,
-      shuffle,
-    } = parseSearchParams();
+    const { menuId, startFromBeginning: start, resumeId } = parseSearchParams();
 
     setMenuId(menuId);
     setResumeId(resumeId);
     setStartFromBeginning(start === "true");
     setIsTvShow(menuId === "app-tv-shows" || resumeId === "tvShow");
-    setPlaylistId(playlistId);
-    setShuffle(shuffle);
   }, [location.search, location.hash, player, currentVideo]);
 
   const parseSearchParams = () => {
@@ -116,54 +92,7 @@ export const VideoPlayerPage = forwardRef<
       menuId: searchParams.get("menuId") || "",
       startFromBeginning: searchParams.get("startFromBeginning"),
       resumeId: searchParams.get("resumeId") || "",
-      playlistId: searchParams.get("playlistId") || "",
-      shuffle: searchParams.get("shuffle") === "true",
     };
-  };
-
-  useEffect(() => {
-    if (
-      receivedPlaylistVideos &&
-      receivedPlaylistVideos.length > 0 &&
-      currentVideo
-    ) {
-      if (shuffle && !playlistShuffled) {
-        const currentVideoFilePath = currentVideo.filePath;
-        const videos = [...receivedPlaylistVideos];
-        const currentIdx = videos.findIndex(
-          (v) => v?.filePath === currentVideoFilePath,
-        );
-        let currentVideoItem: VideoDataModel | undefined;
-        if (currentIdx !== -1) {
-          currentVideoItem = videos.splice(currentIdx, 1)[0];
-        }
-        // Fisher-Yates shuffle
-        for (let i = videos.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [videos[i], videos[j]] = [videos[j], videos[i]];
-        }
-        if (currentVideoItem) {
-          const combinedVideos = [currentVideoItem, ...videos];
-          setPlaylistVideos(combinedVideos);
-          window.currentlyPlayingAPI.setCurrentPlaylist({
-            videos: getVideoPaths(combinedVideos),
-          });
-        } else {
-          setPlaylistVideos(videos);
-          window.currentlyPlayingAPI.setCurrentPlaylist({
-            videos: getVideoPaths(videos),
-          });
-        }
-        setPlaylistShuffled(true);
-      } else if (!shuffle) {
-        setPlaylistVideos(receivedPlaylistVideos);
-        setPlaylistShuffled(false);
-      }
-    }
-  }, [receivedPlaylistVideos, shuffle, currentVideo, playlistShuffled]);
-
-  const getVideoPaths = (videos: VideoDataModel[] | undefined) => {
-    return videos?.map((video) => video?.filePath).filter(Boolean) || [];
   };
 
   const onSubtitleChange = async (sub: string | null) => {
@@ -180,8 +109,8 @@ export const VideoPlayerPage = forwardRef<
   };
 
   const navigateToVideoDetails = (filePath: string) => {
-    if (playlistId) {
-      navigate(`/?menuId=${menuId}&playlistId=${playlistId}`);
+    if (playlist?.id) {
+      navigate(`/?menuId=${menuId}&playlistId=${playlist.id}`);
       return;
     }
     const folderId = searchParams.get("folderId");
@@ -216,18 +145,21 @@ export const VideoPlayerPage = forwardRef<
         navigateToVideoDetails(filePath);
       }
     } else {
-      if (playlistId) {
-        // Find the next video in playlistVideos after currentVideo
-        if (playlistVideos && currentVideo) {
-          const idx = playlistVideos.findIndex(
-            (v) => v?.filePath === currentVideo.filePath,
-          );
-          if (idx !== -1 && idx < playlistVideos.length - 1) {
-            const nextVideo = playlistVideos[idx + 1];
-            setCurrentVideo(nextVideo);
-          } else {
-            playlistControlPanel.setOpen(true);
-          }
+      if (playlist?.id) {
+        const nextVideo =
+          await window.currentlyPlayingAPI.getNextPlaylistVideo();
+        if (nextVideo) {
+          setCurrentVideo(nextVideo);
+          updatePlaylist({
+            id: playlist.id,
+            playlist: {
+              ...playlist,
+              lastVideoPlayed: nextVideo.filePath,
+              lastVideoPlayedDate: new Date().toISOString(),
+            },
+          });
+        } else {
+          playlistControlPanel.setOpen(true);
         }
       } else {
         navigateToVideoDetails(filePath);
@@ -250,35 +182,6 @@ export const VideoPlayerPage = forwardRef<
   const playNextEpisode = (episode: VideoDataModel) => {
     setCurrentVideo(episode);
   };
-
-  const handleNextPlaylistVideo = () => {
-    if (playlistVideos && currentVideo) {
-      const idx = playlistVideos.findIndex(
-        (v) => v?.filePath === currentVideo.filePath,
-      );
-      if (idx !== -1 && idx < playlistVideos.length - 1) {
-        const nextVideo = playlistVideos[idx + 1];
-        setCurrentVideo(nextVideo);
-      }
-    }
-  };
-
-  const handlePreviousPlaylistVideo = () => {
-    if (playlistVideos && currentVideo) {
-      const idx = playlistVideos.findIndex(
-        (v) => v?.filePath === currentVideo.filePath,
-      );
-      if (idx > 0) {
-        const previousVideo = playlistVideos[idx - 1];
-        setCurrentVideo(previousVideo);
-      }
-    }
-  };
-
-  useImperativeHandle(ref, () => ({
-    handlePreviousPlaylistVideo,
-    handleNextPlaylistVideo,
-  }));
 
   return (
     <>
@@ -305,7 +208,7 @@ export const VideoPlayerPage = forwardRef<
           return null;
         }}
         openPlaylistControls={
-          playlistVideos
+          playlist?.videos?.length > 0
             ? playlistControlPanel.setOpen.bind(null, true)
             : undefined
         }
@@ -317,12 +220,11 @@ export const VideoPlayerPage = forwardRef<
       >
         <PlaylistDrawerPanel
           playlist={playlist}
-          playlistVideos={playlistVideos}
           currentVideo={currentVideo}
           onPlayVideo={(video) => {
             setCurrentVideo(video);
             updatePlaylist({
-              id: playlistId,
+              id: playlist.id,
               playlist: {
                 ...playlist,
                 lastVideoPlayed: video.filePath,
@@ -330,8 +232,6 @@ export const VideoPlayerPage = forwardRef<
               },
             });
           }}
-          onNextVideo={handleNextPlaylistVideo}
-          onPreviousVideo={handlePreviousPlaylistVideo}
         />
       </CustomDrawer>
     </>
