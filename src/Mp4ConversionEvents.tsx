@@ -1,102 +1,49 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useAppDispatch } from "./renderer/store";
-import {
-  mp4ConversionActions,
-  Mp4ConversionProgress,
-} from "./renderer/store/mp4Conversion/mp4Conversion.slice";
-import { useMp4Conversion } from "./renderer/hooks/useMp4Conversion";
 import { useSnackbar } from "./renderer/contexts/SnackbarContext";
 import { SettingsModel } from "./models/settings.model";
 import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
+import { mp4ConversionNewActions } from "./renderer/store/mp4ConversionNew.slice";
 
 export const Mp4ConversionEvents = () => {
   const dispatch = useAppDispatch();
   const { data: settings = {} as SettingsModel } = useGetAllSettings();
-  const {
-    currentlyProcessingItem,
-    initConverversionQueueFromStore,
-    getConversionQueue,
-  } = useMp4Conversion();
-  const currentlyProcessingItemRef = useRef(currentlyProcessingItem);
   const { showSnackbar } = useSnackbar();
 
-  const lastExecutionRef = useRef<number>(0);
-  const pendingProgressRef = useRef<{
-    file: string;
-    percent: number;
-  }>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  useEffect(() => {
+    window.mp4ConversionAPI.getConversionQueue().then(async (queue) => {
+      dispatch(
+
+        mp4ConversionNewActions.setConversionProgress(
+          queue.filter((q) => q.status !== "failed"),
+        ),
+      );
+    });
+    window.mp4ConversionAPI.initializeConversionQueue();
+  }, []); 
 
   useEffect(() => {
-    const initQueue = async () => {
-      const conversionQueue = await getConversionQueue();
-      initConverversionQueueFromStore(conversionQueue);
-    };
-    initQueue();
-  }, []);
-
-  useEffect(() => {
-    currentlyProcessingItemRef.current = currentlyProcessingItem;
-  }, [currentlyProcessingItem]);
-
-  useEffect(() => {
-    // Throttle mp4ConversionProgress handler to fire at most once every 10 seconds
-    window.mainNotificationsAPI.mp4ConversionProgress((progress) => {
-      pendingProgressRef.current = progress;
-      const now = Date.now();
-      const elapsed = now - lastExecutionRef.current;
-
-      const execute = () => {
-        const progress = pendingProgressRef.current;
-        pendingProgressRef.current = null;
-        lastExecutionRef.current = Date.now();
-
-        const [fromPath, toPath] = progress.file.split(":::") || [];
-        const progressItem: Mp4ConversionProgress = {
-          fromPath,
-          toPath,
-          percent: progress.percent,
-          paused: false,
-          complete: false,
-        };
-
-        dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
-
-        if (
-          progressItem.fromPath !== currentlyProcessingItemRef.current?.fromPath
-        ) {
-          dispatch(
-            mp4ConversionActions.setCurrentlyProcessingItem(progressItem),
-          );
+    window.mainNotificationsAPI.mp4ConversionProgress(async (progress) => {
+      const queue = (await window.mp4ConversionAPI.getConversionQueue()).filter(
+        (q) => q.status !== "failed",
+      );
+      const updatedQueue = queue.map((item) => {
+        if (item.inputPath === progress.item.inputPath) {
+          return {
+            ...progress.item,
+          };
         }
-      };
-
-      if (elapsed >= 10000) {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
-        execute();
-      } else if (!timeoutRef.current) {
-        timeoutRef.current = setTimeout(() => {
-          timeoutRef.current = null;
-          execute();
-        }, 10000 - elapsed);
-      }
+        return item;
+      });
+      dispatch(mp4ConversionNewActions.setConversionProgress(updatedQueue));
     });
 
-    window.mainNotificationsAPI.mp4ConversionCompleted((progress) => {
+    window.mainNotificationsAPI.mp4ConversionCompleted(async (progress) => {
       const [fromPath, toPath] = progress.file.split(":::") || [];
-      const { percent } = progress;
-      const progressItem: Mp4ConversionProgress = {
-        fromPath,
-        toPath,
-        percent,
-        paused: false,
-        complete: true,
-      };
-
-      dispatch(mp4ConversionActions.updateConvertToMp4Progress(progressItem));
+      const updatedQueue = (await window.mp4ConversionAPI.getConversionQueue())
+        .filter((q) => q.status !== "failed")
+        .filter((q) => q.inputPath !== fromPath);
+      dispatch(mp4ConversionNewActions.setConversionProgress(updatedQueue));
 
       if (settings?.notifications?.mp4ConversionStatus) {
         showSnackbar(`Conversion completed: ${toPath}`, "success");

@@ -43,7 +43,11 @@ export interface MainNotificationsAPI {
   userConnected: (callback: (userId: string) => void) => void;
   userDisconnected: (callback: (userId: string) => void) => void;
   mp4ConversionProgress: (
-    callback: (progress: { file: string; percent: number }) => void,
+    callback: (progress: {
+      file: string;
+      percent: number;
+      item: ConversionQueueItem;
+    }) => void,
   ) => void;
   mp4ConversionCompleted: (
     callback: (progress: { file: string; percent: number }) => void,
@@ -140,7 +144,10 @@ export interface FileManagerAPI {
 }
 
 export interface Mp4ConversionAPI {
-  addToConversionQueue: (inputPath: string) => Promise<boolean>;
+  addToConversionQueue: (inputPath: string) => Promise<{
+    success: boolean;
+    queue: ConversionQueueItem[];
+  }>;
   pauseConversionItem: (inputPath: string) => Promise<boolean>;
   unpauseConversionItem: (inputPath: string) => Promise<boolean>;
   isItemPaused: (inputPath: string) => Promise<boolean>;

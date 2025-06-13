@@ -4,10 +4,9 @@ import { removeVidExt } from "../../util/helperFunctions";
 import { Alert, Box, Button, Snackbar, Paper } from "@mui/material";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { useDeleteFile } from "../../hooks/useDeleteFile";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CustomFolderModel } from "../../../models/custom-folder";
-import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
 import { useAppDispatch } from "../../store";
 import { MovieSuggestionsModal } from "../movies/MovieSuggestionsModal";
 import { useMovies } from "../../hooks/useMovies";
@@ -22,6 +21,7 @@ import { useModalState } from "../../hooks/useModalState";
 import { usePlaylists } from "../../hooks/usePlaylists";
 import { ListDisplayType, PlaylistModel } from "../../../models/playlist.model";
 import { useDragState } from "../../hooks/useDragState";
+import { mp4ConversionNewActions } from "../../store/mp4ConversionNew.slice";
 
 // Define MenuItem interface
 export interface OptionsMenuItem {
@@ -138,19 +138,12 @@ export const CustomFolderVideosPanel = ({
   );
 
   const handleConvertToMp4 = async (fromPath: string) => {
-    const result = await window.mp4ConversionAPI.addToConversionQueue(fromPath);
-    if (!result) {
-      console.error(`Failed to add ${fromPath} to conversion queue.`);
-      return;
-    }
+    const { queue } =
+      await window.mp4ConversionAPI.addToConversionQueue(fromPath);
     dispatch(
-      mp4ConversionActions.updateConvertToMp4Progress({
-        fromPath,
-        toPath: fromPath.replace(/\.[^/.]+$/, ".mp4"),
-        percent: 0,
-        paused: false,
-        complete: false,
-      }),
+      mp4ConversionNewActions.setConversionProgress(
+        queue.filter((q) => q.status !== "failed"),
+      ),
     );
   };
 

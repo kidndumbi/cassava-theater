@@ -24,6 +24,7 @@ import { PlaylistPlayRequestModel } from "./models/playlistPlayRequest.model";
 import { PlaylistCommands } from "./models/playlist-commands.model";
 import { AppSocketEvents } from "./enums/app-socket-events.enum";
 import { CurrentlyPlayingIPCChannels } from "./enums/currently-playing-IPCChannels.enum";
+import { ConversionQueueItem } from "./models/conversion-queue-item.model";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -34,7 +35,10 @@ contextBridge.exposeInMainWorld("mainUtilAPI", {
     ipcRenderer.invoke(MainUtilIPCChannels.IS_PACKAGED) as Promise<boolean>,
   restart: () => ipcRenderer.send("restart-app"),
   openExternalLink: (url: string) =>
-    ipcRenderer.invoke(MainUtilIPCChannels.OPEN_EXTERNAL_LINK, url) as Promise<void>,
+    ipcRenderer.invoke(
+      MainUtilIPCChannels.OPEN_EXTERNAL_LINK,
+      url,
+    ) as Promise<void>,
 });
 
 contextBridge.exposeInMainWorld("settingsAPI", {
@@ -145,13 +149,17 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
     );
   },
   mp4ConversionProgress: (
-    callback: (progress: { file: string; percent: number }) => void,
+    callback: (progress: {
+      file: string;
+      percent: number;
+      item: ConversionQueueItem;
+    }) => void,
   ) => {
     ipcRenderer.on(
       "mp4-conversion-progress",
       (
         event: Electron.IpcRendererEvent,
-        progress: { file: string; percent: number },
+        progress: { file: string; percent: number; item: ConversionQueueItem },
       ) => callback(progress),
     );
   },

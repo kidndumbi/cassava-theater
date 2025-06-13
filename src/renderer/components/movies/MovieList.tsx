@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Box, Snackbar, Alert, Button } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { removeVidExt } from "../../util/helperFunctions";
@@ -7,7 +7,6 @@ import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { MovieSuggestionsModal } from "./MovieSuggestionsModal";
 import { MovieDetails } from "../../../models/movie-detail.model";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { mp4ConversionActions } from "../../store/mp4Conversion/mp4Conversion.slice";
 import { useAppSelector, useAppDispatch } from "../../store";
 import {
   setScrollPoint,
@@ -26,6 +25,7 @@ import theme from "../../theme";
 import { useModalState } from "../../hooks/useModalState";
 import { AppDrop } from "../common/AppDrop";
 import { useDragState } from "../../hooks/useDragState";
+import { mp4ConversionNewActions } from "../../store/mp4ConversionNew.slice";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -131,20 +131,13 @@ const MovieList: React.FC<MovieListProps> = ({
     },
   });
 
-  const handleConvertToMp4 = (fromPath: string) => {
-    const result = window.mp4ConversionAPI.addToConversionQueue(fromPath);
-    if (!result) {
-      console.error(`Failed to add ${fromPath} to conversion queue.`);
-      return;
-    }
+  const handleConvertToMp4 = async (fromPath: string) => {
+    const { queue } =
+      await window.mp4ConversionAPI.addToConversionQueue(fromPath);
     dispatch(
-      mp4ConversionActions.updateConvertToMp4Progress({
-        fromPath,
-        toPath: fromPath.replace(/\.[^/.]+$/, ".mp4"),
-        percent: 0,
-        paused: false,
-        complete: false,
-      }),
+      mp4ConversionNewActions.setConversionProgress(
+        queue.filter((q) => q.status !== "failed"),
+      ),
     );
   };
 

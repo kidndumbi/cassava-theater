@@ -1,108 +1,182 @@
-import { Box } from "@mui/material";
-import { useMp4Conversion } from "../../hooks/useMp4Conversion";
-import { Mp4ConversionProgress } from "../../store/mp4Conversion/mp4Conversion.slice";
-import React, { useState } from "react";
+import { Box, Button, Checkbox, Typography } from "@mui/material";
+import React, { useEffect } from "react";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
-import { ProgressItem } from "./ProgressItem";
-import { Mp4ProgressListActions } from "./Mp4ProgressListActions";
+import { ConversionQueueItem } from "../../../models/conversion-queue-item.model";
+import theme from "../../theme";
+import { CircularProgressWithLabel } from "../common/CircularProgressWithLabel";
+import { useAppDispatch } from "../../store";
+import { mp4ConversionNewActions } from "../../store/mp4ConversionNew.slice";
 
 interface Mp4ProgressListProps {
-  progressList: Mp4ConversionProgress[];
+  mp4ConversionProgress: ConversionQueueItem[];
 }
 
-const COMPLETION_THRESHOLD = 100;
-
 export const Mp4ProgressList = ({
-  progressList = [],
+  mp4ConversionProgress = [],
 }: Mp4ProgressListProps) => {
-  const {
-    pauseConversionItem,
-    unpauseConversionItem,
-    currentlyProcessingItem,
-    clearCompletedConversions,
-    removeFromConversionQueue,
-  } = useMp4Conversion();
+  useEffect(() => {
+    console.log(" mp4ConversionProgress: ", mp4ConversionProgress);
+  }, [mp4ConversionProgress]);
 
-  const { openDialog, setMessage } = useConfirmation();
+  const { openDialog } = useConfirmation();
+  const dispatch = useAppDispatch();
 
-  const [selected, setSelected] = useState<string[]>([]);
-
-  const handleSelect = (fromPath: string, checked: boolean) => {
-    setSelected((prev) =>
-      checked ? [...prev, fromPath] : prev.filter((p) => p !== fromPath),
-    );
-  };
-
-  const handleBulkRemove = async (selectedItems: Mp4ConversionProgress[]) => {
-    setMessage("Are you want to cancel?");
-    const dialogDecision = await openDialog();
-    if (dialogDecision !== "Ok") return;
-
-    await Promise.all(
-      selectedItems.map((item) => removeFromConversionQueue(item.fromPath)),
-    );
-  };
-
-  const handleBulkPause = async (selectedItems: Mp4ConversionProgress[]) => {
-    await Promise.all(
-      selectedItems
-        .filter((item) => !item.paused)
-        .map((item) => pauseConversionItem(item.fromPath)),
-    );
-  };
-
-  const handleBulkResume = async (selectedItems: Mp4ConversionProgress[]) => {
-    await Promise.all(
-      selectedItems
-        .filter((item) => item.paused)
-        .map((item) => unpauseConversionItem(item.fromPath)),
-    );
-  };
-
-  // Sort so that the currently converting item (percent > 0 and < COMPLETION_THRESHOLD) is at the top
-  const sortedProgressList = React.useMemo(() => {
-    return [...progressList].sort((a, b) => {
-      const aIsConverting = a.percent > 0 && a.percent < COMPLETION_THRESHOLD;
-      const bIsConverting = b.percent > 0 && b.percent < COMPLETION_THRESHOLD;
-      if (aIsConverting && !bIsConverting) return -1;
-      if (!aIsConverting && bIsConverting) return 1;
+  const sortedMp4ConversionProgress = React.useMemo(() => {
+    return [...mp4ConversionProgress].sort((a, b) => {
+      if (a.status === "processing" && b.status !== "processing") return -1;
+      if (a.status !== "processing" && b.status === "processing") return 1;
       return 0;
     });
-  }, [progressList]);
+  }, [mp4ConversionProgress]);
 
-  if (progressList.length === 0) {
+  if (mp4ConversionProgress.length === 0) {
     return null;
   }
 
+  const FilePathText = ({ path }: { path: string }) => (
+    <Typography
+      variant="body2"
+      sx={{
+        color: theme.customVariables.appWhiteSmoke,
+        marginRight: "10px",
+      }}
+      component="div"
+    >
+      {path}
+    </Typography>
+  );
+
   return (
     <Box className="ml-14 mr-14 mt-4">
-      <Mp4ProgressListActions
-        clearCompletedConversions={clearCompletedConversions}
-        selected={selected}
-        setSelected={setSelected}
-        progressList={sortedProgressList}
-        bulkRemoveFromQueue={handleBulkRemove}
-        bulkPause={handleBulkPause}
-        bulkResume={handleBulkResume}
-      />
       <Box className="mt-2 flex flex-col gap-2">
-        {sortedProgressList.map((progress, index) => (
-          <ProgressItem
+        {sortedMp4ConversionProgress.map((progress, index) => (
+          <Box
             key={index}
-            progress={progress}
-            pauseConversion={pauseConversionItem}
-            unpauseConversion={unpauseConversionItem}
-            currentlyProcessingItem={currentlyProcessingItem}
-            removeFromConversionQueue={async (path) => {
-              setMessage("Are you want to cancel?");
-              const dialogDecision = await openDialog();
-              if (dialogDecision === "Ok") {
-                return removeFromConversionQueue(path);
-              }
+            className="flex place-content-between items-center rounded-md p-1"
+            sx={{
+              backgroundColor: theme.customVariables.appDark,
             }}
-            checked={selected.includes(progress.fromPath)}
-            onCheck={(checked) => handleSelect(progress.fromPath, checked)}
-          />
+          >
+            <Box className="flex items-center gap-2">
+              <Box
+                sx={{ width: 40, display: "flex", justifyContent: "center" }}
+              >
+                {progress.status !== "processing" && (
+                  <Checkbox
+                    checked={false}
+                    onChange={(e) => console.log(e.target.checked)}
+                    sx={{
+                      marginRight: 1,
+                      color: theme.palette.primary.main,
+                    }}
+                  />
+                )}
+              </Box>
+
+              <FilePathText path={progress.outputPath} />
+            </Box>
+
+            <Box className="flex gap-2" sx={{ alignItems: "center" }}>
+              {progress.status !== "processing" && (
+                <>
+                  {!progress.paused ? (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={async () => {
+                        const result =
+                          await window.mp4ConversionAPI.pauseConversionItem(
+                            progress.inputPath,
+                          );
+                        if (!result) {
+                          console.error(
+                            `Failed to pause ${progress.inputPath} from conversion queue.`,
+                          );
+                          return;
+                        }
+                        const queue = (
+                          await window.mp4ConversionAPI.getConversionQueue()
+                        ).filter((q) => q.status !== "failed");
+                        console.log("queue after pause: ", queue);
+                        dispatch(
+                          mp4ConversionNewActions.setConversionProgress(queue),
+                        );
+                      }}
+                      sx={{ alignSelf: "center" }}
+                    >
+                      Pause
+                    </Button>
+                  ) : (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={async () => {
+                        const result =
+                          await window.mp4ConversionAPI.unpauseConversionItem(
+                            progress.inputPath,
+                          );
+                        if (!result) {
+                          console.error(
+                            `Failed to unpause ${progress.inputPath} from conversion queue.`,
+                          );
+                          return;
+                        }
+                        const queue = (
+                          await window.mp4ConversionAPI.getConversionQueue()
+                        ).filter((q) => q.status !== "failed");
+                        console.log("queue after unpause: ", queue);
+                        dispatch(
+                          mp4ConversionNewActions.setConversionProgress(queue),
+                        );
+                      }}
+                      sx={{ alignSelf: "center" }}
+                    >
+                      Resume
+                    </Button>
+                  )}
+                </>
+              )}
+
+              <Button
+                size="small"
+                variant="contained"
+                color="error"
+                onClick={() => {
+                  openDialog(
+                    undefined,
+                    undefined,
+                    "Are you want to cancel?",
+                  ).then(async (dialogDecision) => {
+                    if (dialogDecision === "Ok") {
+                      const result =
+                        await window.mp4ConversionAPI.removeFromConversionQueue(
+                          progress.inputPath,
+                        );
+                      if (!result) {
+                        console.error(
+                          `Failed to remove ${progress.inputPath} from conversion queue.`,
+                        );
+                        return;
+                      }
+                      const queue = (
+                        await window.mp4ConversionAPI.getConversionQueue()
+                      ).filter((q) => q.status !== "failed");
+                      dispatch(
+                        mp4ConversionNewActions.setConversionProgress(queue),
+                      );
+                    }
+                  });
+                }}
+                sx={{ alignSelf: "center" }}
+              >
+                Cancel
+              </Button>
+
+              {progress.status === "processing" && (
+                <CircularProgressWithLabel value={progress.percent} />
+              )}
+            </Box>
+          </Box>
         ))}
       </Box>
     </Box>

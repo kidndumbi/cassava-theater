@@ -4,10 +4,10 @@ import { useModalState } from "../hooks/useModalState";
 import { AppModal } from "./common/AppModal";
 import AppIconButton from "./common/AppIconButton";
 import CheckIcon from "@mui/icons-material/Check";
-import { useMp4Conversion } from "../hooks/useMp4Conversion";
 import { Processing } from "./processing/Processing";
 import { useSelector } from "react-redux";
 import { selYoutubeDownloadProgress } from "../store/youtubeDownload.slice";
+import { selConvertToMp4Progress } from "../store/mp4ConversionNew.slice";
 
 const StatusDisplayItem = ({
   children,
@@ -37,8 +37,8 @@ interface StatusDisplayProps {
 
 export const StatusDisplay = ({ port }: StatusDisplayProps) => {
   const { open, openModal, closeModal } = useModalState(false);
-  const { convertToMp4ProgressQueue } = useMp4Conversion();
   const youtubeDownloadProgressQueue = useSelector(selYoutubeDownloadProgress);
+  const mp4ConversionProgressNew = useSelector(selConvertToMp4Progress);
 
   return (
     <Box
@@ -51,8 +51,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
     >
       <StatusDisplayItem>PORT: {port} </StatusDisplayItem>
       <StatusDisplayItem onClick={openModal}>
-        {(convertToMp4ProgressQueue.length > 0 &&
-          convertToMp4ProgressQueue.some((p) => p.percent < 100)) ||
+        {mp4ConversionProgressNew.length > 0  ||
         youtubeDownloadProgressQueue.length > 0 ? (
           <CircularProgress color="secondary" size="20px" />
         ) : (
@@ -76,8 +75,8 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
         fullScreen={true}
       >
         <Processing
-          progressList={convertToMp4ProgressQueue}
           youtubeDownloadProgressList={youtubeDownloadProgressQueue}
+          mp4ConversionProgress={mp4ConversionProgressNew}
         />
       </AppModal>
     </Box>
