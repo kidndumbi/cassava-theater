@@ -1,11 +1,13 @@
-import { Box, Button, Checkbox, Typography } from "@mui/material";
-import React, { useEffect } from "react";
+import { Box } from "@mui/material";
+import React from "react";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { ConversionQueueItem } from "../../../models/conversion-queue-item.model";
-import theme from "../../theme";
-import { CircularProgressWithLabel } from "../common/CircularProgressWithLabel";
 import { useAppDispatch } from "../../store";
 import { mp4ConversionNewActions } from "../../store/mp4ConversionNew.slice";
+import { Mp4ProgressListItem } from "./Mp4ProgressListItem";
+
+const filterFailed = (queue: ConversionQueueItem[]) =>
+  queue.filter((q) => q.status !== "failed");
 
 interface Mp4ProgressListProps {
   mp4ConversionProgress: ConversionQueueItem[];
@@ -14,10 +16,6 @@ interface Mp4ProgressListProps {
 export const Mp4ProgressList = ({
   mp4ConversionProgress = [],
 }: Mp4ProgressListProps) => {
-  useEffect(() => {
-    console.log(" mp4ConversionProgress: ", mp4ConversionProgress);
-  }, [mp4ConversionProgress]);
-
   const { openDialog } = useConfirmation();
   const dispatch = useAppDispatch();
 
@@ -33,127 +31,49 @@ export const Mp4ProgressList = ({
     return null;
   }
 
-  const FilePathText = ({ path }: { path: string }) => (
-    <Typography
-      variant="body2"
-      sx={{
-        color: theme.customVariables.appWhiteSmoke,
-        marginRight: "10px",
-      }}
-      component="div"
-    >
-      {path}
-    </Typography>
-  );
+  const handlePause = async (inputPath: string) => {
+    const result = await window.mp4ConversionAPI.pauseConversionItem(inputPath);
+    dispatch(
+      mp4ConversionNewActions.setConversionProgress(filterFailed(result.queue)),
+    );
+  };
+
+  const handleResume = async (inputPath: string) => {
+    const result =
+      await window.mp4ConversionAPI.unpauseConversionItem(inputPath);
+    dispatch(
+      mp4ConversionNewActions.setConversionProgress(filterFailed(result.queue)),
+    );
+  };
+
+  const handleCancel = async (inputPath: string) => {
+    const dialogDecision = await openDialog(
+      undefined,
+      undefined,
+      "Are you want to cancel?",
+    );
+    if (dialogDecision === "Ok") {
+      const result =
+        await window.mp4ConversionAPI.removeFromConversionQueue(inputPath);
+      dispatch(
+        mp4ConversionNewActions.setConversionProgress(
+          filterFailed(result.queue),
+        ),
+      );
+    }
+  };
 
   return (
     <Box className="ml-14 mr-14 mt-4">
       <Box className="mt-2 flex flex-col gap-2">
         {sortedMp4ConversionProgress.map((progress, index) => (
-          <Box
+          <Mp4ProgressListItem
             key={index}
-            className="flex place-content-between items-center rounded-md p-1"
-            sx={{
-              backgroundColor: theme.customVariables.appDark,
-            }}
-          >
-            <Box className="flex items-center gap-2">
-              <Box
-                sx={{ width: 40, display: "flex", justifyContent: "center" }}
-              >
-                {progress.status !== "processing" && (
-                  <Checkbox
-                    checked={false}
-                    onChange={(e) => console.log(e.target.checked)}
-                    sx={{
-                      marginRight: 1,
-                      color: theme.palette.primary.main,
-                    }}
-                  />
-                )}
-              </Box>
-
-              <FilePathText path={progress.outputPath} />
-            </Box>
-
-            <Box className="flex gap-2" sx={{ alignItems: "center" }}>
-              {progress.status !== "processing" && (
-                <>
-                  {!progress.paused ? (
-                    <Button
-                      size="small"
-                      variant="contained"
-                      onClick={async () => {
-                        dispatch(
-                          mp4ConversionNewActions.setConversionProgress(
-                            (
-                              await window.mp4ConversionAPI.pauseConversionItem(
-                                progress.inputPath,
-                              )
-                            ).queue.filter((q) => q.status !== "failed"),
-                          ),
-                        );
-                      }}
-                      sx={{ alignSelf: "center" }}
-                    >
-                      Pause
-                    </Button>
-                  ) : (
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={async () => {
-                        dispatch(
-                          mp4ConversionNewActions.setConversionProgress(
-                            (
-                              await window.mp4ConversionAPI.unpauseConversionItem(
-                                progress.inputPath,
-                              )
-                            ).queue.filter((q) => q.status !== "failed"),
-                          ),
-                        );
-                      }}
-                      sx={{ alignSelf: "center" }}
-                    >
-                      Resume
-                    </Button>
-                  )}
-                </>
-              )}
-
-              <Button
-                size="small"
-                variant="contained"
-                color="error"
-                onClick={() => {
-                  openDialog(
-                    undefined,
-                    undefined,
-                    "Are you want to cancel?",
-                  ).then(async (dialogDecision) => {
-                    if (dialogDecision === "Ok") {
-                      dispatch(
-                        mp4ConversionNewActions.setConversionProgress(
-                          (
-                            await window.mp4ConversionAPI.removeFromConversionQueue(
-                              progress.inputPath,
-                            )
-                          ).queue.filter((q) => q.status !== "failed"),
-                        ),
-                      );
-                    }
-                  });
-                }}
-                sx={{ alignSelf: "center" }}
-              >
-                Cancel
-              </Button>
-
-              {progress.status === "processing" && (
-                <CircularProgressWithLabel value={progress.percent} />
-              )}
-            </Box>
-          </Box>
+            progress={progress}
+            onPause={handlePause}
+            onResume={handleResume}
+            onCancel={handleCancel}
+          />
         ))}
       </Box>
     </Box>
