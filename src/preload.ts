@@ -371,6 +371,12 @@ contextBridge.exposeInMainWorld("mp4ConversionAPI", {
       inputPath,
     );
   },
+  addToConversionQueueBulk: (inputPaths: string[]) => {
+    return ipcRenderer.invoke(
+      Mp4ConversionIPCChannels.AddToConversionQueueBulk,
+      inputPaths,
+    );
+  },
   pauseConversionItem: (inputPath: string) => {
     return ipcRenderer.invoke(
       Mp4ConversionIPCChannels.PauseConversionItem,

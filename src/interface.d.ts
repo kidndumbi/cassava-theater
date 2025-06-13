@@ -148,6 +148,10 @@ export interface Mp4ConversionAPI {
     success: boolean;
     queue: ConversionQueueItem[];
   }>;
+  addToConversionQueueBulk: (inputPaths: string[]) => Promise<{
+    success: boolean;
+    queue: ConversionQueueItem[];
+  }>;
   pauseConversionItem: (inputPath: string) => Promise<{
     success: boolean;
     queue: ConversionQueueItem[];
@@ -162,7 +166,7 @@ export interface Mp4ConversionAPI {
   removeFromConversionQueue: (inputPath: string) => Promise<{
     success: boolean;
     queue: ConversionQueueItem[];
-}>;
+  }>;
   initializeConversionQueue: () => Promise<boolean>;
 }
 

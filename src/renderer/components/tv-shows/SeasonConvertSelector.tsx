@@ -8,6 +8,8 @@ import {
   useTheme,
   Alert,
 } from "@mui/material";
+import { mp4ConversionNewActions } from "../../store/mp4ConversionNew.slice";
+import { useAppDispatch } from "../../store";
 
 type ChildFolder = {
   folderPath: string;
@@ -25,7 +27,7 @@ const SeasonConvertSelector: React.FC<SeasonConvertSelectorProps> = ({
   close,
 }) => {
   const theme = useTheme();
-  //const { addToConversionQueue } = useMp4Conversion();
+  const dispatch = useAppDispatch();
   const [noFilesToConvert, setNoFilesToConvert] = useState(false);
   const [selectedSeasonsToConvert, setSelectedSeasonsToConvert] = useState<
     string[]
@@ -45,7 +47,9 @@ const SeasonConvertSelector: React.FC<SeasonConvertSelectorProps> = ({
     );
 
     const allFilesArrays = await Promise.all(
-      selected.map((folder) => window.videoAPI.getFolderFiles(folder.folderPath)),
+      selected.map((folder) =>
+        window.videoAPI.getFolderFiles(folder.folderPath),
+      ),
     );
 
     const allFiles = allFilesArrays
@@ -57,10 +61,14 @@ const SeasonConvertSelector: React.FC<SeasonConvertSelectorProps> = ({
       return;
     }
 
-    allFiles.forEach((file) => {
-      //addToConversionQueue(file);
+    const { queue } =
+      await window.mp4ConversionAPI.addToConversionQueueBulk(allFiles);
+    dispatch(
+      mp4ConversionNewActions.setConversionProgress(
+        queue.filter((q) => q.status !== "failed"),
+      ),
+    );
 
-    });
     setNoFilesToConvert(false);
 
     close();
