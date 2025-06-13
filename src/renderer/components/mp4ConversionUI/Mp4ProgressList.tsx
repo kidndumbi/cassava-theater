@@ -84,22 +84,14 @@ export const Mp4ProgressList = ({
                       size="small"
                       variant="contained"
                       onClick={async () => {
-                        const result =
-                          await window.mp4ConversionAPI.pauseConversionItem(
-                            progress.inputPath,
-                          );
-                        if (!result) {
-                          console.error(
-                            `Failed to pause ${progress.inputPath} from conversion queue.`,
-                          );
-                          return;
-                        }
-                        const queue = (
-                          await window.mp4ConversionAPI.getConversionQueue()
-                        ).filter((q) => q.status !== "failed");
-                        console.log("queue after pause: ", queue);
                         dispatch(
-                          mp4ConversionNewActions.setConversionProgress(queue),
+                          mp4ConversionNewActions.setConversionProgress(
+                            (
+                              await window.mp4ConversionAPI.pauseConversionItem(
+                                progress.inputPath,
+                              )
+                            ).queue.filter((q) => q.status !== "failed"),
+                          ),
                         );
                       }}
                       sx={{ alignSelf: "center" }}
@@ -111,22 +103,14 @@ export const Mp4ProgressList = ({
                       size="small"
                       variant="outlined"
                       onClick={async () => {
-                        const result =
-                          await window.mp4ConversionAPI.unpauseConversionItem(
-                            progress.inputPath,
-                          );
-                        if (!result) {
-                          console.error(
-                            `Failed to unpause ${progress.inputPath} from conversion queue.`,
-                          );
-                          return;
-                        }
-                        const queue = (
-                          await window.mp4ConversionAPI.getConversionQueue()
-                        ).filter((q) => q.status !== "failed");
-                        console.log("queue after unpause: ", queue);
                         dispatch(
-                          mp4ConversionNewActions.setConversionProgress(queue),
+                          mp4ConversionNewActions.setConversionProgress(
+                            (
+                              await window.mp4ConversionAPI.unpauseConversionItem(
+                                progress.inputPath,
+                              )
+                            ).queue.filter((q) => q.status !== "failed"),
+                          ),
                         );
                       }}
                       sx={{ alignSelf: "center" }}
@@ -148,21 +132,14 @@ export const Mp4ProgressList = ({
                     "Are you want to cancel?",
                   ).then(async (dialogDecision) => {
                     if (dialogDecision === "Ok") {
-                      const result =
-                        await window.mp4ConversionAPI.removeFromConversionQueue(
-                          progress.inputPath,
-                        );
-                      if (!result) {
-                        console.error(
-                          `Failed to remove ${progress.inputPath} from conversion queue.`,
-                        );
-                        return;
-                      }
-                      const queue = (
-                        await window.mp4ConversionAPI.getConversionQueue()
-                      ).filter((q) => q.status !== "failed");
                       dispatch(
-                        mp4ConversionNewActions.setConversionProgress(queue),
+                        mp4ConversionNewActions.setConversionProgress(
+                          (
+                            await window.mp4ConversionAPI.removeFromConversionQueue(
+                              progress.inputPath,
+                            )
+                          ).queue.filter((q) => q.status !== "failed"),
+                        ),
                       );
                     }
                   });
