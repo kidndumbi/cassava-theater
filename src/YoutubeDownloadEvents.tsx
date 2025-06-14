@@ -49,23 +49,9 @@ export const YoutubeDownloadEvents = () => {
       dispatch(youtubeDownloadActions.setDownloadProgress(queue));
     });
 
-    window.mainNotificationsAPI.youtubeDownloadProgress(
-      async (progress: { item: YoutubeDownloadQueueItem; percent: number }) => {
-        const queue: YoutubeDownloadQueueItem[] =
-          await window.youtubeAPI.getQueue();
-        const updatedQueue = queue.map((item) => {
-          if (item.id === progress.item.id) {
-            return {
-              ...item,
-              percent: progress.percent,
-            };
-          }
-          return item;
-        });
-
-        dispatch(youtubeDownloadActions.setDownloadProgress(updatedQueue));
-      },
-    );
+    window.mainNotificationsAPI.youtubeDownloadProgress(async (progress) => {
+      dispatch(youtubeDownloadActions.setDownloadProgress(progress.queue));
+    });
   }, []);
 
   return <> </>;

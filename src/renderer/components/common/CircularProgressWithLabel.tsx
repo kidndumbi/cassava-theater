@@ -21,7 +21,7 @@ export function CircularProgressWithLabel(
           component="div"
           sx={{ color: theme.customVariables.appWhiteSmoke }}
         >
-          {`${(props.value || 0).toFixed(2)}%`}
+          {`${Number(props.value || 0).toFixed(2)}%`}
         </Typography>
       </Box>
     </Box>
