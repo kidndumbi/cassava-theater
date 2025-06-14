@@ -20,9 +20,9 @@ export const isInMp4ConversionQueue = async (
   );
 };
 
-export const getConversionQueue = async () => {
+export const getConversionQueue = async (includeFailed = false) => {
   const result = await window.mp4ConversionAPI.getConversionQueue();
-  return filterFailed(result);
+  return includeFailed ? result : filterFailed(result);
 };
 
 export const removeFromConversionQueue = async (filePath: string) => {
