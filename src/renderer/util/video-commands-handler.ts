@@ -8,10 +8,10 @@ export const videoCommandsHandler = (
 ) => {
   switch (command) {
     case "play":
-      playerHandle.play();
+      playerHandle?.play();
       break;
     case "pause":
-      playerHandle.pause();
+      playerHandle?.pause();
       break;
     case "forward30":
       playerHandle?.skipBy(30);
@@ -30,7 +30,7 @@ export const videoCommandsHandler = (
       playerHandle?.setVolume((prev) => Math.min(prev + 0.1, 1));
       break;
     case "nextEpisode":
-      if (playerHandle && playerHandle.triggereNextEpisode) {
+      if (playerHandle && playerHandle?.triggereNextEpisode) {
         playerHandle.triggereNextEpisode();
       }
       break;
