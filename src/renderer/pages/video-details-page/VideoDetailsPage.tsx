@@ -15,6 +15,8 @@ export const VideoDetailsPage = () => {
   const menuId = searchParams.get("menuId") || "";
   const resumeId = searchParams.get("resumeId") || "";
 
+  console.log("VideoDetailsPage", { videoPath, menuId, resumeId });
+
   return isTvShow(menuId, resumeId) ? (
     <TvShowDetails menuId={menuId} resumeId={resumeId} videoPath={videoPath} />
   ) : (

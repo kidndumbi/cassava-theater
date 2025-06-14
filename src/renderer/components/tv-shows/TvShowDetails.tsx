@@ -366,7 +366,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 </AppIconButton>
               </Box>
             </Box>
-            <Box className="absolute bottom-5 left-5 ml-4 mr-4 text-white drop-shadow-md">
+            <Box className="absolute bottom-12 left-5 ml-4 mr-4 text-white drop-shadow-md">
               <h2 className="mb-4 text-4xl font-extrabold">
                 {tvShowDetails?.tv_show_details?.name ||
                   tvShowDetails?.filePath?.split("\\").pop()}

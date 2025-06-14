@@ -35,7 +35,7 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
   };
 
   return (
-    <Box className="absolute bottom-5 left-5 w-full text-white drop-shadow-md">
+    <Box className="absolute bottom-12 left-5 w-full text-white drop-shadow-md">
       <h2 className="mb-4 text-4xl font-extrabold">
         {title}
         {releaseYear}

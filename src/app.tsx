@@ -138,9 +138,7 @@ function AppRoutes({
   const { mutate: updatePlaylist } = useUpdatePlaylist();
 
   const location = useLocation();
-  const showStatusDisplay = !["/video-player", "/video-details"].includes(
-    location.pathname,
-  );
+  const showStatusDisplay = !["/video-player"].includes(location.pathname);
 
   useEffect(() => {
     window.videoCommandsAPI.setCurrentVideo((data: SetPlayingModel) => {
