@@ -110,29 +110,21 @@ contextBridge.exposeInMainWorld("currentlyPlayingAPI", {
     );
   },
   getCurrentPlaylist: () => {
-    return ipcRenderer.invoke(
-      CurrentlyPlayingIPCChannels.GetCurrentPlaylist
-    );
+    return ipcRenderer.invoke(CurrentlyPlayingIPCChannels.GetCurrentPlaylist);
   },
   getPlaylistVideos: () => {
-    return ipcRenderer.invoke(
-      CurrentlyPlayingIPCChannels.GetPlaylistVideos
-    );
+    return ipcRenderer.invoke(CurrentlyPlayingIPCChannels.GetPlaylistVideos);
   },
   getNextPlaylistVideo: () => {
-    return ipcRenderer.invoke(
-      CurrentlyPlayingIPCChannels.GetNextPlaylistVideo
-    );
+    return ipcRenderer.invoke(CurrentlyPlayingIPCChannels.GetNextPlaylistVideo);
   },
   getPreviousPlaylistVideo: () => {
     return ipcRenderer.invoke(
-      CurrentlyPlayingIPCChannels.GetPreviousPlaylistVideo
+      CurrentlyPlayingIPCChannels.GetPreviousPlaylistVideo,
     );
   },
   getCurrentVideo: () => {
-    return ipcRenderer.invoke(
-      CurrentlyPlayingIPCChannels.GetCurrentVideo
-    );
+    return ipcRenderer.invoke(CurrentlyPlayingIPCChannels.GetCurrentVideo);
   },
 });
 
@@ -204,14 +196,17 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
   },
   youtubeDownloadProgress: (
     callback: (progress: {
-      item: YoutubeDownloadQueueItem;
-      percent: number;
+      queue: YoutubeDownloadQueueItem[];
     }) => void,
   ) => {
     ipcRenderer.on(
       "youtube-download-progress",
-      (_event, progress: { item: YoutubeDownloadQueueItem; percent: number }) =>
-        callback(progress),
+      (
+        _event,
+        progress: {
+          queue: YoutubeDownloadQueueItem[];
+        },
+      ) => callback(progress),
     );
   },
   youtubeDownloadCompleted: (

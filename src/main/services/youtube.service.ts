@@ -3,6 +3,8 @@ import * as fs from "fs";
 import * as fsPromises from "fs/promises";
 import { v4 as uuidv4 } from "uuid";
 import { getMainWindow } from "../mainWindowManager";
+import { getSocketIoGlobal } from "../socketGlobalManager";
+import { AppSocketEvents } from "../../enums/app-socket-events.enum";
 
 /**
  * Returns the info of a YouTube video.
@@ -64,6 +66,7 @@ class YoutubeDownloadQueue {
   private queue: YoutubeDownloadQueueItem[] = [];
   private isProcessing = false;
   private mainWindow = getMainWindow();
+  private socketIo = getSocketIoGlobal();
   private currentDownloadStream: fs.WriteStream | null = null; // Track current stream
   private progressIntervalMs = 2000; // Interval for progress updates in ms
 
@@ -144,10 +147,29 @@ class YoutubeDownloadQueue {
                 ? ((downloaded / total) * 100).toFixed(2)
                 : "0";
 
-              this.mainWindow?.webContents.send("youtube-download-progress", {
-                item,
-                percent: Number(percent),
+              const updatedQueue = this.queue.map((queueIitem) => {
+                if (queueIitem.id === item.id) {
+                  return {
+                    ...item,
+                    percent: percent,
+                  };
+                }
+                return queueIitem;
               });
+
+              const progressData = {
+                queue: updatedQueue,
+              };
+
+              this.mainWindow?.webContents.send(
+                "youtube-download-progress",
+                progressData,
+              );
+
+              this.socketIo.emit(
+                AppSocketEvents.YT_DOWNLOAD_PROGRESS,
+                progressData,
+              );
             }
           });
 

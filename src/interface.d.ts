@@ -54,8 +54,7 @@ export interface MainNotificationsAPI {
   ) => void;
   youtubeDownloadProgress: (
     callback: (progress: {
-      item: YoutubeDownloadQueueItem;
-      percent: number;
+      queue: YoutubeDownloadQueueItem[];
     }) => void,
   ) => void;
   youtubeDownloadCompleted: (
@@ -210,7 +209,10 @@ export interface PlaylistCommandsAPI {
 
 export interface CurrentlyPlayingAPI {
   setCurrentVideo: (video: VideoDataModel) => Promise<boolean>;
-  setCurrentPlaylist: (args:{playlist: Partial<PlaylistModel | null>, shuffle?: boolean}) => Promise<PlaylistModel>;
+  setCurrentPlaylist: (args: {
+    playlist: Partial<PlaylistModel | null>;
+    shuffle?: boolean;
+  }) => Promise<PlaylistModel>;
   setCurrentTime: (
     currentTime: number,
   ) => Promise<{ success: boolean; error?: string }>;
