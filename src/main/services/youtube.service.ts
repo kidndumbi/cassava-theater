@@ -133,7 +133,6 @@ class YoutubeDownloadQueue {
             filter: "audioandvideo",
           });
 
-          //const progressIntervalMs = 2000; // Set your interval here (in ms)
           let lastProgressTime = 0;
 
           ytdlStream.on("progress", (_, downloaded, total) => {
@@ -144,15 +143,15 @@ class YoutubeDownloadQueue {
             ) {
               lastProgressTime = now;
               const percent = total
-                ? ((downloaded / total) * 100).toFixed(2)
-                : "0";
+                ? parseFloat(((downloaded / total) * 100).toFixed(2))
+                : 0;
 
               const updatedQueue = this.queue.map((queueIitem) => {
                 if (queueIitem.id === item.id) {
                   return {
                     ...item,
                     percent: percent,
-                  };
+                  } as YoutubeDownloadQueueItem;
                 }
                 return queueIitem;
               });
