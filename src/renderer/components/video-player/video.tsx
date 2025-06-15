@@ -42,7 +42,7 @@ const Video: React.FC<VideoProps> = ({
       className="h-full w-full object-contain"
       controls={!isMkv}
       playsInline
-      src={videoUrl}
+      src={videoUrl || null}
       onClick={onClick}
       onError={(e) => {
         const error = e.currentTarget.error;
