@@ -4,7 +4,10 @@ import { useSnackbar } from "./renderer/contexts/SnackbarContext";
 import { SettingsModel } from "./models/settings.model";
 import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
 import { mp4ConversionNewActions } from "./renderer/store/mp4ConversionNew.slice";
-import { getConversionQueue } from "./renderer/util/mp4ConversionAPI-helpers";
+import {
+  filterFailed,
+  getConversionQueue,
+} from "./renderer/util/mp4ConversionAPI-helpers";
 
 export const Mp4ConversionEvents = () => {
   const dispatch = useAppDispatch();
@@ -20,27 +23,25 @@ export const Mp4ConversionEvents = () => {
 
   useEffect(() => {
     window.mainNotificationsAPI.mp4ConversionProgress(async (progress) => {
-      const queue = await getConversionQueue();
-      const updatedQueue = queue.map((item) => {
-        if (item.inputPath === progress.item.inputPath) {
-          return {
-            ...progress.item,
-          };
-        }
-        return item;
-      });
-      dispatch(mp4ConversionNewActions.setConversionProgress(updatedQueue));
+      dispatch(
+        mp4ConversionNewActions.setConversionProgress(
+          filterFailed(progress.queue),
+        ),
+      );
     });
 
     window.mainNotificationsAPI.mp4ConversionCompleted(async (progress) => {
-      const [fromPath, toPath] = progress.file.split(":::") || [];
-      const updatedQueue = (await getConversionQueue()).filter(
-        (q) => q.inputPath !== fromPath,
+      dispatch(
+        mp4ConversionNewActions.setConversionProgress(
+          filterFailed(progress.queue),
+        ),
       );
-      dispatch(mp4ConversionNewActions.setConversionProgress(updatedQueue));
 
       if (settings?.notifications?.mp4ConversionStatus) {
-        showSnackbar(`Conversion completed: ${toPath}`, "success");
+        showSnackbar(
+          `Conversion completed: ${progress.queueItem.outputPath}`,
+          "success",
+        );
       }
     });
   }, []);

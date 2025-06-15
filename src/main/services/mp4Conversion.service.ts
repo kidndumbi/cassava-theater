@@ -241,9 +241,7 @@ export async function addToConversionQueue(inputPath: string) {
   };
 }
 
-export async function addToConversionQueueBulk(
-  inputPaths: string[],
-): Promise<{
+export async function addToConversionQueueBulk(inputPaths: string[]): Promise<{
   success: boolean;
   queue: ConversionQueueItem[];
 }> {
@@ -259,7 +257,9 @@ export async function addToConversionQueueBulk(
     .map((item) => item.inputPath);
 
   if (validInputPaths.length > 0) {
-    validInputPaths.forEach((inputPath) => getConversionQueueInstance().add(inputPath));
+    validInputPaths.forEach((inputPath) =>
+      getConversionQueueInstance().add(inputPath),
+    );
     return {
       success: true,
       queue: getConversionQueueInstance().getQueue(),
@@ -269,7 +269,7 @@ export async function addToConversionQueueBulk(
     success: false,
     queue: getConversionQueueInstance().getQueue(),
   };
-} 
+}
 
 export function pauseConversionItem(inputPath: string): {
   success: boolean;
@@ -327,10 +327,6 @@ async function processConversion(
     return;
   }
 
-  console.log(
-    `Converting "${queueItem.inputPath}" to "${queueItem.outputPath}"`,
-  );
-
   await performConversion(queueItem, mainWindow, queue, progressIntervalMs);
 }
 
@@ -384,14 +380,7 @@ function performConversion(
           handleProgress(progress, queueItem, mainWindow);
         }
       })
-      .on("end", () =>
-        handleConversionEnd(
-          queueItem.inputPath,
-          queueItem.outputPath,
-          resolve,
-          mainWindow,
-        ),
-      )
+      .on("end", () => handleConversionEnd(resolve, mainWindow, queueItem))
       .on("error", (err: Error) =>
         handleConversionError(queueItem.inputPath, err, reject, queue),
       );
@@ -409,36 +398,45 @@ function handleProgress(
   if (progress.percent) {
     process.stdout.write(`Progress: ${progress.percent.toFixed(2)}%   \r`);
     mainWindow?.webContents.send("mp4-conversion-progress", {
-      file: `${queueItem.inputPath}:::${queueItem.outputPath}`,
-      percent: progress.percent,
-      item: {
-        ...queueItem,
-        percent: progress.percent,
-      },
+      queue: getConversionQueueInstance()
+        .getQueue()
+        .map((item) => {
+          if (item.inputPath === queueItem.inputPath) {
+            return {
+              ...item,
+              percent: progress.percent,
+            };
+          }
+          return item;
+        }),
     });
   }
 }
 
 async function handleConversionEnd(
-  inputPath: string,
-  mp4Path: string,
   resolve: (value: void) => void,
   mainWindow: Electron.BrowserWindow | null,
+  queueItem: ConversionQueueItem,
 ) {
-  console.log(`\nFinished: "${mp4Path}"`);
+  console.log(`\nFinished: "${queueItem.outputPath}"`);
   try {
     const previousData = await videoDbDataService.getVideo(
-      normalizeFilePath(inputPath),
+      normalizeFilePath(queueItem.inputPath),
     );
-    await videoDbDataService.putVideo(mp4Path, previousData);
-    await deleteFile(inputPath);
+    await videoDbDataService.putVideo(queueItem.outputPath, previousData);
+    await deleteFile(queueItem.inputPath);
     mainWindow?.webContents.send("mp4-conversion-completed", {
-      file: `${inputPath}:::${mp4Path}`,
-      percent: 100,
+      queueItem,
+      queue: getConversionQueueInstance()
+        .getQueue()
+        .filter((q) => q.inputPath !== queueItem.inputPath),
     });
     resolve();
   } catch (error) {
-    console.error(`Error handling metadata for "${mp4Path}":`, error);
+    console.error(
+      `Error handling metadata for "${queueItem.outputPath}":`,
+      error,
+    );
     resolve();
   }
 }

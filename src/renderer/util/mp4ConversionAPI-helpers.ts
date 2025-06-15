@@ -1,6 +1,6 @@
 import { ConversionQueueItem } from "./../../models/conversion-queue-item.model";
 
-const filterFailed = (queue: ConversionQueueItem[]) =>
+export const filterFailed = (queue: ConversionQueueItem[]) =>
   queue.filter((q) => q.status !== "failed");
 
 export const sortConversionQueue = (
