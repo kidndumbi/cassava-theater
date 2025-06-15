@@ -416,7 +416,7 @@ function handleProgress(
         .map((item) => {
           if (item.inputPath === queueItem.inputPath) {
             return {
-              ...item,
+              ...queueItem,
               percent: progress.percent,
             };
           }
