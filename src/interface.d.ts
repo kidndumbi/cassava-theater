@@ -43,19 +43,18 @@ export interface MainNotificationsAPI {
   userConnected: (callback: (userId: string) => void) => void;
   userDisconnected: (callback: (userId: string) => void) => void;
   mp4ConversionProgress: (
+    callback: (progress: { queue: ConversionQueueItem[] }) => void,
+  ) => void;
+  mp4ConversionCompleted: (
     callback: (progress: {
       file: string;
       percent: number;
-      item: ConversionQueueItem;
+      queueItem: ConversionQueueItem;
+      queue: ConversionQueueItem[];
     }) => void,
-  ) => void;
-  mp4ConversionCompleted: (
-    callback: (progress: { file: string; percent: number }) => void,
   ) => void;
   youtubeDownloadProgress: (
-    callback: (progress: {
-      queue: YoutubeDownloadQueueItem[];
-    }) => void,
+    callback: (progress: { queue: YoutubeDownloadQueueItem[] }) => void,
   ) => void;
   youtubeDownloadCompleted: (
     callback: (data: {

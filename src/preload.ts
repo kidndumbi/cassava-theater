@@ -169,35 +169,41 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
     );
   },
   mp4ConversionProgress: (
-    callback: (progress: {
-      file: string;
-      percent: number;
-      item: ConversionQueueItem;
-    }) => void,
+    callback: (progress: { queue: ConversionQueueItem[] }) => void,
   ) => {
     ipcRenderer.on(
       "mp4-conversion-progress",
       (
         event: Electron.IpcRendererEvent,
-        progress: { file: string; percent: number; item: ConversionQueueItem },
+        progress: {
+          queue: ConversionQueueItem[];
+        },
       ) => callback(progress),
     );
   },
   mp4ConversionCompleted: (
-    callback: (progress: { file: string; percent: number }) => void,
+    callback: (progress: {
+      file: string;
+      percent: number;
+      queueItem: ConversionQueueItem;
+      queue: ConversionQueueItem[];
+    }) => void,
   ) => {
     ipcRenderer.on(
       "mp4-conversion-completed",
       (
         event: Electron.IpcRendererEvent,
-        progress: { file: string; percent: number },
+        progress: {
+          file: string;
+          percent: number;
+          queueItem: ConversionQueueItem;
+          queue: ConversionQueueItem[];
+        },
       ) => callback(progress),
     );
   },
   youtubeDownloadProgress: (
-    callback: (progress: {
-      queue: YoutubeDownloadQueueItem[];
-    }) => void,
+    callback: (progress: { queue: YoutubeDownloadQueueItem[] }) => void,
   ) => {
     ipcRenderer.on(
       "youtube-download-progress",
