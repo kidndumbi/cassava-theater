@@ -1,9 +1,14 @@
 import { Socket } from "socket.io";
 import ytdl from "@distube/ytdl-core";
 import { AppSocketEvents } from "../../../enums/app-socket-events.enum";
-import { getYoutubeVideoInfo, downloadYoutubeVideo, getYoutubeDownloadQueueInstance, YoutubeDownloadQueueItem } from "../youtube.service";
+import {
+  getYoutubeVideoInfo,
+  downloadYoutubeVideo,
+  getYoutubeDownloadQueueInstance,
+  YoutubeDownloadQueueItem,
+} from "../youtube.service";
 
-export function registerYoutubeHandlers(socket: Socket ) {
+export function registerYoutubeHandlers(socket: Socket) {
   socket.on(
     AppSocketEvents.YT_GET_VIDEO_INFO,
     async (
@@ -72,9 +77,7 @@ export function registerYoutubeHandlers(socket: Socket ) {
       callback: (response: { success: boolean; error?: string }) => void,
     ) => {
       try {
-        getYoutubeDownloadQueueInstance().removeFromQueue(
-          requestData.data.id,
-        );
+        getYoutubeDownloadQueueInstance().removeFromQueue(requestData.data.id);
         callback({ success: true });
       } catch (error) {
         callback({ success: false, error: (error as Error).message });

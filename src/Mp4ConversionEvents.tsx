@@ -30,6 +30,16 @@ export const Mp4ConversionEvents = () => {
       );
     });
 
+    window.mainNotificationsAPI.mp4ConversionUpdatedFromBackend(
+      async (progress) => {
+        dispatch(
+          mp4ConversionNewActions.setConversionProgress(
+            filterFailed(progress.queue),
+          ),
+        );
+      },
+    );
+
     window.mainNotificationsAPI.mp4ConversionCompleted(async (progress) => {
       dispatch(
         mp4ConversionNewActions.setConversionProgress(
