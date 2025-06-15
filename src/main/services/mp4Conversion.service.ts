@@ -1,3 +1,4 @@
+import { AppSocketEvents } from "./../../enums/app-socket-events.enum";
 import * as fs from "fs/promises";
 import * as path from "path";
 import ffmpeg from "fluent-ffmpeg";
@@ -8,6 +9,8 @@ import * as videoDbDataService from "./videoDbData.service";
 import { normalizeFilePath } from "./helpers";
 import { ConversionQueueItem } from "../../models/conversion-queue-item.model";
 import * as conversionQueueDataService from "./conversionQueueDataDb.service";
+import { getSocketIoGlobal } from "../socketGlobalManager";
+import { Server } from "socket.io";
 
 const VIDEO_EXTENSIONS = new Set([
   ".mkv",
@@ -314,6 +317,7 @@ async function processConversion(
   progressIntervalMs: number,
 ): Promise<void> {
   const mainWindow = getMainWindow();
+  const socketIo = getSocketIoGlobal();
 
   if (await isAlreadyConverted(queueItem.outputPath)) {
     // Remove item from queue if already converted
@@ -327,7 +331,13 @@ async function processConversion(
     return;
   }
 
-  await performConversion(queueItem, mainWindow, queue, progressIntervalMs);
+  await performConversion(
+    queueItem,
+    mainWindow,
+    queue,
+    progressIntervalMs,
+    socketIo,
+  );
 }
 
 async function isConvertibleVideoFile(filePath: string): Promise<boolean> {
@@ -367,6 +377,7 @@ function performConversion(
   mainWindow: Electron.BrowserWindow | null,
   queue: ConversionQueue,
   progressIntervalMs: number,
+  socketIo: Server,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     let lastProgressTime = 0;
@@ -377,7 +388,7 @@ function performConversion(
         const now = Date.now();
         if (now - lastProgressTime >= progressIntervalMs) {
           lastProgressTime = now;
-          handleProgress(progress, queueItem, mainWindow);
+          handleProgress(progress, queueItem, mainWindow, socketIo);
         }
       })
       .on("end", () => handleConversionEnd(resolve, mainWindow, queueItem))
@@ -394,10 +405,12 @@ function handleProgress(
   progress: ConversionProgress,
   queueItem: ConversionQueueItem,
   mainWindow: Electron.BrowserWindow | null,
+  socketIo: Server,
 ) {
   if (progress.percent) {
     process.stdout.write(`Progress: ${progress.percent.toFixed(2)}%   \r`);
-    mainWindow?.webContents.send("mp4-conversion-progress", {
+
+    const progressData = {
       queue: getConversionQueueInstance()
         .getQueue()
         .map((item) => {
@@ -408,10 +421,23 @@ function handleProgress(
             };
           }
           return item;
-        }),
-    });
+        })
+        .sort(sortConversionQueue),
+    };
+
+    mainWindow?.webContents.send("mp4-conversion-progress", progressData);
+    socketIo.emit(AppSocketEvents.MP4_CONVERSION_PROGRESS, progressData);
   }
 }
+
+const sortConversionQueue = (
+  a: ConversionQueueItem,
+  b: ConversionQueueItem,
+) => {
+  if (a.status === "processing" && b.status !== "processing") return -1;
+  if (a.status !== "processing" && b.status === "processing") return 1;
+  return 0;
+};
 
 async function handleConversionEnd(
   resolve: (value: void) => void,
@@ -429,7 +455,8 @@ async function handleConversionEnd(
       queueItem,
       queue: getConversionQueueInstance()
         .getQueue()
-        .filter((q) => q.inputPath !== queueItem.inputPath),
+        .filter((q) => q.inputPath !== queueItem.inputPath)
+        .sort(sortConversionQueue),
     });
     resolve();
   } catch (error) {

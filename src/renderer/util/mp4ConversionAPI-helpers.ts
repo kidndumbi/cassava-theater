@@ -3,14 +3,6 @@ import { ConversionQueueItem } from "./../../models/conversion-queue-item.model"
 export const filterFailed = (queue: ConversionQueueItem[]) =>
   queue.filter((q) => q.status !== "failed");
 
-export const sortConversionQueue = (
-  a: ConversionQueueItem,
-  b: ConversionQueueItem,
-) => {
-  if (a.status === "processing" && b.status !== "processing") return -1;
-  if (a.status !== "processing" && b.status === "processing") return 1;
-  return 0;
-};
 
 export const isInMp4ConversionQueue = async (
   filePath: string,

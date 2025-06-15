@@ -8,7 +8,6 @@ import { Mp4ProgressListItem } from "./Mp4ProgressListItem";
 import {
   pauseConversionItem,
   removeFromConversionQueue,
-  sortConversionQueue,
   unpauseConversionItem,
 } from "../../util/mp4ConversionAPI-helpers";
 
@@ -23,7 +22,7 @@ export const Mp4ProgressList = ({
   const dispatch = useAppDispatch();
 
   const sortedMp4ConversionProgress = React.useMemo(() => {
-    return [...mp4ConversionProgress].sort(sortConversionQueue);
+    return [...mp4ConversionProgress];
   }, [mp4ConversionProgress]);
 
   if (mp4ConversionProgress.length === 0) {
