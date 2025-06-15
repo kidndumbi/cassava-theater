@@ -22,6 +22,7 @@ import { usePlaylists } from "../../hooks/usePlaylists";
 import { ListDisplayType, PlaylistModel } from "../../../models/playlist.model";
 import { useDragState } from "../../hooks/useDragState";
 import { mp4ConversionNewActions } from "../../store/mp4ConversionNew.slice";
+import { addToConversionQueue } from "../../util/mp4ConversionAPI-helpers";
 
 // Define MenuItem interface
 export interface OptionsMenuItem {
@@ -137,16 +138,6 @@ export const CustomFolderVideosPanel = ({
     },
   );
 
-  const handleConvertToMp4 = async (fromPath: string) => {
-    const { queue } =
-      await window.mp4ConversionAPI.addToConversionQueue(fromPath);
-    dispatch(
-      mp4ConversionNewActions.setConversionProgress(
-        queue.filter((q) => q.status !== "failed"),
-      ),
-    );
-  };
-
   const handleSelectMovie = async (movie_details: MovieDetails) => {
     if (movie_details.id && selectedMovie?.filePath) {
       const extraMovieDetails = await getExtraMovieDetails(
@@ -192,9 +183,16 @@ export const CustomFolderVideosPanel = ({
       ? [
           {
             label: "Convert to MP4",
-            action: () => {
+            action: async () => {
               if (video.filePath) {
-                handleConvertToMp4(video.filePath);
+                const { success, queue, message } = await addToConversionQueue(
+                  video.filePath,
+                );
+                if (!success) {
+                  showSnackbar(message, "error");
+                  return;
+                }
+                dispatch(mp4ConversionNewActions.setConversionProgress(queue));
               }
             },
           },

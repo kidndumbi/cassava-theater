@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { mp4ConversionNewActions } from "../../store/mp4ConversionNew.slice";
 import { useAppDispatch } from "../../store";
+import { isInMp4ConversionQueue } from "../../util/mp4ConversionAPI-helpers";
 
 type ChildFolder = {
   folderPath: string;
@@ -55,14 +56,23 @@ const SeasonConvertSelector: React.FC<SeasonConvertSelectorProps> = ({
     const allFiles = allFilesArrays
       .flat()
       .filter((file) => !file.endsWith(".json") && !file.endsWith(".mp4"));
-    if (allFiles?.length === 0) {
+
+    // Filter out files that are already in the conversion queue
+    const isNotInQueueArr = await Promise.all(
+      allFiles.map((file) =>
+        isInMp4ConversionQueue(file).then((inQueue) => !inQueue),
+      ),
+    );
+    const filesToConvert = allFiles.filter((_, idx) => isNotInQueueArr[idx]);
+
+    if (filesToConvert.length === 0) {
       setNoFilesToConvert(true);
       console.warn("No files to convert in selected seasons.");
       return;
     }
 
     const { queue } =
-      await window.mp4ConversionAPI.addToConversionQueueBulk(allFiles);
+      await window.mp4ConversionAPI.addToConversionQueueBulk(filesToConvert);
     dispatch(
       mp4ConversionNewActions.setConversionProgress(
         queue.filter((q) => q.status !== "failed"),
@@ -78,7 +88,7 @@ const SeasonConvertSelector: React.FC<SeasonConvertSelectorProps> = ({
     <Box className="p-4">
       {noFilesToConvert && (
         <Alert className="mb-2" severity="warning">
-          No files to convert.
+          No files to convert. Some might already be in the conversion queue.
         </Alert>
       )}
       <FormGroup>

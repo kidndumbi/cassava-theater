@@ -26,6 +26,7 @@ import { useModalState } from "../../hooks/useModalState";
 import { AppDrop } from "../common/AppDrop";
 import { useDragState } from "../../hooks/useDragState";
 import { mp4ConversionNewActions } from "../../store/mp4ConversionNew.slice";
+import { addToConversionQueue } from "../../util/mp4ConversionAPI-helpers";
 
 interface MovieListProps {
   movies: VideoDataModel[];
@@ -131,16 +132,6 @@ const MovieList: React.FC<MovieListProps> = ({
     },
   });
 
-  const handleConvertToMp4 = async (fromPath: string) => {
-    const { queue } =
-      await window.mp4ConversionAPI.addToConversionQueue(fromPath);
-    dispatch(
-      mp4ConversionNewActions.setConversionProgress(
-        queue.filter((q) => q.status !== "failed"),
-      ),
-    );
-  };
-
   const handleLinkMovieDb = (movie: VideoDataModel) => {
     setSelectedMovie(movie);
     setOpenMovieSuggestionsModal(true);
@@ -200,9 +191,17 @@ const MovieList: React.FC<MovieListProps> = ({
         ? [
             {
               label: "Convert to MP4",
-              action: () => {
+              action: async () => {
                 if (movie.filePath) {
-                  handleConvertToMp4(movie.filePath);
+                  const { success, queue, message } =
+                    await addToConversionQueue(movie.filePath);
+                  if (!success) {
+                    showSnackbar(message, "error");
+                    return;
+                  }
+                  dispatch(
+                    mp4ConversionNewActions.setConversionProgress(queue),
+                  );
                 } else {
                   console.error("File path is undefined.");
                 }
