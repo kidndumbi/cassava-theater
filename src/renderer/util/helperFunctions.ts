@@ -110,6 +110,31 @@ function parseIpcError(error: Error) {
   return { name: error?.name, message: error?.message };
 }
 
+function secondsToHms(value: number | null | undefined): string {
+  if (value == null || isNaN(value) || value < 0) {
+    return "00:00";
+  }
+
+  const totalSeconds = Math.round(value); // No division by 1000 needed
+  const hours = Math.floor(totalSeconds / 3600);
+  const remainingSeconds = totalSeconds % 3600;
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+
+  if (hours > 0) {
+    return [
+      hours.toString(),
+      minutes.toString().padStart(2, "0"),
+      seconds.toString().padStart(2, "0"),
+    ].join(":");
+  } else {
+    return [
+      minutes.toString(),
+      seconds.toString().padStart(2, "0"),
+    ].join(":");
+  }
+}
+
 export {
   secondsTohhmmss,
   isEmptyObject,
@@ -127,4 +152,5 @@ export {
   removeVidExt,
   getFileExtension,
   parseIpcError,
+  secondsToHms
 };
