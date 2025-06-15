@@ -27,4 +27,5 @@ export enum AppSocketEvents {
   YT_SWAP_QUEUE_ITEMS = "yt-swap-queue-items",
   YT_DOWNLOAD_PROGRESS = "yt-download-progress",
   MP4_CONVERSION_PROGRESS = "mp4-conversion-progress",
+  MP4_CONVERION_ITEM_CANCELLED = "mp4-converion-item-cancelled",
 }
