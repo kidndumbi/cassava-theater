@@ -406,20 +406,20 @@ contextBridge.exposeInMainWorld("mp4ConversionAPI", {
       inputPaths,
     );
   },
-  pauseConversionItem: (inputPath: string) => {
+  pauseConversionItem: (id: string) => {
     return ipcRenderer.invoke(
       Mp4ConversionIPCChannels.PauseConversionItem,
-      inputPath,
+      id,
     );
   },
-  unpauseConversionItem: (inputPath: string) => {
+  unpauseConversionItem: (id: string) => {
     return ipcRenderer.invoke(
       Mp4ConversionIPCChannels.UnpauseConversionItem,
-      inputPath,
+      id,
     );
   },
-  isItemPaused: (inputPath: string) => {
-    return ipcRenderer.invoke(Mp4ConversionIPCChannels.IsItemPaused, inputPath);
+  isItemPaused: (id: string) => {
+    return ipcRenderer.invoke(Mp4ConversionIPCChannels.IsItemPaused, id);
   },
   getCurrentProcessingItem: () => {
     return ipcRenderer.invoke(
@@ -429,10 +429,10 @@ contextBridge.exposeInMainWorld("mp4ConversionAPI", {
   getConversionQueue: () => {
     return ipcRenderer.invoke(Mp4ConversionIPCChannels.GetConversionQueue);
   },
-  removeFromConversionQueue: (inputPath: string) => {
+  removeFromConversionQueue: (id: string) => {
     return ipcRenderer.invoke(
       Mp4ConversionIPCChannels.RemoveFromConversionQueue,
-      inputPath,
+      id,
     );
   },
   initializeConversionQueue: () => {

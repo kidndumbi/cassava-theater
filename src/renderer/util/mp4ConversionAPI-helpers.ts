@@ -3,7 +3,6 @@ import { ConversionQueueItem } from "./../../models/conversion-queue-item.model"
 export const filterFailed = (queue: ConversionQueueItem[]) =>
   queue.filter((q) => q.status !== "failed");
 
-
 export const isInMp4ConversionQueue = async (
   filePath: string,
 ): Promise<boolean> => {
@@ -17,25 +16,24 @@ export const getConversionQueue = async (includeFailed = false) => {
   return includeFailed ? result : filterFailed(result);
 };
 
-export const removeFromConversionQueue = async (filePath: string) => {
-  const result =
-    await window.mp4ConversionAPI.removeFromConversionQueue(filePath);
+export const removeFromConversionQueue = async (id: string) => {
+  const result = await window.mp4ConversionAPI.removeFromConversionQueue(id);
   return {
     ...result,
     queue: filterFailed(result.queue),
   };
 };
 
-export const pauseConversionItem = async (filePath: string) => {
-  const result = await window.mp4ConversionAPI.pauseConversionItem(filePath);
+export const pauseConversionItem = async (id: string) => {
+  const result = await window.mp4ConversionAPI.pauseConversionItem(id);
   return {
     ...result,
     queue: filterFailed(result.queue),
   };
 };
 
-export const unpauseConversionItem = async (filePath: string) => {
-  const result = await window.mp4ConversionAPI.unpauseConversionItem(filePath);
+export const unpauseConversionItem = async (id: string) => {
+  const result = await window.mp4ConversionAPI.unpauseConversionItem(id);
   return {
     ...result,
     queue: filterFailed(result.queue),

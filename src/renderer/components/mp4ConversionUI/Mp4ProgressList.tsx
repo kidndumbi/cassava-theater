@@ -29,24 +29,24 @@ export const Mp4ProgressList = ({
     return null;
   }
 
-  const handlePause = async (inputPath: string) => {
-    const result = await pauseConversionItem(inputPath);
+  const handlePause = async (id: string) => {
+    const result = await pauseConversionItem(id);
     dispatch(mp4ConversionNewActions.setConversionProgress(result.queue));
   };
 
-  const handleResume = async (inputPath: string) => {
-    const result = await unpauseConversionItem(inputPath);
+  const handleResume = async (id: string) => {
+    const result = await unpauseConversionItem(id);
     dispatch(mp4ConversionNewActions.setConversionProgress(result.queue));
   };
 
-  const handleCancel = async (inputPath: string) => {
+  const handleCancel = async (id: string) => {
     const dialogDecision = await openDialog(
       undefined,
       undefined,
       "Are you want to cancel?",
     );
     if (dialogDecision === "Ok") {
-      const result = await removeFromConversionQueue(inputPath);
+      const result = await removeFromConversionQueue(id);
       dispatch(mp4ConversionNewActions.setConversionProgress(result.queue));
     }
   };

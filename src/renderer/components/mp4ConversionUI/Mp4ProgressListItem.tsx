@@ -36,7 +36,7 @@ export const Mp4ProgressListItem = ({
   progress: ConversionQueueItem;
   onPause: (inputPath: string) => void;
   onResume: (inputPath: string) => void;
-  onCancel: (inputPath: string) => void;
+  onCancel: (id: string) => void;
 }) => {
   const isProcessing = progress.status === "processing";
   return (
@@ -58,7 +58,7 @@ export const Mp4ProgressListItem = ({
             <Button
               size="small"
               variant="outlined"
-              onClick={() => onResume(progress.inputPath)}
+              onClick={() => onResume(progress.id)}
               sx={{ alignSelf: "center" }}
             >
               Resume
@@ -67,7 +67,7 @@ export const Mp4ProgressListItem = ({
             <Button
               size="small"
               variant="contained"
-              onClick={() => onPause(progress.inputPath)}
+              onClick={() => onPause(progress.id)}
               sx={{ alignSelf: "center" }}
             >
               Pause
@@ -77,7 +77,7 @@ export const Mp4ProgressListItem = ({
           size="small"
           variant="contained"
           color="error"
-          onClick={() => onCancel(progress.inputPath)}
+          onClick={() => onCancel(progress.id)}
           sx={{ alignSelf: "center" }}
         >
           Cancel

@@ -27,20 +27,20 @@ export const mp4ConversionIpcHandlers = () => {
   );
   ipcMain.handle(
     Mp4ConversionIPCChannels.PauseConversionItem,
-    async (_event: Electron.IpcMainInvokeEvent, inputPath: string) => {
-      return pauseConversionItem(inputPath);
+    async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+      return pauseConversionItem(id);
     },
   );
   ipcMain.handle(
     Mp4ConversionIPCChannels.UnpauseConversionItem,
-    async (_event: Electron.IpcMainInvokeEvent, inputPath: string) => {
-      return unpauseConversionItem(inputPath);
+    async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+      return unpauseConversionItem(id);
     },
   );
   ipcMain.handle(
     Mp4ConversionIPCChannels.IsItemPaused,
-    async (_event: Electron.IpcMainInvokeEvent, inputPath: string) => {
-      return isItemPaused(inputPath);
+    async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+      return isItemPaused(id);
     },
   );
   ipcMain.handle(
@@ -57,8 +57,8 @@ export const mp4ConversionIpcHandlers = () => {
   );
   ipcMain.handle(
     Mp4ConversionIPCChannels.RemoveFromConversionQueue,
-    async (_event: Electron.IpcMainInvokeEvent, inputPath: string) => {
-      return removeFromConversionQueue(inputPath);
+    async (_event: Electron.IpcMainInvokeEvent, id: string) => {
+      return removeFromConversionQueue(id);
     },
   );
   ipcMain.handle(

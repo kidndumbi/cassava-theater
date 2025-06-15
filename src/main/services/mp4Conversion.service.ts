@@ -10,6 +10,7 @@ import { normalizeFilePath } from "./helpers";
 import { ConversionQueueItem } from "../../models/conversion-queue-item.model";
 import * as conversionQueueDataService from "./conversionQueueDataDb.service";
 import { getSocketIoGlobal } from "../socketGlobalManager";
+import { v4 as uuidv4 } from "uuid";
 import { Server } from "socket.io";
 
 const VIDEO_EXTENSIONS = new Set([
@@ -63,24 +64,27 @@ class ConversionQueue {
     }));
   }
 
-  add(item: string) {
+  add(filePath: string) {
+    const id = uuidv4();
     this.queue.push({
-      inputPath: item,
+      id,
+      inputPath: filePath,
       status: "pending",
       paused: false,
-      outputPath: getMp4Path(item),
+      outputPath: getMp4Path(filePath),
     });
-    conversionQueueDataService.putQueueItem(item, {
-      inputPath: item,
+    conversionQueueDataService.putQueueItem(id, {
+      id,
+      inputPath: filePath,
       status: "pending",
       paused: false,
-      outputPath: getMp4Path(item),
+      outputPath: getMp4Path(filePath),
     });
     this.processQueue();
   }
 
-  pauseItem(inputPath: string) {
-    const itemIndex = this.queue.findIndex((i) => i.inputPath === inputPath);
+  pauseItem(id: string) {
+    const itemIndex = this.queue.findIndex((i) => i.id === id);
     const item = this.queue[itemIndex];
     if (item && item.status === "pending") {
       this.queue[itemIndex] = {
@@ -89,7 +93,7 @@ class ConversionQueue {
         paused: true,
       };
       conversionQueueDataService.putQueueItem(
-        item.inputPath,
+        item.id,
         this.queue[itemIndex],
       );
       return {
@@ -103,8 +107,8 @@ class ConversionQueue {
     };
   }
 
-  unpauseItem(inputPath: string) {
-    const itemIndex = this.queue.findIndex((i) => i.inputPath === inputPath);
+  unpauseItem(id: string) {
+    const itemIndex = this.queue.findIndex((i) => i.id === id);
     const item = this.queue[itemIndex];
     if (item && item.status === "paused") {
       this.queue[itemIndex] = {
@@ -113,7 +117,7 @@ class ConversionQueue {
         paused: false,
       };
       conversionQueueDataService.putQueueItem(
-        item.inputPath,
+        item.id,
         this.queue[itemIndex],
       );
       this.processQueue();
@@ -128,20 +132,20 @@ class ConversionQueue {
     };
   }
 
-  removeItem(inputPath: string): {
+  removeItem(id: string): {
     success: boolean;
     queue: ConversionQueueItem[];
   } {
-    const itemIndex = this.queue.findIndex((i) => i.inputPath === inputPath);
+    const itemIndex = this.queue.findIndex((i) => i.id === id);
 
     if (itemIndex === -1) return { success: false, queue: this.queue };
 
-    if (this.currentProcessingItem?.inputPath === inputPath) {
+    if (this.currentProcessingItem?.id === id) {
       this.cancelCurrentProcessing();
     }
 
     this.queue.splice(itemIndex, 1);
-    conversionQueueDataService.deleteQueueItem(inputPath);
+    conversionQueueDataService.deleteQueueItem(id);
     return {
       success: true,
       queue: this.queue,
@@ -156,7 +160,7 @@ class ConversionQueue {
     if (this.currentProcessingItem) {
       this.currentProcessingItem.status = "failed";
       conversionQueueDataService.deleteQueueItem(
-        this.currentProcessingItem.inputPath,
+        this.currentProcessingItem.id,
       );
       deleteFile(this.currentProcessingItem.outputPath);
       this.currentProcessingItem = null;
@@ -175,20 +179,20 @@ class ConversionQueue {
     if (nextItem) {
       this.currentProcessingItem = nextItem;
       nextItem.status = "processing";
-      conversionQueueDataService.putQueueItem(nextItem.inputPath, nextItem);
+      conversionQueueDataService.putQueueItem(nextItem.id, nextItem);
       try {
         await this.processor(nextItem, this, this.progressIntervalMs);
         // Remove item from queue when completed
         const idx = this.queue.findIndex(
-          (i) => i.inputPath === nextItem.inputPath,
+          (i) => i.id === nextItem.id,
         );
         if (idx !== -1) {
           this.queue.splice(idx, 1);
-          conversionQueueDataService.deleteQueueItem(nextItem.inputPath);
+          conversionQueueDataService.deleteQueueItem(nextItem.id);
         }
       } catch (error) {
         nextItem.status = "failed";
-        conversionQueueDataService.putQueueItem(nextItem.inputPath, nextItem);
+        conversionQueueDataService.putQueueItem(nextItem.id, nextItem);
         console.error(`Conversion failed for ${nextItem.inputPath}:`, error);
       } finally {
         this.currentProcessingItem = null;
@@ -211,8 +215,8 @@ class ConversionQueue {
     return [...this.queue];
   }
 
-  isItemPaused(inputPath: string): boolean {
-    const item = this.queue.find((i) => i.inputPath === inputPath);
+  isItemPaused(id: string): boolean {
+    const item = this.queue.find((i) => i.id === id);
     return item?.status === "paused" || false;
   }
 
@@ -274,29 +278,29 @@ export async function addToConversionQueueBulk(inputPaths: string[]): Promise<{
   };
 }
 
-export function pauseConversionItem(inputPath: string): {
+export function pauseConversionItem(id: string): {
   success: boolean;
   queue: ConversionQueueItem[];
 } {
-  return getConversionQueueInstance().pauseItem(inputPath);
+  return getConversionQueueInstance().pauseItem(id);
 }
 
-export function unpauseConversionItem(inputPath: string): {
+export function unpauseConversionItem(id: string): {
   success: boolean;
   queue: ConversionQueueItem[];
 } {
-  return getConversionQueueInstance().unpauseItem(inputPath);
+  return getConversionQueueInstance().unpauseItem(id);
 }
 
-export function removeFromConversionQueue(inputPath: string): {
+export function removeFromConversionQueue(id: string): {
   success: boolean;
   queue: ConversionQueueItem[];
 } {
-  return getConversionQueueInstance().removeItem(inputPath);
+  return getConversionQueueInstance().removeItem(id);
 }
 
-export function isItemPaused(inputPath: string): boolean {
-  return getConversionQueueInstance().isItemPaused(inputPath);
+export function isItemPaused(id: string): boolean {
+  return getConversionQueueInstance().isItemPaused(id);
 }
 
 export function getCurrentProcessingItem(): ConversionQueueItem | null {
@@ -323,10 +327,10 @@ async function processConversion(
     // Remove item from queue if already converted
     const idx = queue
       .getQueue()
-      .findIndex((i) => i.inputPath === queueItem.inputPath);
+      .findIndex((i) => i.id === queueItem.id);
     if (idx !== -1) {
-      queue.removeItem(queueItem.inputPath);
-      this.saveQueue();
+      queue.removeItem(queueItem.id);
+      this.saveQueue?.();
     }
     return;
   }
@@ -414,7 +418,7 @@ function handleProgress(
       queue: getConversionQueueInstance()
         .getQueue()
         .map((item) => {
-          if (item.inputPath === queueItem.inputPath) {
+          if (item.id === queueItem.id) {
             return {
               ...queueItem,
               percent: progress.percent,
@@ -455,7 +459,7 @@ async function handleConversionEnd(
       queueItem,
       queue: getConversionQueueInstance()
         .getQueue()
-        .filter((q) => q.inputPath !== queueItem.inputPath)
+        .filter((q) => q.id !== queueItem.id)
         .sort(sortConversionQueue),
     });
     resolve();
@@ -469,16 +473,16 @@ async function handleConversionEnd(
 }
 
 function handleConversionError(
-  inputPath: string,
+  id: string,
   error: Error,
   reject: (reason?: unknown) => void,
   queue: ConversionQueue,
 ) {
-  console.error(`Error converting "${inputPath}"`, error);
-  const item = queue.getQueue().find((i) => i.inputPath === inputPath);
+  const item = queue.getQueue().find((i) => i.id === id);
   if (item) {
     item.status = "failed";
-    conversionQueueDataService.putQueueItem(item.inputPath, item);
+    conversionQueueDataService.putQueueItem(item.id, item);
   }
+  console.error(`Error converting "${item?.inputPath ?? id}"`, error);
   reject(error);
 }
