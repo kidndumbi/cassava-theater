@@ -181,10 +181,21 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
       ) => callback(progress),
     );
   },
+  mp4ConversionUpdatedFromBackend: (
+    callback: (progress: { queue: ConversionQueueItem[] }) => void,
+  ) => {
+    ipcRenderer.on(
+      "mp4-conversion-update-from-backend",
+      (
+        event: Electron.IpcRendererEvent,
+        progress: {
+          queue: ConversionQueueItem[];
+        },
+      ) => callback(progress),
+    );
+  },
   mp4ConversionCompleted: (
     callback: (progress: {
-      file: string;
-      percent: number;
       queueItem: ConversionQueueItem;
       queue: ConversionQueueItem[];
     }) => void,
@@ -194,8 +205,6 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
       (
         event: Electron.IpcRendererEvent,
         progress: {
-          file: string;
-          percent: number;
           queueItem: ConversionQueueItem;
           queue: ConversionQueueItem[];
         },
@@ -407,10 +416,7 @@ contextBridge.exposeInMainWorld("mp4ConversionAPI", {
     );
   },
   pauseConversionItem: (id: string) => {
-    return ipcRenderer.invoke(
-      Mp4ConversionIPCChannels.PauseConversionItem,
-      id,
-    );
+    return ipcRenderer.invoke(Mp4ConversionIPCChannels.PauseConversionItem, id);
   },
   unpauseConversionItem: (id: string) => {
     return ipcRenderer.invoke(

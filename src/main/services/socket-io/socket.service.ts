@@ -9,11 +9,12 @@ import { serveLocalFile } from "../file.service";
 import { handleVideoRequest } from "../video-streaming.service";
 
 import { setSocketIoGlobal } from "../../socketGlobalManager";
-import { registerVideoHandlers } from "./video.handlers";
-import { registerPlaylistHandlers } from "./playlist.handlers";
-import { registerSettingsHandlers } from "./settings.handlers";
-import { registerYoutubeHandlers } from "./youtube.handlers";
-import { registerCurrentlyPlayingHandlers } from "./currentlyPlaying.handlers";
+import { registerVideoHandlers } from "./videoSocket.handlers";
+import { registerPlaylistHandlers } from "./playlistSocket.handlers";
+import { registerSettingsHandlers } from "./settingsSocket.handlers";
+import { registerYoutubeHandlers } from "./youtubeSocket.handlers";
+import { registerCurrentlyPlayingHandlers } from "./currentlyPlayingSocket.handlers";
+import { registerMp4ConversionHandlers } from "./mp4ConversionSocket.handlers";
 
 // Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {
@@ -93,6 +94,7 @@ export async function initializeSocket(
     registerSettingsHandlers(socket);
     registerYoutubeHandlers(socket);
     registerCurrentlyPlayingHandlers(socket);
+    registerMp4ConversionHandlers(socket, mainWindow);
   });
 
   server.listen(port, () => {

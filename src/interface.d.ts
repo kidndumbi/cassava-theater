@@ -45,10 +45,11 @@ export interface MainNotificationsAPI {
   mp4ConversionProgress: (
     callback: (progress: { queue: ConversionQueueItem[] }) => void,
   ) => void;
+    mp4ConversionUpdatedFromBackend: (
+    callback: (progress: { queue: ConversionQueueItem[] }) => void,
+  ) => void;
   mp4ConversionCompleted: (
     callback: (progress: {
-      file: string;
-      percent: number;
       queueItem: ConversionQueueItem;
       queue: ConversionQueueItem[];
     }) => void,
@@ -56,6 +57,7 @@ export interface MainNotificationsAPI {
   youtubeDownloadProgress: (
     callback: (progress: { queue: YoutubeDownloadQueueItem[] }) => void,
   ) => void;
+
   youtubeDownloadCompleted: (
     callback: (data: {
       queue: YoutubeDownloadQueueItem[];
