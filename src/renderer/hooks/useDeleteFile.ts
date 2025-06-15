@@ -16,11 +16,15 @@ export function useDeleteFile(
     context?: unknown,
   ) => Promise<unknown> | unknown,
 ) {
-  const removeFromConversion = async (id: string) => {
+  const removeFromConversion = async (filePathDeleted: string) => {
     const queue = await window.mp4ConversionAPI.getConversionQueue();
-    const queueItem = queue.find((item) => item.id === id);
-    if (queueItem) {
-      removeFromConversionQueue(id);
+    const itemIds: string[] = queue
+      .filter((item) => item.inputPath === filePathDeleted)
+      .map((item) => item.id);
+    if (itemIds.length > 0) {
+      itemIds.forEach((id) => {
+        removeFromConversionQueue(id);
+      });
     }
   };
 
