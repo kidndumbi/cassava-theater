@@ -65,11 +65,25 @@ export const ConfirmationProvider: FC<{ children: React.ReactNode }> = ({
   );
 };
 
-export const useConfirmation = (message?: string) => {
+export const useConfirmation = (defaultMessage?: string) => {
   const contextValue = useContext(ConfirmationContext);
-  if (message && contextValue) {
-    contextValue.setMessage(message);
-  }
 
-  return contextValue;
+  if (!contextValue) return null;
+
+  // Wrap openDialog to inject the default message if not provided
+  const openDialogWithDefault = (
+    procedButtonText?: string,
+    hideOkButton?: boolean,
+    message?: string,
+  ) =>
+    contextValue.openDialog(
+      procedButtonText,
+      hideOkButton,
+      message ?? defaultMessage,
+    );
+
+  return {
+    ...contextValue,
+    openDialog: openDialogWithDefault,
+  };
 };
