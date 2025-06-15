@@ -41,6 +41,7 @@ class ConversionQueue {
   private currentProcessingItem: ConversionQueueItem | null = null;
   private currentFFmpegProcess: ffmpeg.FfmpegCommand | null = null;
   private progressIntervalMs = 2000;
+  private socketIo = getSocketIoGlobal();
 
   constructor(
     private processor: (
@@ -92,10 +93,7 @@ class ConversionQueue {
         status: "paused",
         paused: true,
       };
-      conversionQueueDataService.putQueueItem(
-        item.id,
-        this.queue[itemIndex],
-      );
+      conversionQueueDataService.putQueueItem(item.id, this.queue[itemIndex]);
       return {
         success: true,
         queue: this.queue,
@@ -116,10 +114,7 @@ class ConversionQueue {
         status: "pending",
         paused: false,
       };
-      conversionQueueDataService.putQueueItem(
-        item.id,
-        this.queue[itemIndex],
-      );
+      conversionQueueDataService.putQueueItem(item.id, this.queue[itemIndex]);
       this.processQueue();
       return {
         success: true,
@@ -146,6 +141,9 @@ class ConversionQueue {
 
     this.queue.splice(itemIndex, 1);
     conversionQueueDataService.deleteQueueItem(id);
+    this.socketIo.emit(AppSocketEvents.MP4_CONVERION_ITEM_CANCELLED, {
+      queue: this.queue,
+    });
     return {
       success: true,
       queue: this.queue,
@@ -159,9 +157,7 @@ class ConversionQueue {
     }
     if (this.currentProcessingItem) {
       this.currentProcessingItem.status = "failed";
-      conversionQueueDataService.deleteQueueItem(
-        this.currentProcessingItem.id,
-      );
+      conversionQueueDataService.deleteQueueItem(this.currentProcessingItem.id);
       deleteFile(this.currentProcessingItem.outputPath);
       this.currentProcessingItem = null;
     }
@@ -183,9 +179,7 @@ class ConversionQueue {
       try {
         await this.processor(nextItem, this, this.progressIntervalMs);
         // Remove item from queue when completed
-        const idx = this.queue.findIndex(
-          (i) => i.id === nextItem.id,
-        );
+        const idx = this.queue.findIndex((i) => i.id === nextItem.id);
         if (idx !== -1) {
           this.queue.splice(idx, 1);
           conversionQueueDataService.deleteQueueItem(nextItem.id);
@@ -325,9 +319,7 @@ async function processConversion(
 
   if (await isAlreadyConverted(queueItem.outputPath)) {
     // Remove item from queue if already converted
-    const idx = queue
-      .getQueue()
-      .findIndex((i) => i.id === queueItem.id);
+    const idx = queue.getQueue().findIndex((i) => i.id === queueItem.id);
     if (idx !== -1) {
       queue.removeItem(queueItem.id);
       this.saveQueue?.();
