@@ -3,8 +3,9 @@ import { YoutubeDownloadQueueItem } from "../../../main/services/youtube.service
 import { Mp4ProgressList } from "../mp4ConversionUI/Mp4ProgressList";
 import { YoutubeDownloadProgressList } from "../youtubeDownloadUI/YoutubeDownloadProgressList";
 import { AppListPanel } from "../common/AppListPanel";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ConversionQueueItem } from "../../../models/conversion-queue-item.model";
+import * as mp4ConversionHelpers from "../../util/mp4ConversionAPI-helpers";
 
 export const Processing = ({
   youtubeDownloadProgressList,
@@ -22,6 +23,14 @@ export const Processing = ({
     id: string;
     name: string;
   } | null>(listItems[0]);
+
+  useEffect(() => {
+    mp4ConversionHelpers.getConversionQueue().then((queue) => {
+      if (queue.length > 0) {
+        setSelectedListItem(listItems[1]);
+      }
+    });
+  }, []);
 
   const getView = (id: string) => {
     switch (id) {
