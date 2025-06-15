@@ -1,4 +1,5 @@
 import { createTheme } from "@mui/material/styles";
+import hexRgb from "hex-rgb";
 
 // Extend the Theme interface to include custom properties
 declare module "@mui/material/styles" {
@@ -8,7 +9,7 @@ declare module "@mui/material/styles" {
       appDarker: string;
       appWhite: string;
       appWhiteSmoke: string;
-      appGray?: string; 
+      appGray?: string;
     };
   }
 
@@ -87,5 +88,13 @@ const theme = createTheme({
     appGray: "#d9d9d9",
   },
 });
+
+if (typeof document !== "undefined") {
+  const { red, green, blue } = hexRgb(theme.palette.primary.main);
+  document.documentElement.style.setProperty(
+    "--primary-main-rgb",
+    `${red}, ${green}, ${blue}`,
+  );
+}
 
 export default theme;
