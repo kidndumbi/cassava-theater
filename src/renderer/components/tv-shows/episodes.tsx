@@ -9,7 +9,10 @@ import { useDeleteFile } from "../../hooks/useDeleteFile";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
-import { isInMp4ConversionQueue } from "../../util/mp4ConversionAPI-helpers";
+import {
+  addToConversionQueue,
+  isInMp4ConversionQueue,
+} from "../../util/mp4ConversionAPI-helpers";
 import { AppModal } from "../common/AppModal";
 import { PlaylistSelect } from "../playlists/PlaylistSelect";
 import { useModalState } from "../../hooks/useModalState";
@@ -84,7 +87,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
       const baseMsg =
         "This video is not in MP4 format and cannot be played directly.";
       const message = !queued
-        ? `${baseMsg} Please click OK to convert it to MP4 format.`
+        ? `${baseMsg} First convert to MP4 format.`
         : `${baseMsg} This video is already in the conversion queue. Please wait for it to finish converting.`;
 
       setMessage(
@@ -97,14 +100,14 @@ export const Episodes: React.FC<EpisodesProps> = ({
         queued ? true : false,
       );
       if (dialogDecision === "Ok") {
-        const { queue } = await window.mp4ConversionAPI.addToConversionQueue(
-          episode.filePath,
-        );
-        dispatch(
-          mp4ConversionNewActions.setConversionProgress(
-            queue.filter((q) => q.status !== "failed"),
-          ),
-        );
+        const { queue, success } = await addToConversionQueue(episode.filePath);
+        if (!success) {
+          dispatch(
+            mp4ConversionNewActions.setConversionProgress(
+              queue.filter((q) => q.status !== "failed"),
+            ),
+          );
+        }
       }
       return;
     }
@@ -140,16 +143,16 @@ export const Episodes: React.FC<EpisodesProps> = ({
             theme={theme}
             onEpisodeClick={() => handleEpisodeClick(episode)}
             handleFilepathChange={handleFilepathChange}
-            handleConvertToMp4={(filePath) => {
-              window.mp4ConversionAPI
-                .addToConversionQueue(filePath)
-                .then(async ({ queue }) => {
-                  dispatch(
-                    mp4ConversionNewActions.setConversionProgress(
-                      queue.filter((q) => q.status !== "failed"),
-                    ),
-                  );
-                });
+            handleConvertToMp4Result={(success, message, queue) => {
+              if (success) {
+                dispatch(
+                  mp4ConversionNewActions.setConversionProgress(
+                    queue.filter((q) => q.status !== "failed"),
+                  ),
+                );
+              } else {
+                showSnackbar(message, "error");
+              }
             }}
             handleDelete={async (filePath) => {
               await deleteFileMutation.mutateAsync(filePath);

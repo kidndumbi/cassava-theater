@@ -23,7 +23,11 @@ import { VideoTypeChip } from "../common/VideoTypeChip";
 import { useScreenshot } from "../../hooks/useScreenshot";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
-import { isInMp4ConversionQueue } from "../../util/mp4ConversionAPI-helpers";
+import {
+  addToConversionQueue,
+  isInMp4ConversionQueue,
+} from "../../util/mp4ConversionAPI-helpers";
+import { ConversionQueueItem } from "../../../models/conversion-queue-item.model";
 
 interface EpisodeProps {
   episode: VideoDataModel;
@@ -33,7 +37,11 @@ interface EpisodeProps {
     newSubtitleFilePath: string,
     episode: VideoDataModel,
   ) => void;
-  handleConvertToMp4?: (filePath: string) => void;
+  handleConvertToMp4Result?: (
+    success: boolean,
+    message: string,
+    queue: ConversionQueueItem[],
+  ) => void;
   handleDelete: (filePath: string) => void;
   onPlaylistSelect: (episode: VideoDataModel) => void;
 }
@@ -43,7 +51,7 @@ export const Episode: React.FC<EpisodeProps> = ({
   theme,
   onEpisodeClick,
   handleFilepathChange,
-  handleConvertToMp4,
+  handleConvertToMp4Result,
   handleDelete,
   onPlaylistSelect,
 }) => {
@@ -167,8 +175,15 @@ export const Episode: React.FC<EpisodeProps> = ({
           {getFileExtension(episode.filePath) !== "mp4" && !isInQueue && (
             <AppIconButton
               tooltip="Convert to MP4"
-              onClick={() => {
-                handleConvertToMp4?.(episode.filePath || "");
+              onClick={async () => {
+                const { success, queue, message } = await addToConversionQueue(
+                  episode.filePath,
+                );
+                if (!success) {
+                  handleConvertToMp4Result?.(false, message, queue);
+                  return;
+                }
+                handleConvertToMp4Result?.(true, message, queue);
                 setIsInQueue(true);
               }}
             >

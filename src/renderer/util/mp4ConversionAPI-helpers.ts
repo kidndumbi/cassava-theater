@@ -3,12 +3,35 @@ import { ConversionQueueItem } from "./../../models/conversion-queue-item.model"
 export const filterFailed = (queue: ConversionQueueItem[]) =>
   queue.filter((q) => q.status !== "failed");
 
+export const addToConversionQueue = async (
+  inputPath: string,
+): Promise<{
+  success: boolean;
+  message: string;
+  queue: ConversionQueueItem[] | null;
+}> => {
+  if (await isInMp4ConversionQueue(inputPath)) {
+    return {
+      success: false,
+      message: "File is already in the conversion queue.",
+      queue: null,
+    };
+  } else {
+    const conversionResult =
+      await window.mp4ConversionAPI.addToConversionQueue(inputPath);
+    return {
+      ...conversionResult,
+      queue: filterFailed(conversionResult.queue),
+      message: "",
+    };
+  }
+};
+
 export const isInMp4ConversionQueue = async (
   filePath: string,
 ): Promise<boolean> => {
-  return (await getConversionQueue()).some(
-    (item) => item.inputPath === filePath,
-  );
+  const queue = await getConversionQueue();
+  return queue.some((item) => item.inputPath === filePath);
 };
 
 export const getConversionQueue = async (includeFailed = false) => {
