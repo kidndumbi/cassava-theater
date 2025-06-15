@@ -9,6 +9,7 @@ import {
 import { AppDrop } from "../common/AppDrop";
 import theme from "../../theme";
 import { useDragState } from "../../hooks/useDragState";
+import { useConfirmation } from "../../contexts/ConfirmationContext";
 
 export const YoutubeDownloadProgressList = ({
   progressList,
@@ -17,6 +18,9 @@ export const YoutubeDownloadProgressList = ({
 }) => {
   const dispatch = useAppDispatch();
   const { isAnyDragging, setDragging } = useDragState();
+  const { openDialog } = useConfirmation(
+    "Are you sure you want to cancel this download?",
+  );
 
   const { mutateAsync: removeFromQueue, isPending: isRemoving } = useMutation({
     mutationFn: (id: string) => window.youtubeAPI.removeFromQueue(id),
@@ -38,6 +42,9 @@ export const YoutubeDownloadProgressList = ({
   });
 
   const handleCancel = async (item: YoutubeDownloadQueueItem) => {
+    if ((await openDialog()) !== "Ok") {
+      return;
+    }
     await removeFromQueue(item.id);
     const queue = await window.youtubeAPI.getQueue();
     dispatch(youtubeDownloadActions.setDownloadProgress(queue));

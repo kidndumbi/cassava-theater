@@ -65,8 +65,11 @@ export const ConfirmationProvider: FC<{ children: React.ReactNode }> = ({
   );
 };
 
-export const useConfirmation = () => {
+export const useConfirmation = (message?: string) => {
   const contextValue = useContext(ConfirmationContext);
+  if (message && contextValue) {
+    contextValue.setMessage(message);
+  }
 
   return contextValue;
 };
