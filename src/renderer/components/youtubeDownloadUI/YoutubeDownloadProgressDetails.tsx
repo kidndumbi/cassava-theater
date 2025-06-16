@@ -4,10 +4,15 @@ import { YoutubeDownloadQueueItem } from "../../../main/services/youtube.service
 
 export const YoutubeDownloadProgressDetails = ({
   item,
+
 }: {
   item: YoutubeDownloadQueueItem;
+
 }) => (
-  <Box className="flex gap-1">
+  <Box
+    className="flex gap-1"
+
+  >
     <Avatar
       variant="rounded"
       src={item.poster}

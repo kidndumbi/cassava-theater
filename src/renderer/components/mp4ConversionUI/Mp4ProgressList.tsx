@@ -61,6 +61,7 @@ export const Mp4ProgressList = ({
             onPause={handlePause}
             onResume={handleResume}
             onCancel={handleCancel}
+            idx={index}
           />
         ))}
       </Box>

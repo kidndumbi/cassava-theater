@@ -32,11 +32,13 @@ export const Mp4ProgressListItem = ({
   onPause,
   onResume,
   onCancel,
+  idx,
 }: {
   progress: ConversionQueueItem;
   onPause: (inputPath: string) => void;
   onResume: (inputPath: string) => void;
   onCancel: (id: string) => void;
+  idx: number;
 }) => {
   const isProcessing = progress.status === "processing";
   return (
@@ -44,10 +46,11 @@ export const Mp4ProgressListItem = ({
       className="flex place-content-between items-center rounded-md p-1"
       sx={{
         backgroundColor: theme.customVariables.appDark,
+        border: idx === 0 ? `2px solid ${theme.palette.primary.main}` : "none",
       }}
     >
       <Box className="flex items-center gap-2">
-        <Box sx={{ width: 40, display: "flex", justifyContent: "center" }}>
+        <Box sx={{  display: "flex", justifyContent: "center" }}>
           {!isProcessing && <ProgressCheckbox />}
         </Box>
         <FilePathText path={progress.outputPath} />
@@ -73,6 +76,7 @@ export const Mp4ProgressListItem = ({
               Pause
             </Button>
           ))}
+        {isProcessing && <CircularProgressWithLabel value={progress.percent} />}
         <Button
           size="small"
           variant="contained"
@@ -82,7 +86,6 @@ export const Mp4ProgressListItem = ({
         >
           Cancel
         </Button>
-        {isProcessing && <CircularProgressWithLabel value={progress.percent} />}
       </Box>
     </Box>
   );
