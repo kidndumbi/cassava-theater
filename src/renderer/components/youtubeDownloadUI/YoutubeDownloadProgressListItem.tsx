@@ -74,19 +74,15 @@ export function YoutubeDownloadProgressListItem({
   return (
     <>
       <DragPreviewImage connect={dragPreview} src={previewSrc} />
-      <div
-        ref={ref}
-        style={{
-          border:
-            isOver && canDrop
-              ? `2px solid ${theme.palette.primary.main}`
-              : "none",
-        }}
-      >
+      <div ref={ref}>
         <Box
           className="mb-2 flex place-content-between items-center gap-2 rounded-md p-1 pr-2"
           sx={{
             backgroundColor: theme.customVariables.appDark,
+            border:
+              (isOver && canDrop) || idx === 0
+                ? `2px solid ${theme.palette.primary.main}`
+                : "none",
           }}
         >
           <YoutubeDownloadProgressDetails item={progressItem} />
