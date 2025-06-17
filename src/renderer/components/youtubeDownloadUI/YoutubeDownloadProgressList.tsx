@@ -10,6 +10,7 @@ import { AppDrop } from "../common/AppDrop";
 import theme from "../../theme";
 import { useDragState } from "../../hooks/useDragState";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
+import { Chip } from "@mui/material";
 
 export const YoutubeDownloadProgressList = ({
   progressList,
@@ -51,9 +52,23 @@ export const YoutubeDownloadProgressList = ({
   };
 
   const items = progressList;
+  const count = items.length;
 
   return (
     <>
+      {count > 0 && (
+        <Chip
+          label={count}
+          variant="outlined"
+          sx={{
+            color: theme.customVariables.appWhiteSmoke,
+            backgroundColor: theme.customVariables.appDark,
+            border: "none",
+            marginBottom: 1,
+          }}
+        />
+      )}
+
       {items.map((item, index) => (
         <YoutubeDownloadProgressListItem
           idx={index}

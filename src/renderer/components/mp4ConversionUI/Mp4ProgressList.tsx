@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Chip } from "@mui/material";
 import React from "react";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { ConversionQueueItem } from "../../../models/conversion-queue-item.model";
@@ -10,6 +10,7 @@ import {
   removeFromConversionQueue,
   unpauseConversionItem,
 } from "../../util/mp4ConversionAPI-helpers";
+import theme from "../../theme";
 
 interface Mp4ProgressListProps {
   mp4ConversionProgress: ConversionQueueItem[];
@@ -51,8 +52,19 @@ export const Mp4ProgressList = ({
     }
   };
 
+  const count = mp4ConversionProgress.length;
+
   return (
     <Box className="ml-14 mr-14 mt-4">
+      <Chip
+        label={count}
+        variant="outlined"
+        sx={{
+          color: theme.customVariables.appWhiteSmoke,
+          backgroundColor: theme.customVariables.appDark,
+          border: "none",
+        }}
+      />
       <Box className="mt-2 flex flex-col gap-2">
         {sortedMp4ConversionProgress.map((progress, index) => (
           <Mp4ProgressListItem
