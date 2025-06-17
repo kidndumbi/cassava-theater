@@ -7,8 +7,12 @@ import {
   getYoutubeDownloadQueueInstance,
   YoutubeDownloadQueueItem,
 } from "../youtube.service";
+import { BrowserWindow } from "electron";
 
-export function registerYoutubeHandlers(socket: Socket) {
+export function registerYoutubeHandlers(
+  socket: Socket,
+  mainWindow: BrowserWindow,
+) {
   socket.on(
     AppSocketEvents.YT_GET_VIDEO_INFO,
     async (
@@ -70,20 +74,17 @@ export function registerYoutubeHandlers(socket: Socket) {
     },
   );
 
-  socket.on(
-    AppSocketEvents.YT_REMOVE_FROM_QUEUE,
-    async (
-      requestData: { data: { id: string } },
-      callback: (response: { success: boolean; error?: string }) => void,
-    ) => {
-      try {
-        getYoutubeDownloadQueueInstance().removeFromQueue(requestData.data.id);
-        callback({ success: true });
-      } catch (error) {
-        callback({ success: false, error: (error as Error).message });
-      }
-    },
-  );
+  socket.on(AppSocketEvents.YT_REMOVE_FROM_QUEUE, (id: string) => {
+    const { success, queue } =
+      getYoutubeDownloadQueueInstance().removeFromQueue(id);
+
+    if (success) {
+      mainWindow.webContents.send(
+        "youtube-download-update-from-backend",
+        queue,
+      );
+    }
+  });
 
   socket.on(
     AppSocketEvents.YT_IS_PROCESSING_QUEUE,

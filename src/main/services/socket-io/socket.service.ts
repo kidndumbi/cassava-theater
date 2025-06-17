@@ -92,7 +92,7 @@ export async function initializeSocket(
     registerVideoHandlers(socket, mainWindow);
     registerPlaylistHandlers(socket, mainWindow);
     registerSettingsHandlers(socket);
-    registerYoutubeHandlers(socket);
+    registerYoutubeHandlers(socket, mainWindow);
     registerCurrentlyPlayingHandlers(socket);
     registerMp4ConversionHandlers(socket, mainWindow);
   });

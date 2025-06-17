@@ -249,6 +249,14 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
       (_event, queue: YoutubeDownloadQueueItem[]) => callback(queue),
     );
   },
+  youtubeDownloadUpdatedFromBackend: (
+    callback: (queue: YoutubeDownloadQueueItem[]) => void,
+  ) => {
+    ipcRenderer.on(
+      "youtube-download-update-from-backend",
+      (_event, queue: YoutubeDownloadQueueItem[]) => callback(queue),
+    );
+  },
 });
 
 contextBridge.exposeInMainWorld("videoAPI", {

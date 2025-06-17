@@ -243,6 +243,10 @@ class YoutubeDownloadQueue {
       queue: this.queue,
     });
     this.processQueue(); // Process the queue after removal
+    return {
+      success: true,
+      queue: this.queue,
+    };
   }
 
   public swapQueueItems(id1: string, id2: string) {

@@ -43,8 +43,7 @@ export const youtubeIpcHandlers = () => {
   ipcMain.handle(
     YoutubeIPCChannels.RemoveFromQueue,
     async (_event, id: string) => {
-      getYoutubeDownloadQueueInstance().removeFromQueue(id);
-      return { success: true };
+      return getYoutubeDownloadQueueInstance().removeFromQueue(id);
     },
   );
 
@@ -74,13 +73,10 @@ export const youtubeIpcHandlers = () => {
     },
   );
 
-  ipcMain.handle(
-    YoutubeIPCChannels.ProcessQueue,
-    async () => {
-      await getYoutubeDownloadQueueInstance().processQueue();
-      return { success: true };
-    },
-  );
+  ipcMain.handle(YoutubeIPCChannels.ProcessQueue, async () => {
+    await getYoutubeDownloadQueueInstance().processQueue();
+    return { success: true };
+  });
 
   ipcMain.handle(
     YoutubeIPCChannels.SetIsProcessing,
@@ -98,11 +94,8 @@ export const youtubeIpcHandlers = () => {
     },
   );
 
-  ipcMain.handle(
-    YoutubeIPCChannels.GetProgressIntervalMs,
-    async () => {
-      const ms = getYoutubeDownloadQueueInstance().getProgressIntervalMs();
-      return { success: true, ms };
-    },
-  );
+  ipcMain.handle(YoutubeIPCChannels.GetProgressIntervalMs, async () => {
+    const ms = getYoutubeDownloadQueueInstance().getProgressIntervalMs();
+    return { success: true, ms };
+  });
 };

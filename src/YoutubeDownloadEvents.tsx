@@ -49,8 +49,12 @@ export const YoutubeDownloadEvents = () => {
       dispatch(youtubeDownloadActions.setDownloadProgress(queue));
     });
 
-    window.mainNotificationsAPI.youtubeDownloadProgress(async (progress) => {
+    window.mainNotificationsAPI.youtubeDownloadProgress((progress) => {
       dispatch(youtubeDownloadActions.setDownloadProgress(progress.queue));
+    });
+
+    window.mainNotificationsAPI.youtubeDownloadUpdatedFromBackend((queue) => {
+      dispatch(youtubeDownloadActions.setDownloadProgress(queue));
     });
   }, []);
 

@@ -45,7 +45,7 @@ export interface MainNotificationsAPI {
   mp4ConversionProgress: (
     callback: (progress: { queue: ConversionQueueItem[] }) => void,
   ) => void;
-    mp4ConversionUpdatedFromBackend: (
+  mp4ConversionUpdatedFromBackend: (
     callback: (progress: { queue: ConversionQueueItem[] }) => void,
   ) => void;
   mp4ConversionCompleted: (
@@ -65,6 +65,9 @@ export interface MainNotificationsAPI {
     }) => void,
   ) => void;
   youtubeDownloadStarted: (
+    callback: (queue: YoutubeDownloadQueueItem[]) => void,
+  ) => void;
+  youtubeDownloadUpdatedFromBackend: (
     callback: (queue: YoutubeDownloadQueueItem[]) => void,
   ) => void;
 }
@@ -190,7 +193,10 @@ export interface YoutubeAPI {
     poster: string;
     backdrop: string;
   }) => Promise<{ success: boolean }>;
-  removeFromQueue: (id: string) => Promise<{ success: boolean }>;
+  removeFromQueue: (id: string) => Promise<{
+    success: boolean;
+    queue: YoutubeDownloadQueueItem[];
+  }>;
   isProcessingQueue: () => Promise<boolean>;
   clearQueue: () => Promise<{ success: boolean }>;
   getQueue: () => Promise<YoutubeDownloadQueueItem[]>;
