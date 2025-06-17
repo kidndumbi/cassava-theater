@@ -10,6 +10,7 @@ declare module "@mui/material/styles" {
       appWhite: string;
       appWhiteSmoke: string;
       appGray?: string;
+      appLightGray?: string;
     };
   }
 
@@ -21,6 +22,7 @@ declare module "@mui/material/styles" {
       appWhite?: string;
       appWhiteSmoke?: string;
       appGray?: string;
+      appLightGray?: string;
     };
   }
 }
@@ -84,8 +86,9 @@ const theme = createTheme({
     appDark: "#303233",
     appDarker: "#171818",
     appWhite: "white",
-    appWhiteSmoke: "whitesmoke",
+    appWhiteSmoke: "#F5F5F5",
     appGray: "#d9d9d9",
+    appLightGray: "#222",
   },
 });
 
