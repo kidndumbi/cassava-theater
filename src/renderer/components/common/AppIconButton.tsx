@@ -10,7 +10,7 @@ import {
 interface AppIconButtonProps
   extends Omit<IconButtonProps, "onClick" | "children"> {
   tooltip: string;
-  onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   children: React.ReactNode;
   disabled?: boolean;
   className?: string;
@@ -43,7 +43,11 @@ const AppIconButton: React.FC<AppIconButtonProps> = ({
     <Tooltip title={tooltip}>
       <IconButton
         className={className}
-        onClick={onClick}
+        onClick={(event) => {
+          if (onClick) {
+            onClick(event);
+          }
+        }}
         disabled={disabled}
         sx={{
           ...buttonStyles,

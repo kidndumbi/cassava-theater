@@ -3,16 +3,17 @@ import { YoutubeDownloadQueueItem } from "../../../main/services/youtube.service
 import { Mp4ProgressList } from "../mp4ConversionUI/Mp4ProgressList";
 import { YoutubeDownloadProgressList } from "../youtubeDownloadUI/YoutubeDownloadProgressList";
 import { AppListPanel } from "../common/AppListPanel";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ConversionQueueItem } from "../../../models/conversion-queue-item.model";
-import * as mp4ConversionHelpers from "../../util/mp4ConversionAPI-helpers";
 
 export const Processing = ({
   youtubeDownloadProgressList,
   mp4ConversionProgress,
+  toolToShow = "mp4-conversion",
 }: {
   youtubeDownloadProgressList: YoutubeDownloadQueueItem[];
   mp4ConversionProgress: ConversionQueueItem[];
+  toolToShow?: string;
 }) => {
   const listItems = [
     { id: "youtube-download", name: "Youtube Download" },
@@ -22,15 +23,7 @@ export const Processing = ({
   const [selectedListItem, setSelectedListItem] = useState<{
     id: string;
     name: string;
-  } | null>(listItems[0]);
-
-  useEffect(() => {
-    mp4ConversionHelpers.getConversionQueue().then((queue) => {
-      if (queue.length > 0) {
-        setSelectedListItem(listItems[1]);
-      }
-    });
-  }, []);
+  } | null>(listItems.find((item) => item.id === toolToShow) || listItems[0]);
 
   const getView = (id: string) => {
     switch (id) {
