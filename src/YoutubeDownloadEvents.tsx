@@ -5,7 +5,6 @@ import { useSaveJsonData } from "./renderer/hooks/useSaveJsonData";
 import { useSnackbar } from "./renderer/contexts/SnackbarContext";
 import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
 import { SettingsModel } from "./models/settings.model";
-import { YoutubeDownloadQueueItem } from "./main/services/youtube.service";
 
 export const YoutubeDownloadEvents = () => {
   const dispatch = useAppDispatch();
