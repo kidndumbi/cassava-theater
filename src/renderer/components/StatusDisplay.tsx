@@ -19,7 +19,7 @@ const StatusDisplayItem = ({
 }) => {
   return (
     <Box
-      className="m-0 flex h-full items-center justify-center bg-inherit px-[10px]"
+      className="m-0 flex h-full items-center justify-center bg-inherit px-[5px]"
       sx={{
         "&:hover": {
           backgroundColor: theme.palette.primary.light,
@@ -43,14 +43,16 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
 
   const [toolToShow, setToolToShow] = useState<string>("mp4-conversion");
 
+  const chipSx = {
+    color: theme.customVariables.appWhiteSmoke,
+    backgroundColor: theme.customVariables.appDark,
+    border: "none",
+    cursor: "pointer",
+  };
+
   return (
     <Box
-      className="fixed bottom-0 left-0 right-0 flex h-[30px] items-center border-t p-0 text-base"
-      style={{
-        borderTop: `1px solid ${theme.palette.secondary.dark}`,
-        backgroundColor: theme.customVariables.appDarker,
-        color: theme.customVariables.appWhiteSmoke,
-      }}
+      className={`fixed bottom-0 left-0 right-0 flex h-[30px] items-center border-t p-0 text-base border-[${theme.customVariables.appLightGray}] text-[${theme.customVariables.appWhiteSmoke}] bg-[${theme.customVariables.appDarker}]`}
     >
       <StatusDisplayItem>PORT: {port} </StatusDisplayItem>
       <StatusDisplayItem onClick={openModal}>
@@ -82,12 +84,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
             label={`MP4 Conversion (${mp4ConversionProgressNew.length})`}
             variant="outlined"
             size="small"
-            sx={{
-              color: theme.customVariables.appWhiteSmoke,
-              backgroundColor: theme.customVariables.appDark,
-              border: "none",
-              cursor: "pointer",
-            }}
+            sx={chipSx}
           />
         </StatusDisplayItem>
       )}
@@ -102,12 +99,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
             label={`Youtube Download (${youtubeDownloadProgressQueue.length})`}
             variant="outlined"
             size="small"
-            sx={{
-              color: theme.customVariables.appWhiteSmoke,
-              backgroundColor: theme.customVariables.appDark,
-              border: "none",
-              cursor: "pointer",
-            }}
+            sx={chipSx}
           />
         </StatusDisplayItem>
       )}
