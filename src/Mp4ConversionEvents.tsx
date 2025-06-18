@@ -5,7 +5,6 @@ import { SettingsModel } from "./models/settings.model";
 import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
 import { mp4ConversionNewActions } from "./renderer/store/mp4ConversionNew.slice";
 import {
-  filterFailed,
   getConversionQueue,
 } from "./renderer/util/mp4ConversionAPI-helpers";
 
@@ -25,7 +24,7 @@ export const Mp4ConversionEvents = () => {
     window.mainNotificationsAPI.mp4ConversionProgress(async (progress) => {
       dispatch(
         mp4ConversionNewActions.setConversionProgress(
-          filterFailed(progress.queue),
+          progress.queue,
         ),
       );
     });
@@ -34,7 +33,7 @@ export const Mp4ConversionEvents = () => {
       async (progress) => {
         dispatch(
           mp4ConversionNewActions.setConversionProgress(
-            filterFailed(progress.queue),
+            progress.queue,
           ),
         );
       },
@@ -43,7 +42,7 @@ export const Mp4ConversionEvents = () => {
     window.mainNotificationsAPI.mp4ConversionCompleted(async (progress) => {
       dispatch(
         mp4ConversionNewActions.setConversionProgress(
-          filterFailed(progress.queue),
+          progress.queue,
         ),
       );
 

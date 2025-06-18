@@ -1,8 +1,5 @@
 import { ConversionQueueItem } from "./../../models/conversion-queue-item.model";
 
-export const filterFailed = (queue: ConversionQueueItem[]) =>
-  queue.filter((q) => q.status !== "failed");
-
 export const addToConversionQueue = async (
   inputPath: string,
 ): Promise<{
@@ -21,7 +18,7 @@ export const addToConversionQueue = async (
       await window.mp4ConversionAPI.addToConversionQueue(inputPath);
     return {
       ...conversionResult,
-      queue: filterFailed(conversionResult.queue),
+      queue: conversionResult.queue,
       message: "",
     };
   }
@@ -34,16 +31,15 @@ export const isInMp4ConversionQueue = async (
   return queue.some((item) => item.inputPath === filePath);
 };
 
-export const getConversionQueue = async (includeFailed = false) => {
-  const result = await window.mp4ConversionAPI.getConversionQueue();
-  return includeFailed ? result : filterFailed(result);
+export const getConversionQueue = async () => {
+  return await window.mp4ConversionAPI.getConversionQueue();
 };
 
 export const removeFromConversionQueue = async (id: string) => {
   const result = await window.mp4ConversionAPI.removeFromConversionQueue(id);
   return {
     ...result,
-    queue: filterFailed(result.queue),
+    queue: result.queue,
   };
 };
 
@@ -51,7 +47,7 @@ export const pauseConversionItem = async (id: string) => {
   const result = await window.mp4ConversionAPI.pauseConversionItem(id);
   return {
     ...result,
-    queue: filterFailed(result.queue),
+    queue: result.queue,
   };
 };
 
@@ -59,6 +55,6 @@ export const unpauseConversionItem = async (id: string) => {
   const result = await window.mp4ConversionAPI.unpauseConversionItem(id);
   return {
     ...result,
-    queue: filterFailed(result.queue),
+    queue: result.queue,
   };
 };
