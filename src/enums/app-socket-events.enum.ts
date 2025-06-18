@@ -12,6 +12,7 @@ export enum AppSocketEvents {
   FETCH_RECENTLY_WATCHED_CUSTOM_VIDEOS = "fetch-recently-watched-custom-videos",
   FETCH_RECENTLY_WATCHED_VIDEOS = "fetch-recently-watched-videos",
   GET_ALL_PLAYLISTS = "get-all-playlists",
+  UPDATE_PLAYLIST = "update-playlist",
   SET_PLAYING_PLAYLIST = "set-playing-playlist",
   CURRENT_PLAYLIST = "current-playlist",
   GET_CURRENT_PLAYLIST = "get-current-playlist",
