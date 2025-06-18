@@ -4,13 +4,19 @@ import { useConfirmation } from "../../contexts/ConfirmationContext";
 import { ConversionQueueItem } from "../../../models/conversion-queue-item.model";
 import { useAppDispatch } from "../../store";
 import { mp4ConversionNewActions } from "../../store/mp4ConversionNew.slice";
-import { Mp4ProgressListItem } from "./Mp4ProgressListItem";
+import {
+  DragMp4ProgressItem,
+  Mp4ProgressListItem,
+} from "./Mp4ProgressListItem";
 import {
   pauseConversionItem,
   removeFromConversionQueue,
   unpauseConversionItem,
 } from "../../util/mp4ConversionAPI-helpers";
 import theme from "../../theme";
+import { useDragState } from "../../hooks/useDragState";
+import { AppDrop } from "../common/AppDrop";
+import { useMutation } from "@tanstack/react-query";
 
 interface Mp4ProgressListProps {
   mp4ConversionProgress: ConversionQueueItem[];
@@ -21,6 +27,8 @@ export const Mp4ProgressList = ({
 }: Mp4ProgressListProps) => {
   const { openDialog } = useConfirmation();
   const dispatch = useAppDispatch();
+
+  const { isAnyDragging, setDragging } = useDragState();
 
   const sortedMp4ConversionProgress = React.useMemo(() => {
     return [...mp4ConversionProgress];
@@ -40,6 +48,18 @@ export const Mp4ProgressList = ({
     dispatch(mp4ConversionNewActions.setConversionProgress(result.queue));
   };
 
+  const { mutateAsync: swapQueueItems } = useMutation({
+    mutationFn: ({ id1, id2 }: { id1: string; id2: string }) =>
+      window.mp4ConversionAPI.swapQueueItems(id1, id2),
+    onSuccess: (data) => {
+      if (!data.success) console.error("Error swapping queue items:");
+      else dispatch(mp4ConversionNewActions.setConversionProgress(data.queue));
+    },
+    onError: (error) => {
+      console.error("Error swapping queue items:", error);
+    },
+  });
+
   const handleCancel = async (id: string) => {
     const dialogDecision = await openDialog(
       undefined,
@@ -48,6 +68,7 @@ export const Mp4ProgressList = ({
     );
     if (dialogDecision === "Ok") {
       const result = await removeFromConversionQueue(id);
+      console.log("Cancel result:", result);
       dispatch(mp4ConversionNewActions.setConversionProgress(result.queue));
     }
   };
@@ -74,8 +95,26 @@ export const Mp4ProgressList = ({
             onResume={handleResume}
             onCancel={handleCancel}
             idx={index}
+            dragging={setDragging}
+            onSwap={async (id1, id2) => {
+              console.log("Swapping items:", id1, id2);
+              swapQueueItems({ id1, id2 });
+            }}
           />
         ))}
+        {isAnyDragging && (
+          <AppDrop
+            conatinerStyle={{
+              top: "6px",
+            }}
+            buttonText="Cancel"
+            itemDroped={(item: DragMp4ProgressItem) => {
+              handleCancel(item.progressData.id);
+            }}
+            accept={["MP4_CONVERSION"]}
+            backgroundColor={theme.palette.primary.main}
+          />
+        )}
       </Box>
     </Box>
   );

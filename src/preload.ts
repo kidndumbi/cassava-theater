@@ -454,4 +454,11 @@ contextBridge.exposeInMainWorld("mp4ConversionAPI", {
       Mp4ConversionIPCChannels.InitializeConversionQueue,
     );
   },
+  swapQueueItems: (id1: string, id2: string) => {
+    return ipcRenderer.invoke(
+      Mp4ConversionIPCChannels.SwapQueueItems,
+      id1,
+      id2,
+    );
+  },
 });

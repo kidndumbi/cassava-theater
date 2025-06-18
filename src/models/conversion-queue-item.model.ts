@@ -5,4 +5,5 @@ export interface ConversionQueueItem {
   paused?: boolean;
   percent?: number;
   outputPath?: string;
+  queueIndex?: number;
 }

@@ -65,22 +65,19 @@ class ConversionQueue {
     }));
   }
 
-  add(filePath: string) {
+  async add(filePath: string) {
     const id = uuidv4();
-    this.queue.push({
+
+    const newData: ConversionQueueItem = {
       id,
       inputPath: filePath,
       status: "pending",
       paused: false,
       outputPath: getMp4Path(filePath),
-    });
-    conversionQueueDataService.putQueueItem(id, {
-      id,
-      inputPath: filePath,
-      status: "pending",
-      paused: false,
-      outputPath: getMp4Path(filePath),
-    });
+    };
+
+    const dbData = await conversionQueueDataService.putQueueItem(id, newData);
+    this.queue.push(dbData);
     this.processQueue();
   }
 
@@ -216,6 +213,35 @@ class ConversionQueue {
   getCurrentProcessingItem(): ConversionQueueItem | null {
     return this.currentProcessingItem;
   }
+
+  async swapQueueItems(id1: string, id2: string): Promise<{ success: boolean; queue: ConversionQueueItem[] }> {
+    const index1 = this.queue.findIndex((item) => item.id === id1);
+    const index2 = this.queue.findIndex((item) => item.id === id2);
+
+    if (index1 === -1 || index2 === -1) {
+      return { success: false, queue: this.queue };
+    }
+    if (
+      this.queue[index1].status !== "pending" ||
+      this.queue[index2].status !== "pending"
+    ) {
+      return { success: false, queue: this.queue };
+    }
+
+    // Swap in memory
+    [this.queue[index1], this.queue[index2]] = [this.queue[index2], this.queue[index1]];
+
+    // Update queueIndex in DB and in memory if such property exists
+    // Assign new queueIndex based on their new positions
+    if ("queueIndex" in this.queue[index1] && "queueIndex" in this.queue[index2]) {
+      this.queue[index1].queueIndex = index1;
+      this.queue[index2].queueIndex = index2;
+      await conversionQueueDataService.putQueueItem(this.queue[index1].id, this.queue[index1]);
+      await conversionQueueDataService.putQueueItem(this.queue[index2].id, this.queue[index2]);
+    }
+
+    return { success: true, queue: this.queue };
+  }
 }
 
 let conversionQueueInstance: ConversionQueue | null = null;
@@ -229,7 +255,7 @@ function getConversionQueueInstance(): ConversionQueue {
 
 export async function addToConversionQueue(inputPath: string) {
   if (await isConvertibleVideoFile(inputPath)) {
-    getConversionQueueInstance().add(inputPath);
+    await getConversionQueueInstance().add(inputPath);
     return {
       success: true,
       queue: getConversionQueueInstance().getQueue(),
@@ -257,9 +283,9 @@ export async function addToConversionQueueBulk(inputPaths: string[]): Promise<{
     .map((item) => item.inputPath);
 
   if (validInputPaths.length > 0) {
-    validInputPaths.forEach((inputPath) =>
-      getConversionQueueInstance().add(inputPath),
-    );
+    for (const inputPath of validInputPaths) {
+      await getConversionQueueInstance().add(inputPath);
+    }
     return {
       success: true,
       queue: getConversionQueueInstance().getQueue(),
@@ -306,6 +332,10 @@ export async function getConversionQueue(): Promise<ConversionQueueItem[]> {
 
 export function initializeConversionQueue() {
   getConversionQueueInstance().initializeProcessing();
+}
+
+export async function swapConversionQueueItems(id1: string, id2: string): Promise<{ success: boolean; queue: ConversionQueueItem[] }> {
+  return await getConversionQueueInstance().swapQueueItems(id1, id2);
 }
 
 async function processConversion(

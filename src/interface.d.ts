@@ -171,6 +171,10 @@ export interface Mp4ConversionAPI {
     queue: ConversionQueueItem[];
   }>;
   initializeConversionQueue: () => Promise<boolean>;
+  swapQueueItems: (
+    id1: string,
+    id2: string,
+  ) => Promise<{ success: boolean; queue: ConversionQueueItem[] }>;
 }
 
 export interface PlaylistAPI {
