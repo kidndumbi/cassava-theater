@@ -34,10 +34,6 @@ export const Mp4ProgressList = ({
     return [...mp4ConversionProgress];
   }, [mp4ConversionProgress]);
 
-  if (mp4ConversionProgress.length === 0) {
-    return null;
-  }
-
   const handlePause = async (id: string) => {
     const result = await pauseConversionItem(id);
     dispatch(mp4ConversionNewActions.setConversionProgress(result.queue));
@@ -60,6 +56,10 @@ export const Mp4ProgressList = ({
     },
   });
 
+  if (mp4ConversionProgress.length === 0) {
+    return null;
+  }
+
   const handleCancel = async (id: string) => {
     const dialogDecision = await openDialog(
       undefined,
@@ -69,7 +69,7 @@ export const Mp4ProgressList = ({
     if (dialogDecision === "Ok") {
       const result = await removeFromConversionQueue(id);
       console.log("Cancel result:", result);
-      dispatch(mp4ConversionNewActions.setConversionProgress(result.queue));
+      dispatch(mp4ConversionNewActions.setConversionProgress(result?.queue));
     }
   };
 
@@ -87,7 +87,7 @@ export const Mp4ProgressList = ({
         }}
       />
       <Box className="mt-2 flex flex-col gap-2">
-        {sortedMp4ConversionProgress.map((progress, index) => (
+        {sortedMp4ConversionProgress?.map((progress, index) => (
           <Mp4ProgressListItem
             key={index}
             progress={progress}
