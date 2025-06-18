@@ -8,4 +8,5 @@ export enum Mp4ConversionIPCChannels {
     GetConversionQueue = "video:getConversionQueue",
     RemoveFromConversionQueue = "video:removeFromConversionQueue",
     InitializeConversionQueue = "video:initializeConversionQueue",
+    SwapQueueItems = "video:swapQueueItems",
 }
