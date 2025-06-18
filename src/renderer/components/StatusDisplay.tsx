@@ -36,7 +36,7 @@ interface StatusDisplayProps {
   port: string | undefined;
 }
 
-export const StatusDisplay = ({ port }: StatusDisplayProps) => {
+export const StatusDisplay = ({ port }: StatusDisplayProps) => {  
   const { open, openModal, closeModal } = useModalState(false);
   const youtubeDownloadProgressQueue = useSelector(selYoutubeDownloadProgress);
   const mp4ConversionProgressNew = useSelector(selConvertToMp4Progress);
@@ -50,14 +50,22 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
     cursor: "pointer",
   };
 
+  const processing =
+    mp4ConversionProgressNew.length > 0 ||
+    youtubeDownloadProgressQueue.length > 0;
+
   return (
     <Box
-      className={`fixed bottom-0 left-0 right-0 flex h-[30px] items-center border-t p-0 text-base border-[${theme.customVariables.appLightGray}] text-[${theme.customVariables.appWhiteSmoke}] bg-[${theme.customVariables.appDarker}]`}
+      className="fixed bottom-0 left-0 right-0 flex h-[30px] items-center border-t p-0 text-base"
+      sx={{
+        borderTop: `1px solid ${theme.customVariables.appLightGray}`,
+        backgroundColor: theme.customVariables.appDarker,
+        color: theme.customVariables.appWhiteSmoke,
+      }}
     >
       <StatusDisplayItem>PORT: {port} </StatusDisplayItem>
       <StatusDisplayItem onClick={openModal}>
-        {mp4ConversionProgressNew.length > 0 ||
-        youtubeDownloadProgressQueue.length > 0 ? (
+        {processing ? (
           <CircularProgress color="secondary" size="20px" />
         ) : (
           <AppIconButton

@@ -73,11 +73,7 @@ const SeasonConvertSelector: React.FC<SeasonConvertSelectorProps> = ({
 
     const { queue } =
       await window.mp4ConversionAPI.addToConversionQueueBulk(filesToConvert);
-    dispatch(
-      mp4ConversionNewActions.setConversionProgress(
-        queue.filter((q) => q.status !== "failed"),
-      ),
-    );
+    dispatch(mp4ConversionNewActions.setConversionProgress(queue));
 
     setNoFilesToConvert(false);
 

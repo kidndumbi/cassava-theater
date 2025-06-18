@@ -186,7 +186,6 @@ class ConversionQueue {
         }
       } catch (error) {
         nextItem.status = "failed";
-        conversionQueueDataService.putQueueItem(nextItem.id, nextItem);
         console.error(`Conversion failed for ${nextItem.inputPath}:`, error);
       } finally {
         this.currentProcessingItem = null;
@@ -473,7 +472,6 @@ function handleConversionError(
   const item = queue.getQueue().find((i) => i.id === id);
   if (item) {
     item.status = "failed";
-    conversionQueueDataService.putQueueItem(item.id, item);
   }
   console.error(`Error converting "${item?.inputPath ?? id}"`, error);
   reject(error);

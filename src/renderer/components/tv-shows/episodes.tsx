@@ -104,7 +104,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
         if (!success) {
           dispatch(
             mp4ConversionNewActions.setConversionProgress(
-              queue.filter((q) => q.status !== "failed"),
+              queue,
             ),
           );
         }
@@ -147,7 +147,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
               if (success) {
                 dispatch(
                   mp4ConversionNewActions.setConversionProgress(
-                    queue.filter((q) => q.status !== "failed"),
+                    queue,
                   ),
                 );
               } else {
