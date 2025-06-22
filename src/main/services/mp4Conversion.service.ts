@@ -214,7 +214,10 @@ class ConversionQueue {
     return this.currentProcessingItem;
   }
 
-  async swapQueueItems(id1: string, id2: string): Promise<{ success: boolean; queue: ConversionQueueItem[] }> {
+  async swapQueueItems(
+    id1: string,
+    id2: string,
+  ): Promise<{ success: boolean; queue: ConversionQueueItem[] }> {
     const index1 = this.queue.findIndex((item) => item.id === id1);
     const index2 = this.queue.findIndex((item) => item.id === id2);
 
@@ -229,15 +232,27 @@ class ConversionQueue {
     }
 
     // Swap in memory
-    [this.queue[index1], this.queue[index2]] = [this.queue[index2], this.queue[index1]];
+    [this.queue[index1], this.queue[index2]] = [
+      this.queue[index2],
+      this.queue[index1],
+    ];
 
     // Update queueIndex in DB and in memory if such property exists
     // Assign new queueIndex based on their new positions
-    if ("queueIndex" in this.queue[index1] && "queueIndex" in this.queue[index2]) {
+    if (
+      "queueIndex" in this.queue[index1] &&
+      "queueIndex" in this.queue[index2]
+    ) {
       this.queue[index1].queueIndex = index1;
       this.queue[index2].queueIndex = index2;
-      await conversionQueueDataService.putQueueItem(this.queue[index1].id, this.queue[index1]);
-      await conversionQueueDataService.putQueueItem(this.queue[index2].id, this.queue[index2]);
+      await conversionQueueDataService.putQueueItem(
+        this.queue[index1].id,
+        this.queue[index1],
+      );
+      await conversionQueueDataService.putQueueItem(
+        this.queue[index2].id,
+        this.queue[index2],
+      );
     }
 
     return { success: true, queue: this.queue };
@@ -334,7 +349,10 @@ export function initializeConversionQueue() {
   getConversionQueueInstance().initializeProcessing();
 }
 
-export async function swapConversionQueueItems(id1: string, id2: string): Promise<{ success: boolean; queue: ConversionQueueItem[] }> {
+export async function swapConversionQueueItems(
+  id1: string,
+  id2: string,
+): Promise<{ success: boolean; queue: ConversionQueueItem[] }> {
   return await getConversionQueueInstance().swapQueueItems(id1, id2);
 }
 
@@ -416,7 +434,9 @@ function performConversion(
           handleProgress(progress, queueItem, mainWindow, socketIo);
         }
       })
-      .on("end", () => handleConversionEnd(resolve, mainWindow, queueItem))
+      .on("end", () =>
+        handleConversionEnd(resolve, mainWindow, queueItem, socketIo),
+      )
       .on("error", (err: Error) =>
         handleConversionError(queueItem.inputPath, err, reject, queue),
       );
@@ -468,6 +488,7 @@ async function handleConversionEnd(
   resolve: (value: void) => void,
   mainWindow: Electron.BrowserWindow | null,
   queueItem: ConversionQueueItem,
+  socketIo: Server,
 ) {
   console.log(`\nFinished: "${queueItem.outputPath}"`);
   try {
@@ -476,13 +497,17 @@ async function handleConversionEnd(
     );
     await videoDbDataService.putVideo(queueItem.outputPath, previousData);
     await deleteFile(queueItem.inputPath);
-    mainWindow?.webContents.send("mp4-conversion-completed", {
+
+    const completionData = {
       queueItem,
       queue: getConversionQueueInstance()
         .getQueue()
         .filter((q) => q.id !== queueItem.id)
         .sort(sortConversionQueue),
-    });
+    };
+
+    mainWindow?.webContents.send("mp4-conversion-completed", completionData);
+    socketIo.emit(AppSocketEvents.MP4_CONVERSION_ITEM_COMPLETED, completionData);
     resolve();
   } catch (error) {
     console.error(
