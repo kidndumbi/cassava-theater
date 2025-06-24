@@ -6,7 +6,7 @@ import * as playlistDbService from "../playlistDb.service";
 import { loggingService as log } from "../main-logging.service";
 import { Socket } from "socket.io/dist";
 import { BrowserWindow } from "electron";
-import {  KeyType } from "../levelDB.service";
+import { KeyType } from "../levelDB.service";
 
 export function registerPlaylistHandlers(
   socket: Socket,
@@ -49,7 +49,7 @@ export function registerPlaylistHandlers(
     },
   );
 
-   socket.on(
+  socket.on(
     AppSocketEvents.UPDATE_PLAYLIST,
     async (
       requestData: {
@@ -65,9 +65,39 @@ export function registerPlaylistHandlers(
       }) => void,
     ) => {
       try {
-        await playlistDbService.putPlaylist(requestData.data.id, requestData.data.playlist);
-        const playlist = await playlistDbService.getPlaylist(requestData.data.id);
+        await playlistDbService.putPlaylist(
+          requestData.data.id,
+          requestData.data.playlist,
+        );
+        const playlist = await playlistDbService.getPlaylist(
+          requestData.data.id,
+        );
         callback({ success: true, data: playlist });
+      } catch (error) {
+        log.error("Error fetching playlists:", error);
+        callback({ success: false, error: "Failed to fetch playlists" });
+      }
+    },
+  );
+
+  socket.on(
+    AppSocketEvents.DELETE_PLAYLIST,
+    async (
+      requestData: {
+        data: {
+          id: KeyType;
+        };
+      },
+      callback: (response: {
+        success: boolean;
+        data?: PlaylistModel[];
+        error?: string;
+      }) => void,
+    ) => {
+      try {
+        await playlistDbService.deletePlaylist(requestData.data.id);
+        const playlists = await playlistDbService.getAllPlaylists();
+        callback({ success: true, data: playlists });
       } catch (error) {
         log.error("Error fetching playlists:", error);
         callback({ success: false, error: "Failed to fetch playlists" });
