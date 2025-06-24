@@ -15,6 +15,7 @@ import { registerSettingsHandlers } from "./settingsSocket.handlers";
 import { registerYoutubeHandlers } from "./youtubeSocket.handlers";
 import { registerCurrentlyPlayingHandlers } from "./currentlyPlayingSocket.handlers";
 import { registerMp4ConversionHandlers } from "./mp4ConversionSocket.handlers";
+import { registerImagesSocketHandlers } from "./imagesSocket.handlers";
 
 // Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {
@@ -95,6 +96,7 @@ export async function initializeSocket(
     registerYoutubeHandlers(socket, mainWindow);
     registerCurrentlyPlayingHandlers(socket);
     registerMp4ConversionHandlers(socket, mainWindow);
+    registerImagesSocketHandlers(socket);
   });
 
   server.listen(port, () => {

@@ -32,4 +32,5 @@ export enum AppSocketEvents {
   MP4_CONVERSION_PROGRESS = "mp4-conversion-progress",
   MP4_CONVERSION_ITEM_COMPLETED = "mp4-conversion-item-completed",
   MP4_CONVERION_ITEM_CANCELLED = "mp4-converion-item-cancelled",
+  IMAGES_GET_BASE64 = "images-get-base64",
 }
