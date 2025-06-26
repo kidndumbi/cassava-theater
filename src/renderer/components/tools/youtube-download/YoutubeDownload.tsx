@@ -37,6 +37,7 @@ export const YoutubeDownload = () => {
 
   const destinationOptions = useRef<{ name: string; filePath: string }[]>([]);
   const [destination, setDestination] = useLocalStorage<string | null>(null);
+  const [parseError, setParseError] = useState<string | null>(null);
 
   useEffect(() => {
     if (settings) {
@@ -63,6 +64,27 @@ export const YoutubeDownload = () => {
     queryFn: () => window.youtubeAPI.getVideoInfo(url),
     enabled: false,
   });
+
+  useEffect(() => {
+    if (error?.message) {
+      const extractedError = extractYouTubeError(error.message);
+      if (extractedError) {
+        setParseError(extractedError);
+      } else {
+        setParseError("An unknown error occurred.");
+      }
+    }
+  }, [error]);
+
+  const extractYouTubeError = (errorString: string): string | null => {
+    // This regex matches the last occurrence of "Error: " and captures everything after it
+    const match = errorString.match(/.*Error: (.*)$/);
+    if (!match) return null;
+
+    // If there's a colon in the captured part, take everything before it
+    const errorMessage = match[1].split(":")[0].trim();
+    return errorMessage || null;
+  };
 
   const { mutateAsync: download, isPending: isDownloading } = useMutation({
     mutationFn: (data: { url: string; destination: string }) =>
@@ -95,9 +117,9 @@ export const YoutubeDownload = () => {
       dispatch(youtubeDownloadActions.setDownloadProgress(queue));
     },
   });
-
   useEffect(() => {
     if (info) {
+      setParseError(null);
       // Remove invalid filename characters: \ / : * ? " < > | +
       const safeTitle = info.videoDetails.title.replace(/[\\/:*?"<>|+]/g, "");
       setFileName(safeTitle);
@@ -130,18 +152,22 @@ export const YoutubeDownload = () => {
             },
           ]}
         >
+          {" "}
           <AppTextField
-            label="Youtube URL"
+            label="Youtube URL or Video ID"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => {
+              setUrl(e.target.value);
+              setParseError(null);
+            }}
             theme={theme}
           />
-        </AppContextMenu>
-
+        </AppContextMenu>{" "}
         <AppButton
           disabled={!url.trim()}
           onClick={() => {
             setFileExists(false);
+            setParseError(null);
             refetch();
           }}
         >
@@ -149,9 +175,9 @@ export const YoutubeDownload = () => {
         </AppButton>
       </Box>
       <Box sx={{ mt: 3, width: "100%" }}>
-        {error && (
+        {parseError && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            Error accessing Youtube at this moment. Please try again later.
+            {parseError}
           </Alert>
         )}
         {fileExists && (
