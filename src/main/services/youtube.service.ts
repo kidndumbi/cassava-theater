@@ -194,10 +194,18 @@ class YoutubeDownloadQueue {
       }
       // Remove the item from the queue after processing
       this.queue.shift();
-      this.mainWindow?.webContents.send("youtube-download-completed", {
+      const completionData = {
         queue: this.queue,
         completedItem: item,
-      });
+      };
+      this.mainWindow?.webContents.send(
+        "youtube-download-completed",
+        completionData,
+      );
+      this.socketIo.emit(
+        AppSocketEvents.YT_DOWNLOAD_ITEM_COMPLETED,
+        completionData,
+      );
       // Optionally, you could push the item to a "history" array if you want to keep track
     }
 
