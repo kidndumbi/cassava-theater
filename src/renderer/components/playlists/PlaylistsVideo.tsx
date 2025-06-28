@@ -9,6 +9,7 @@ import { useDragPreviewImage } from "../../hooks/useDragPreviewImage";
 import { DragVideoItem } from "../../../models/drag-video-item.model";
 import { ListDisplayType, PlaylistModel } from "../../../models/playlist.model";
 import { VideoListItem } from "../common/VideoListItem";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 export const PlaylistsVideo: React.FC<{
   video: VideoDataModel;
@@ -35,6 +36,7 @@ export const PlaylistsVideo: React.FC<{
   displayType,
   handlResetVideo,
 }) => {
+  const { data: settings } = useGetAllSettings();
   const ref = React.useRef<HTMLDivElement>(null);
 
   const [{ isOver }, drop] = useDrop<DragVideoItem, void, { isOver: boolean }>({
@@ -115,12 +117,15 @@ export const PlaylistsVideo: React.FC<{
                 duration={video.duration}
                 footer={trimFileName(video.fileName || "")}
                 onClick={() => onPlayVideo(idx)}
+                video={video}
+                showVideoType={settings?.showVideoType}
               />
             ) : (
               <VideoListItem
                 video={video}
                 getImageUrl={getImageUrl}
                 onClick={() => onPlayVideo(idx)}
+                showVideoType={settings?.showVideoType}
               />
             )}
           </div>
