@@ -3,7 +3,8 @@ import { rendererLoggingService as log } from "../../util/renderer-logging.servi
 import { Box } from "@mui/material";
 import theme from "../../theme";
 import { VideoProgressBar } from "./VideoProgressBar";
-
+import { VideoTypeChip } from "./VideoTypeChip";
+import { VideoDataModel } from "../../../models/videoData.model";
 
 interface PosterCardProps {
   imageUrl: string;
@@ -14,6 +15,8 @@ interface PosterCardProps {
   height?: string;
   currentTime?: number;
   duration?: number;
+  video?: VideoDataModel;
+  showVideoType?: boolean;
 }
 
 export const PosterCard: React.FC<PosterCardProps> = ({
@@ -25,6 +28,8 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   height = "300px",
   currentTime,
   duration,
+  video,
+  showVideoType = false,
 }) => {
   const [hasError, setHasError] = useState(false);
 
@@ -36,8 +41,21 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   return (
     <Box
       className={`m-1 flex flex-col`}
-      sx={{ maxWidth: width, minWidth: width }}
+      sx={{ maxWidth: width, minWidth: width, position: "relative" }}
     >
+      {showVideoType && video.filePath && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 9,
+            left: 9,
+            zIndex: 2,
+          }}
+        >
+          <VideoTypeChip filePath={video.filePath} />
+        </Box>
+      )}
+
       {!hasError && imageUrl ? (
         <Box sx={{ position: "relative", width, height }}>
           <img
@@ -54,21 +72,23 @@ export const PosterCard: React.FC<PosterCardProps> = ({
               display: "block",
             }}
           />
-          {typeof currentTime === "number" && typeof duration === "number" && currentTime > 0 && (
-            <Box
-              sx={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                bottom: 0,
-                px: 1,
-                pb: 1,
-                zIndex: 2,
-              }}
-            >
-              <VideoProgressBar current={currentTime} total={duration} />
-            </Box>
-          )}
+          {typeof currentTime === "number" &&
+            typeof duration === "number" &&
+            currentTime > 0 && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  px: 1,
+                  pb: 1,
+                  zIndex: 2,
+                }}
+              >
+                <VideoProgressBar current={currentTime} total={duration} />
+              </Box>
+            )}
         </Box>
       ) : (
         <Box
