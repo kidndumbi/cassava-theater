@@ -1,13 +1,10 @@
 import React from "react";
 import { trimFileName } from "../../util/helperFunctions";
 import { PosterCard } from "../common/PosterCard";
-import { HoverBox } from "../common/HoverBox";
-import { HoverContent } from "../common/HoverContent";
-import { VideoTypeContainer } from "../common/VideoTypeContainer";
-import { VideoTypeChip } from "../common/VideoTypeChip";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { DragPreviewImage, useDrag } from "react-dnd";
 import { useDragPreviewImage } from "../../hooks/useDragPreviewImage";
+import { Box } from "@mui/material";
 
 interface MovieListItemProps {
   movie: VideoDataModel;
@@ -50,7 +47,7 @@ export const MovieListItem: React.FC<MovieListItemProps> = ({
     <>
       <DragPreviewImage connect={dragPreview} src={previewSrc} />
       <div ref={ref}>
-        <HoverBox onContextMenu={onContextMenu}>
+        <Box onContextMenu={onContextMenu}>
           <PosterCard
             imageUrl={getImageUrl(movie)}
             altText={movie.fileName || ""}
@@ -58,15 +55,10 @@ export const MovieListItem: React.FC<MovieListItemProps> = ({
             currentTime={movie.currentTime}
             duration={movie.duration}
             footer={trimFileName(movie.fileName || "")}
+            video={movie}
+            showVideoType={alwaysShowVideoType}
           />
-          <HoverContent className="hover-content" />
-          <VideoTypeContainer
-            className={!alwaysShowVideoType ? "hover-content" : ""}
-            alwaysShow={alwaysShowVideoType}
-          >
-            <VideoTypeChip filePath={movie.filePath} />
-          </VideoTypeContainer>
-        </HoverBox>
+        </Box>
       </div>
     </>
   );
