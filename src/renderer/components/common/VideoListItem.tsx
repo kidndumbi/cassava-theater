@@ -4,28 +4,42 @@ import theme from "../../theme";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { removeVidExt } from "../../util/helperFunctions";
 import { VideoProgressBar } from "./VideoProgressBar";
+import { VideoTypeChip } from "./VideoTypeChip";
 
 interface VideoListItemProps {
   video: VideoDataModel;
   getImageUrl: (video: VideoDataModel) => string | undefined;
   onClick: (video: VideoDataModel) => void;
+  showVideoType: boolean;
 }
 
 export const VideoListItem: React.FC<VideoListItemProps> = ({
   video,
   getImageUrl,
   onClick,
+  showVideoType,
 }) => (
-  <Box
-    className="flex cursor-pointer gap-1"
-    onClick={() => onClick(video)}
-  >
-    <Avatar
-      variant="rounded"
-      src={getImageUrl(video)}
-      alt={video.fileName || ""}
-      sx={{ width: 80, height: 80 }}
-    />
+  <Box className="flex cursor-pointer gap-1" onClick={() => onClick(video)}>
+    <Box sx={{ position: "relative" }}>
+      <Avatar
+        variant="rounded"
+        src={getImageUrl(video)}
+        alt={video.fileName || ""}
+        sx={{ width: 80, height: 80 }}
+      />
+      {showVideoType && video.filePath && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 1,
+            left: 1,
+            zIndex: 2,
+          }}
+        >
+          <VideoTypeChip filePath={video.filePath} />
+        </Box>
+      )}
+    </Box>
     <Box
       className="flex min-w-0 flex-1 flex-col gap-1 rounded p-1"
       sx={{

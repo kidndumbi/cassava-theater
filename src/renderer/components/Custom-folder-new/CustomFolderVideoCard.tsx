@@ -8,6 +8,7 @@ import { DragPreviewImage, useDrag } from "react-dnd";
 import { useDragPreviewImage } from "../../hooks/useDragPreviewImage";
 import { ListDisplayType } from "../../../models/playlist.model";
 import { VideoListItem } from "../common/VideoListItem";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 
 interface CustomFolderVideoCardProps {
   video: VideoDataModel;
@@ -28,6 +29,8 @@ export const CustomFolderVideoCard: React.FC<CustomFolderVideoCardProps> = ({
   dragging,
   displayType,
 }) => {
+
+    const { data: settings } = useGetAllSettings();
   const ref = React.useRef<HTMLDivElement>(null);
 
   const [{ isDragging }, drag, dragPreview] = useDrag({
@@ -71,6 +74,7 @@ export const CustomFolderVideoCard: React.FC<CustomFolderVideoCardProps> = ({
               video={video}
               getImageUrl={getImageUrl}
               onClick={onClick}
+              showVideoType={settings?.showVideoType}
             />
           )}
         </AppContextMenu>
