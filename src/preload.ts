@@ -25,6 +25,7 @@ import { PlaylistCommands } from "./models/playlist-commands.model";
 import { AppSocketEvents } from "./enums/app-socket-events.enum";
 import { CurrentlyPlayingIPCChannels } from "./enums/currently-playing-IPCChannels.enum";
 import { ConversionQueueItem } from "./models/conversion-queue-item.model";
+import { LlmIPCChannels } from "./enums/llm-IPC-Channels.enum";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -460,5 +461,11 @@ contextBridge.exposeInMainWorld("mp4ConversionAPI", {
       id1,
       id2,
     );
+  },
+});
+
+contextBridge.exposeInMainWorld("llmAPI", {
+  generateLlmResponse: (prompt: string, model?: string) => {
+    return ipcRenderer.invoke(LlmIPCChannels.GENERATE_LLM_RESPONSE, prompt, model);
   },
 });
