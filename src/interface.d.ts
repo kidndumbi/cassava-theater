@@ -234,6 +234,10 @@ export interface CurrentlyPlayingAPI {
   getCurrentVideo: () => Promise<VideoDataModel | null>;
 }
 
+export interface LlmAPI {
+  generateLlmResponse: (prompt: string, model?: string) => Promise<string>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -250,5 +254,6 @@ declare global {
     youtubeAPI: YoutubeAPI;
     playlistCommandsAPI: PlaylistCommandsAPI;
     currentlyPlayingAPI: CurrentlyPlayingAPI;
+    llmAPI: LlmAPI;
   }
 }

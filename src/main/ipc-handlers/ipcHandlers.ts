@@ -1,5 +1,6 @@
 import { currentlPlayingIpcHandlers } from "./currentlPlayingIpcHandlers";
 import { fileIpcHandlers } from "./fileIpcHandlers";
+import { llmIpcHandlers } from "./llmIpcHandlers";
 import { mainUtilIpcHandlers } from "./mainUtilIpcHandlers";
 import { mp4ConversionIpcHandlers } from "./mp4ConversionIpcHandlers";
 import { openDialogIpcHandlers } from "./openDialogIpcHandlers";
@@ -20,4 +21,5 @@ export function registerIpcHandlers() {
   playlistIpcHandlers();
   youtubeIpcHandlers();
   currentlPlayingIpcHandlers();
+  llmIpcHandlers();
 }
