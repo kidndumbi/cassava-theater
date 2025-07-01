@@ -1,3 +1,5 @@
+import { LlmResponseChunk } from "./../../models/llm-response-chunk.model";
+import { getSocketIoGlobal } from "../socketGlobalManager";
 import axios, { isAxiosError } from "axios";
 
 export const generateLlmResponse = async (
@@ -72,6 +74,60 @@ export const generateLlmResponse = async (
   }
 };
 
-// Usage example:
-// const result = await generateLlamaResponse('llama3.1:latest', 'Why is the sky blue?');
-// console.log(result);
+export const generateLlmResponseByChunks = async (
+  socketId: string,
+  event: string,
+  prompt: string,
+  model = "llama3.1:latest",
+): Promise<void> => {
+  const socketIo = getSocketIoGlobal();
+
+  try {
+    const response = await axios.post(
+      "http://localhost:11434/api/generate",
+      {
+        model,
+        prompt,
+      },
+      {
+        responseType: "stream",
+      },
+    );
+
+    response.data.on("data", (chunk: Buffer) => {
+      const chunkStr = chunk.toString();
+      const lines = chunkStr.split("\n").filter((line) => line.trim());
+
+      for (const line of lines) {
+        try {
+          const parsed = JSON.parse(line) as LlmResponseChunk;
+          socketIo.to(socketId).emit(event, parsed);
+        } catch (e) {
+          console.error("Error parsing chunk:", line);
+        }
+      }
+    });
+
+    response.data.on("error", (error: Error) => {
+      socketIo.to(socketId).emit(event + "_error", error.message);
+    });
+  } catch (error) {
+    console.error("Error generating LLM response:", error);
+
+    let errorMessage = `Failed to generate LLM response: ${error.message || error}`;
+
+    if (isAxiosError(error)) {
+      if (error.response?.status === 404) {
+        errorMessage =
+          "LLM service not found. Please check if Ollama is running on http://localhost:11434 and the API endpoint is correct.";
+      } else if (error.response?.status) {
+        errorMessage = `LLM service error: ${error.response.status} - ${error.response.statusText}`;
+      } else if (error.code === "ECONNREFUSED") {
+        errorMessage =
+          "Cannot connect to LLM service. Please ensure Ollama is running on http://localhost:11434";
+      }
+    }
+
+    socketIo.to(socketId).emit(event + "_error", errorMessage);
+  }
+};

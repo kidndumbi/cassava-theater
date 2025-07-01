@@ -83,6 +83,7 @@ export async function initializeSocket(
 
   io.on("connection", (socket: Socket) => {
     log.info("A user connected:", socket.id);
+    socket.join(socket.id);
     mainWindow.webContents.send("user-connected", socket.id);
 
     socket.on("disconnect", () => {
