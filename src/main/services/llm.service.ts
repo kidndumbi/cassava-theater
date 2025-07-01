@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 
 export const generateLlmResponse = async (
   prompt: string,
@@ -49,7 +49,26 @@ export const generateLlmResponse = async (
     });
   } catch (error) {
     console.error("Error generating LLM response:", error);
-    throw error;
+
+    if (isAxiosError(error)) {
+      if (error.response?.status === 404) {
+        throw new Error(
+          "LLM service not found. Please check if Ollama is running on http://localhost:11434 and the API endpoint is correct.",
+        );
+      } else if (error.response?.status) {
+        throw new Error(
+          `LLM service error: ${error.response.status} - ${error.response.statusText}`,
+        );
+      } else if (error.code === "ECONNREFUSED") {
+        throw new Error(
+          "Cannot connect to LLM service. Please ensure Ollama is running on http://localhost:11434",
+        );
+      }
+    }
+
+    throw new Error(
+      `Failed to generate LLM response: ${error.message || error}`,
+    );
   }
 };
 
