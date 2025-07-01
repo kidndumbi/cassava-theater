@@ -52,17 +52,6 @@ const App = () => {
   const { setCurrentVideo } = useVideoListLogic();
 
   useEffect(() => {
-    const llm = async () => {
-      const data = await window.llmAPI.generateLlmResponse(
-        `Give me the string from the array which best fits this text: ' movie Roma'. The options are: ['Batman Beyond', 'Niptuck', 'Madrid', 'Desperate housewives', 'Rome']. Also let me know if user was refering to tv show or movie return response in a json. ex: {"bestGuessValue": "Niptuck", "playType": "tv"}. I just want the answer in the format i asked. Nothing else. text property has to be present on the list. This a scenario where the user is using a speech to text and maybe the text as not captured properly so i want you to make the best guess.`,
-        "llama3.1:latest",
-      );
-      console.log("LLM Response:", data);
-    };
-    llm();
-  }, []);
-
-  useEffect(() => {
     userConnectionStatus.current =
       settings?.notifications?.userConnectionStatus;
   }, [settings?.notifications?.userConnectionStatus]);
