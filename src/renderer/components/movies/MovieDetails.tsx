@@ -93,7 +93,6 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   useEffect(() => {
     window.mainNotificationsAPI.videoAiChatDataChunks(
       (chatResponseChunk: LlmResponseChunk) => {
-         //console.log("Received AI chat data chunk:", chatResponseChunk);
         setChatStream(chatResponseChunk);
       },
     );
@@ -183,17 +182,17 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   }, [videoDetails, getTmdbImageUrl]);
 
   const triggerChatStream = (prompt?: string) => {
-    const movieTitle = videoDetails?.movie_details?.title || removeVidExt(videoDetails?.fileName) || "Unknown Movie";
-    const chatPrompt = prompt 
-      ? `${prompt} (Context: We're discussing the movie "${movieTitle}")` 
+    setChatStream(undefined);
+
+    const movieTitle =
+      videoDetails?.movie_details?.title ||
+      removeVidExt(videoDetails?.fileName) ||
+      "Unknown Movie";
+    const chatPrompt = prompt
+      ? `${prompt} (Context: We're discussing the movie "${movieTitle}")`
       : `Tell me about the movie "${movieTitle}"`;
-    
-    window.llmAPI.generateLlmResponseByChunks(
-      "",
-      "",
-      chatPrompt,
-      "desktop",
-    );
+
+    window.llmAPI.generateLlmResponseByChunks("", "", chatPrompt, "desktop");
   };
 
   return (

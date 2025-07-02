@@ -1,6 +1,6 @@
 import { ipcMain } from "electron";
 import { LlmIPCChannels } from "../../enums/llm-IPC-Channels.enum";
-import { generateLlmResponse, generateLlmResponseByChunks } from "../services/llm.service";
+import { generateLlmResponse, generateLlmResponseByChunks, cancelCurrentLlmByChunksRequest } from "../services/llm.service";
 
 export const llmIpcHandlers = () => {
   ipcMain.handle(
@@ -21,6 +21,13 @@ export const llmIpcHandlers = () => {
       model?: string,
     ) => {
       return generateLlmResponseByChunks(socketId, event, prompt, responseReceiver, model);
+    },
+  );
+
+  ipcMain.handle(
+    LlmIPCChannels.CANCEL_CURRENT_LLM_BY_CHUNKS_REQUEST,
+    async () => {
+      return cancelCurrentLlmByChunksRequest();
     },
   );
 };
