@@ -67,6 +67,11 @@ const formatDate = (dateString: string) => {
   return `${day}/${month}/${year}`;
 };
 
+  const formatTime = (timestamp: string): string => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
 const getUrl = (
   type: "video" | "file",
   filePath: string | null | undefined,
@@ -152,5 +157,6 @@ export {
   removeVidExt,
   getFileExtension,
   parseIpcError,
-  secondsToHms
+  secondsToHms,
+  formatTime,
 };

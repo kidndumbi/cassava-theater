@@ -8,6 +8,7 @@ import WatchLaterIcon from "@mui/icons-material/WatchLater";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import AppIconButton from "../common/AppIconButton";
+import ChatIcon from "@mui/icons-material/Chat";
 
 interface MovieDetailsHeaderProps {
   handleBackClick: () => void;
@@ -22,6 +23,7 @@ interface MovieDetailsHeaderProps {
   updateWatchLater: (filePath: string, watchLater: boolean) => void;
   onRefresh: () => void;
   toggleCastAndCrew?: () => void;
+  onOpenChatModal: () => void;
 }
 
 const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
@@ -34,6 +36,7 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
   updateWatchLater,
   onRefresh,
   toggleCastAndCrew,
+  onOpenChatModal,
 }) => {
   const handleSubtitleChange = async (filePath: string) => {
     await updateSubtitle(filePath === "None" ? "" : filePath, {
@@ -77,6 +80,9 @@ const MovieDetailsHeader: React.FC<MovieDetailsHeaderProps> = ({
         </AppIconButton>
         <AppIconButton tooltip="theMovieDb data" onClick={handleOpenModal}>
           <MovieIcon />
+        </AppIconButton>
+        <AppIconButton tooltip="movie ai chat" onClick={onOpenChatModal}>
+          <ChatIcon />
         </AppIconButton>
       </Box>
     </Box>

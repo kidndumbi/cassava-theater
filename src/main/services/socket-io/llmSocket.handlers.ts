@@ -57,6 +57,7 @@ export function registerLlmSocketHandlers(socket: Socket) {
           socket.id,
           requestData.data.event,
           requestData.data.prompt,
+          "mobile",
           requestData.data?.model,
         );
         callback({ success: true });

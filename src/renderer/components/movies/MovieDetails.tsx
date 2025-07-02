@@ -21,6 +21,10 @@ import { useSnackbar } from "../../contexts/SnackbarContext";
 import { MovieDetails } from "../../../models/movie-detail.model";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useSaveJsonData } from "../../hooks/useSaveJsonData";
+import { AppModal } from "../common/AppModal";
+import { useModalState } from "../../hooks/useModalState";
+import { AiChat } from "../common/AiChat";
+import { LlmResponseChunk } from "../../../models/llm-response-chunk.model";
 
 interface MovieDetailsProps {
   videoPath: string | null;
@@ -31,6 +35,12 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const { getExtraMovieDetails } = useMovies();
   const { showSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
+
+  const {
+    open: isChatModalOpen,
+    openModal: openChatModal,
+    closeModal: closeChatModal,
+  } = useModalState(false);
 
   const {
     data: videoDetails,
@@ -76,6 +86,18 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const handleCloseModal = () => setOpenModal(false);
 
   const [searchParams] = useSearchParams();
+  const [chatStream, setChatStream] = useState<LlmResponseChunk | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    window.mainNotificationsAPI.videoAiChatDataChunks(
+      (chatResponseChunk: LlmResponseChunk) => {
+         //console.log("Received AI chat data chunk:", chatResponseChunk);
+        setChatStream(chatResponseChunk);
+      },
+    );
+  }, []);
 
   const handleBackClick = () => {
     const folderId = searchParams.get("folderId");
@@ -160,6 +182,20 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     }
   }, [videoDetails, getTmdbImageUrl]);
 
+  const triggerChatStream = (prompt?: string) => {
+    const movieTitle = videoDetails?.movie_details?.title || removeVidExt(videoDetails?.fileName) || "Unknown Movie";
+    const chatPrompt = prompt 
+      ? `${prompt} (Context: We're discussing the movie "${movieTitle}")` 
+      : `Tell me about the movie "${movieTitle}"`;
+    
+    window.llmAPI.generateLlmResponseByChunks(
+      "",
+      "",
+      chatPrompt,
+      "desktop",
+    );
+  };
+
   return (
     <>
       <Box
@@ -189,6 +225,10 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
                 if (videoPath) {
                   refetch();
                 }
+              }}
+              onOpenChatModal={() => {
+                triggerChatStream();
+                openChatModal();
               }}
             />
             <MovieDetailsContent
@@ -221,6 +261,13 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       <CustomDrawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
         <MovieCastAndCrew credits={videoDetails?.movie_details?.credits} />
       </CustomDrawer>
+      <AppModal
+        open={isChatModalOpen}
+        onClose={closeChatModal}
+        title="Movie AI Chat"
+      >
+        <AiChat chatStream={chatStream} triggerChatStream={triggerChatStream} />
+      </AppModal>
     </>
   );
 };
