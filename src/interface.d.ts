@@ -248,6 +248,7 @@ export interface LlmAPI {
     responseReceiver?: "desktop" | "mobile",
     model?: string,
   ) => Promise<void>;
+  cancelCurrentLlmByChunksRequest: () => Promise<boolean>;
 }
 
 declare global {

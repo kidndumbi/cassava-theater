@@ -9,13 +9,17 @@ import {
   CircularProgress,
   Chip,
 } from "@mui/material";
-import { Send as SendIcon, Person as PersonIcon, SmartToy as BotIcon } from "@mui/icons-material";
+import {
+  Send as SendIcon,
+  Person as PersonIcon,
+  SmartToy as BotIcon,
+} from "@mui/icons-material";
 import { LlmResponseChunk } from "../../../models/llm-response-chunk.model";
 import theme from "../../theme";
 import { formatTime } from "../../util/helperFunctions";
 
 interface ConversationMessage {
-  type: 'user' | 'ai';
+  type: "user" | "ai";
   message: string;
   timestamp: string;
 }
@@ -27,13 +31,23 @@ export const AiChat = ({
   chatStream: LlmResponseChunk | undefined;
   triggerChatStream: (prompt?: string) => void;
 }) => {
-  const [accumulatedResponse, setAccumulatedResponse] = useState<string>('');
-  const [currentModel, setCurrentModel] = useState<string>('');
+  const [accumulatedResponse, setAccumulatedResponse] = useState<string>("");
+  const [currentModel, setCurrentModel] = useState<string>("");
   const [isComplete, setIsComplete] = useState<boolean>(true);
-  const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([]);
-  const [userInput, setUserInput] = useState<string>('');
+  const [conversationHistory, setConversationHistory] = useState<
+    ConversationMessage[]
+  >([]);
+  const [userInput, setUserInput] = useState<string>("");
   const chatContentRef = useRef<HTMLDivElement>(null);
   const lastProcessedChunk = useRef<LlmResponseChunk | null>(null);
+
+  useEffect(() => {
+    return () => {
+      window.llmAPI.cancelCurrentLlmByChunksRequest().catch((err) => {
+        console.error("Error canceling LLM request:", err);
+      });
+    };
+  }, []);
 
   // Handle chat stream updates
   useEffect(() => {
@@ -48,7 +62,7 @@ export const AiChat = ({
 
       // Accumulate the response
       if (chatStream.response) {
-        setAccumulatedResponse(prev => prev + chatStream.response);
+        setAccumulatedResponse((prev) => prev + chatStream.response);
       }
 
       // Update completion status
@@ -56,24 +70,25 @@ export const AiChat = ({
 
       // When response is complete, add accumulated response to conversation history
       if (chatStream.done) {
-        setConversationHistory(prev => {
-          const currentAccumulated = accumulatedResponse + (chatStream.response || '');
+        setConversationHistory((prev) => {
+          const currentAccumulated =
+            accumulatedResponse + (chatStream.response || "");
           if (currentAccumulated.trim()) {
             return [
               ...prev,
               {
-                type: 'ai',
+                type: "ai",
                 message: currentAccumulated,
-                timestamp: new Date().toISOString()
-              }
+                timestamp: new Date().toISOString(),
+              },
             ];
           }
           return prev;
         });
 
         // Reset for next conversation
-        setAccumulatedResponse('');
-        
+        setAccumulatedResponse("");
+
         // Scroll to bottom after AI response is complete
         setTimeout(() => scrollToBottom(), 100);
       }
@@ -94,25 +109,25 @@ export const AiChat = ({
   const sendMessage = () => {
     const message = userInput.trim();
     if (message && isComplete) {
-      console.log('Sending message:', message);
+      console.log("Sending message:", message);
 
       // Add user message to conversation history
-      setConversationHistory(prev => [
+      setConversationHistory((prev) => [
         ...prev,
         {
-          type: 'user',
+          type: "user",
           message: message,
-          timestamp: new Date().toISOString()
-        }
+          timestamp: new Date().toISOString(),
+        },
       ]);
 
       // Reset accumulated response for new AI response
-      setAccumulatedResponse('');
+      setAccumulatedResponse("");
       setIsComplete(false);
 
       // Trigger chat stream with the message
       triggerChatStream(message);
-      setUserInput(''); // Clear input after sending
+      setUserInput(""); // Clear input after sending
 
       // Scroll to bottom after adding user message
       setTimeout(() => scrollToBottom(), 100);
@@ -120,33 +135,33 @@ export const AiChat = ({
   };
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       sendMessage();
     }
   };
 
-//   const formatTime = (timestamp: string): string => {
-//     const date = new Date(timestamp);
-//     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-//   };
+  //   const formatTime = (timestamp: string): string => {
+  //     const date = new Date(timestamp);
+  //     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  //   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '500px' }}>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "500px" }}>
       {/* Chat Content */}
       <Box
         ref={chatContentRef}
         sx={{
           flex: 1,
-          overflowY: 'auto',
+          overflowY: "auto",
           p: 2,
-          backgroundColor: 'background.default',
-          '&::-webkit-scrollbar': {
-            width: '6px',
+          backgroundColor: "background.default",
+          "&::-webkit-scrollbar": {
+            width: "6px",
           },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: 'rgba(0,0,0,.2)',
-            borderRadius: '3px',
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "rgba(0,0,0,.2)",
+            borderRadius: "3px",
           },
         }}
       >
@@ -154,11 +169,11 @@ export const AiChat = ({
         {conversationHistory.length === 0 && !accumulatedResponse && (
           <Box
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              color: 'text.secondary',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              color: "text.secondary",
             }}
           >
             <Typography variant="body2">Start a conversation...</Typography>
@@ -170,40 +185,51 @@ export const AiChat = ({
           <Box
             key={index}
             sx={{
-              display: 'flex',
-              justifyContent: message.type === 'user' ? 'flex-end' : 'flex-start',
+              display: "flex",
+              justifyContent:
+                message.type === "user" ? "flex-end" : "flex-start",
               mb: 2,
             }}
           >
             <Paper
               elevation={1}
               sx={{
-                maxWidth: '80%',
+                maxWidth: "80%",
                 p: 1.5,
-                backgroundColor: message.type === 'user' ? 'primary.main' : 'grey.100',
-                color: message.type === 'user' ? 'primary.contrastText' : 'text.primary',
+                backgroundColor:
+                  message.type === "user" ? "primary.main" : "grey.100",
+                color:
+                  message.type === "user"
+                    ? "primary.contrastText"
+                    : "text.primary",
                 borderRadius: 2,
-                borderBottomRightRadius: message.type === 'user' ? 0.5 : 2,
-                borderBottomLeftRadius: message.type === 'ai' ? 0.5 : 2,
+                borderBottomRightRadius: message.type === "user" ? 0.5 : 2,
+                borderBottomLeftRadius: message.type === "ai" ? 0.5 : 2,
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
                 <Avatar
                   sx={{
                     width: 20,
                     height: 20,
                     mr: 1,
-                    backgroundColor: message.type === 'user' ? 'primary.dark' : 'secondary.main',
+                    backgroundColor:
+                      message.type === "user"
+                        ? "primary.dark"
+                        : "secondary.main",
                   }}
                 >
-                  {message.type === 'user' ? (
+                  {message.type === "user" ? (
                     <PersonIcon sx={{ fontSize: 14 }} />
                   ) : (
                     <BotIcon sx={{ fontSize: 14 }} />
                   )}
                 </Avatar>
-                <Typography variant="caption" sx={{ fontWeight: 'bold', mr: 1 }}>
-                  {message.type === 'user' ? 'You' : currentModel || 'AI'}
+                <Typography
+                  variant="caption"
+                  sx={{ fontWeight: "bold", mr: 1 }}
+                >
+                  {message.type === "user" ? "You" : currentModel || "AI"}
                 </Typography>
                 <Typography variant="caption" sx={{ opacity: 0.7 }}>
                   {formatTime(message.timestamp)}
@@ -212,7 +238,7 @@ export const AiChat = ({
               <Typography
                 variant="body2"
                 sx={{
-                  whiteSpace: 'pre-wrap',
+                  whiteSpace: "pre-wrap",
                   lineHeight: 1.4,
                   ml: 3.5,
                 }}
@@ -225,37 +251,40 @@ export const AiChat = ({
 
         {/* Current AI Response (while streaming) */}
         {accumulatedResponse && !isComplete && (
-          <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
             <Paper
               elevation={1}
               sx={{
-                maxWidth: '80%',
+                maxWidth: "80%",
                 p: 1.5,
-                backgroundColor: 'grey.100',
+                backgroundColor: "grey.100",
                 borderRadius: 2,
                 borderBottomLeftRadius: 0.5,
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
                 <Avatar
                   sx={{
                     width: 20,
                     height: 20,
                     mr: 1,
-                    backgroundColor: 'secondary.main',
+                    backgroundColor: "secondary.main",
                   }}
                 >
                   <BotIcon sx={{ fontSize: 14 }} />
                 </Avatar>
-                <Typography variant="caption" sx={{ fontWeight: 'bold', mr: 1 }}>
-                  {currentModel || 'AI'}
+                <Typography
+                  variant="caption"
+                  sx={{ fontWeight: "bold", mr: 1 }}
+                >
+                  {currentModel || "AI"}
                 </Typography>
                 <CircularProgress size={12} thickness={6} />
               </Box>
               <Typography
                 variant="body2"
                 sx={{
-                  whiteSpace: 'pre-wrap',
+                  whiteSpace: "pre-wrap",
                   lineHeight: 1.4,
                   ml: 3.5,
                 }}
@@ -269,12 +298,15 @@ export const AiChat = ({
 
       {/* Model Info */}
       {currentModel && (
-        <Box sx={{ px: 2, py: 1, borderTop: 1, borderColor: 'divider' }}>
+        <Box sx={{ px: 2, py: 1, borderTop: 1, borderColor: "divider" }}>
           <Chip
             label={`Model: ${currentModel}`}
             size="small"
             variant="outlined"
-            sx={{ fontSize: '0.75rem', color: theme.customVariables.appWhiteSmoke }}
+            sx={{
+              fontSize: "0.75rem",
+              color: theme.customVariables.appWhiteSmoke,
+            }}
           />
         </Box>
       )}
@@ -284,11 +316,11 @@ export const AiChat = ({
         sx={{
           p: 2,
           borderTop: 1,
-          borderColor: 'divider',
-          backgroundColor: 'background.paper',
+          borderColor: "divider",
+          backgroundColor: "background.paper",
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
           <TextField
             fullWidth
             multiline
@@ -301,7 +333,7 @@ export const AiChat = ({
             size="small"
             disabled={!isComplete}
             sx={{
-              '& .MuiOutlinedInput-root': {
+              "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
               },
             }}
@@ -311,14 +343,14 @@ export const AiChat = ({
             disabled={!userInput.trim() || !isComplete}
             color="primary"
             sx={{
-              backgroundColor: 'primary.main',
-              color: 'primary.contrastText',
-              '&:hover': {
-                backgroundColor: 'primary.dark',
+              backgroundColor: "primary.main",
+              color: "primary.contrastText",
+              "&:hover": {
+                backgroundColor: "primary.dark",
               },
-              '&:disabled': {
-                backgroundColor: 'action.disabled',
-                color: 'action.disabled',
+              "&:disabled": {
+                backgroundColor: "action.disabled",
+                color: "action.disabled",
               },
             }}
           >

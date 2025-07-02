@@ -10,6 +10,8 @@ interface OllamaRequest {
   prompt: string;
 }
 
+let currentAbortController: AbortController | null = null;
+
 const makeOllamaRequest = async (request: OllamaRequest, options = {}) => {
   return axios.post(OLLAMA_API_URL, request, {
     responseType: "stream",
@@ -127,19 +129,63 @@ export const generateLlmResponseByChunks = async (
   responseReceiver: "desktop" | "mobile" = "mobile",
   model = "llama3.1:latest",
 ): Promise<void> => {
+  if (currentAbortController) {
+    currentAbortController.abort();
+  }
+
+  currentAbortController = new AbortController();
+  const abortController = currentAbortController;
+
   try {
-    const response = await makeOllamaRequest({ model, prompt });
+    const response = await makeOllamaRequest(
+      { model, prompt },
+      { signal: abortController.signal },
+    );
 
     response.data.on("data", (chunk: Buffer) => {
+      if (abortController.signal.aborted) return;
       processChunkLines(chunk, (parsed) => {
         handleResponse(responseReceiver, socketId, event, parsed);
+        if (parsed.done && currentAbortController === abortController) {
+          currentAbortController = null;
+        }
       });
     });
 
     response.data.on("error", (error: Error) => {
-      handleError(responseReceiver, socketId, event, error.message);
+      if (currentAbortController === abortController) {
+        currentAbortController = null;
+      }
+      if (!abortController.signal.aborted) {
+        handleError(responseReceiver, socketId, event, error.message);
+      }
+    });
+
+    response.data.on("end", () => {
+      if (currentAbortController === abortController) {
+        currentAbortController = null;
+      }
     });
   } catch (error) {
-    handleError(responseReceiver, socketId, event, processError(error).message);
+    if (currentAbortController === abortController) {
+      currentAbortController = null;
+    }
+    if (!abortController.signal.aborted) {
+      handleError(
+        responseReceiver,
+        socketId,
+        event,
+        processError(error).message,
+      );
+    }
   }
+};
+
+export const cancelCurrentLlmByChunksRequest = (): boolean => {
+  if (currentAbortController) {
+    currentAbortController.abort();
+    currentAbortController = null;
+    return true;
+  }
+  return false;
 };

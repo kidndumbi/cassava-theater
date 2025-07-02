@@ -331,6 +331,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   }, []);
 
   const triggerChatStream = (prompt?: string) => {
+    setChatStream(undefined);
     const tvShowTitle = tvShowDetails?.tv_show_details?.name || getFilename(tvShowDetails?.filePath || "") || "Unknown TV Show";
     const chatPrompt = prompt 
       ? `${prompt} (Context: We're discussing the TV show "${tvShowTitle}")` 
