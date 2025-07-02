@@ -26,6 +26,7 @@ import { AppSocketEvents } from "./enums/app-socket-events.enum";
 import { CurrentlyPlayingIPCChannels } from "./enums/currently-playing-IPCChannels.enum";
 import { ConversionQueueItem } from "./models/conversion-queue-item.model";
 import { LlmIPCChannels } from "./enums/llm-IPC-Channels.enum";
+import { LlmResponseChunk } from "./models/llm-response-chunk.model";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -258,6 +259,21 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
       (_event, queue: YoutubeDownloadQueueItem[]) => callback(queue),
     );
   },
+
+  videoAiChatDataChunks: (
+    callback: (chatResponseChunk: LlmResponseChunk) => void,
+  ) => {
+    ipcRenderer.on(
+      "video-ai-chat-data-chunks",
+      (_event, chatResponseChunk: LlmResponseChunk) =>
+        callback(chatResponseChunk),
+    );
+  },
+  videoAiChatResponseError: (callback: (error: string) => void) => {
+    ipcRenderer.on("video-ai-chat-response-error", (_event, error: string) =>
+      callback(error),
+    );
+  },
 });
 
 contextBridge.exposeInMainWorld("videoAPI", {
@@ -466,6 +482,26 @@ contextBridge.exposeInMainWorld("mp4ConversionAPI", {
 
 contextBridge.exposeInMainWorld("llmAPI", {
   generateLlmResponse: (prompt: string, model?: string) => {
-    return ipcRenderer.invoke(LlmIPCChannels.GENERATE_LLM_RESPONSE, prompt, model);
+    return ipcRenderer.invoke(
+      LlmIPCChannels.GENERATE_LLM_RESPONSE,
+      prompt,
+      model,
+    );
+  },
+  generateLlmResponseByChunks: (
+    socketId: string,
+    event: string,
+    prompt: string,
+    responseReceiver: "desktop" | "mobile" = "mobile",
+    model?: string,
+  ) => {
+    return ipcRenderer.invoke(
+      LlmIPCChannels.GENERATE_LLM_RESPONSE_BY_CHUNKS,
+      socketId,
+      event,
+      prompt,
+      responseReceiver,
+      model,
+    );
   },
 });

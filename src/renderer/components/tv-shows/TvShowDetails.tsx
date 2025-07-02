@@ -9,6 +9,7 @@ import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import FourMpIcon from "@mui/icons-material/FourMp";
+import ChatIcon from "@mui/icons-material/Chat";
 import {
   getFilename,
   getUrl,
@@ -31,6 +32,8 @@ import CustomDrawer from "../common/CustomDrawer";
 import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
 import { AppModal } from "../common/AppModal";
 import SeasonConvertSelector from "./SeasonConvertSelector";
+import { AiChat } from "../common/AiChat";
+import { LlmResponseChunk } from "../../../models/llm-response-chunk.model";
 import {
   useFolderDetailsQuery,
   useVideoDataQuery,
@@ -84,6 +87,16 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     closeModal: closeConvertToMp4Modal,
   } = useModalState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
+
+  const [chatStream, setChatStream] = useState<LlmResponseChunk | undefined>(
+    undefined,
+  );
+
+    const {
+      open: isChatModalOpen,
+      openModal: openChatModal,
+      closeModal: closeChatModal,
+    } = useModalState(false);
 
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
@@ -308,6 +321,31 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     },
   });
 
+  useEffect(() => {
+    window.mainNotificationsAPI.videoAiChatDataChunks(
+      (chatResponseChunk: LlmResponseChunk) => {
+        console.log("Received AI chat data chunk:", chatResponseChunk); 
+        setChatStream(chatResponseChunk);
+      },
+    );
+  }, []);
+
+  const triggerChatStream = (prompt?: string) => {
+    const tvShowTitle = tvShowDetails?.tv_show_details?.name || getFilename(tvShowDetails?.filePath || "") || "Unknown TV Show";
+    const chatPrompt = prompt 
+      ? `${prompt} (Context: We're discussing the TV show "${tvShowTitle}")` 
+      : `Tell me about the TV show "${tvShowTitle}"`;
+
+      console.log("Triggering chat stream with prompt:", chatPrompt);
+    
+    window.llmAPI.generateLlmResponseByChunks(
+      "",
+      "",
+      chatPrompt,
+      "desktop",
+    );
+  };
+
   return (
     <>
       <Box
@@ -363,6 +401,15 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                   }}
                 >
                   <FourMpIcon />
+                </AppIconButton>
+                <AppIconButton
+                  tooltip="AI Chat"
+                  onClick={() => {
+                    triggerChatStream();
+                    openChatModal();
+                  }}
+                >
+                  <ChatIcon />
                 </AppIconButton>
               </Box>
             </Box>
@@ -509,6 +556,13 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
           aggregateCredits={tvShowDetails?.tv_show_details?.aggregate_credits}
         />
       </CustomDrawer>
+      <AppModal
+        open={isChatModalOpen}
+        onClose={closeChatModal}
+        title="TV Show AI Chat"
+      >
+        <AiChat chatStream={chatStream} triggerChatStream={triggerChatStream} />
+      </AppModal>
     </>
   );
 };

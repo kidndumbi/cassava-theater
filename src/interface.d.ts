@@ -6,6 +6,7 @@ import { VideoCommands } from "./models/video-commands.model";
 import { VideoDataModel } from "./models/videoData.model";
 import { PlaylistPlayRequestModel } from "./models/playlistPlayRequest.model";
 import { PlaylistCommands } from "./models/playlist-commands.model";
+import { LlmResponseChunk } from "./models/llm-response-chunk.model";
 export interface IElectronAPI {
   desktop: boolean;
 }
@@ -70,6 +71,10 @@ export interface MainNotificationsAPI {
   youtubeDownloadUpdatedFromBackend: (
     callback: (queue: YoutubeDownloadQueueItem[]) => void,
   ) => void;
+  videoAiChatDataChunks: (
+    callback: (chatResponseChunk: LlmResponseChunk) => void,
+  ) => void;
+  videoAiChatResponseError: (callback: (error: string) => void) => void;
 }
 
 export interface MainUtilAPI {
@@ -236,6 +241,13 @@ export interface CurrentlyPlayingAPI {
 
 export interface LlmAPI {
   generateLlmResponse: (prompt: string, model?: string) => Promise<string>;
+  generateLlmResponseByChunks: (
+    socketId: string,
+    event: string,
+    prompt: string,
+    responseReceiver?: "desktop" | "mobile",
+    model?: string,
+  ) => Promise<void>;
 }
 
 declare global {
