@@ -181,7 +181,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     }
   }, [videoDetails, getTmdbImageUrl]);
 
-  const triggerChatStream = (prompt?: string) => {
+  const triggerChatStream = (prompt?: string, ollamaModel?: string) => {
     setChatStream(undefined);
 
     const movieTitle =
@@ -197,7 +197,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       "",
       chatPrompt,
       "desktop",
-      settings?.ollamaModel || "llama3.1:latest",
+      ollamaModel || settings?.ollamaModel || "llama3.1:latest",
     );
   };
 
