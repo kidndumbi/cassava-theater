@@ -147,7 +147,6 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                 ]}
                 getItemValue={(model) => model.model}
                 getItemLabel={(model) => model.model || model.name}
-                theme={theme}
               />
             </Box>
           </Box>

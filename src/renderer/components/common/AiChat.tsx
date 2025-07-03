@@ -332,7 +332,6 @@ export const AiChat = ({
           items={ollamaModels || []}
           getItemValue={(model) => model.model}
           getItemLabel={(model) => model.model}
-          theme={theme}
         />
       </Box>
 
@@ -352,7 +351,7 @@ export const AiChat = ({
             maxRows={3}
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             placeholder="Type your message..."
             variant="outlined"
             size="medium"
