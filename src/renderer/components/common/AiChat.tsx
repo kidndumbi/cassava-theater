@@ -25,6 +25,7 @@ interface ConversationMessage {
   type: "user" | "ai";
   message: string;
   timestamp: string;
+  model?: string;
 }
 
 export const AiChat = ({
@@ -33,7 +34,7 @@ export const AiChat = ({
   ollamaModel,
 }: {
   chatStream: LlmResponseChunk | undefined;
-  triggerChatStream: (prompt?: string) => void;
+  triggerChatStream: (prompt?: string, ollamaModel?: string) => void;
   ollamaModel: string;
 }) => {
   const [accumulatedResponse, setAccumulatedResponse] = useState<string>("");
@@ -45,6 +46,8 @@ export const AiChat = ({
   const [userInput, setUserInput] = useState<string>("");
   const chatContentRef = useRef<HTMLDivElement>(null);
   const lastProcessedChunk = useRef<LlmResponseChunk | null>(null);
+
+  const [componentOllamaModel, setComponentOllamaModel] = useState(ollamaModel);
 
   const { data: ollamaModels } = useOllamaModels();
 
@@ -87,6 +90,7 @@ export const AiChat = ({
                 type: "ai",
                 message: currentAccumulated,
                 timestamp: new Date().toISOString(),
+                model: chatStream.model,
               },
             ];
           }
@@ -133,7 +137,7 @@ export const AiChat = ({
       setIsComplete(false);
 
       // Trigger chat stream with the message
-      triggerChatStream(message);
+      triggerChatStream(message, componentOllamaModel);
       setUserInput(""); // Clear input after sending
 
       // Scroll to bottom after adding user message
@@ -149,8 +153,7 @@ export const AiChat = ({
   };
 
   const handleModelChange = (event: SelectChangeEvent<string>) => {
-    // Note: You may need to pass an onModelChange prop to handle model selection
-    console.log("Model changed to:", event.target.value);
+    setComponentOllamaModel(event.target.value);
   };
 
   return (
@@ -162,7 +165,7 @@ export const AiChat = ({
           flex: 1,
           overflowY: "auto",
           p: 2,
-          backgroundColor: "background.default",
+          backgroundColor: theme.customVariables.appDark,
           "&::-webkit-scrollbar": {
             width: "6px",
           },
@@ -199,12 +202,14 @@ export const AiChat = ({
             }}
           >
             <Paper
-              elevation={1}
+              elevation={message.type === "user" ? 1 : 0}
               sx={{
                 maxWidth: "80%",
                 p: 1.5,
                 backgroundColor:
-                  message.type === "user" ? "primary.main" : "secondary.main",
+                  message.type === "user"
+                    ? "primary.main"
+                    : theme.customVariables.appDark,
                 color:
                   message.type === "user"
                     ? "primary.contrastText"
@@ -234,11 +239,22 @@ export const AiChat = ({
                 </Avatar>
                 <Typography
                   variant="caption"
-                  sx={{ fontWeight: "bold", mr: 1 }}
+                  sx={{
+                    fontWeight: "bold",
+                    mr: 1,
+                    color: theme.customVariables.appWhiteSmoke,
+                  }}
                 >
-                  {message.type === "user" ? "You" : currentModel || "AI"}
+                  {message.type === "user" ? "You" : message?.model || "AI"}
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    opacity: 0.7,
+                    fontSize: "0.7em",
+                    color: theme.customVariables.appWhiteSmoke,
+                  }}
+                >
                   {formatTime(message.timestamp)}
                 </Typography>
               </Box>
@@ -248,6 +264,7 @@ export const AiChat = ({
                   whiteSpace: "pre-wrap",
                   lineHeight: 1.4,
                   ml: 3.5,
+                  color: theme.customVariables.appWhiteSmoke,
                 }}
               >
                 {message.message}
@@ -260,11 +277,11 @@ export const AiChat = ({
         {accumulatedResponse && !isComplete && (
           <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
             <Paper
-              elevation={1}
+              elevation={0}
               sx={{
                 maxWidth: "80%",
                 p: 1.5,
-                backgroundColor: "grey.100",
+                backgroundColor: theme.customVariables.appDark,
                 borderRadius: 2,
                 borderBottomLeftRadius: 0.5,
               }}
@@ -282,9 +299,13 @@ export const AiChat = ({
                 </Avatar>
                 <Typography
                   variant="caption"
-                  sx={{ fontWeight: "bold", mr: 1 }}
+                  sx={{
+                    fontWeight: "bold",
+                    mr: 1,
+                    color: theme.customVariables.appWhiteSmoke,
+                  }}
                 >
-                  {currentModel || "AI"}
+                  {componentOllamaModel || "AI"}
                 </Typography>
                 <CircularProgress size={12} thickness={6} />
               </Box>
@@ -294,6 +315,7 @@ export const AiChat = ({
                   whiteSpace: "pre-wrap",
                   lineHeight: 1.4,
                   ml: 3.5,
+                  color: theme.customVariables.appWhiteSmoke,
                 }}
               >
                 {accumulatedResponse}
@@ -305,7 +327,7 @@ export const AiChat = ({
 
       <Box sx={{ px: 2, py: 1, borderTop: 1, borderColor: "divider" }}>
         <RenderSelect<OllamaModel>
-          value={ollamaModel || ""}
+          value={componentOllamaModel || ""}
           onChange={handleModelChange}
           items={ollamaModels || []}
           getItemValue={(model) => model.model}
@@ -320,10 +342,10 @@ export const AiChat = ({
           p: 2,
           borderTop: 1,
           borderColor: "divider",
-          backgroundColor: "background.paper",
+          backgroundColor: theme.customVariables.appDark,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <TextField
             fullWidth
             multiline
@@ -333,11 +355,12 @@ export const AiChat = ({
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             variant="outlined"
-            size="small"
+            size="medium"
             disabled={!isComplete}
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
+                color: theme.customVariables.appWhiteSmoke,
               },
             }}
           />
