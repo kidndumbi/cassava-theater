@@ -466,7 +466,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                     items={childFolders}
                     getItemValue={(folder) => folder.folderPath}
                     getItemLabel={(folder) => folder.basename}
-                    theme={theme}
                   />
                 </Box>
               )}

@@ -1,6 +1,6 @@
-import React from "react";
-import { Select, MenuItem, SelectChangeEvent, Theme } from "@mui/material";
+import { Select, MenuItem, SelectChangeEvent } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import theme from "../../theme";
 
 interface RenderSelectProps<T> {
   value: string;
@@ -8,7 +8,6 @@ interface RenderSelectProps<T> {
   items: T[];
   getItemValue: (item: T) => string;
   getItemLabel: (item: T) => string;
-  theme: Theme;
 }
 
 const RenderSelect = <T,>({
@@ -17,7 +16,6 @@ const RenderSelect = <T,>({
   items,
   getItemValue,
   getItemLabel,
-  theme,
 }: RenderSelectProps<T>) => {
   return (
     <Select
@@ -30,6 +28,19 @@ const RenderSelect = <T,>({
           style={{ color: theme.customVariables.appWhiteSmoke }}
         />
       )}
+      MenuProps={{
+        PaperProps: {
+          sx: {
+            backgroundColor: theme.customVariables.appDarker,
+            "& .MuiMenuItem-root": {
+              color: theme.customVariables.appWhiteSmoke,
+              "&:hover": {
+                backgroundColor: theme.customVariables.appDark,
+              },
+            },
+          },
+        },
+      }}
       sx={{
         paddingRight: "32px",
         "& .MuiOutlinedInput-notchedOutline": {
