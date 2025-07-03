@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useMovies } from "../../hooks/useMovies";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
+import { useSelector } from "react-redux";
 import { Box } from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
@@ -25,6 +26,12 @@ import { AppModal } from "../common/AppModal";
 import { useModalState } from "../../hooks/useModalState";
 import { AiChat } from "../common/AiChat";
 import { LlmResponseChunk } from "../../../models/llm-response-chunk.model";
+import {
+  chatHistoryActions,
+  selChatHistory,
+} from "../../store/chatHistory.slice";
+import { ConversationMessage } from "../../../models/conversationMessage.model";
+import { useAppDispatch } from "../../store";
 
 interface MovieDetailsProps {
   videoPath: string | null;
@@ -35,6 +42,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const { getExtraMovieDetails } = useMovies();
   const { showSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
+  const dispatch = useAppDispatch();
 
   const {
     open: isChatModalOpen,
@@ -90,6 +98,10 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     undefined,
   );
 
+  const [chatHistory, setChatHistory] = useState<
+    { id: string; history: ConversationMessage[] } | undefined
+  >(undefined);
+
   useEffect(() => {
     window.mainNotificationsAPI.videoAiChatDataChunks(
       (chatResponseChunk: LlmResponseChunk) => {
@@ -97,6 +109,15 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       },
     );
   }, []);
+
+  const allChatHistory = useSelector(selChatHistory);
+
+  useEffect(() => {
+    const currentVideoChatHistory = allChatHistory.find(
+      (chat) => chat.id === videoPath,
+    );
+    setChatHistory(currentVideoChatHistory);
+  }, [allChatHistory]);
 
   const handleBackClick = () => {
     const folderId = searchParams.get("folderId");
@@ -232,7 +253,6 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
                 }
               }}
               onOpenChatModal={() => {
-                triggerChatStream();
                 openChatModal();
               }}
             />
@@ -275,6 +295,15 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
           ollamaModel={settings?.ollamaModel || "llama3.1:latest"}
           chatStream={chatStream}
           triggerChatStream={triggerChatStream}
+          history={chatHistory}
+          updateHistory={(conversationHistory) => {
+            dispatch(
+              chatHistoryActions.addChatHistory({
+                id: videoPath || "",
+                history: conversationHistory,
+              }),
+            );
+          }}
         />
       </AppModal>
     </>

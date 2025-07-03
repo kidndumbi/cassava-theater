@@ -42,6 +42,13 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useModalState } from "../../hooks/useModalState";
+import { ConversationMessage } from "../../../models/conversationMessage.model";
+import { useSelector } from "react-redux";
+import {
+  selChatHistory,
+  chatHistoryActions,
+} from "../../store/chatHistory.slice";
+import { useAppDispatch } from "../../store";
 
 interface TvShowDetailsProps {
   videoPath: string | null;
@@ -91,6 +98,21 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   const [chatStream, setChatStream] = useState<LlmResponseChunk | undefined>(
     undefined,
   );
+
+  const [chatHistory, setChatHistory] = useState<
+    { id: string; history: ConversationMessage[] } | undefined
+  >(undefined);
+
+  const allChatHistory = useSelector(selChatHistory);
+
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    const currentVideoChatHistory = allChatHistory.find(
+      (chat) => chat.id === videoPath,
+    );
+    setChatHistory(currentVideoChatHistory);
+  }, [allChatHistory]);
 
   const {
     open: isChatModalOpen,
@@ -407,7 +429,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 <AppIconButton
                   tooltip="AI Chat"
                   onClick={() => {
-                    triggerChatStream();
                     openChatModal();
                   }}
                 >
@@ -566,6 +587,15 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
           ollamaModel={settings?.ollamaModel || "llama3.1:latest"}
           chatStream={chatStream}
           triggerChatStream={triggerChatStream}
+          history={chatHistory}
+          updateHistory={(conversationHistory) => {
+            dispatch(
+              chatHistoryActions.addChatHistory({
+                id: videoPath || "",
+                history: conversationHistory,
+              }),
+            );
+          }}
         />
       </AppModal>
     </>

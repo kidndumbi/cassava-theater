@@ -20,22 +20,20 @@ import { formatTime } from "../../util/helperFunctions";
 import { useOllamaModels } from "../../hooks/useOllamaModels";
 import RenderSelect from "../tv-shows/RenderSelect";
 import { OllamaModel } from "../../../models/ollamaModel.model";
-
-interface ConversationMessage {
-  type: "user" | "ai";
-  message: string;
-  timestamp: string;
-  model?: string;
-}
+import { ConversationMessage } from "../../../models/conversationMessage.model";
 
 export const AiChat = ({
   chatStream,
   triggerChatStream,
   ollamaModel,
+  history,
+  updateHistory,
 }: {
   chatStream: LlmResponseChunk | undefined;
   triggerChatStream: (prompt?: string, ollamaModel?: string) => void;
   ollamaModel: string;
+  history: { id: string; history: ConversationMessage[] } | undefined;
+  updateHistory: (history: ConversationMessage[]) => void;
 }) => {
   const [accumulatedResponse, setAccumulatedResponse] = useState<string>("");
   const [currentModel, setCurrentModel] = useState<string>("");
@@ -50,6 +48,12 @@ export const AiChat = ({
   const [componentOllamaModel, setComponentOllamaModel] = useState(ollamaModel);
 
   const { data: ollamaModels } = useOllamaModels();
+
+  useEffect(() => {
+    if (history && history.history.length > 0) {
+      setConversationHistory(history.history);
+    }
+  }, [history]);
 
   useEffect(() => {
     return () => {
@@ -80,19 +84,21 @@ export const AiChat = ({
 
       // When response is complete, add accumulated response to conversation history
       if (chatStream.done) {
+        const newMessage = {
+          type: "ai" as const,
+          message: accumulatedResponse + (chatStream.response || ""),
+          timestamp: new Date().toISOString(),
+          model: chatStream.model,
+        };
+
         setConversationHistory((prev) => {
           const currentAccumulated =
             accumulatedResponse + (chatStream.response || "");
           if (currentAccumulated.trim()) {
-            return [
-              ...prev,
-              {
-                type: "ai",
-                message: currentAccumulated,
-                timestamp: new Date().toISOString(),
-                model: chatStream.model,
-              },
-            ];
+            const newHistory = [...prev, newMessage];
+            // Update Redux store
+            updateHistory(newHistory);
+            return newHistory;
           }
           return prev;
         });
@@ -109,7 +115,7 @@ export const AiChat = ({
         setTimeout(() => scrollToBottom(), 50);
       }
     }
-  }, [chatStream]);
+  }, [chatStream, accumulatedResponse, updateHistory]);
 
   const scrollToBottom = () => {
     if (chatContentRef.current) {
@@ -122,15 +128,19 @@ export const AiChat = ({
     if (message && isComplete) {
       console.log("Sending message:", message);
 
+      const newUserMessage = {
+        type: "user" as const,
+        message: message,
+        timestamp: new Date().toISOString(),
+      };
+
       // Add user message to conversation history
-      setConversationHistory((prev) => [
-        ...prev,
-        {
-          type: "user",
-          message: message,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
+      setConversationHistory((prev) => {
+        const newHistory = [...prev, newUserMessage];
+        // Update Redux store immediately with user message
+        updateHistory(newHistory);
+        return newHistory;
+      });
 
       // Reset accumulated response for new AI response
       setAccumulatedResponse("");
@@ -186,7 +196,14 @@ export const AiChat = ({
               color: "text.secondary",
             }}
           >
-            <Typography variant="body2">Start a conversation...</Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.customVariables.appWhiteSmoke,
+              }}
+            >
+              Start a conversation...
+            </Typography>
           </Box>
         )}
 
