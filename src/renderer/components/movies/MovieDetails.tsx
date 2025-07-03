@@ -265,7 +265,11 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         onClose={closeChatModal}
         title="Movie AI Chat"
       >
-        <AiChat chatStream={chatStream} triggerChatStream={triggerChatStream} />
+        <AiChat
+          ollamaModel={"llama3.1:latest"}
+          chatStream={chatStream}
+          triggerChatStream={triggerChatStream}
+        />
       </AppModal>
     </>
   );

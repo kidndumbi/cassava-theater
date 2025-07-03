@@ -7,7 +7,7 @@ import {
   Paper,
   Avatar,
   CircularProgress,
-  Chip,
+  SelectChangeEvent,
 } from "@mui/material";
 import {
   Send as SendIcon,
@@ -17,6 +17,9 @@ import {
 import { LlmResponseChunk } from "../../../models/llm-response-chunk.model";
 import theme from "../../theme";
 import { formatTime } from "../../util/helperFunctions";
+import { useOllamaModels } from "../../hooks/useOllamaModels";
+import RenderSelect from "../tv-shows/RenderSelect";
+import { OllamaModel } from "../../../models/ollamaModel.model";
 
 interface ConversationMessage {
   type: "user" | "ai";
@@ -27,9 +30,11 @@ interface ConversationMessage {
 export const AiChat = ({
   chatStream,
   triggerChatStream,
+  ollamaModel,
 }: {
   chatStream: LlmResponseChunk | undefined;
   triggerChatStream: (prompt?: string) => void;
+  ollamaModel: string;
 }) => {
   const [accumulatedResponse, setAccumulatedResponse] = useState<string>("");
   const [currentModel, setCurrentModel] = useState<string>("");
@@ -40,6 +45,8 @@ export const AiChat = ({
   const [userInput, setUserInput] = useState<string>("");
   const chatContentRef = useRef<HTMLDivElement>(null);
   const lastProcessedChunk = useRef<LlmResponseChunk | null>(null);
+
+  const { data: ollamaModels } = useOllamaModels();
 
   useEffect(() => {
     return () => {
@@ -141,10 +148,10 @@ export const AiChat = ({
     }
   };
 
-  //   const formatTime = (timestamp: string): string => {
-  //     const date = new Date(timestamp);
-  //     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  //   };
+  const handleModelChange = (event: SelectChangeEvent<string>) => {
+    // Note: You may need to pass an onModelChange prop to handle model selection
+    console.log("Model changed to:", event.target.value);
+  };
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "500px" }}>
@@ -296,20 +303,16 @@ export const AiChat = ({
         )}
       </Box>
 
-      {/* Model Info */}
-      {currentModel && (
-        <Box sx={{ px: 2, py: 1, borderTop: 1, borderColor: "divider" }}>
-          <Chip
-            label={`Model: ${currentModel}`}
-            size="small"
-            variant="outlined"
-            sx={{
-              fontSize: "0.75rem",
-              color: theme.customVariables.appWhiteSmoke,
-            }}
-          />
-        </Box>
-      )}
+      <Box sx={{ px: 2, py: 1, borderTop: 1, borderColor: "divider" }}>
+        <RenderSelect<OllamaModel>
+          value={ollamaModel || ""}
+          onChange={handleModelChange}
+          items={ollamaModels || []}
+          getItemValue={(model) => model.model}
+          getItemLabel={(model) => model.model}
+          theme={theme}
+        />
+      </Box>
 
       {/* Input Area */}
       <Box

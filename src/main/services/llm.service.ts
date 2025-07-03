@@ -1,3 +1,4 @@
+import { OllamaModel } from "./../../models/ollamaModel.model";
 import { LlmResponseChunk } from "./../../models/llm-response-chunk.model";
 import { getSocketIoGlobal } from "../socketGlobalManager";
 import axios, { isAxiosError } from "axios";
@@ -9,6 +10,21 @@ interface OllamaRequest {
   model: string;
   prompt: string;
 }
+
+interface OllamaModelsResponse {
+  models: OllamaModel[];
+}
+
+export const getAvailableModels = async (): Promise<OllamaModel[]> => {
+  try {
+    const response = await axios.get<OllamaModelsResponse>(
+      "http://localhost:11434/api/tags",
+    );
+    return response.data.models;
+  } catch (error) {
+    throw processError(error);
+  }
+};
 
 let currentAbortController: AbortController | null = null;
 
