@@ -16,4 +16,5 @@ export interface SettingsModel {
     userConnectionStatus: boolean;
     youtubeDownloadStatus?: boolean;
   };
+  ollamaModel: string;
 }

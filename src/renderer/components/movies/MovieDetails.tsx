@@ -192,7 +192,13 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       ? `${prompt} (Context: We're discussing the movie "${movieTitle}")`
       : `Tell me about the movie "${movieTitle}"`;
 
-    window.llmAPI.generateLlmResponseByChunks("", "", chatPrompt, "desktop");
+    window.llmAPI.generateLlmResponseByChunks(
+      "",
+      "",
+      chatPrompt,
+      "desktop",
+      settings?.ollamaModel || "llama3.1:latest",
+    );
   };
 
   return (
@@ -266,7 +272,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         title="Movie AI Chat"
       >
         <AiChat
-          ollamaModel={"llama3.1:latest"}
+          ollamaModel={settings?.ollamaModel || "llama3.1:latest"}
           chatStream={chatStream}
           triggerChatStream={triggerChatStream}
         />

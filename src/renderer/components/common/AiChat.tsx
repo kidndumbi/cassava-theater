@@ -154,7 +154,7 @@ export const AiChat = ({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "500px" }}>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "80vh" }}>
       {/* Chat Content */}
       <Box
         ref={chatContentRef}
@@ -204,7 +204,7 @@ export const AiChat = ({
                 maxWidth: "80%",
                 p: 1.5,
                 backgroundColor:
-                  message.type === "user" ? "primary.main" : "grey.100",
+                  message.type === "user" ? "primary.main" : "secondary.main",
                 color:
                   message.type === "user"
                     ? "primary.contrastText"

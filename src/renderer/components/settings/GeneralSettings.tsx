@@ -7,10 +7,14 @@ import {
   Card,
   Checkbox,
   FormControlLabel,
+  SelectChangeEvent,
 } from "@mui/material";
 import { Folder as FolderIcon, Save } from "@mui/icons-material";
 import { AppTextField } from "../common/AppTextField";
 import { SettingsModel } from "../../../models/settings.model";
+import { useOllamaModels } from "../../hooks/useOllamaModels";
+import RenderSelect from "../tv-shows/RenderSelect";
+import { OllamaModel } from "../../../models/ollamaModel.model";
 
 interface GeneralSettingsProps {
   settings: SettingsModel;
@@ -18,7 +22,7 @@ interface GeneralSettingsProps {
   handleUpdateSetting: (
     settingName: string,
     value: SettingsModel[keyof SettingsModel],
-    confirmationtext?: string
+    confirmationtext?: string,
   ) => Promise<void>;
 }
 
@@ -37,7 +41,14 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
     continuousPlay,
     showVideoType,
     notifications = { mp4ConversionStatus: false, userConnectionStatus: false },
+    ollamaModel,
   } = settings;
+
+  const { data: ollamaModels } = useOllamaModels();
+
+  const handleOllamaModelChange = (event: SelectChangeEvent<string>) => {
+    handleUpdateSetting("ollamaModel", event.target.value);
+  };
 
   const renderFolderSetting = (
     label: string,
@@ -113,6 +124,33 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
               <Save />
             </Button>
           </Box>
+          <Box style={{ display: "flex", alignItems: "center", width: "100%" }}>
+            <Box style={{ flex: 1 }}>
+              <RenderSelect<OllamaModel>
+                value={
+                  ollamaModel &&
+                  ollamaModels?.some((model) => model.model === ollamaModel)
+                    ? ollamaModel
+                    : "Select a default model"
+                }
+                onChange={handleOllamaModelChange}
+                items={[
+                  ...(!ollamaModel
+                    ? [
+                        {
+                          model: "Select a default model",
+                          name: "Select a default model",
+                        } as OllamaModel
+                      ]
+                    : []),
+                  ...(ollamaModels || []),
+                ]}
+                getItemValue={(model) => model.model}
+                getItemLabel={(model) => model.model || model.name}
+                theme={theme}
+              />
+            </Box>
+          </Box>
           <FormControlLabel
             control={
               <Checkbox
@@ -155,7 +193,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
                     e.target.checked,
                     e.target.checked
                       ? "Enabling playback of non-MP4 videos may cause compatibility issues. Do you want to continue?"
-                      : undefined
+                      : undefined,
                   )
                 }
                 color="primary"
@@ -201,7 +239,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
             }
             label={
               <span style={{ color: theme.customVariables.appWhiteSmoke }}>
-                Notify on User Connection Status 
+                Notify on User Connection Status
               </span>
             }
           />

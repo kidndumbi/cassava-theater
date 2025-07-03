@@ -339,7 +339,13 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       ? `${prompt} (Context: We're discussing the TV show "${tvShowTitle}")`
       : `Tell me about the TV show "${tvShowTitle}"`;
 
-    window.llmAPI.generateLlmResponseByChunks("", "", chatPrompt, "desktop");
+    window.llmAPI.generateLlmResponseByChunks(
+      "",
+      "",
+      chatPrompt,
+      "desktop",
+      settings.ollamaModel || "llama3.1:latest",
+    );
   };
 
   return (
@@ -558,7 +564,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
         title="TV Show AI Chat"
       >
         <AiChat
-          ollamaModel={"llama3.1:latest"}
+          ollamaModel={settings?.ollamaModel || "llama3.1:latest"}
           chatStream={chatStream}
           triggerChatStream={triggerChatStream}
         />
