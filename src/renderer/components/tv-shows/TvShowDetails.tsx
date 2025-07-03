@@ -92,11 +92,11 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     undefined,
   );
 
-    const {
-      open: isChatModalOpen,
-      openModal: openChatModal,
-      closeModal: closeChatModal,
-    } = useModalState(false);
+  const {
+    open: isChatModalOpen,
+    openModal: openChatModal,
+    closeModal: closeChatModal,
+  } = useModalState(false);
 
   const handleOpenModal = () => setOpenModal(true);
   const handleCloseModal = () => setOpenModal(false);
@@ -324,7 +324,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   useEffect(() => {
     window.mainNotificationsAPI.videoAiChatDataChunks(
       (chatResponseChunk: LlmResponseChunk) => {
-        console.log("Received AI chat data chunk:", chatResponseChunk); 
         setChatStream(chatResponseChunk);
       },
     );
@@ -332,18 +331,20 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
 
   const triggerChatStream = (prompt?: string) => {
     setChatStream(undefined);
-    const tvShowTitle = tvShowDetails?.tv_show_details?.name || getFilename(tvShowDetails?.filePath || "") || "Unknown TV Show";
-    const chatPrompt = prompt 
-      ? `${prompt} (Context: We're discussing the TV show "${tvShowTitle}")` 
+    const tvShowTitle =
+      tvShowDetails?.tv_show_details?.name ||
+      getFilename(tvShowDetails?.filePath || "") ||
+      "Unknown TV Show";
+    const chatPrompt = prompt
+      ? `${prompt} (Context: We're discussing the TV show "${tvShowTitle}")`
       : `Tell me about the TV show "${tvShowTitle}"`;
 
-      console.log("Triggering chat stream with prompt:", chatPrompt);
-    
     window.llmAPI.generateLlmResponseByChunks(
       "",
       "",
       chatPrompt,
       "desktop",
+      settings.ollamaModel || "llama3.1:latest",
     );
   };
 
@@ -562,7 +563,11 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
         onClose={closeChatModal}
         title="TV Show AI Chat"
       >
-        <AiChat chatStream={chatStream} triggerChatStream={triggerChatStream} />
+        <AiChat
+          ollamaModel={settings?.ollamaModel || "llama3.1:latest"}
+          chatStream={chatStream}
+          triggerChatStream={triggerChatStream}
+        />
       </AppModal>
     </>
   );

@@ -7,6 +7,7 @@ import { VideoDataModel } from "./models/videoData.model";
 import { PlaylistPlayRequestModel } from "./models/playlistPlayRequest.model";
 import { PlaylistCommands } from "./models/playlist-commands.model";
 import { LlmResponseChunk } from "./models/llm-response-chunk.model";
+import { OllamaModel } from "./models/ollamaModel.model";
 export interface IElectronAPI {
   desktop: boolean;
 }
@@ -249,6 +250,7 @@ export interface LlmAPI {
     model?: string,
   ) => Promise<void>;
   cancelCurrentLlmByChunksRequest: () => Promise<boolean>;
+  getAvailableModels: () => Promise<OllamaModel[]>;
 }
 
 declare global {
