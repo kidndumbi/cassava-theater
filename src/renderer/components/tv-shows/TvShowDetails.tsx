@@ -99,6 +99,8 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     undefined,
   );
 
+  const [streamId, setStreamId] = useState<string | undefined>(undefined);
+
   const [chatHistory, setChatHistory] = useState<
     { id: string; history: ConversationMessage[] } | undefined
   >(undefined);
@@ -351,7 +353,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     );
   }, []);
 
-  const triggerChatStream = (prompt?: string) => {
+  const triggerChatStream = async (prompt?: string) => {
     setChatStream(undefined);
     const tvShowTitle =
       tvShowDetails?.tv_show_details?.name ||
@@ -361,13 +363,23 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       ? `${prompt} (Context: We're discussing the TV show "${tvShowTitle}")`
       : `Tell me about the TV show "${tvShowTitle}"`;
 
-    window.llmAPI.generateLlmResponseByChunks(
+    if (streamId) {
+      try {
+        await window.llmAPI.cancelLlmStreamById(streamId);
+      } catch (error) {
+        console.error("Error canceling previous LLM stream:", error);
+      }
+    }
+
+    const id = await window.llmAPI.generateLlmResponseByChunks(
       "",
       "",
       chatPrompt,
       "desktop",
       settings.ollamaModel || "llama3.1:latest",
     );
+    setStreamId(id);
+    console.log("LLM Stream ID:", id);
   };
 
   return (
@@ -565,7 +577,11 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       />
       <AppModal
         open={openConvertToMp4Modal}
-        onClose={closeConvertToMp4Modal}
+        onClose={async () => {
+          closeConvertToMp4Modal();
+          await window.llmAPI.cancelLlmStreamById(streamId || "");
+          setChatStream(undefined);
+        }}
         title="Seasons"
       >
         <SeasonConvertSelector

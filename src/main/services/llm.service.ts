@@ -3,6 +3,7 @@ import { LlmResponseChunk } from "./../../models/llm-response-chunk.model";
 import { getSocketIoGlobal } from "../socketGlobalManager";
 import axios, { isAxiosError } from "axios";
 import { getMainWindow } from "../mainWindowManager";
+import { v4 as uuidv4 } from "uuid";
 
 const OLLAMA_API_URL = "http://localhost:11434/api/generate";
 
@@ -26,7 +27,8 @@ export const getAvailableModels = async (): Promise<OllamaModel[]> => {
   }
 };
 
-let currentAbortController: AbortController | null = null;
+// Replace the single abort controller with a Map for multiple streams
+const activeStreams = new Map<string, AbortController>();
 
 const makeOllamaRequest = async (request: OllamaRequest, options = {}) => {
   return axios.post(OLLAMA_API_URL, request, {
@@ -144,13 +146,10 @@ export const generateLlmResponseByChunks = async (
   prompt: string,
   responseReceiver: "desktop" | "mobile" = "mobile",
   model = "llama3.1:latest",
-): Promise<void> => {
-  if (currentAbortController) {
-    currentAbortController.abort();
-  }
-
-  currentAbortController = new AbortController();
-  const abortController = currentAbortController;
+): Promise<string> => {
+  const streamId = uuidv4();
+  const abortController = new AbortController();
+  activeStreams.set(streamId, abortController);
 
   try {
     const response = await makeOllamaRequest(
@@ -162,30 +161,26 @@ export const generateLlmResponseByChunks = async (
       if (abortController.signal.aborted) return;
       processChunkLines(chunk, (parsed) => {
         handleResponse(responseReceiver, socketId, event, parsed);
-        if (parsed.done && currentAbortController === abortController) {
-          currentAbortController = null;
+        if (parsed.done) {
+          activeStreams.delete(streamId);
         }
       });
     });
 
     response.data.on("error", (error: Error) => {
-      if (currentAbortController === abortController) {
-        currentAbortController = null;
-      }
+      activeStreams.delete(streamId);
       if (!abortController.signal.aborted) {
         handleError(responseReceiver, socketId, event, error.message);
       }
     });
 
     response.data.on("end", () => {
-      if (currentAbortController === abortController) {
-        currentAbortController = null;
-      }
+      activeStreams.delete(streamId);
     });
+
+    return streamId;
   } catch (error) {
-    if (currentAbortController === abortController) {
-      currentAbortController = null;
-    }
+    activeStreams.delete(streamId);
     if (!abortController.signal.aborted) {
       handleError(
         responseReceiver,
@@ -194,14 +189,27 @@ export const generateLlmResponseByChunks = async (
         processError(error).message,
       );
     }
+    throw error;
   }
 };
 
-export const cancelCurrentLlmByChunksRequest = (): boolean => {
-  if (currentAbortController) {
-    currentAbortController.abort();
-    currentAbortController = null;
+export const cancelLlmStreamById = (streamId: string): boolean => {
+  const abortController = activeStreams.get(streamId);
+  if (abortController) {
+    abortController.abort();
+    activeStreams.delete(streamId);
     return true;
   }
   return false;
+};
+
+export const cancelAllLlmStreams = (): number => {
+  const canceledCount = activeStreams.size;
+  activeStreams.forEach((controller) => controller.abort());
+  activeStreams.clear();
+  return canceledCount;
+};
+
+export const getActiveLlmStreams = (): string[] => {
+  return Array.from(activeStreams.keys());
 };

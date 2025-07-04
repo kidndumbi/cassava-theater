@@ -97,6 +97,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const [chatStream, setChatStream] = useState<LlmResponseChunk | undefined>(
     undefined,
   );
+  const [streamId, setStreamId] = useState<string | undefined>(undefined);
 
   const [chatHistory, setChatHistory] = useState<
     { id: string; history: ConversationMessage[] } | undefined
@@ -202,7 +203,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     }
   }, [videoDetails, getTmdbImageUrl]);
 
-  const triggerChatStream = (prompt?: string, ollamaModel?: string) => {
+  const triggerChatStream = async (prompt?: string, ollamaModel?: string) => {
     setChatStream(undefined);
 
     const movieTitle =
@@ -213,13 +214,22 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       ? `${prompt} (Context: We're discussing the movie "${movieTitle}")`
       : `Tell me about the movie "${movieTitle}"`;
 
-    window.llmAPI.generateLlmResponseByChunks(
+    if (streamId) {
+      try {
+        await window.llmAPI.cancelLlmStreamById(streamId);
+      } catch (error) {
+        console.error("Error canceling previous LLM stream:", error);
+      }
+    }
+    const id = await window.llmAPI.generateLlmResponseByChunks(
       "",
       "",
       chatPrompt,
       "desktop",
       ollamaModel || settings?.ollamaModel || "llama3.1:latest",
     );
+    setStreamId(id);
+    console.log("LLM Stream ID:", id);
   };
 
   return (
@@ -288,7 +298,11 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       </CustomDrawer>
       <AppModal
         open={isChatModalOpen}
-        onClose={closeChatModal}
+        onClose={async () => {
+          closeChatModal();
+          await window.llmAPI.cancelLlmStreamById(streamId || "");
+          setChatStream(undefined);
+        }}
         title="Movie AI Chat"
       >
         <AiChat
