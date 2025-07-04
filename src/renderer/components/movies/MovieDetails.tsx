@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useMovies } from "../../hooks/useMovies";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { useSelector } from "react-redux";
@@ -24,14 +24,13 @@ import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 import { AppModal } from "../common/AppModal";
 import { useModalState } from "../../hooks/useModalState";
-import { AiChat } from "../common/AiChat";
-import { LlmResponseChunk } from "../../../models/llm-response-chunk.model";
 import {
   chatHistoryActions,
   selChatHistory,
 } from "../../store/chatHistory.slice";
 import { ConversationMessage } from "../../../models/conversationMessage.model";
 import { useAppDispatch } from "../../store";
+import { AiChat } from "../common/AiChat";
 
 interface MovieDetailsProps {
   videoPath: string | null;
@@ -94,22 +93,11 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   const handleCloseModal = () => setOpenModal(false);
 
   const [searchParams] = useSearchParams();
-  const [chatStream, setChatStream] = useState<LlmResponseChunk | undefined>(
-    undefined,
-  );
   const [streamId, setStreamId] = useState<string | undefined>(undefined);
 
   const [chatHistory, setChatHistory] = useState<
     { id: string; history: ConversationMessage[] } | undefined
   >(undefined);
-
-  useEffect(() => {
-    window.mainNotificationsAPI.videoAiChatDataChunks(
-      (chatResponseChunk: LlmResponseChunk) => {
-        setChatStream(chatResponseChunk);
-      },
-    );
-  }, []);
 
   const allChatHistory = useSelector(selChatHistory);
 
@@ -204,8 +192,6 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   }, [videoDetails, getTmdbImageUrl]);
 
   const triggerChatStream = async (prompt?: string, ollamaModel?: string) => {
-    setChatStream(undefined);
-
     const movieTitle =
       videoDetails?.movie_details?.title ||
       removeVidExt(videoDetails?.fileName) ||
@@ -231,6 +217,18 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     setStreamId(id);
     console.log("LLM Stream ID:", id);
   };
+
+  const updateHistory = useCallback(
+    (conversationHistory: ConversationMessage[]) => {
+      dispatch(
+        chatHistoryActions.addChatHistory({
+          id: videoPath || "",
+          history: conversationHistory,
+        }),
+      );
+    },
+    [dispatch, videoPath],
+  );
 
   return (
     <>
@@ -301,23 +299,14 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         onClose={async () => {
           closeChatModal();
           await window.llmAPI.cancelLlmStreamById(streamId || "");
-          setChatStream(undefined);
         }}
         title="Movie AI Chat"
       >
         <AiChat
           ollamaModel={settings?.ollamaModel || "llama3.1:latest"}
-          chatStream={chatStream}
           triggerChatStream={triggerChatStream}
           history={chatHistory}
-          updateHistory={(conversationHistory) => {
-            dispatch(
-              chatHistoryActions.addChatHistory({
-                id: videoPath || "",
-                history: conversationHistory,
-              }),
-            );
-          }}
+          updateHistory={updateHistory}
         />
       </AppModal>
     </>
