@@ -55,18 +55,9 @@ export const AiChat = ({
     }
   }, [history]);
 
-  useEffect(() => {
-    return () => {
-      window.llmAPI.cancelCurrentLlmByChunksRequest().catch((err) => {
-        console.error("Error canceling LLM request:", err);
-      });
-    };
-  }, []);
-
   // Handle chat stream updates
   useEffect(() => {
     if (chatStream && chatStream !== lastProcessedChunk.current) {
-      //console.log('AiChat.tsx Stream Chunk:', chatStream);
       lastProcessedChunk.current = chatStream;
 
       // Set model on first chunk
@@ -126,8 +117,6 @@ export const AiChat = ({
   const sendMessage = () => {
     const message = userInput.trim();
     if (message && isComplete) {
-      console.log("Sending message:", message);
-
       const newUserMessage = {
         type: "user" as const,
         message: message,

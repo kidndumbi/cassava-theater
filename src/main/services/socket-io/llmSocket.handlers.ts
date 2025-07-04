@@ -5,6 +5,7 @@ import {
   generateLlmResponse,
   generateLlmResponseByChunks,
   getAvailableModels,
+  cancelLlmStreamById,
 } from "../llm.service";
 import { LlmSocketEvents } from "../../../enums/llm-socket-events.enum";
 
@@ -44,7 +45,6 @@ export function registerLlmSocketHandlers(socket: Socket) {
         data: {
           prompt: string;
           model?: string;
-          // socketId: string;
           event: string;
         };
       },
@@ -55,14 +55,14 @@ export function registerLlmSocketHandlers(socket: Socket) {
       }) => void,
     ) => {
       try {
-        await generateLlmResponseByChunks(
+        const streamId = await generateLlmResponseByChunks(
           socket.id,
           requestData.data.event,
           requestData.data.prompt,
           "mobile",
           requestData.data?.model,
         );
-        callback({ success: true });
+        callback({ success: true, data: streamId });
       } catch (error) {
         log.error("Error getting LLM response by chunks:", error);
         callback({ success: false, error: error.message });
@@ -85,6 +85,26 @@ export function registerLlmSocketHandlers(socket: Socket) {
         callback({ success: true, data: models });
       } catch (error) {
         log.error("Error getting Ollama models:", error);
+        callback({ success: false, error: error.message });
+      }
+    },
+  );
+
+  socket.on(
+    "cancel-llm-stream",
+    async (
+      requestData: { data: { streamId: string } },
+      callback: (response: {
+        success: boolean;
+        data?: boolean;
+        error?: string;
+      }) => void,
+    ) => {
+      try {
+        const canceled = cancelLlmStreamById(requestData.data.streamId);
+        callback({ success: true, data: canceled });
+      } catch (error) {
+        log.error("Error canceling LLM stream:", error);
         callback({ success: false, error: error.message });
       }
     },

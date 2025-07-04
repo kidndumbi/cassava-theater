@@ -504,9 +504,20 @@ contextBridge.exposeInMainWorld("llmAPI", {
       model,
     );
   },
-  cancelCurrentLlmByChunksRequest: () => {
+  cancelLlmStreamById: (streamId: string) => {
     return ipcRenderer.invoke(
-      LlmIPCChannels.CANCEL_CURRENT_LLM_BY_CHUNKS_REQUEST,
+      LlmIPCChannels.CANCEL_LLM_STREAM_BY_ID,
+      streamId,
+    );
+  },
+  cancelAllLlmStreams: () => {
+    return ipcRenderer.invoke(
+      LlmIPCChannels.CANCEL_ALL_LLM_STREAMS,
+    );
+  },
+  getActiveLlmStreams: () => {
+    return ipcRenderer.invoke(
+      LlmIPCChannels.GET_ACTIVE_LLM_STREAMS,
     );
   },
   getAvailableModels: () => {

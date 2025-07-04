@@ -248,8 +248,10 @@ export interface LlmAPI {
     prompt: string,
     responseReceiver?: "desktop" | "mobile",
     model?: string,
-  ) => Promise<void>;
-  cancelCurrentLlmByChunksRequest: () => Promise<boolean>;
+  ) => Promise<string>;
+  cancelLlmStreamById: (streamId: string) => Promise<boolean>;
+  cancelAllLlmStreams: () => Promise<number>;
+  getActiveLlmStreams: () => Promise<string[]>;
   getAvailableModels: () => Promise<OllamaModel[]>;
 }
 

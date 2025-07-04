@@ -1,6 +1,13 @@
 import { ipcMain } from "electron";
 import { LlmIPCChannels } from "../../enums/llm-IPC-Channels.enum";
-import { generateLlmResponse, generateLlmResponseByChunks, cancelCurrentLlmByChunksRequest, getAvailableModels } from "../services/llm.service";
+import { 
+  generateLlmResponse, 
+  generateLlmResponseByChunks, 
+  cancelLlmStreamById,
+  cancelAllLlmStreams,
+  getAvailableModels,
+  getActiveLlmStreams
+} from "../services/llm.service";
 
 export const llmIpcHandlers = () => {
   ipcMain.handle(
@@ -25,9 +32,23 @@ export const llmIpcHandlers = () => {
   );
 
   ipcMain.handle(
-    LlmIPCChannels.CANCEL_CURRENT_LLM_BY_CHUNKS_REQUEST,
+    LlmIPCChannels.CANCEL_LLM_STREAM_BY_ID,
+    async (_event, streamId: string) => {
+      return cancelLlmStreamById(streamId);
+    },
+  );
+
+  ipcMain.handle(
+    LlmIPCChannels.CANCEL_ALL_LLM_STREAMS,
     async () => {
-      return cancelCurrentLlmByChunksRequest();
+      return cancelAllLlmStreams();
+    },
+  );
+
+  ipcMain.handle(
+    LlmIPCChannels.GET_ACTIVE_LLM_STREAMS,
+    async () => {
+      return getActiveLlmStreams();
     },
   );
 
