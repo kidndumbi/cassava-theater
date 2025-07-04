@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import { useTvShows } from "../../hooks/useTvShows";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { Box, IconButton, Tab, Tabs, useTheme } from "@mui/material";
@@ -33,7 +39,6 @@ import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
 import { AppModal } from "../common/AppModal";
 import SeasonConvertSelector from "./SeasonConvertSelector";
 import { AiChat } from "../common/AiChat";
-import { LlmResponseChunk } from "../../../models/llm-response-chunk.model";
 import {
   useFolderDetailsQuery,
   useVideoDataQuery,
@@ -94,10 +99,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     closeModal: closeConvertToMp4Modal,
   } = useModalState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
-
-  const [chatStream, setChatStream] = useState<LlmResponseChunk | undefined>(
-    undefined,
-  );
 
   const [streamId, setStreamId] = useState<string | undefined>(undefined);
 
@@ -345,16 +346,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     },
   });
 
-  useEffect(() => {
-    window.mainNotificationsAPI.videoAiChatDataChunks(
-      (chatResponseChunk: LlmResponseChunk) => {
-        setChatStream(chatResponseChunk);
-      },
-    );
-  }, []);
-
-  const triggerChatStream = async (prompt?: string) => {
-    setChatStream(undefined);
+  const triggerChatStream = async (prompt?: string, ollamaModel?: string) => {
     const tvShowTitle =
       tvShowDetails?.tv_show_details?.name ||
       getFilename(tvShowDetails?.filePath || "") ||
@@ -376,11 +368,23 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       "",
       chatPrompt,
       "desktop",
-      settings.ollamaModel || "llama3.1:latest",
+      ollamaModel || settings?.ollamaModel || "llama3.1:latest",
     );
     setStreamId(id);
     console.log("LLM Stream ID:", id);
   };
+
+  const updateHistory = useCallback(
+    (conversationHistory: ConversationMessage[]) => {
+      dispatch(
+        chatHistoryActions.addChatHistory({
+          id: videoPath || "",
+          history: conversationHistory,
+        }),
+      );
+    },
+    [dispatch, videoPath],
+  );
 
   return (
     <>
@@ -580,7 +584,6 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
         onClose={async () => {
           closeConvertToMp4Modal();
           await window.llmAPI.cancelLlmStreamById(streamId || "");
-          setChatStream(undefined);
         }}
         title="Seasons"
       >
@@ -601,17 +604,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       >
         <AiChat
           ollamaModel={settings?.ollamaModel || "llama3.1:latest"}
-          chatStream={chatStream}
           triggerChatStream={triggerChatStream}
           history={chatHistory}
-          updateHistory={(conversationHistory) => {
-            dispatch(
-              chatHistoryActions.addChatHistory({
-                id: videoPath || "",
-                history: conversationHistory,
-              }),
-            );
-          }}
+          updateHistory={updateHistory}
         />
       </AppModal>
     </>

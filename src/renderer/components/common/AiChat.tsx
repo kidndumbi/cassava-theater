@@ -23,13 +23,11 @@ import { OllamaModel } from "../../../models/ollamaModel.model";
 import { ConversationMessage } from "../../../models/conversationMessage.model";
 
 export const AiChat = ({
-  chatStream,
   triggerChatStream,
   ollamaModel,
   history,
   updateHistory,
 }: {
-  chatStream: LlmResponseChunk | undefined;
   triggerChatStream: (prompt?: string, ollamaModel?: string) => void;
   ollamaModel: string;
   history: { id: string; history: ConversationMessage[] } | undefined;
@@ -42,6 +40,9 @@ export const AiChat = ({
     ConversationMessage[]
   >([]);
   const [userInput, setUserInput] = useState<string>("");
+  const [chatStream, setChatStream] = useState<LlmResponseChunk | undefined>(
+    undefined,
+  );
   const chatContentRef = useRef<HTMLDivElement>(null);
   const lastProcessedChunk = useRef<LlmResponseChunk | null>(null);
 
@@ -54,6 +55,17 @@ export const AiChat = ({
       setConversationHistory(history.history);
     }
   }, [history]);
+
+  useEffect(() => {
+    window.mainNotificationsAPI.videoAiChatDataChunks(
+      (chatResponseChunk: LlmResponseChunk) => {
+        setChatStream(chatResponseChunk);
+      },
+    );
+    return () => {
+      setChatStream(undefined);
+    };
+  }, []);
 
   // Handle chat stream updates
   useEffect(() => {
@@ -136,6 +148,7 @@ export const AiChat = ({
       setIsComplete(false);
 
       // Trigger chat stream with the message
+      setChatStream(undefined);
       triggerChatStream(message, componentOllamaModel);
       setUserInput(""); // Clear input after sending
 
