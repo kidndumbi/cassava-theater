@@ -34,7 +34,6 @@ export const AiChat = ({
   updateHistory: (history: ConversationMessage[]) => void;
 }) => {
   const [accumulatedResponse, setAccumulatedResponse] = useState<string>("");
-  const [currentModel, setCurrentModel] = useState<string>("");
   const [isComplete, setIsComplete] = useState<boolean>(true);
   const [conversationHistory, setConversationHistory] = useState<
     ConversationMessage[]
@@ -43,6 +42,7 @@ export const AiChat = ({
   const [chatStream, setChatStream] = useState<LlmResponseChunk | undefined>(
     undefined,
   );
+  const [userHasScrolledUp, setUserHasScrolledUp] = useState<boolean>(false);
   const chatContentRef = useRef<HTMLDivElement>(null);
   const lastProcessedChunk = useRef<LlmResponseChunk | null>(null);
 
@@ -67,15 +67,32 @@ export const AiChat = ({
     };
   }, []);
 
+  // Add scroll event listener
+  useEffect(() => {
+    const handleScroll = () => {
+      if (chatContentRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = chatContentRef.current;
+        const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5; // 5px threshold
+
+        if (isAtBottom) {
+          setUserHasScrolledUp(false);
+        } else {
+          setUserHasScrolledUp(true);
+        }
+      }
+    };
+
+    const chatElement = chatContentRef.current;
+    if (chatElement) {
+      chatElement.addEventListener("scroll", handleScroll);
+      return () => chatElement.removeEventListener("scroll", handleScroll);
+    }
+  }, []);
+
   // Handle chat stream updates
   useEffect(() => {
     if (chatStream && chatStream !== lastProcessedChunk.current) {
       lastProcessedChunk.current = chatStream;
-
-      // Set model on first chunk
-      if (!currentModel && chatStream.model) {
-        setCurrentModel(chatStream.model);
-      }
 
       // Accumulate the response
       if (chatStream.response) {
@@ -109,16 +126,18 @@ export const AiChat = ({
         // Reset for next conversation
         setAccumulatedResponse("");
 
-        // Scroll to bottom after AI response is complete
-        setTimeout(() => scrollToBottom(), 100);
+        // Scroll to bottom after AI response is complete only if user hasn't scrolled up
+        if (!userHasScrolledUp) {
+          setTimeout(() => scrollToBottom(), 100);
+        }
       }
 
-      // Scroll to bottom while streaming
-      if (chatStream.response && !chatStream.done) {
+      // Scroll to bottom while streaming only if user hasn't scrolled up
+      if (chatStream.response && !chatStream.done && !userHasScrolledUp) {
         setTimeout(() => scrollToBottom(), 50);
       }
     }
-  }, [chatStream, accumulatedResponse, updateHistory]);
+  }, [chatStream, accumulatedResponse, updateHistory, userHasScrolledUp]);
 
   const scrollToBottom = () => {
     if (chatContentRef.current) {
@@ -152,8 +171,10 @@ export const AiChat = ({
       triggerChatStream(message, componentOllamaModel);
       setUserInput(""); // Clear input after sending
 
-      // Scroll to bottom after adding user message
-      setTimeout(() => scrollToBottom(), 100);
+      // Scroll to bottom after adding user message only if user hasn't scrolled up
+      if (!userHasScrolledUp) {
+        setTimeout(() => scrollToBottom(), 100);
+      }
     }
   };
 
