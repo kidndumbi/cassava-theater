@@ -607,6 +607,12 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
           triggerChatStream={triggerChatStream}
           history={chatHistory}
           updateHistory={updateHistory}
+          cancelStream={async () => {
+            if (streamId) {
+              await window.llmAPI.cancelLlmStreamById(streamId);
+              setStreamId(undefined);
+            }
+          }}
         />
       </AppModal>
     </>

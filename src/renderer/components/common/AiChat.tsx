@@ -13,6 +13,7 @@ import {
   Send as SendIcon,
   Person as PersonIcon,
   SmartToy as BotIcon,
+  Stop as StopIcon,
 } from "@mui/icons-material";
 import { LlmResponseChunk } from "../../../models/llm-response-chunk.model";
 import theme from "../../theme";
@@ -27,11 +28,13 @@ export const AiChat = ({
   ollamaModel,
   history,
   updateHistory,
+  cancelStream,
 }: {
   triggerChatStream: (prompt?: string, ollamaModel?: string) => void;
   ollamaModel: string;
   history: { id: string; history: ConversationMessage[] } | undefined;
   updateHistory: (history: ConversationMessage[]) => void;
+  cancelStream: () => void;
 }) => {
   const [accumulatedResponse, setAccumulatedResponse] = useState<string>("");
   const [isComplete, setIsComplete] = useState<boolean>(true);
@@ -71,7 +74,8 @@ export const AiChat = ({
   useEffect(() => {
     const handleScroll = () => {
       if (chatContentRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } = chatContentRef.current;
+        const { scrollTop, scrollHeight, clientHeight } =
+          chatContentRef.current;
         const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5; // 5px threshold
 
         if (isAtBottom) {
@@ -190,7 +194,14 @@ export const AiChat = ({
   };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "80vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "80vh",
+        minWidth: "600px",
+      }}
+    >
       {/* Chat Content */}
       <Box
         ref={chatContentRef}
@@ -366,13 +377,56 @@ export const AiChat = ({
       </Box>
 
       <Box sx={{ px: 2, py: 1, borderTop: 1, borderColor: "divider" }}>
-        <RenderSelect<OllamaModel>
-          value={componentOllamaModel || ""}
-          onChange={handleModelChange}
-          items={ollamaModels || []}
-          getItemValue={(model) => model.model}
-          getItemLabel={(model) => model.model}
-        />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ flex: 1 }}>
+            <RenderSelect<OllamaModel>
+              value={componentOllamaModel || ""}
+              onChange={handleModelChange}
+              items={ollamaModels || []}
+              getItemValue={(model) => model.model}
+              getItemLabel={(model) => model.model}
+            />
+          </Box>
+
+          {!isComplete && (
+            <Box sx={{ position: "relative" }}>
+              <IconButton
+                color="error"
+                sx={{
+                  backgroundColor: "error.main",
+                  color: "error.contrastText",
+                  "&:hover": {
+                    backgroundColor: "error.dark",
+                  },
+                  position: "relative",
+                  zIndex: 2,
+                }}
+                onClick={() => {
+                  cancelStream();
+                  setIsComplete(true);
+                  setAccumulatedResponse("");
+                  setChatStream(undefined);
+                  setUserInput("");
+                }}
+              >
+                <StopIcon />
+              </IconButton>
+
+              <CircularProgress
+                size={53}
+                thickness={3}
+                sx={{
+                  position: "absolute",
+                  top: -4,
+                  left: -4,
+                  color: "error.main",
+                  zIndex: 1,
+                  pointerEvents: "none",
+                }}
+              />
+            </Box>
+          )}
+        </Box>
       </Box>
 
       {/* Input Area */}
