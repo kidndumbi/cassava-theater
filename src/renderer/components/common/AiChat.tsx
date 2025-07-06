@@ -38,6 +38,7 @@ export const AiChat = ({
 }) => {
   const [accumulatedResponse, setAccumulatedResponse] = useState<string>("");
   const [isComplete, setIsComplete] = useState<boolean>(true);
+  const [isWaitingForStream, setIsWaitingForStream] = useState<boolean>(false);
   const [conversationHistory, setConversationHistory] = useState<
     ConversationMessage[]
   >([]);
@@ -98,6 +99,11 @@ export const AiChat = ({
     if (chatStream && chatStream !== lastProcessedChunk.current) {
       lastProcessedChunk.current = chatStream;
 
+      // Hide waiting indicator once stream starts
+      if (isWaitingForStream) {
+        setIsWaitingForStream(false);
+      }
+
       // Accumulate the response
       if (chatStream.response) {
         setAccumulatedResponse((prev) => prev + chatStream.response);
@@ -141,7 +147,13 @@ export const AiChat = ({
         setTimeout(() => scrollToBottom(), 50);
       }
     }
-  }, [chatStream, accumulatedResponse, updateHistory, userHasScrolledUp]);
+  }, [
+    chatStream,
+    accumulatedResponse,
+    updateHistory,
+    userHasScrolledUp,
+    isWaitingForStream,
+  ]);
 
   const scrollToBottom = () => {
     if (chatContentRef.current) {
@@ -169,6 +181,7 @@ export const AiChat = ({
       // Reset accumulated response for new AI response
       setAccumulatedResponse("");
       setIsComplete(false);
+      setIsWaitingForStream(true);
 
       // Trigger chat stream with the message
       setChatStream(undefined);
@@ -325,7 +338,7 @@ export const AiChat = ({
         ))}
 
         {/* Current AI Response (while streaming) */}
-        {accumulatedResponse && !isComplete && (
+        {(accumulatedResponse || isWaitingForStream) && !isComplete && (
           <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
             <Paper
               elevation={0}
@@ -369,7 +382,7 @@ export const AiChat = ({
                   color: theme.customVariables.appWhiteSmoke,
                 }}
               >
-                {accumulatedResponse}
+                {isWaitingForStream ? "Thinking..." : accumulatedResponse}
               </Typography>
             </Paper>
           </Box>
@@ -404,6 +417,7 @@ export const AiChat = ({
                 onClick={() => {
                   cancelStream();
                   setIsComplete(true);
+                  setIsWaitingForStream(false);
                   setAccumulatedResponse("");
                   setChatStream(undefined);
                   setUserInput("");
@@ -412,24 +426,25 @@ export const AiChat = ({
                 <StopIcon />
               </IconButton>
 
-              <CircularProgress
-                size={53}
-                thickness={3}
-                sx={{
-                  position: "absolute",
-                  top: -4,
-                  left: -4,
-                  color: "error.main",
-                  zIndex: 1,
-                  pointerEvents: "none",
-                }}
-              />
+              {isWaitingForStream && (
+                <CircularProgress
+                  size={53}
+                  thickness={3}
+                  sx={{
+                    position: "absolute",
+                    top: -4,
+                    left: -4,
+                    color: "error.main",
+                    zIndex: 1,
+                    pointerEvents: "none",
+                  }}
+                />
+              )}
             </Box>
           )}
         </Box>
       </Box>
 
-      {/* Input Area */}
       <Box
         sx={{
           p: 2,
