@@ -6,6 +6,7 @@ import {
   generateLlmResponseByChunks,
   getAvailableModels,
   cancelLlmStreamById,
+  pingOllamaServer,
 } from "../llm.service";
 import { LlmSocketEvents } from "../../../enums/llm-socket-events.enum";
 
@@ -105,6 +106,30 @@ export function registerLlmSocketHandlers(socket: Socket) {
         callback({ success: true, data: canceled });
       } catch (error) {
         log.error("Error canceling LLM stream:", error);
+        callback({ success: false, error: error.message });
+      }
+    },
+  );
+
+  socket.on(
+    LlmSocketEvents.PING_OLLAMA_SERVER,
+    async (
+      requestData: {
+        data: {
+          model?: string;
+        };
+      },
+      callback: (response: {
+        success: boolean;
+        data?: boolean;
+        error?: string;
+      }) => void,
+    ) => {
+      try {
+        const pingResult = await pingOllamaServer(requestData.data?.model);
+        callback({ success: true, data: pingResult });
+      } catch (error) {
+        log.error("Error pinging Ollama server:", error);
         callback({ success: false, error: error.message });
       }
     },

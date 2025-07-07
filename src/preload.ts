@@ -523,4 +523,7 @@ contextBridge.exposeInMainWorld("llmAPI", {
   getAvailableModels: () => {
     return ipcRenderer.invoke(LlmIPCChannels.GET_AVAILABLE_MODELS);
   },
+  pingOllamaServer: (model?: string) => {
+    return ipcRenderer.invoke(LlmIPCChannels.PING_OLLAMA_SERVER, model);
+  },
 });

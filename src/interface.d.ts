@@ -253,6 +253,7 @@ export interface LlmAPI {
   cancelAllLlmStreams: () => Promise<number>;
   getActiveLlmStreams: () => Promise<string[]>;
   getAvailableModels: () => Promise<OllamaModel[]>;
+  pingOllamaServer: (model?: string) => Promise<boolean>;
 }
 
 declare global {
