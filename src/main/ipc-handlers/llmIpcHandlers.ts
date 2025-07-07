@@ -6,7 +6,8 @@ import {
   cancelLlmStreamById,
   cancelAllLlmStreams,
   getAvailableModels,
-  getActiveLlmStreams
+  getActiveLlmStreams,
+  pingOllamaServer
 } from "../services/llm.service";
 
 export const llmIpcHandlers = () => {
@@ -56,6 +57,13 @@ export const llmIpcHandlers = () => {
     LlmIPCChannels.GET_AVAILABLE_MODELS,
     async () => {
       return getAvailableModels();
+    },
+  );
+
+  ipcMain.handle(
+    LlmIPCChannels.PING_OLLAMA_SERVER,
+    async (_event, model?: string) => {
+      return pingOllamaServer(model);
     },
   );
 };

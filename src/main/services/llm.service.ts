@@ -82,7 +82,7 @@ const handleResponse = (
   responseReceiver: "desktop" | "mobile",
   socketId: string,
   event: string,
-  data: any,
+  data: LlmResponseChunk,
 ) => {
   const socketIo = getSocketIoGlobal();
   const mainWindow = getMainWindow();
@@ -212,4 +212,26 @@ export const cancelAllLlmStreams = (): number => {
 
 export const getActiveLlmStreams = (): string[] => {
   return Array.from(activeStreams.keys());
+};
+
+export const pingOllamaServer = async (
+  model = "llama3.1:latest",
+): Promise<boolean> => {
+  try {
+    await axios.post(
+      OLLAMA_API_URL,
+      {
+        model,
+        prompt: "Hi",
+        stream: false,
+      },
+      {
+        timeout: 30000, // 30 second timeout
+      },
+    );
+    return true;
+  } catch (error) {
+    console.log("Ollama server ping failed:", processError(error).message);
+    return false;
+  }
 };

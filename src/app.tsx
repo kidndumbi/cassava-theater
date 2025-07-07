@@ -57,6 +57,12 @@ const App = () => {
   }, [settings?.notifications?.userConnectionStatus]);
 
   useEffect(() => {
+    window.llmAPI.pingOllamaServer().then((isConnected) => {
+      if (!isConnected) {
+        showSnackbar("Ollama server is not connected", "error");
+      }
+    });
+
     window.videoCommandsAPI.videoCommand((command: VideoCommands) => {
       videoCommandsHandler(command, appVideoPlayerRef.current);
     });

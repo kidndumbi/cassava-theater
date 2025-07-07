@@ -5,4 +5,5 @@ export enum LlmIPCChannels {
   CANCEL_ALL_LLM_STREAMS = "llm:cancelAllLlmStreams",
   GET_AVAILABLE_MODELS = "llm:getAvailableModels",
   GET_ACTIVE_LLM_STREAMS = "llm:getActiveLlmStreams",
+  PING_OLLAMA_SERVER = "llm:pingOllamaServer",
 }
