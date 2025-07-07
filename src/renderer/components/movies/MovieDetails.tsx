@@ -191,13 +191,24 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     }
   }, [videoDetails, getTmdbImageUrl]);
 
-  const triggerChatStream = async (prompt?: string, ollamaModel?: string) => {
+  const triggerChatStream = async (prompt?: string, ollamaModel?: string, conversationHistory?: ConversationMessage[]) => {
     const movieTitle =
       videoDetails?.movie_details?.title ||
       removeVidExt(videoDetails?.fileName) ||
       "Unknown Movie";
+    
+    // Format conversation history for context
+    let contextualPrompt = "";
+    if (conversationHistory && conversationHistory.length > 0) {
+      const historyContext = conversationHistory
+        .slice(-10) // Only include last 10 messages to avoid token limits
+        .map(msg => `${msg.type === "user" ? "User" : "Assistant"}: ${msg.message}`)
+        .join("\n");
+      contextualPrompt = `Previous conversation:\n${historyContext}\n\nCurrent question: `;
+    }
+    
     const chatPrompt = prompt
-      ? `${prompt} (Context: We're discussing the movie "${movieTitle}")`
+      ? `${contextualPrompt}${prompt} (Context: We're discussing the movie "${movieTitle}")`
       : `Tell me about the movie "${movieTitle}"`;
 
     if (streamId) {

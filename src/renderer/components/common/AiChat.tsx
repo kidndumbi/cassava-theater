@@ -30,7 +30,7 @@ export const AiChat = ({
   updateHistory,
   cancelStream,
 }: {
-  triggerChatStream: (prompt?: string, ollamaModel?: string) => void;
+  triggerChatStream: (prompt?: string, ollamaModel?: string, conversationHistory?: ConversationMessage[]) => void;
   ollamaModel: string;
   history: { id: string; history: ConversationMessage[] } | undefined;
   updateHistory: (history: ConversationMessage[]) => void;
@@ -166,7 +166,7 @@ export const AiChat = ({
     if (message && isComplete) {
       const newUserMessage = {
         type: "user" as const,
-        message: message,
+        message,
         timestamp: new Date().toISOString(),
       };
 
@@ -175,17 +175,19 @@ export const AiChat = ({
         const newHistory = [...prev, newUserMessage];
         // Update Redux store immediately with user message
         updateHistory(newHistory);
+        
+        // Reset accumulated response for new AI response
+        setAccumulatedResponse("");
+        setIsComplete(false);
+        setIsWaitingForStream(true);
+
+        // Trigger chat stream with the message and conversation history
+        setChatStream(undefined);
+        triggerChatStream(message, componentOllamaModel, newHistory);
+        
         return newHistory;
       });
 
-      // Reset accumulated response for new AI response
-      setAccumulatedResponse("");
-      setIsComplete(false);
-      setIsWaitingForStream(true);
-
-      // Trigger chat stream with the message
-      setChatStream(undefined);
-      triggerChatStream(message, componentOllamaModel);
       setUserInput(""); // Clear input after sending
 
       // Scroll to bottom after adding user message only if user hasn't scrolled up

@@ -346,13 +346,24 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     },
   });
 
-  const triggerChatStream = async (prompt?: string, ollamaModel?: string) => {
+  const triggerChatStream = async (prompt?: string, ollamaModel?: string, conversationHistory?: ConversationMessage[]) => {
     const tvShowTitle =
       tvShowDetails?.tv_show_details?.name ||
       getFilename(tvShowDetails?.filePath || "") ||
       "Unknown TV Show";
+    
+    // Format conversation history for context
+    let contextualPrompt = "";
+    if (conversationHistory && conversationHistory.length > 0) {
+      const historyContext = conversationHistory
+        .slice(-10) // Only include last 10 messages to avoid token limits
+        .map(msg => `${msg.type === "user" ? "User" : "Assistant"}: ${msg.message}`)
+        .join("\n");
+      contextualPrompt = `Previous conversation:\n${historyContext}\n\nCurrent question: `;
+    }
+    
     const chatPrompt = prompt
-      ? `${prompt} (Context: We're discussing the TV show "${tvShowTitle}")`
+      ? `${contextualPrompt}${prompt} (Context: We're discussing the TV show "${tvShowTitle}")`
       : `Tell me about the TV show "${tvShowTitle}"`;
 
     if (streamId) {
