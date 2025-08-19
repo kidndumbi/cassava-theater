@@ -226,7 +226,7 @@ export const pingOllamaServer = async (
         stream: false,
       },
       {
-        timeout: 30000, // 30 second timeout
+        timeout: 60000, // 30 second timeout
       },
     );
     return true;
