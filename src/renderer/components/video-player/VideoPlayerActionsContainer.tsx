@@ -14,6 +14,7 @@ interface VideoPlayerActionsContainerProps {
   pause: () => void;
   isNotMp4VideoFormat: boolean;
   onStartFromBeginning: () => void;
+  handleAdjustTiming?: () => void;
 }
 
 const VideoPlayerActionsContainer: React.FC<
@@ -28,10 +29,11 @@ const VideoPlayerActionsContainer: React.FC<
   play,
   pause,
   isNotMp4VideoFormat,
-  onStartFromBeginning
+  onStartFromBeginning,
+  handleAdjustTiming,
 }) => {
   return (
-    <Box className="absolute bottom-7 left-1/2 -translate-x-1/2 transform rounded-md  bg-opacity-80 p-1.5 text-white">
+    <Box className="absolute bottom-7 left-1/2 -translate-x-1/2 transform rounded-md bg-opacity-80 p-1.5 text-white">
       <VideoPlayerActionsBar
         isNotMp4VideoFormat={isNotMp4VideoFormat}
         onSubtitleChange={onSubtitleChange}
@@ -56,6 +58,11 @@ const VideoPlayerActionsContainer: React.FC<
           }
         }}
         onStartFromBeginning={onStartFromBeginning}
+        handleAdjustTiming={() => {
+          if (handleAdjustTiming) {
+            handleAdjustTiming();
+          }
+        }}
       />
     </Box>
   );

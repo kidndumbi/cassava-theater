@@ -150,6 +150,11 @@ export interface FileManagerAPI {
   convertSrtToVtt: (path: string) => Promise<string>;
   deleteFile: (path: string) => Promise<{ success: boolean; message: string }>;
   fileExists: (path: string) => Promise<{ exists: boolean }>;
+  adjustSubtitleTiming: (args: {
+    vttFilePath: string;
+    adjustmentMs: number;
+    increase?: boolean;
+  }) => Promise<string>;
 }
 
 export interface Mp4ConversionAPI {

@@ -16,6 +16,7 @@ import "./AppVideoPlayer.css";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import Video from "./video";
 import { NotesModal } from "../common/NotesModal";
+import { SubtitleTimingModal } from "../common/SubtitleTimingModal";
 import Box from "@mui/material/Box";
 import {
   getUrl,
@@ -83,6 +84,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const [error, setError] = useState<string | null>(null);
     const castAndCrewModal = useModalState(false);
     const notesModal = useModalState(false);
+    const subtitleTimingModal = useModalState(false);
     const [sliderValue, setSliderValue] = useState<number | null>(null);
     const debouncedSliderValue = useDebounce(sliderValue, 300);
     const isMouseActive = useMouseActivity();
@@ -219,6 +221,21 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       play();
     };
 
+    const handleOpenSubtitleTimingModal = () => {
+      pause?.();
+      subtitleTimingModal.setOpen(true);
+    };
+
+    const handleCloseSubtitleTimingModal = () => {
+      subtitleTimingModal.setOpen(false);
+      play?.();
+    };
+
+    const handleTimingAdjusted = () => {
+      // Optionally reload the video or show a success message
+      console.log("Subtitle timing adjusted successfully");
+    };
+
     const renderTimeDisplay = () => (
       <span className="absolute bottom-2.5 left-5 text-sm text-white">
         {formattedTime +
@@ -302,6 +319,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               onStartFromBeginning={() => {
                 startPlayingAt?.(0);
               }}
+              handleAdjustTiming={handleOpenSubtitleTimingModal}
             />
             <TitleOverlay fileName={currentVideo?.fileName} />
             <SideControlsOverlay
@@ -339,6 +357,13 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             }}
           />
         )}
+
+        <SubtitleTimingModal
+          open={subtitleTimingModal.open}
+          onClose={handleCloseSubtitleTimingModal}
+          subtitleFilePath={subtitleFilePath}
+          onTimingAdjusted={handleTimingAdjusted}
+        />
 
         {isNotMp4VideoFormat && isMouseActive && (
           <>
