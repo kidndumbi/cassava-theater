@@ -14,6 +14,7 @@ import { TheMovieDbIPCChannels } from "./enums/TheMovieDbIPCChannels";
 import { SetPlayingModel } from "./models/set-playing.model";
 import { MovieDetails } from "./models/movie-detail.model";
 import { TvShowDetails } from "./models/tv-show-details.model";
+import { TranslationIPCChannels } from "./enums/translationIPCChannels.enum";
 import { FileIPCChannels } from "./enums/fileIPCChannels";
 import { Mp4ConversionIPCChannels } from "./enums/mp4ConversionIPCChannels.enum";
 import { PlaylistIPCChannels } from "./enums/playlist-IPC-Channels.enum";
@@ -380,6 +381,35 @@ contextBridge.exposeInMainWorld("fileManagerAPI", {
   }) => {
     return ipcRenderer.invoke(
       FileIPCChannels.ADJUST_SUBTITLE_TIMING,
+      args,
+    ) as Promise<string>;
+  },
+});
+
+contextBridge.exposeInMainWorld("translationAPI", {
+  translateSubtitles: (args: {
+    vttFilePath: string;
+    targetLanguage: string;
+    sourceLanguage?: string;
+    libretranslateUrl?: string;
+  }) => {
+    return ipcRenderer.invoke(
+      TranslationIPCChannels.TRANSLATE_SUBTITLES,
+      args,
+    ) as Promise<string>;
+  },
+  getSupportedLanguages: (libretranslateUrl?: string) => {
+    return ipcRenderer.invoke(
+      TranslationIPCChannels.GET_SUPPORTED_LANGUAGES,
+      libretranslateUrl,
+    ) as Promise<Array<{ code: string; name: string }>>;
+  },
+  detectLanguage: (args: {
+    text: string;
+    libretranslateUrl?: string;
+  }) => {
+    return ipcRenderer.invoke(
+      TranslationIPCChannels.DETECT_LANGUAGE,
       args,
     ) as Promise<string>;
   },

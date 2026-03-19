@@ -157,6 +157,20 @@ export interface FileManagerAPI {
   }) => Promise<string>;
 }
 
+export interface TranslationAPI {
+  translateSubtitles: (args: {
+    vttFilePath: string;
+    targetLanguage: string;
+    sourceLanguage?: string;
+    libretranslateUrl?: string;
+  }) => Promise<string>;
+  getSupportedLanguages: (libretranslateUrl?: string) => Promise<Array<{ code: string; name: string }>>;
+  detectLanguage: (args: {
+    text: string;
+    libretranslateUrl?: string;
+  }) => Promise<string>;
+}
+
 export interface Mp4ConversionAPI {
   addToConversionQueue: (inputPath: string) => Promise<{
     success: boolean;
@@ -272,6 +286,7 @@ declare global {
     mainUtilAPI: MainUtilAPI;
     theMovieDbAPI: TheMovieDbAPI;
     fileManagerAPI: FileManagerAPI;
+    translationAPI: TranslationAPI;
     mp4ConversionAPI: Mp4ConversionAPI;
     playlistAPI: PlaylistAPI;
     youtubeAPI: YoutubeAPI;

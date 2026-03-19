@@ -9,6 +9,7 @@ import { settingsIpcHandlers } from "./settingsIpcHandlers";
 import { theMovieDbIpcHandlers } from "./theMovieDbIpcHandlers";
 import { videosIpcHandlers } from "./videosIpcHandlers";
 import { youtubeIpcHandlers } from "./youtubeIpcHandlers";
+import { translationIpcHandlers } from "./translationIpcHandlers";
 
 export function registerIpcHandlers() {
   settingsIpcHandlers();
@@ -17,6 +18,7 @@ export function registerIpcHandlers() {
   mainUtilIpcHandlers();
   theMovieDbIpcHandlers();
   fileIpcHandlers();
+  translationIpcHandlers();
   mp4ConversionIpcHandlers();
   playlistIpcHandlers();
   youtubeIpcHandlers();
