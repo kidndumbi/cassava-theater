@@ -90,6 +90,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const isMouseActive = useMouseActivity();
     const isNotMp4VideoFormat = currentVideo?.isMkv || currentVideo?.isAvi;
     const [videoUrl, setVideoUrl] = useState<string>("");
+    const [subtitleCacheBuster, setSubtitleCacheBuster] = useState<number>(Date.now());
 
     const {
       skipBy,
@@ -134,7 +135,16 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     useEffect(() => {
       setVideoUrl(getVideoUrl());
     }, [currentVideo, startFromBeginning, port]);
-    const getSubtitleUrl = () => getUrl("file", subtitleFilePath, null, port);
+    
+    // Reset subtitle cache buster when subtitle file changes
+    useEffect(() => {
+      setSubtitleCacheBuster(Date.now());
+    }, [subtitleFilePath]);
+    
+    const getSubtitleUrl = () => {
+      const baseUrl = getUrl("file", subtitleFilePath, null, port);
+      return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : baseUrl;
+    };
 
     useEffect(() => {
       if (videoPlayerRef.current) {
@@ -232,8 +242,21 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     };
 
     const handleTimingAdjusted = () => {
-      // Optionally reload the video or show a success message
-      console.log("Subtitle timing adjusted successfully");
+      // Store current playback time before reloading
+      const currentPlaybackTime = currentTime || 0;
+      
+      // Force both video and subtitle reload by updating URLs with cache busting
+      setSubtitleCacheBuster(Date.now());
+      setVideoUrl(getVideoUrl());
+      
+      // Seek back to the previous position after a short delay to allow video to load
+      setTimeout(() => {
+        if (startPlayingAt && currentPlaybackTime > 0) {
+          startPlayingAt(currentPlaybackTime);
+        }
+      }, 500);
+      
+      console.log("Subtitle timing adjusted successfully - video and subtitles reloaded");
     };
 
     const renderTimeDisplay = () => (
