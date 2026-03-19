@@ -3,6 +3,7 @@ import { Box, Theme } from "@mui/material";
 import FourMpIcon from "@mui/icons-material/FourMp";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FeaturedPlayListIcon from "@mui/icons-material/FeaturedPlayList";
+import TranslateIcon from "@mui/icons-material/Translate";
 
 import {
   getFileExtension,
@@ -17,6 +18,7 @@ import NotesIcon from "@mui/icons-material/Notes";
 import "./episode.css";
 import { VideoProgressBar } from "../common/VideoProgressBar";
 import { NotesModal } from "../common/NotesModal";
+import { SubtitleTranslationModal } from "../common/SubtitleTranslationModal";
 import AppIconButton from "../common/AppIconButton";
 import { styled } from "@mui/system";
 import { VideoTypeChip } from "../common/VideoTypeChip";
@@ -59,13 +61,16 @@ export const Episode: React.FC<EpisodeProps> = ({
   const { openDialog, setMessage } = useConfirmation();
   const [hover, setHover] = useState(false);
   const [openNotesModal, setOpenNotesModal] = useState(false);
+  const [openTranslationModal, setOpenTranslationModal] = useState(false);
   const [isInQueue, setIsInQueue] = useState(false);
   const handleCloseNotesModal = () => setOpenNotesModal(false);
+  const handleCloseTranslationModal = () => setOpenTranslationModal(false);
 
   const handleMouseEnter = () => setHover(true);
   const handleMouseLeave = () => setHover(false);
   const handlePlayClick = () => onEpisodeClick(episode);
   const handleNotesClick = () => setOpenNotesModal(true);
+  const handleTranslationClick = () => setOpenTranslationModal(true);
 
   const [hasError, setHasError] = useState(false);
 
@@ -208,6 +213,12 @@ export const Episode: React.FC<EpisodeProps> = ({
           >
             <FeaturedPlayListIcon />
           </AppIconButton>
+          <AppIconButton
+            tooltip="Translate Subtitles"
+            onClick={handleTranslationClick}
+          >
+            <TranslateIcon />
+          </AppIconButton>
         </Box>
       </Box>
       <NotesModal
@@ -219,6 +230,15 @@ export const Episode: React.FC<EpisodeProps> = ({
         handleClose={handleCloseNotesModal}
         videoData={episode}
         currentVideoTime={0}
+      />
+      <SubtitleTranslationModal
+        open={openTranslationModal}
+        onClose={handleCloseTranslationModal}
+        videoData={episode}
+        onTranslationComplete={(translatedFilePath) => {
+          // Optionally update the episode's subtitle path or show success message
+          console.log(`Translation completed: ${translatedFilePath}`);
+        }}
       />
     </Box>
   );
