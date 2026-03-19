@@ -373,6 +373,16 @@ contextBridge.exposeInMainWorld("fileManagerAPI", {
       exists: boolean;
     }>;
   },
+  adjustSubtitleTiming: (args: {
+    vttFilePath: string;
+    adjustmentMs: number;
+    increase?: boolean;
+  }) => {
+    return ipcRenderer.invoke(
+      FileIPCChannels.ADJUST_SUBTITLE_TIMING,
+      args,
+    ) as Promise<string>;
+  },
 });
 
 contextBridge.exposeInMainWorld("playlistAPI", {

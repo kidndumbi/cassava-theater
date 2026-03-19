@@ -7,11 +7,14 @@ import { ClosedCaptionButton } from "../common/ClosedCaptionButton";
 interface SubtitleSelectProps {
   subtitleFilePath: string | null;
   onSubtitleChange: (subtitle: string) => void;
+  handleAdjustTiming?: () => void;
+
 }
 
 export const SubtitleSelect: React.FC<SubtitleSelectProps> = ({
   subtitleFilePath,
   onSubtitleChange,
+  handleAdjustTiming,
 }) => {
   const [selectedSubtitleFilePath, setSelectedSubtitleFilePath] = useState(
     subtitleFilePath || "None"
@@ -28,6 +31,7 @@ export const SubtitleSelect: React.FC<SubtitleSelectProps> = ({
       <ClosedCaptionButton
         subtitlePath={selectedSubtitleFilePath}
         handleFilepathChange={handleFilepathChange}
+        handleAdjustTiming={handleAdjustTiming}
       />
       <Chip
         color="secondary"

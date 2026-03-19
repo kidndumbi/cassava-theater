@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { convertSrtToVtt, deleteFile } from "../services/file.service";
+import { convertSrtToVtt, deleteFile, adjustSubtitleTiming } from "../services/file.service";
 import { FileIPCChannels } from "../../enums/fileIPCChannels";
 import * as fsPromises from "fs/promises";
 
@@ -41,6 +41,32 @@ export const fileIpcHandlers = () => {
         return { exists: true };
       } catch {
         return { exists: false };
+      }
+    }
+  );
+
+  ipcMain.handle(
+    FileIPCChannels.ADJUST_SUBTITLE_TIMING,
+    async (_event: Electron.IpcMainInvokeEvent, args: {
+      vttFilePath: string;
+      adjustmentMs: number;
+      increase?: boolean;
+    }) => {
+      try {
+        const { vttFilePath, adjustmentMs, increase = true } = args;
+        if (!vttFilePath) {
+          throw new Error("VTT file path is not provided.");
+        }
+        if (adjustmentMs === undefined || adjustmentMs === null) {
+          throw new Error("Adjustment time in milliseconds is not provided.");
+        }
+        return adjustSubtitleTiming(vttFilePath, adjustmentMs, increase);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          throw new Error(`Error adjusting subtitle timing: ${error.message}`);
+        } else {
+          throw new Error("Error adjusting subtitle timing: Unknown error");
+        }
       }
     }
   );

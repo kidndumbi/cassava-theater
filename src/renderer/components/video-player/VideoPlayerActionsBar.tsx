@@ -24,6 +24,7 @@ interface VideoPlayerActionsBarProps {
   isFullScreen: boolean;
   isNotMp4VideoFormat: boolean;
   onStartFromBeginning: () => void;
+  handleAdjustTiming?: () => void;
 }
 
 export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
@@ -35,7 +36,8 @@ export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
   isFullScreen,
   paused,
   isNotMp4VideoFormat,
-  onStartFromBeginning
+  onStartFromBeginning,
+  handleAdjustTiming,
 }) => {
   return (
     <Box className="flex items-center justify-between px-2.5">
@@ -57,6 +59,7 @@ export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
       <SubtitleSelect
         subtitleFilePath={subtitleFilePath}
         onSubtitleChange={onSubtitleChange}
+        handleAdjustTiming={handleAdjustTiming}
       />
       {isNotMp4VideoFormat && <VolumeControl />}
     </Box>

@@ -7,9 +7,10 @@ import AppIconButton from "./AppIconButton";
 interface ClosedCaptionButtonProps {
   handleFilepathChange: (folderPath: string) => void;
   subtitlePath: string;
+  handleAdjustTiming?: () => void;
 }
 
-const menuItems = [
+const getMenuItems = (handleAdjustTiming?: () => void) => [
   {
     label: "None",
     action: (handleChange: (path: string) => void) => {
@@ -29,14 +30,27 @@ const menuItems = [
       handleChange(filePath);
     },
   },
+  {
+    label: "Adjust Timing",
+    action: async (handleChange: (path: string) => void) => {
+      if (handleAdjustTiming) {
+        handleAdjustTiming();
+      } else {
+        handleChange("adjust-timing");
+      }
+    },
+  },
 ];
 
 export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
   handleFilepathChange,
   subtitlePath,
+  handleAdjustTiming,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
+  
+  const menuItems = getMenuItems(handleAdjustTiming);
 
   const handleMenuToggle = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -46,7 +60,9 @@ export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
     setAnchorEl(null);
   };
 
-  const handleMenuItemClick = async (menuAction: typeof menuItems[number]["action"]) => {
+  const handleMenuItemClick = async (
+    menuAction: (typeof menuItems)[number]["action"],
+  ) => {
     await menuAction(handleFilepathChange);
     handleMenuClose();
   };
@@ -82,4 +98,3 @@ export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
     </>
   );
 };
-
