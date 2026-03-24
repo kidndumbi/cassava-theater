@@ -259,9 +259,30 @@ export const Episode: React.FC<EpisodeProps> = ({
         open={openTranslationModal}
         onClose={handleCloseTranslationModal}
         videoData={episode}
-        onTranslationComplete={(translatedFilePath) => {
-          // Optionally update the episode's subtitle path or show success message
-          console.log(`Translation completed: ${translatedFilePath}`);
+        onTranslationComplete={async (translatedFilePath, targetLanguage) => {
+          // Save the translated path to the appropriate language field
+          const subtitleUpdate: {
+            subtitlePath?: string | null;
+            subtitlePathEs?: string | null;
+            subtitlePathFr?: string | null;
+            activeSubtitleLanguage?: 'en' | 'es' | 'fr' | null;
+          } = {};
+
+          if (targetLanguage === 'es') {
+            subtitleUpdate.subtitlePathEs = translatedFilePath;
+            subtitleUpdate.activeSubtitleLanguage = 'es';
+          } else if (targetLanguage === 'fr') {
+            subtitleUpdate.subtitlePathFr = translatedFilePath;
+            subtitleUpdate.activeSubtitleLanguage = 'fr';
+          } else if (targetLanguage === 'en') {
+            subtitleUpdate.subtitlePath = translatedFilePath;
+            subtitleUpdate.activeSubtitleLanguage = 'en';
+          }
+
+          // Update the subtitle data in the database
+          await handleSubtitleUpdate(subtitleUpdate);
+          
+          console.log(`Translation completed and saved: ${translatedFilePath} for language: ${targetLanguage}`);
         }}
       />
     </Box>

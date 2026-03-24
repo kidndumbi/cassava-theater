@@ -21,7 +21,7 @@ interface SubtitleTranslationModalProps {
   open: boolean;
   onClose: () => void;
   videoData: VideoDataModel;
-  onTranslationComplete?: (translatedFilePath: string) => void;
+  onTranslationComplete?: (translatedFilePath: string, targetLanguage: string) => void;
 }
 
 interface Language {
@@ -41,6 +41,7 @@ export const SubtitleTranslationModal: React.FC<SubtitleTranslationModalProps> =
   const [languages, setLanguages] = useState<Language[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingLanguages, setLoadingLanguages] = useState(false);
+  const [languageLoadError, setLanguageLoadError] = useState<string | null>(null);
 
   // Load supported languages on component mount
   useEffect(() => {
@@ -51,21 +52,16 @@ export const SubtitleTranslationModal: React.FC<SubtitleTranslationModalProps> =
 
   const loadSupportedLanguages = async () => {
     setLoadingLanguages(true);
+    setLanguageLoadError(null);
     try {
       const supportedLanguages = await window.translationAPI.getSupportedLanguages();
       setLanguages(supportedLanguages);
     } catch (error) {
       console.error("Failed to load supported languages:", error);
-      showSnackbar("Failed to load supported languages", "error");
-      // Fallback languages
-      setLanguages([
-        { code: "en", name: "English" },
-        { code: "es", name: "Spanish" },
-        { code: "fr", name: "French" },
-        { code: "de", name: "German" },
-        { code: "it", name: "Italian" },
-        { code: "pt", name: "Portuguese" },
-      ]);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      setLanguageLoadError(`Translation server unavailable: ${errorMessage}`);
+      showSnackbar("Translation server is not available", "error");
+      setLanguages([]);
     } finally {
       setLoadingLanguages(false);
     }
@@ -91,7 +87,7 @@ export const SubtitleTranslationModal: React.FC<SubtitleTranslationModalProps> =
       );
       
       if (onTranslationComplete) {
-        onTranslationComplete(translatedFilePath);
+        onTranslationComplete(translatedFilePath, targetLanguage);
       }
       
       onClose();
@@ -144,6 +140,25 @@ export const SubtitleTranslationModal: React.FC<SubtitleTranslationModalProps> =
               <CircularProgress size={20} />
               <Typography>Loading languages...</Typography>
             </Box>
+          ) : languageLoadError ? (
+            <Alert severity="error">
+              {languageLoadError}
+              <br />
+              Please ensure LibreTranslate is running and try again.
+              <Box sx={{ mt: 1 }}>
+                <Button 
+                  size="small" 
+                  onClick={loadSupportedLanguages}
+                  disabled={loadingLanguages}
+                >
+                  Retry
+                </Button>
+              </Box>
+            </Alert>
+          ) : languages.length === 0 ? (
+            <Alert severity="warning">
+              No languages available for translation.
+            </Alert>
           ) : (
             <>
               <FormControl fullWidth>
@@ -195,7 +210,13 @@ export const SubtitleTranslationModal: React.FC<SubtitleTranslationModalProps> =
         <Button 
           onClick={handleTranslate} 
           variant="contained" 
-          disabled={loading || loadingLanguages || sourceLanguage === targetLanguage}
+          disabled={
+            loading || 
+            loadingLanguages || 
+            languageLoadError !== null ||
+            languages.length === 0 ||
+            sourceLanguage === targetLanguage
+          }
         >
           Translate
         </Button>
