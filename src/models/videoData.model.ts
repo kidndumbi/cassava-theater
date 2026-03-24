@@ -22,6 +22,9 @@ export interface VideoDataModel {
   tv_show_details?: TvShowDetails | null;
   season_id?: string | null;
   subtitlePath?: string | null;
+  subtitlePathEs?: string | null;
+  subtitlePathFr?: string | null;
+  activeSubtitleLanguage?: 'en' | 'es' | 'fr' | null;
   lastVideoPlayedDate?: string | null;
   lastVideoPlayed?: string | null;
   lastVideoPlayedTime?: number | null;

@@ -2,6 +2,7 @@ import React from "react";
 import Box from "@mui/material/Box";
 import SkipButton from "./SkipButton";
 import { VideoPlayerActionsBar } from "./VideoPlayerActionsBar";
+import { VideoDataModel } from "../../../models/videoData.model";
 
 interface VideoPlayerActionsContainerProps {
   onSubtitleChange: (subtitle: string | null) => void;
@@ -15,6 +16,9 @@ interface VideoPlayerActionsContainerProps {
   isNotMp4VideoFormat: boolean;
   onStartFromBeginning: () => void;
   handleAdjustTiming?: () => void;
+  videoData?: VideoDataModel;
+  onVideoDataUpdate?: (videoData: VideoDataModel) => void;
+  onSubtitleModalStateChange?: (isOpen: boolean) => void;
 }
 
 const VideoPlayerActionsContainer: React.FC<
@@ -31,6 +35,9 @@ const VideoPlayerActionsContainer: React.FC<
   isNotMp4VideoFormat,
   onStartFromBeginning,
   handleAdjustTiming,
+  videoData,
+  onVideoDataUpdate,
+  onSubtitleModalStateChange,
 }) => {
   return (
     <Box className="absolute bottom-7 left-1/2 -translate-x-1/2 transform rounded-md bg-opacity-80 p-1.5 text-white">
@@ -63,6 +70,9 @@ const VideoPlayerActionsContainer: React.FC<
             handleAdjustTiming();
           }
         }}
+        videoData={videoData}
+        onVideoDataUpdate={onVideoDataUpdate}
+        onSubtitleModalStateChange={onSubtitleModalStateChange}
       />
     </Box>
   );
