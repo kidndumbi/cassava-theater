@@ -140,27 +140,15 @@ async function callLibreTranslate(
 export async function getSupportedLanguages(
   libretranslateUrl = "http://localhost:5000"
 ): Promise<Array<{ code: string; name: string }>> {
-  try {
-    const response = await fetch(`${libretranslateUrl}/languages`);
-    
-    if (!response.ok) {
-      throw new Error(`LibreTranslate API error: ${response.status} ${response.statusText}`);
-    }
-
-    const languages = await response.json();
-    return languages;
-  } catch (error: unknown) {
-    log.error("Failed to fetch supported languages:", error);
-    // Return common languages as fallback
-    return [
-      { code: "en", name: "English" },
-      { code: "es", name: "Spanish" },
-      { code: "fr", name: "French" },
-      { code: "de", name: "German" },
-      { code: "it", name: "Italian" },
-      { code: "pt", name: "Portuguese" },
-    ];
+  const response = await fetch(`${libretranslateUrl}/languages`);
+  
+  if (!response.ok) {
+    throw new Error(`LibreTranslate API error: ${response.status} ${response.statusText}`);
   }
+
+  const languages = await response.json();
+  
+  return languages;
 }
 
 export async function detectLanguage(
