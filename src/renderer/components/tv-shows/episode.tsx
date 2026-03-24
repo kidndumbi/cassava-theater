@@ -30,6 +30,7 @@ import {
   isInMp4ConversionQueue,
 } from "../../util/mp4ConversionAPI-helpers";
 import { ConversionQueueItem } from "../../../models/conversion-queue-item.model";
+import { useSubtitle } from "../../hooks/useSubtitle";
 
 interface EpisodeProps {
   episode: VideoDataModel;
@@ -59,6 +60,7 @@ export const Episode: React.FC<EpisodeProps> = ({
 }) => {
   const { data: settings } = useGetAllSettings();
   const { openDialog, setMessage } = useConfirmation();
+  const { updateSubtitleLanguages, getActiveSubtitlePath } = useSubtitle();
   const [hover, setHover] = useState(false);
   const [openNotesModal, setOpenNotesModal] = useState(false);
   const [openTranslationModal, setOpenTranslationModal] = useState(false);
@@ -71,6 +73,29 @@ export const Episode: React.FC<EpisodeProps> = ({
   const handlePlayClick = () => onEpisodeClick(episode);
   const handleNotesClick = () => setOpenNotesModal(true);
   const handleTranslationClick = () => setOpenTranslationModal(true);
+
+  // Handle subtitle updates using the new multi-language system
+  const handleSubtitleUpdate = async (subtitleData: {
+    subtitlePath?: string | null;
+    subtitlePathEs?: string | null;
+    subtitlePathFr?: string | null;
+    activeSubtitleLanguage?: 'en' | 'es' | 'fr' | null;
+  }) => {
+    await updateSubtitleLanguages(subtitleData, episode);
+    
+    // For backward compatibility, still call the legacy handler if active subtitle changed
+    const newActiveSubtitlePath = getActiveSubtitlePath({
+      ...episode,
+      ...subtitleData,
+    });
+    
+    if (handleFilepathChange) {
+      handleFilepathChange(newActiveSubtitlePath || "None", {
+        ...episode,
+        ...subtitleData,
+      });
+    }
+  };
 
   const [hasError, setHasError] = useState(false);
 
@@ -168,10 +193,9 @@ export const Episode: React.FC<EpisodeProps> = ({
 
         <Box className="flex gap-2">
           <ClosedCaptionButton
-            handleFilepathChange={(newSubtitleFilePath: string) => {
-              handleFilepathChange(newSubtitleFilePath, episode);
-            }}
-            subtitlePath={episode.subtitlePath || "None"}
+            subtitlePath={getActiveSubtitlePath(episode) || "None"}
+            videoData={episode}
+            onSubtitleUpdate={handleSubtitleUpdate}
           />
           <AppIconButton tooltip="Notes" onClick={handleNotesClick}>
             <NotesIcon />
