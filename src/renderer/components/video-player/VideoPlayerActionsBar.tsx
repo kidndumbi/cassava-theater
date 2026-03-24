@@ -8,6 +8,7 @@ import { FullscreenControl } from "./controlSections/FullscreenControl";
 import { VolumeControl } from "./controlSections/VolumeControl";
 import AppIconButton from "../common/AppIconButton";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { VideoDataModel } from "../../../models/videoData.model";
 
 interface VideoPlayerActionsBarProps {
   onSubtitleChange: (subtitleFilePath: string) => void;
@@ -25,6 +26,8 @@ interface VideoPlayerActionsBarProps {
   isNotMp4VideoFormat: boolean;
   onStartFromBeginning: () => void;
   handleAdjustTiming?: () => void;
+  videoData?: VideoDataModel;
+  onVideoDataUpdate?: (videoData: VideoDataModel) => void;
 }
 
 export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
@@ -38,6 +41,8 @@ export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
   isNotMp4VideoFormat,
   onStartFromBeginning,
   handleAdjustTiming,
+  videoData,
+  onVideoDataUpdate,
 }) => {
   return (
     <Box className="flex items-center justify-between px-2.5">
@@ -60,6 +65,8 @@ export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
         subtitleFilePath={subtitleFilePath}
         onSubtitleChange={onSubtitleChange}
         handleAdjustTiming={handleAdjustTiming}
+        videoData={videoData}
+        onVideoDataUpdate={onVideoDataUpdate}
       />
       {isNotMp4VideoFormat && <VolumeControl />}
     </Box>

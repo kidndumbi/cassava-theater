@@ -14,6 +14,7 @@ import TitleOverlay from "./TitleOverlay";
 import SideControlsOverlay from "./SideControlsOverlay";
 import "./AppVideoPlayer.css";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
+import { useSubtitle } from "../../hooks/useSubtitle";
 import Video from "./video";
 import { NotesModal } from "../common/NotesModal";
 import { SubtitleTimingModal } from "../common/SubtitleTimingModal";
@@ -77,7 +78,8 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     },
     ref,
   ) => {
-    const { setPlayer } = useVideoListLogic();
+    const { setPlayer, setCurrentVideo } = useVideoListLogic();
+    const { getActiveSubtitlePath } = useSubtitle();
     const { mkvCurrentTime, currentVideo } = useVideoPlayerLogic();
     const videoPlayerRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -136,13 +138,15 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       setVideoUrl(getVideoUrl());
     }, [currentVideo, startFromBeginning, port]);
     
-    // Reset subtitle cache buster when subtitle file changes
+    // Reset subtitle cache buster when subtitle file or active language changes
     useEffect(() => {
       setSubtitleCacheBuster(Date.now());
-    }, [subtitleFilePath]);
+    }, [subtitleFilePath, currentVideo?.activeSubtitleLanguage]);
     
     const getSubtitleUrl = () => {
-      const baseUrl = getUrl("file", subtitleFilePath, null, port);
+      // Use active subtitle path based on the activeSubtitleLanguage setting
+      const activeSubtitlePath = currentVideo ? getActiveSubtitlePath(currentVideo) : subtitleFilePath;
+      const baseUrl = getUrl("file", activeSubtitlePath, null, port);
       return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : baseUrl;
     };
 
@@ -259,6 +263,13 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       console.log("Subtitle timing adjusted successfully - video and subtitles reloaded");
     };
 
+    // Handle video data updates (for multi-language subtitle changes)
+    const handleVideoDataUpdate = (updatedVideoData: VideoDataModel) => {
+      setCurrentVideo(updatedVideoData);
+    };
+
+ 
+
     const renderTimeDisplay = () => (
       <span className="absolute bottom-2.5 left-5 text-sm text-white">
         {formattedTime +
@@ -343,6 +354,8 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
                 startPlayingAt?.(0);
               }}
               handleAdjustTiming={handleOpenSubtitleTimingModal}
+              videoData={currentVideo || undefined}
+              onVideoDataUpdate={handleVideoDataUpdate}
             />
             <TitleOverlay fileName={currentVideo?.fileName} />
             <SideControlsOverlay
