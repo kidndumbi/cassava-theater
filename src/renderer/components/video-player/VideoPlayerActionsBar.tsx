@@ -28,6 +28,7 @@ interface VideoPlayerActionsBarProps {
   handleAdjustTiming?: () => void;
   videoData?: VideoDataModel;
   onVideoDataUpdate?: (videoData: VideoDataModel) => void;
+  onSubtitleModalStateChange?: (isOpen: boolean) => void;
 }
 
 export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
@@ -43,6 +44,7 @@ export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
   handleAdjustTiming,
   videoData,
   onVideoDataUpdate,
+  onSubtitleModalStateChange,
 }) => {
   return (
     <Box className="flex items-center justify-between px-2.5">
@@ -67,6 +69,7 @@ export const VideoPlayerActionsBar: React.FC<VideoPlayerActionsBarProps> = ({
         handleAdjustTiming={handleAdjustTiming}
         videoData={videoData}
         onVideoDataUpdate={onVideoDataUpdate}
+        onSubtitleModalStateChange={onSubtitleModalStateChange}
       />
       {isNotMp4VideoFormat && <VolumeControl />}
     </Box>

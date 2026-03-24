@@ -87,6 +87,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const castAndCrewModal = useModalState(false);
     const notesModal = useModalState(false);
     const subtitleTimingModal = useModalState(false);
+    const [subtitleModalOpen, setSubtitleModalOpen] = useState(false);
     const [sliderValue, setSliderValue] = useState<number | null>(null);
     const debouncedSliderValue = useDebounce(sliderValue, 300);
     const isMouseActive = useMouseActivity();
@@ -268,6 +269,11 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       setCurrentVideo(updatedVideoData);
     };
 
+    // Handle subtitle modal state changes
+    const handleSubtitleModalStateChange = (isOpen: boolean) => {
+      setSubtitleModalOpen(isOpen);
+    };
+
  
 
     const renderTimeDisplay = () => (
@@ -338,7 +344,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           }}
         />
 
-        {isMouseActive && (
+        {(isMouseActive || subtitleModalOpen) && (
           <>
             <VideoPlayerActionsContainer
               isFullScreen={isFullScreen}
@@ -356,6 +362,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               handleAdjustTiming={handleOpenSubtitleTimingModal}
               videoData={currentVideo || undefined}
               onVideoDataUpdate={handleVideoDataUpdate}
+              onSubtitleModalStateChange={handleSubtitleModalStateChange}
             />
             <TitleOverlay fileName={currentVideo?.fileName} />
             <SideControlsOverlay

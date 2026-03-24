@@ -18,6 +18,7 @@ interface VideoPlayerActionsContainerProps {
   handleAdjustTiming?: () => void;
   videoData?: VideoDataModel;
   onVideoDataUpdate?: (videoData: VideoDataModel) => void;
+  onSubtitleModalStateChange?: (isOpen: boolean) => void;
 }
 
 const VideoPlayerActionsContainer: React.FC<
@@ -36,6 +37,7 @@ const VideoPlayerActionsContainer: React.FC<
   handleAdjustTiming,
   videoData,
   onVideoDataUpdate,
+  onSubtitleModalStateChange,
 }) => {
   return (
     <Box className="absolute bottom-7 left-1/2 -translate-x-1/2 transform rounded-md bg-opacity-80 p-1.5 text-white">
@@ -70,6 +72,7 @@ const VideoPlayerActionsContainer: React.FC<
         }}
         videoData={videoData}
         onVideoDataUpdate={onVideoDataUpdate}
+        onSubtitleModalStateChange={onSubtitleModalStateChange}
       />
     </Box>
   );

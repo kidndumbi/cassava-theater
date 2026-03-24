@@ -12,6 +12,7 @@ interface SubtitleSelectProps {
   handleAdjustTiming?: () => void;
   videoData?: VideoDataModel; // New prop for enhanced functionality
   onVideoDataUpdate?: (videoData: VideoDataModel) => void; // Callback when video data is updated
+  onSubtitleModalStateChange?: (isOpen: boolean) => void; // Track modal state for mouse activity
 }
 
 export const SubtitleSelect: React.FC<SubtitleSelectProps> = ({
@@ -20,6 +21,7 @@ export const SubtitleSelect: React.FC<SubtitleSelectProps> = ({
   handleAdjustTiming,
   videoData,
   onVideoDataUpdate,
+  onSubtitleModalStateChange,
 }) => {
   const [selectedSubtitleFilePath, setSelectedSubtitleFilePath] = useState(
     subtitleFilePath || "None"
@@ -89,6 +91,7 @@ export const SubtitleSelect: React.FC<SubtitleSelectProps> = ({
         handleAdjustTiming={handleAdjustTiming}
         videoData={videoData}
         onSubtitleUpdate={videoData ? handleSubtitleUpdate : undefined}
+        onSubtitleModalStateChange={onSubtitleModalStateChange}
       />
       <Chip
         color="secondary"

@@ -17,6 +17,7 @@ interface ClosedCaptionButtonProps {
     subtitlePathFr?: string | null;
     activeSubtitleLanguage?: 'en' | 'es' | 'fr' | null;
   }) => Promise<void>; // New prop for saving subtitle data
+  onSubtitleModalStateChange?: (isOpen: boolean) => void; // Track modal state
 }
 
 const getMenuItems = (handleAdjustTiming?: () => void) => [
@@ -57,6 +58,7 @@ export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
   handleAdjustTiming,
   videoData,
   onSubtitleUpdate,
+  onSubtitleModalStateChange,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -67,7 +69,7 @@ export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
   const handleMenuToggle = (event: React.MouseEvent<HTMLElement>) => {
     // If we have the new props, open the modal instead of the menu
     if (videoData && onSubtitleUpdate) {
-      setModalOpen(true);
+      handleModalOpen();
     } else {
       // Fallback to old behavior for backward compatibility
       setAnchorEl(event.currentTarget);
@@ -80,6 +82,18 @@ export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
 
   const handleModalClose = () => {
     setModalOpen(false);
+    // Notify parent that modal is closed
+    if (onSubtitleModalStateChange) {
+      onSubtitleModalStateChange(false);
+    }
+  };
+
+  const handleModalOpen = () => {
+    setModalOpen(true);
+    // Notify parent that modal is open
+    if (onSubtitleModalStateChange) {
+      onSubtitleModalStateChange(true);
+    }
   };
 
   const handleMenuItemClick = async (
