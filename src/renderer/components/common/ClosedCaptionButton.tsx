@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import ClosedCaptionIcon from "@mui/icons-material/ClosedCaption";
-import { selectFile } from "../../util/helperFunctions";
 import AppIconButton from "./AppIconButton";
 import { SubtitleLanguagesModal } from "./SubtitleLanguagesModal";
 import { VideoDataModel } from "../../../models/videoData.model";
@@ -20,40 +19,25 @@ interface ClosedCaptionButtonProps {
   onSubtitleModalStateChange?: (isOpen: boolean) => void; // Track modal state
 }
 
-const getMenuItems = (handleAdjustTiming?: () => void) => [
+const getMenuItems = (
+  handleAdjustTiming?: () => void,
+  handleOpenModal?: () => void
+) => [
   {
-    label: "None",
-    action: (handleChange: (path: string) => void) => {
-      handleChange("None");
-    },
-  },
-  {
-    label: "Select CC",
-    action: async (handleChange: (path: string) => void) => {
-      const selectedFilePath = await selectFile();
-      if (!selectedFilePath) return;
-
-      const filePath = selectedFilePath.endsWith(".srt")
-        ? await window.fileManagerAPI.convertSrtToVtt(selectedFilePath)
-        : selectedFilePath;
-
-      handleChange(filePath);
+    label: "Manage Subtitles",
+    action: async () => {
+      if (handleOpenModal) handleOpenModal();
     },
   },
   {
     label: "Adjust Timing",
-    action: async (handleChange: (path: string) => void) => {
-      if (handleAdjustTiming) {
-        handleAdjustTiming();
-      } else {
-        handleChange("adjust-timing");
-      }
+    action: async () => {
+      if (handleAdjustTiming) handleAdjustTiming();
     },
   },
 ];
 
 export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
-  handleFilepathChange,
   subtitlePath,
   handleAdjustTiming,
   videoData,
@@ -63,17 +47,18 @@ export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const isMenuOpen = Boolean(anchorEl);
-  
-  const menuItems = getMenuItems(handleAdjustTiming);
+
+  const handleModalOpen = () => {
+    setModalOpen(true);
+    if (onSubtitleModalStateChange) {
+      onSubtitleModalStateChange(true);
+    }
+  };
+
+  const menuItems = getMenuItems(handleAdjustTiming, handleModalOpen);
 
   const handleMenuToggle = (event: React.MouseEvent<HTMLElement>) => {
-    // If we have the new props, open the modal instead of the menu
-    if (videoData && onSubtitleUpdate) {
-      handleModalOpen();
-    } else {
-      // Fallback to old behavior for backward compatibility
-      setAnchorEl(event.currentTarget);
-    }
+    setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
@@ -82,40 +67,27 @@ export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
 
   const handleModalClose = () => {
     setModalOpen(false);
-    // Notify parent that modal is closed
     if (onSubtitleModalStateChange) {
       onSubtitleModalStateChange(false);
-    }
-  };
-
-  const handleModalOpen = () => {
-    setModalOpen(true);
-    // Notify parent that modal is open
-    if (onSubtitleModalStateChange) {
-      onSubtitleModalStateChange(true);
     }
   };
 
   const handleMenuItemClick = async (
     menuAction: (typeof menuItems)[number]["action"],
   ) => {
-    await menuAction(handleFilepathChange!);
+    await menuAction();
     handleMenuClose();
   };
 
   const getTooltipText = () => {
     if (!videoData) return subtitlePath || "None";
-    
     const { activeSubtitleLanguage, subtitlePath: enPath, subtitlePathEs, subtitlePathFr } = videoData;
-    
     if (!activeSubtitleLanguage) return "None";
-    
     const languageMap = {
       en: { name: "English", path: enPath },
       es: { name: "Spanish", path: subtitlePathEs },
       fr: { name: "French", path: subtitlePathFr },
     };
-    
     const activeLanguageData = languageMap[activeSubtitleLanguage];
     return activeLanguageData?.path 
       ? `${activeLanguageData.name}: ${activeLanguageData.path.split(/[/\\]/).pop()}`
@@ -133,28 +105,25 @@ export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
         <ClosedCaptionIcon />
       </AppIconButton>
 
-      {/* Legacy Menu for backward compatibility */}
-      {!videoData && (
-        <Menu
-          anchorEl={anchorEl}
-          open={isMenuOpen}
-          onClose={handleMenuClose}
-          MenuListProps={{
-            "aria-labelledby": "closed-caption-menu",
-          }}
-        >
-          {menuItems.map((item, index) => (
-            <MenuItem
-              key={index}
-              onClick={() => handleMenuItemClick(item.action)}
-            >
-              {item.label}
-            </MenuItem>
-          ))}
-        </Menu>
-      )}
+      <Menu
+        anchorEl={anchorEl}
+        open={isMenuOpen}
+        onClose={handleMenuClose}
+        MenuListProps={{
+          "aria-labelledby": "closed-caption-menu",
+        }}
+      >
+        {menuItems.map((item, index) => (
+          <MenuItem
+            key={index}
+            onClick={() => handleMenuItemClick(item.action)}
+          >
+            {item.label}
+          </MenuItem>
+        ))}
+      </Menu>
 
-      {/* New Languages Modal */}
+      {/* Languages Modal */}
       {videoData && onSubtitleUpdate && (
         <SubtitleLanguagesModal
           open={modalOpen}
