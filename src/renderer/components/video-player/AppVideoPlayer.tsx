@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useImperativeHandle,
   forwardRef,
+  use,
 } from "react";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useMouseActivity } from "../../hooks/useMouseActivity";
@@ -35,6 +36,7 @@ import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
 import { useModalState } from "../../hooks/useModalState";
 import { FullscreenErrorOverlay } from "../common/FullscreenErrorOverlay";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
+import { useSaveJsonData } from "../../hooks/useSaveJsonData";
 import { SettingsModel } from "../../../models/settings.model";
 
 export type AppVideoPlayerHandle = {
@@ -88,6 +90,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const { getActiveSubtitlePath } = useSubtitle();
     const { mkvCurrentTime, currentVideo } = useVideoPlayerLogic();
     const { mutateAsync: setSetting } = useSetSetting();
+  const saveJsonDataMutation = useSaveJsonData();
     const videoPlayerRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [error, setError] = useState<string | null>(null);
@@ -96,13 +99,15 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const subtitleTimingModal = useModalState(false);
     const subtitleOverlayControlModal = useModalState(false);
     const [subtitleModalOpen, setSubtitleModalOpen] = useState(false);
+
+    
     
     // Initialize subtitle overlay settings from passed settings or defaults
     const [subtitleOverlayEnabled, setSubtitleOverlayEnabled] = useState(
-      settings?.subtitleOverlay?.enabled ?? false
+      currentVideo?.subtitleOverlayEnabled ?? false
     );
     const [subtitleOverlayLanguage, setSubtitleOverlayLanguage] = useState<'en' | 'es' | 'fr' | null>(
-      settings?.subtitleOverlay?.language ?? null
+      currentVideo?.subtitleOverlayLanguage ?? null
     );
     const [subtitleOverlayFontSize, setSubtitleOverlayFontSize] = useState(
       settings?.subtitleOverlay?.fontSize ?? 16
@@ -113,6 +118,21 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const isNotMp4VideoFormat = currentVideo?.isMkv || currentVideo?.isAvi;
     const [videoUrl, setVideoUrl] = useState<string>("");
     const [subtitleCacheBuster, setSubtitleCacheBuster] = useState<number>(Date.now());
+
+    // Sync subtitle overlay settings when video changes
+    useEffect(() => {
+      setSubtitleOverlayEnabled(currentVideo?.subtitleOverlayEnabled ?? false);
+      setSubtitleOverlayLanguage(currentVideo?.subtitleOverlayLanguage ?? null);
+    }, [currentVideo?.filePath]); // Re-run when video changes
+
+    // Sync font size when settings change
+    useEffect(() => {
+      setSubtitleOverlayFontSize(settings?.subtitleOverlay?.fontSize ?? 16);
+    }, [settings?.subtitleOverlay?.fontSize]);
+
+    useEffect(() => {
+      console.log("Current video changed:", currentVideo);
+     },[currentVideo]);
 
     const {
       skipBy,
@@ -323,33 +343,35 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
 
     const handleSubtitleOverlayToggle = async (enabled: boolean) => {
       setSubtitleOverlayEnabled(enabled);
-      try {
-        await setSetting({
-          key: 'subtitleOverlay',
-          value: {
-            enabled,
-            fontSize: subtitleOverlayFontSize,
-            language: subtitleOverlayLanguage,
-          },
-        });
-      } catch (error) {
-        console.error('Failed to save subtitle overlay enabled setting:', error);
+      if (currentVideo) {
+        try {
+          await saveJsonDataMutation.mutateAsync({
+            currentVideo,
+            newVideoJsonData: {
+              ...currentVideo,
+              subtitleOverlayEnabled: enabled,
+            },
+          });
+        } catch (error) {
+          console.error('Failed to save subtitle overlay enabled setting:', error);
+        }
       }
     };
 
     const handleSubtitleOverlayLanguageChange = async (language: 'en' | 'es' | 'fr' | null) => {
       setSubtitleOverlayLanguage(language);
-      try {
-        await setSetting({
-          key: 'subtitleOverlay',
-          value: {
-            enabled: subtitleOverlayEnabled,
-            fontSize: subtitleOverlayFontSize,
-            language,
-          },
-        });
-      } catch (error) {
-        console.error('Failed to save subtitle overlay language setting:', error);
+      if (currentVideo) {
+        try {
+          await saveJsonDataMutation.mutateAsync({
+            currentVideo,
+            newVideoJsonData: {
+              ...currentVideo,
+              subtitleOverlayLanguage: language,
+            },
+          });
+        } catch (error) {
+          console.error('Failed to save subtitle overlay language setting:', error);
+        }
       }
     };
 
@@ -359,9 +381,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
         await setSetting({
           key: 'subtitleOverlay',
           value: {
-            enabled: subtitleOverlayEnabled,
             fontSize,
-            language: subtitleOverlayLanguage,
           },
         });
       } catch (error) {
