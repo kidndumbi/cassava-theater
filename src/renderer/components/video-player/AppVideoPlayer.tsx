@@ -28,6 +28,7 @@ import { AppSlider } from "../common/AppSlider";
 import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import { useDebounce } from "@uidotdev/usehooks";
 import CustomDrawer from "../common/CustomDrawer";
+import SubtitleOverlay from "./SubtitleOverlay";
 import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
 import { useModalState } from "../../hooks/useModalState";
@@ -342,6 +343,13 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               }. \nPlease check if the file exists or is supported.`,
             );
           }}
+        />
+
+        {/* Custom Subtitle Overlay */}
+        <SubtitleOverlay
+          subtitleUrl={subtitleFilePath && subtitleFilePath !== "None" ? getSubtitleUrl() : null}
+          currentTime={currentTime || 0}
+          isVisible={!subtitleModalOpen}
         />
 
         {(isMouseActive || subtitleModalOpen) && (
