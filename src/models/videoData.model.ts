@@ -25,6 +25,8 @@ export interface VideoDataModel {
   subtitlePathEs?: string | null;
   subtitlePathFr?: string | null;
   activeSubtitleLanguage?: 'en' | 'es' | 'fr' | null;
+  subtitleOverlayEnabled?: boolean;
+  subtitleOverlayLanguage?: 'en' | 'es' | 'fr' | null;
   lastVideoPlayedDate?: string | null;
   lastVideoPlayed?: string | null;
   lastVideoPlayedTime?: number | null;

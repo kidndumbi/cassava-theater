@@ -230,6 +230,8 @@ export const createVideoDataObject = (
     subtitlePathEs: jsonFileContents?.subtitlePathEs || null,
     subtitlePathFr: jsonFileContents?.subtitlePathFr || null,
     activeSubtitleLanguage: jsonFileContents?.activeSubtitleLanguage || null,
+    subtitleOverlayEnabled: jsonFileContents?.subtitleOverlayEnabled || false,
+    subtitleOverlayLanguage: jsonFileContents?.subtitleOverlayLanguage || null,
     lastVideoPlayedDate: jsonFileContents?.lastVideoPlayedDate || null,
     lastVideoPlayedTime: jsonFileContents?.lastVideoPlayedTime || 0,
     lastVideoPlayed: jsonFileContents?.lastVideoPlayed || null,
