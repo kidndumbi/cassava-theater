@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import ClosedCaptionIcon from "@mui/icons-material/ClosedCaption";
-// import { selectFile } from "../../util/helperFunctions";
 import AppIconButton from "./AppIconButton";
 import { SubtitleLanguagesModal } from "./SubtitleLanguagesModal";
 import { VideoDataModel } from "../../../models/videoData.model";
@@ -39,7 +38,6 @@ const getMenuItems = (
 ];
 
 export const ClosedCaptionButton: React.FC<ClosedCaptionButtonProps> = ({
-  handleFilepathChange,
   subtitlePath,
   handleAdjustTiming,
   videoData,
