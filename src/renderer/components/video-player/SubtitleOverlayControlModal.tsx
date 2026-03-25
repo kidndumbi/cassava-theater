@@ -13,6 +13,7 @@ import {
   FormControlLabel,
   Typography,
   Box,
+  Slider,
   styled,
 } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
@@ -23,10 +24,10 @@ interface SubtitleOverlayControlModalProps {
   videoData?: VideoDataModel;
   isEnabled: boolean;
   selectedLanguage: 'en' | 'es' | 'fr' | null;
-  selectedSize: 'small' | 'medium' | 'large';
+  fontSize: number;
   onToggleEnabled: (enabled: boolean) => void;
   onLanguageChange: (language: 'en' | 'es' | 'fr' | null) => void;
-  onSizeChange: (size: 'small' | 'medium' | 'large') => void;
+  onFontSizeChange: (fontSize: number) => void;
 }
 
 const StyledFormControl = styled(FormControl)(({ theme }) => ({
@@ -52,28 +53,48 @@ const StyledFormControl = styled(FormControl)(({ theme }) => ({
   },
 }));
 
+const StyledSlider = styled(Slider)(({ theme }) => ({
+  color: "#1976d2",
+  "& .MuiSlider-thumb": {
+    backgroundColor: "#1976d2",
+  },
+  "& .MuiSlider-track": {
+    backgroundColor: "#1976d2",
+  },
+  "& .MuiSlider-rail": {
+    backgroundColor: "#444",
+  },
+  "& .MuiSlider-mark": {
+    backgroundColor: "#666",
+  },
+  "& .MuiSlider-markLabel": {
+    color: "#aaa",
+    fontSize: "12px",
+  },
+}));
+
 export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalProps> = ({
   open,
   onClose,
   videoData,
   isEnabled,
   selectedLanguage,
-  selectedSize,
+  fontSize,
   onToggleEnabled,
   onLanguageChange,
-  onSizeChange,
+  onFontSizeChange,
 }) => {
   const [localEnabled, setLocalEnabled] = useState(isEnabled);
   const [localLanguage, setLocalLanguage] = useState<'en' | 'es' | 'fr' | null>(selectedLanguage);
-  const [localSize, setLocalSize] = useState<'small' | 'medium' | 'large'>(selectedSize);
+  const [localFontSize, setLocalFontSize] = useState<number>(fontSize);
 
   useEffect(() => {
     if (open) {
       setLocalEnabled(isEnabled);
       setLocalLanguage(selectedLanguage);
-      setLocalSize(selectedSize);
+      setLocalFontSize(fontSize);
     }
-  }, [open, isEnabled, selectedLanguage, selectedSize]);
+  }, [open, isEnabled, selectedLanguage, fontSize]);
 
   // Get available languages based on subtitle paths
   const getAvailableLanguages = () => {
@@ -99,7 +120,7 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
   const handleSave = () => {
     onToggleEnabled(localEnabled);
     onLanguageChange(localEnabled ? localLanguage : null);
-    onSizeChange(localSize);
+    onFontSizeChange(localFontSize);
     onClose();
   };
 
@@ -166,20 +187,52 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
             </StyledFormControl>
           )}
 
-          {/* Text Size Selection */}
+          {/* Font Size Slider */}
           {localEnabled && (
-            <StyledFormControl fullWidth>
-              <InputLabel>Text Size</InputLabel>
-              <Select
-                value={localSize}
-                onChange={(e) => setLocalSize(e.target.value as 'small' | 'medium' | 'large')}
-                label="Text Size"
+            <Box>
+              <Typography variant="body1" sx={{ color: "white", mb: 2 }}>
+                Font Size: {localFontSize}px
+              </Typography>
+              <StyledSlider
+                value={localFontSize}
+                onChange={(_, newValue) => setLocalFontSize(newValue as number)}
+                min={12}
+                max={48}
+                step={1}
+                marks={[
+                  { value: 12, label: '12px' },
+                  { value: 18, label: '18px' },
+                  { value: 24, label: '24px' },
+                  { value: 36, label: '36px' },
+                  { value: 48, label: '48px' },
+                ]}
+                valueLabelDisplay="auto"
+                sx={{ mb: 2 }}
+              />
+              
+              {/* Preview */}
+              <Box
+                sx={{
+                  backgroundColor: 'rgba(0,0,0,0.75)',
+                  color: 'white',
+                  padding: 2,
+                  borderRadius: 2,
+                  textAlign: 'center',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                }}
               >
-                <MenuItem value="small">Small (14px)</MenuItem>
-                <MenuItem value="medium">Medium (16px)</MenuItem>
-                <MenuItem value="large">Large (18px)</MenuItem>
-              </Select>
-            </StyledFormControl>
+                <Typography
+                  sx={{
+                    fontSize: `${localFontSize}px`,
+                    lineHeight: 1.4,
+                    textShadow: '1px 1px 2px rgba(0,0,0,0.8)', 
+                    color: '#fff',
+                  }}
+                >
+                  This is a preview of subtitle text
+                </Typography>
+              </Box>
+            </Box>
           )}
 
           {/* Info Text */}
@@ -190,7 +243,11 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
           )}
 
           {availableLanguages.length > 0 && (
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={
+                {
+                    color:"#fff"
+                }
+            }>
               Available languages: {availableLanguages.map(lang => lang.name).join(', ')}
             </Typography>
           )}

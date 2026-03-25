@@ -188,6 +188,7 @@ export const VideoPlayerPage = forwardRef<
       <AppVideoPlayer
         ref={appVideoPlayerRef}
         port={settings?.port}
+        settings={settings}
         isTvShow={isTvShow}
         episodes={episodes}
         startFromBeginning={startFromBeginning}

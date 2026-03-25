@@ -6,7 +6,7 @@ interface SubtitleOverlayProps {
   currentTime: number;
   isVisible?: boolean;
   enabled?: boolean;
-  textSize?: 'small' | 'medium' | 'large';
+  fontSize?: number;
 }
 
 const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
@@ -14,7 +14,7 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
   currentTime,
   isVisible = true,
   enabled = false,
-  textSize = 'medium',
+  fontSize = 16,
 }) => {
   const [cues, setCues] = useState<VTTCue[]>([]);
   const [activeCue, setActiveCue] = useState<VTTCue | null>(null);
@@ -69,28 +69,17 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     return null;
   }
 
-  // Get font size based on textSize prop
-  const getFontSize = () => {
-    switch (textSize) {
-      case 'small':
-        return '14px';
-      case 'large':
-        return '18px';
-      case 'medium':
-      default:
-        return '16px';
-    }
-  };
-
   return (
-    <div className="absolute top-4 right-4 z-50 pointer-events-none">
+    <div className="absolute top-4 z-50 pointer-events-none" style={{ right: '80px' }}>
       <div
-        className="bg-black bg-opacity-75 text-white px-4 py-2 rounded-lg shadow-lg max-w-xs"
+        className="bg-black bg-opacity-75 text-white px-4 py-2 rounded-lg shadow-lg"
         style={{
-          fontSize: getFontSize(),
+          fontSize: `${fontSize}px`,
           lineHeight: '1.4',
           textAlign: 'center',
           textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
+          maxWidth: `${Math.max(320, fontSize * 20)}px`,
+          minWidth: '200px',
         }}
       >
         {activeCue.text.split('\n').map((line, index) => (
