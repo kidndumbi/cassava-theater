@@ -17,4 +17,9 @@ export interface SettingsModel {
     youtubeDownloadStatus?: boolean;
   };
   ollamaModel: string;
+  subtitleOverlay: {
+    enabled: boolean;
+    fontSize: number;
+    language: 'en' | 'es' | 'fr' | null;
+  };
 }
