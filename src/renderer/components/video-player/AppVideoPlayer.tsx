@@ -93,6 +93,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const [subtitleModalOpen, setSubtitleModalOpen] = useState(false);
     const [subtitleOverlayEnabled, setSubtitleOverlayEnabled] = useState(false);
     const [subtitleOverlayLanguage, setSubtitleOverlayLanguage] = useState<'en' | 'es' | 'fr' | null>(null);
+    const [subtitleOverlaySize, setSubtitleOverlaySize] = useState<'small' | 'medium' | 'large'>('medium');
     const [sliderValue, setSliderValue] = useState<number | null>(null);
     const debouncedSliderValue = useDebounce(sliderValue, 300);
     const isMouseActive = useMouseActivity();
@@ -315,6 +316,10 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       setSubtitleOverlayLanguage(language);
     };
 
+    const handleSubtitleOverlaySizeChange = (size: 'small' | 'medium' | 'large') => {
+      setSubtitleOverlaySize(size);
+    };
+
  
 
     const renderTimeDisplay = () => (
@@ -391,6 +396,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           currentTime={currentTime || 0}
           isVisible={!subtitleModalOpen}
           enabled={subtitleOverlayEnabled}
+          textSize={subtitleOverlaySize}
         />
 
         {(isMouseActive || subtitleModalOpen) && (
@@ -464,8 +470,10 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           videoData={currentVideo}
           isEnabled={subtitleOverlayEnabled}
           selectedLanguage={subtitleOverlayLanguage}
+          selectedSize={subtitleOverlaySize}
           onToggleEnabled={handleSubtitleOverlayToggle}
           onLanguageChange={handleSubtitleOverlayLanguageChange}
+          onSizeChange={handleSubtitleOverlaySizeChange}
         />
 
         {isNotMp4VideoFormat && isMouseActive && (

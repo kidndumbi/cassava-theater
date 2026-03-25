@@ -23,8 +23,10 @@ interface SubtitleOverlayControlModalProps {
   videoData?: VideoDataModel;
   isEnabled: boolean;
   selectedLanguage: 'en' | 'es' | 'fr' | null;
+  selectedSize: 'small' | 'medium' | 'large';
   onToggleEnabled: (enabled: boolean) => void;
   onLanguageChange: (language: 'en' | 'es' | 'fr' | null) => void;
+  onSizeChange: (size: 'small' | 'medium' | 'large') => void;
 }
 
 const StyledFormControl = styled(FormControl)(({ theme }) => ({
@@ -56,18 +58,22 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
   videoData,
   isEnabled,
   selectedLanguage,
+  selectedSize,
   onToggleEnabled,
   onLanguageChange,
+  onSizeChange,
 }) => {
   const [localEnabled, setLocalEnabled] = useState(isEnabled);
   const [localLanguage, setLocalLanguage] = useState<'en' | 'es' | 'fr' | null>(selectedLanguage);
+  const [localSize, setLocalSize] = useState<'small' | 'medium' | 'large'>(selectedSize);
 
   useEffect(() => {
     if (open) {
       setLocalEnabled(isEnabled);
       setLocalLanguage(selectedLanguage);
+      setLocalSize(selectedSize);
     }
-  }, [open, isEnabled, selectedLanguage]);
+  }, [open, isEnabled, selectedLanguage, selectedSize]);
 
   // Get available languages based on subtitle paths
   const getAvailableLanguages = () => {
@@ -93,6 +99,7 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
   const handleSave = () => {
     onToggleEnabled(localEnabled);
     onLanguageChange(localEnabled ? localLanguage : null);
+    onSizeChange(localSize);
     onClose();
   };
 
@@ -155,6 +162,22 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
                     {lang.name}
                   </MenuItem>
                 ))}
+              </Select>
+            </StyledFormControl>
+          )}
+
+          {/* Text Size Selection */}
+          {localEnabled && (
+            <StyledFormControl fullWidth>
+              <InputLabel>Text Size</InputLabel>
+              <Select
+                value={localSize}
+                onChange={(e) => setLocalSize(e.target.value as 'small' | 'medium' | 'large')}
+                label="Text Size"
+              >
+                <MenuItem value="small">Small (14px)</MenuItem>
+                <MenuItem value="medium">Medium (16px)</MenuItem>
+                <MenuItem value="large">Large (18px)</MenuItem>
               </Select>
             </StyledFormControl>
           )}

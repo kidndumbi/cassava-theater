@@ -6,6 +6,7 @@ interface SubtitleOverlayProps {
   currentTime: number;
   isVisible?: boolean;
   enabled?: boolean;
+  textSize?: 'small' | 'medium' | 'large';
 }
 
 const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
@@ -13,6 +14,7 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
   currentTime,
   isVisible = true,
   enabled = false,
+  textSize = 'medium',
 }) => {
   const [cues, setCues] = useState<VTTCue[]>([]);
   const [activeCue, setActiveCue] = useState<VTTCue | null>(null);
@@ -67,12 +69,25 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     return null;
   }
 
+  // Get font size based on textSize prop
+  const getFontSize = () => {
+    switch (textSize) {
+      case 'small':
+        return '14px';
+      case 'large':
+        return '18px';
+      case 'medium':
+      default:
+        return '16px';
+    }
+  };
+
   return (
     <div className="absolute top-4 right-4 z-50 pointer-events-none">
       <div
         className="bg-black bg-opacity-75 text-white px-4 py-2 rounded-lg shadow-lg max-w-xs"
         style={{
-          fontSize: '16px',
+          fontSize: getFontSize(),
           lineHeight: '1.4',
           textAlign: 'center',
           textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
