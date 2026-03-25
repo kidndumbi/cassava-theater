@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import { Clear, SkipNext } from "@mui/icons-material";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import NotesIcon from "@mui/icons-material/Notes";
+import SubtitlesIcon from "@mui/icons-material/Subtitles";
 import AppIconButton from "../common/AppIconButton";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { removeVidExt } from "../../util/helperFunctions";
@@ -11,7 +12,7 @@ import FeaturedPlayListIcon from "@mui/icons-material/FeaturedPlayList";
 interface ControlButton {
   icon: React.ReactNode;
   tooltip: string;
-  onClick: () => void;
+  onClick?: () => void;
   sx?: React.ComponentProps<typeof AppIconButton>["sx"];
   show?: boolean;
 }
@@ -24,6 +25,7 @@ type SideControlsOverlayProps = {
   nextEpisode?: VideoDataModel;
   toggleCastAndCrew?: () => void;
   togglePlaylistControl?: () => void;
+  toggleSubtitleOverlayControl?: () => void;
 };
 
 const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
@@ -34,6 +36,7 @@ const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
   nextEpisode,
   toggleCastAndCrew,
   togglePlaylistControl,
+  toggleSubtitleOverlayControl,
 }) => {
   const handleCancelClick = () => handleCancel(filePath);
 
@@ -62,6 +65,12 @@ const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
       show: !!toggleCastAndCrew,
     },
     {
+      icon: <SubtitlesIcon />,
+      tooltip: "Subtitle Overlay",
+      onClick: toggleSubtitleOverlayControl,
+      show: !!toggleSubtitleOverlayControl,
+    },
+    {
       icon: <FeaturedPlayListIcon />,
       tooltip: "Playlist controls",
       onClick: togglePlaylistControl,
@@ -73,7 +82,7 @@ const SideControlsOverlay: React.FC<SideControlsOverlayProps> = ({
     <Box className="absolute right-5 top-5 flex flex-col gap-1.5">
       {controlButtons.map(
         (button, index) =>
-          (button.show === undefined || button.show) && (
+          (button.show === undefined || button.show) && button.onClick && (
             <AppIconButton
               key={index}
               tooltip={button.tooltip}

@@ -5,12 +5,14 @@ interface SubtitleOverlayProps {
   subtitleUrl: string | null;
   currentTime: number;
   isVisible?: boolean;
+  enabled?: boolean;
 }
 
 const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
   subtitleUrl,
   currentTime,
   isVisible = true,
+  enabled = false,
 }) => {
   const [cues, setCues] = useState<VTTCue[]>([]);
   const [activeCue, setActiveCue] = useState<VTTCue | null>(null);
@@ -18,7 +20,7 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
 
   // Fetch and parse VTT file when URL changes
   useEffect(() => {
-    if (!subtitleUrl) {
+    if (!subtitleUrl || !enabled) {
       setCues([]);
       setActiveCue(null);
       return;
@@ -47,7 +49,7 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     };
 
     fetchSubtitles();
-  }, [subtitleUrl]);
+  }, [subtitleUrl, enabled]);
 
   // Find active cue based on current time
   useEffect(() => {
@@ -60,8 +62,8 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     setActiveCue(active);
   }, [cues, currentTime]);
 
-  // Don't render anything if not visible, loading, or no active cue
-  if (!isVisible || loading || !activeCue) {
+  // Don't render anything if not enabled, not visible, loading, or no active cue
+  if (!enabled || !isVisible || loading || !activeCue) {
     return null;
   }
 

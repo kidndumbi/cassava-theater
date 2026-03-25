@@ -29,6 +29,7 @@ import { useVideoPlayerLogic } from "../../hooks/useVideoPlayerLogic";
 import { useDebounce } from "@uidotdev/usehooks";
 import CustomDrawer from "../common/CustomDrawer";
 import SubtitleOverlay from "./SubtitleOverlay";
+import SubtitleOverlayControlModal from "./SubtitleOverlayControlModal";
 import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
 import { useModalState } from "../../hooks/useModalState";
@@ -88,7 +89,10 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const castAndCrewModal = useModalState(false);
     const notesModal = useModalState(false);
     const subtitleTimingModal = useModalState(false);
+    const subtitleOverlayControlModal = useModalState(false);
     const [subtitleModalOpen, setSubtitleModalOpen] = useState(false);
+    const [subtitleOverlayEnabled, setSubtitleOverlayEnabled] = useState(false);
+    const [subtitleOverlayLanguage, setSubtitleOverlayLanguage] = useState<'en' | 'es' | 'fr' | null>(null);
     const [sliderValue, setSliderValue] = useState<number | null>(null);
     const debouncedSliderValue = useDebounce(sliderValue, 300);
     const isMouseActive = useMouseActivity();
@@ -149,6 +153,29 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       // Use active subtitle path based on the activeSubtitleLanguage setting
       const activeSubtitlePath = currentVideo ? getActiveSubtitlePath(currentVideo) : subtitleFilePath;
       const baseUrl = getUrl("file", activeSubtitlePath, null, port);
+      return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : baseUrl;
+    };
+
+    // Get subtitle URL for overlay based on selected language
+    const getOverlaySubtitleUrl = (language: 'en' | 'es' | 'fr' | null) => {
+      if (!currentVideo || !language) return null;
+      
+      let subtitlePath = null;
+      switch (language) {
+        case 'en':
+          subtitlePath = currentVideo.subtitlePath;
+          break;
+        case 'es':
+          subtitlePath = currentVideo.subtitlePathEs;
+          break;
+        case 'fr':
+          subtitlePath = currentVideo.subtitlePathFr;
+          break;
+      }
+      
+      if (!subtitlePath) return null;
+      
+      const baseUrl = getUrl("file", subtitlePath, null, port);
       return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : baseUrl;
     };
 
@@ -275,6 +302,19 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       setSubtitleModalOpen(isOpen);
     };
 
+    // Handle subtitle overlay control modal
+    const handleToggleSubtitleOverlayControl = () => {
+      subtitleOverlayControlModal.setOpen(true);
+    };
+
+    const handleSubtitleOverlayToggle = (enabled: boolean) => {
+      setSubtitleOverlayEnabled(enabled);
+    };
+
+    const handleSubtitleOverlayLanguageChange = (language: 'en' | 'es' | 'fr' | null) => {
+      setSubtitleOverlayLanguage(language);
+    };
+
  
 
     const renderTimeDisplay = () => (
@@ -347,9 +387,10 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
 
         {/* Custom Subtitle Overlay */}
         <SubtitleOverlay
-          subtitleUrl={subtitleFilePath && subtitleFilePath !== "None" ? getSubtitleUrl() : null}
+          subtitleUrl={getOverlaySubtitleUrl(subtitleOverlayLanguage)}
           currentTime={currentTime || 0}
           isVisible={!subtitleModalOpen}
+          enabled={subtitleOverlayEnabled}
         />
 
         {(isMouseActive || subtitleModalOpen) && (
@@ -380,6 +421,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               togglePlaylistControl={
                 openPlaylistControls ? openPlaylistControls : undefined
               }
+              toggleSubtitleOverlayControl={handleToggleSubtitleOverlayControl}
               handleCancel={(filePath) => {
                 setVideoUrl("");
                 handleCancel(filePath);
@@ -414,6 +456,16 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           onClose={handleCloseSubtitleTimingModal}
           subtitleFilePath={subtitleFilePath}
           onTimingAdjusted={handleTimingAdjusted}
+        />
+
+        <SubtitleOverlayControlModal
+          open={subtitleOverlayControlModal.open}
+          onClose={subtitleOverlayControlModal.setOpen.bind(null, false)}
+          videoData={currentVideo}
+          isEnabled={subtitleOverlayEnabled}
+          selectedLanguage={subtitleOverlayLanguage}
+          onToggleEnabled={handleSubtitleOverlayToggle}
+          onLanguageChange={handleSubtitleOverlayLanguageChange}
         />
 
         {isNotMp4VideoFormat && isMouseActive && (
