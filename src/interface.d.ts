@@ -8,6 +8,7 @@ import { PlaylistPlayRequestModel } from "./models/playlistPlayRequest.model";
 import { PlaylistCommands } from "./models/playlist-commands.model";
 import { LlmResponseChunk } from "./models/llm-response-chunk.model";
 import { OllamaModel } from "./models/ollamaModel.model";
+import { SubtitleSyncQueueItem } from "./models/subtitle-sync-queue-item.model";
 import { 
   SubtitleGenerationRequest, 
   SubtitleGenerationResponse, 
@@ -71,6 +72,18 @@ export interface MainNotificationsAPI {
     callback: (progress: {
       queueItem: SubtitleGenerationQueueItem;
       subtitlePath: string;
+    }) => void,
+  ) => void;
+  subtitleSyncProgress: (
+    callback: (progress: { queue: SubtitleSyncQueueItem[] }) => void,
+  ) => void;
+  subtitleSyncUpdatedFromBackend: (
+    callback: (progress: { queue: SubtitleSyncQueueItem[] }) => void,
+  ) => void;
+  subtitleSyncCompleted: (
+    callback: (progress: {
+      queueItem: SubtitleSyncQueueItem;
+      queue: SubtitleSyncQueueItem[];
     }) => void,
   ) => void;
   youtubeDownloadProgress: (
@@ -321,6 +334,29 @@ export interface SubtitleAPI {
   swapSubtitleQueueItems: (id1: string, id2: string) => Promise<{ success: boolean; queue: SubtitleGenerationQueueItem[] }>;
 }
 
+export interface SubtitleSyncAPI {
+  addToSyncQueue: (
+    videoPath: string, 
+    subtitlePath: string, 
+    options?: { splitPenalty?: number; noSplits?: boolean }
+  ) => Promise<{ success: boolean; queue: SubtitleSyncQueueItem[] }>;
+  addToSyncQueueBulk: (
+    items: Array<{
+      videoPath: string;
+      subtitlePath: string;
+      options?: { splitPenalty?: number; noSplits?: boolean };
+    }>
+  ) => Promise<{ success: boolean; queue: SubtitleSyncQueueItem[] }>;
+  pauseSyncItem: (id: string) => Promise<{ success: boolean; queue: SubtitleSyncQueueItem[] }>;
+  unpauseSyncItem: (id: string) => Promise<{ success: boolean; queue: SubtitleSyncQueueItem[] }>;
+  isItemPaused: (id: string) => Promise<boolean>;
+  getCurrentProcessingItem: () => Promise<SubtitleSyncQueueItem | null>;
+  getSyncQueue: () => Promise<SubtitleSyncQueueItem[]>;
+  removeFromSyncQueue: (id: string) => Promise<{ success: boolean; queue: SubtitleSyncQueueItem[] }>;
+  initializeSyncQueue: () => Promise<boolean>;
+  swapQueueItems: (id1: string, id2: string) => Promise<{ success: boolean; queue: SubtitleSyncQueueItem[] }>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -340,5 +376,6 @@ declare global {
     currentlyPlayingAPI: CurrentlyPlayingAPI;
     llmAPI: LlmAPI;
     subtitleAPI: SubtitleAPI;
+    subtitleSyncAPI: SubtitleSyncAPI;
   }
 }

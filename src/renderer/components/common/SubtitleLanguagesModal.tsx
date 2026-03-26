@@ -17,8 +17,11 @@ import {
 } from "@mui/material";
 import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import DeleteIcon from "@mui/icons-material/Delete";
+import SyncIcon from "@mui/icons-material/Sync";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { selectFile } from "../../util/helperFunctions";
+import { addToSubtitleSyncQueue } from "../../util/subtitleSyncAPI-helpers";
+import { useSnackbar } from "../../contexts/SnackbarContext";
 
 interface SubtitleLanguagesModalProps {
   open: boolean;
@@ -84,6 +87,7 @@ export const SubtitleLanguagesModal: React.FC<SubtitleLanguagesModalProps> = ({
   videoData,
   onSave,
 }) => {
+  const { showSnackbar } = useSnackbar();
   const [subtitlePaths, setSubtitlePaths] = useState({
     en: videoData.subtitlePath && videoData.subtitlePath.trim().toLowerCase() !== "none" ? videoData.subtitlePath : "",
     es: videoData.subtitlePathEs && videoData.subtitlePathEs.trim().toLowerCase() !== "none" ? videoData.subtitlePathEs : "",
@@ -128,6 +132,28 @@ export const SubtitleLanguagesModal: React.FC<SubtitleLanguagesModalProps> = ({
     // If clearing the active language, set active to null
     if (activeLanguage === language) {
       setActiveLanguage(null);
+    }
+  };
+
+  const handleSyncSubtitle = async (language: 'en' | 'es' | 'fr') => {
+    const subtitlePath = subtitlePaths[language];
+    const videoPath = videoData.filePath;
+    
+    if (!subtitlePath || !videoPath) {
+      showSnackbar("Please select a subtitle file first", "error");
+      return;
+    }
+    
+    try {
+      const result = await addToSubtitleSyncQueue(videoPath, subtitlePath);
+      if (result.success) {
+        showSnackbar("Subtitle sync added to queue", "success");
+      } else {
+        showSnackbar(result.message || "Failed to add subtitle sync to queue", "error");
+      }
+    } catch (error) {
+      console.error("Error adding subtitle sync to queue:", error);
+      showSnackbar("Failed to add subtitle sync to queue", "error");
     }
   };
 
@@ -206,6 +232,15 @@ export const SubtitleLanguagesModal: React.FC<SubtitleLanguagesModalProps> = ({
                 aria-label="Select English subtitle file"
               >
                 <FolderOpenIcon />
+              </IconButton>
+              <IconButton
+                onClick={() => handleSyncSubtitle('en')}
+                sx={{ color: "#ff9800" }}
+                disabled={!subtitlePaths.en || !videoData.filePath}
+                aria-label="Sync English subtitle with video"
+                title="Sync subtitle timing with video using alass"
+              >
+                <SyncIcon />
               </IconButton>
               <IconButton
                 onClick={() => handleClearFile('en')}

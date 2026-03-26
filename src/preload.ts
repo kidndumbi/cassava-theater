@@ -29,7 +29,9 @@ import { ConversionQueueItem } from "./models/conversion-queue-item.model";
 import { LlmIPCChannels } from "./enums/llm-IPC-Channels.enum";
 import { LlmResponseChunk } from "./models/llm-response-chunk.model";
 import { SubtitleIPCChannels } from "./enums/subtitleIPCChannels.enum";
+import { SubtitleSyncIPCChannels } from "./enums/subtitleSyncIPCChannels.enum";
 import { SubtitleGenerationQueueItem } from "./models/subtitle-generation-queue-item.model";
+import { SubtitleSyncQueueItem } from "./models/subtitle-sync-queue-item.model";
 import { 
   SubtitleGenerationRequest, 
   SubtitleGenerationResponse, 
@@ -260,6 +262,49 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
         progress: {
           queueItem: SubtitleGenerationQueueItem;
           subtitlePath: string;
+        },
+      ) => callback(progress),
+    );
+  },
+  subtitleSyncProgress: (
+    callback: (progress: { queue: SubtitleSyncQueueItem[] }) => void,
+  ) => {
+    ipcRenderer.on(
+      "subtitle-sync-progress",
+      (
+        event: Electron.IpcRendererEvent,
+        progress: {
+          queue: SubtitleSyncQueueItem[];
+        },
+      ) => callback(progress),
+    );
+  },
+  subtitleSyncUpdatedFromBackend: (
+    callback: (progress: { queue: SubtitleSyncQueueItem[] }) => void,
+  ) => {
+    ipcRenderer.on(
+      "subtitle-sync-update-from-backend",
+      (
+        event: Electron.IpcRendererEvent,
+        progress: {
+          queue: SubtitleSyncQueueItem[];
+        },
+      ) => callback(progress),
+    );
+  },
+  subtitleSyncCompleted: (
+    callback: (progress: {
+      queueItem: SubtitleSyncQueueItem;
+      queue: SubtitleSyncQueueItem[];
+    }) => void,
+  ) => {
+    ipcRenderer.on(
+      "subtitle-sync-completed",
+      (
+        event: Electron.IpcRendererEvent,
+        progress: {
+          queueItem: SubtitleSyncQueueItem;
+          queue: SubtitleSyncQueueItem[];
         },
       ) => callback(progress),
     );
@@ -682,5 +727,56 @@ contextBridge.exposeInMainWorld("subtitleAPI", {
   },
   swapSubtitleQueueItems: (id1: string, id2: string) => {
     return ipcRenderer.invoke(SubtitleIPCChannels.SwapSubtitleQueueItems, id1, id2);
+  },
+});
+
+contextBridge.exposeInMainWorld("subtitleSyncAPI", {
+  addToSyncQueue: (
+    videoPath: string, 
+    subtitlePath: string, 
+    options?: { splitPenalty?: number; noSplits?: boolean }
+  ) => {
+    return ipcRenderer.invoke(
+      SubtitleSyncIPCChannels.AddToSyncQueue,
+      videoPath,
+      subtitlePath,
+      options,
+    );
+  },
+  addToSyncQueueBulk: (
+    items: Array<{
+      videoPath: string;
+      subtitlePath: string;
+      options?: { splitPenalty?: number; noSplits?: boolean };
+    }>
+  ) => {
+    return ipcRenderer.invoke(
+      SubtitleSyncIPCChannels.AddToSyncQueueBulk,
+      items,
+    );
+  },
+  pauseSyncItem: (id: string) => {
+    return ipcRenderer.invoke(SubtitleSyncIPCChannels.PauseSyncItem, id);
+  },
+  unpauseSyncItem: (id: string) => {
+    return ipcRenderer.invoke(SubtitleSyncIPCChannels.UnpauseSyncItem, id);
+  },
+  isItemPaused: (id: string) => {
+    return ipcRenderer.invoke(SubtitleSyncIPCChannels.IsItemPaused, id);
+  },
+  getCurrentProcessingItem: () => {
+    return ipcRenderer.invoke(SubtitleSyncIPCChannels.GetCurrentProcessingItem);
+  },
+  getSyncQueue: () => {
+    return ipcRenderer.invoke(SubtitleSyncIPCChannels.GetSyncQueue);
+  },
+  removeFromSyncQueue: (id: string) => {
+    return ipcRenderer.invoke(SubtitleSyncIPCChannels.RemoveFromSyncQueue, id);
+  },
+  initializeSyncQueue: () => {
+    return ipcRenderer.invoke(SubtitleSyncIPCChannels.InitializeSyncQueue);
+  },
+  swapQueueItems: (id1: string, id2: string) => {
+    return ipcRenderer.invoke(SubtitleSyncIPCChannels.SwapQueueItems, id1, id2);
   },
 });

@@ -6,6 +6,7 @@ import { loggingService as log } from "./main-logging.service";
 import { VideoDataModel } from "../../models/videoData.model";
 import { ConversionQueueItem } from "../../models/conversion-queue-item.model";
 import { SubtitleGenerationQueueItem } from "../../models/subtitle-generation-queue-item.model";
+import { SubtitleSyncQueueItem } from "../../models/subtitle-sync-queue-item.model";
 import { SettingsModel } from "../../models/settings.model";
 import { VideoScreenshotModel } from "../../models/video-screenshot.model";
 import { PlaylistModel } from "../../models/playlist.model";
@@ -16,6 +17,7 @@ type Collections = {
   markedForDelete: string; // Each key is a file path, value is the file path string
   converQueueItems: ConversionQueueItem;
   subtitleQueueItems: SubtitleGenerationQueueItem;
+  subtitleSyncQueueItems: SubtitleSyncQueueItem;
   settings: SettingsModel;
   videoScreenshots: VideoScreenshotModel;
   playlists: PlaylistModel; 

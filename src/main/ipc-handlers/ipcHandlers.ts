@@ -7,6 +7,7 @@ import { openDialogIpcHandlers } from "./openDialogIpcHandlers";
 import { playlistIpcHandlers } from "./playlistIpcHandlers";
 import { settingsIpcHandlers } from "./settingsIpcHandlers";
 import { subtitleIpcHandlers } from "./subtitleIpcHandlers";
+import { subtitleSyncIpcHandlers } from "./subtitleSyncIpcHandlers";
 import { theMovieDbIpcHandlers } from "./theMovieDbIpcHandlers";
 import { videosIpcHandlers } from "./videosIpcHandlers";
 import { youtubeIpcHandlers } from "./youtubeIpcHandlers";
@@ -26,4 +27,5 @@ export function registerIpcHandlers() {
   currentlPlayingIpcHandlers();
   llmIpcHandlers();
   subtitleIpcHandlers();
+  subtitleSyncIpcHandlers();
 }

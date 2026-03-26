@@ -39,5 +39,10 @@ export enum AppSocketEvents {
   SUBTITLE_GENERATION_COMPLETE = "subtitle-generation-complete",
   SUBTITLE_GENERATION_ITEM_CANCELLED = "subtitle-generation-item-cancelled",
   SUBTITLE_GENERATION_QUEUE_UPDATED = "subtitle-generation-queue-updated",
+  SUBTITLE_SYNC_REMOVE_FROM_QUEUE = "subtitle-sync-remove-from-queue",
+  SUBTITLE_SYNC_PROGRESS = "subtitle-sync-progress",
+  SUBTITLE_SYNC_COMPLETED = "subtitle-sync-completed",
+  SUBTITLE_SYNC_ITEM_CANCELLED = "subtitle-sync-item-cancelled",
+  SUBTITLE_SYNC_QUEUE_UPDATED = "subtitle-sync-queue-updated",
   IMAGES_GET_BASE64 = "images-get-base64",
 }
