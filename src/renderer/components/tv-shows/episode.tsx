@@ -4,6 +4,7 @@ import FourMpIcon from "@mui/icons-material/FourMp";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FeaturedPlayListIcon from "@mui/icons-material/FeaturedPlayList";
 import TranslateIcon from "@mui/icons-material/Translate";
+import SubtitlesIcon from "@mui/icons-material/Subtitles";
 
 import {
   getFileExtension,
@@ -65,6 +66,7 @@ export const Episode: React.FC<EpisodeProps> = ({
   const [openNotesModal, setOpenNotesModal] = useState(false);
   const [openTranslationModal, setOpenTranslationModal] = useState(false);
   const [isInQueue, setIsInQueue] = useState(false);
+  const [isGeneratingSubtitles, setIsGeneratingSubtitles] = useState(false);
   const handleCloseNotesModal = () => setOpenNotesModal(false);
   const handleCloseTranslationModal = () => setOpenTranslationModal(false);
 
@@ -73,6 +75,53 @@ export const Episode: React.FC<EpisodeProps> = ({
   const handlePlayClick = () => onEpisodeClick(episode);
   const handleNotesClick = () => setOpenNotesModal(true);
   const handleTranslationClick = () => setOpenTranslationModal(true);
+
+  const handleGenerateSubtitles = async () => {
+    setIsGeneratingSubtitles(true);
+    try {
+      const response = await window.subtitleAPI.generateSubtitles({
+        videoPath: episode.filePath,
+        format: 'vtt',
+        language: 'en',
+        model: 'base'
+      });
+      
+      if (response.success) {
+        // If subtitle already exists, update immediately
+        if (response.subtitlePath) {
+          await handleSubtitleUpdate({
+            subtitlePath: response.subtitlePath,
+            activeSubtitleLanguage: 'en'
+          });
+        } else {
+          // Poll for completion if generation started
+          const pollForCompletion = async () => {
+            const status = await window.subtitleAPI.checkSubtitleStatus(response.jobId);
+            if (status?.status === 'completed' && status.subtitlePath) {
+              await handleSubtitleUpdate({
+                subtitlePath: status.subtitlePath,
+                activeSubtitleLanguage: 'en'
+              });
+              setIsGeneratingSubtitles(false);
+            } else if (status?.status === 'failed') {
+              console.error('Subtitle generation failed:', status.error);
+              setIsGeneratingSubtitles(false);
+            } else if (status?.status === 'generating' || status?.status === 'pending') {
+              // Continue polling
+              setTimeout(pollForCompletion, 2000);
+            }
+          };
+          setTimeout(pollForCompletion, 2000);
+        }
+      } else {
+        console.error('Failed to start subtitle generation:', response.error);
+        setIsGeneratingSubtitles(false);
+      }
+    } catch (error) {
+      console.error('Error generating subtitles:', error);
+      setIsGeneratingSubtitles(false);
+    }
+  };
 
   // Handle subtitle updates using the new multi-language system
   const handleSubtitleUpdate = async (subtitleData: {
@@ -236,6 +285,13 @@ export const Episode: React.FC<EpisodeProps> = ({
             onClick={() => onPlaylistSelect(episode)}
           >
             <FeaturedPlayListIcon />
+          </AppIconButton>
+          <AppIconButton
+            tooltip={isGeneratingSubtitles ? "Generating Subtitles..." : "Generate Subtitles"}
+            onClick={handleGenerateSubtitles}
+            disabled={isGeneratingSubtitles}
+          >
+            <SubtitlesIcon />
           </AppIconButton>
           <AppIconButton
             tooltip="Translate Subtitles"

@@ -28,6 +28,12 @@ import { CurrentlyPlayingIPCChannels } from "./enums/currently-playing-IPCChanne
 import { ConversionQueueItem } from "./models/conversion-queue-item.model";
 import { LlmIPCChannels } from "./enums/llm-IPC-Channels.enum";
 import { LlmResponseChunk } from "./models/llm-response-chunk.model";
+import { SubtitleIPCChannels } from "./enums/subtitleIPCChannels.enum";
+import { 
+  SubtitleGenerationRequest, 
+  SubtitleGenerationResponse, 
+  SubtitleGeneration 
+} from "./models/subtitle.model";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -565,5 +571,17 @@ contextBridge.exposeInMainWorld("llmAPI", {
   },
   pingOllamaServer: (model?: string) => {
     return ipcRenderer.invoke(LlmIPCChannels.PING_OLLAMA_SERVER, model);
+  },
+});
+
+contextBridge.exposeInMainWorld("subtitleAPI", {
+  generateSubtitles: (request: SubtitleGenerationRequest): Promise<SubtitleGenerationResponse> => {
+    return ipcRenderer.invoke(SubtitleIPCChannels.GenerateSubtitles, request);
+  },
+  checkSubtitleStatus: (jobId: string): Promise<SubtitleGeneration | null> => {
+    return ipcRenderer.invoke(SubtitleIPCChannels.CheckSubtitleStatus, jobId);
+  },
+  getExistingSubtitles: (videoPath: string): Promise<string[]> => {
+    return ipcRenderer.invoke(SubtitleIPCChannels.GetExistingSubtitles, videoPath);
   },
 });
