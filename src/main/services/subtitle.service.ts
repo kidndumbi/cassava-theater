@@ -202,17 +202,36 @@ class SubtitleGenerationQueue {
       subtitleQueueDataService.putSubtitleQueueItem(nextItem.id, nextItem);
       try {
         await this.processor(nextItem, this, this.progressIntervalMs);
-        // Remove item from queue when completed
+        // Remove item from queue when completed successfully
         const idx = this.queue.findIndex((i) => i.id === nextItem.id);
         if (idx !== -1) {
+          console.log(`🎬 SubtitleQueue: Removing completed item from queue: ${nextItem.fileName}`);
           this.queue.splice(idx, 1);
           subtitleQueueDataService.deleteSubtitleQueueItem(nextItem.id);
+          
+          // Notify frontend of queue update after removal
+          const mainWindow = getMainWindow();
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            console.log("🎬 SubtitleQueue: Sending final queue update after removal");
+            mainWindow.webContents.send("subtitle-generation-update-from-backend", {
+              queue: this.queue,
+            });
+          }
         }
       } catch (error) {
         nextItem.status = "failed";
         nextItem.error = error instanceof Error ? error.message : "Unknown error";
         subtitleQueueDataService.putSubtitleQueueItem(nextItem.id, nextItem);
         log.error(`Subtitle generation failed for ${nextItem.videoPath}:`, error);
+        
+        // Notify frontend of the failed item status update
+        const mainWindow = getMainWindow();
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          console.log("🎬 SubtitleQueue: Sending error status update to frontend");
+          mainWindow.webContents.send("subtitle-generation-update-from-backend", {
+            queue: this.queue,
+          });
+        }
       } finally {
         this.currentProcessingItem = null;
         this.currentWhisperProcess = null;
@@ -437,7 +456,6 @@ function performSubtitleGeneration(
   socketIo: Server,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    let lastProgressTime = 0;
     const subtitlePath = getSubtitlePath(queueItem.videoPath, queueItem.format);
     const videoDir = path.dirname(queueItem.videoPath);
 
@@ -465,6 +483,20 @@ function performSubtitleGeneration(
 
     log.info(`🚀 Whisper process started with PID: ${whisperProcess.pid}`);
     
+    // Update status to processing
+    queueItem.status = "processing";
+    const processingInfo = {
+      id: queueItem.id,
+      queue: getSubtitleGenerationQueueInstance().getQueue(),
+    };
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      console.log("🎬 SubtitleQueue: Sending processing status to frontend");
+      mainWindow.webContents.send("subtitle-generation-update-from-backend", processingInfo);
+    }
+
+    socketIo.emit(AppSocketEvents.SUBTITLE_GENERATION_PROGRESS, processingInfo);
+    
     // Set up a heartbeat to show the process is still running
     const heartbeatInterval = setInterval(() => {
       log.info(`⏳ Subtitle generation in progress... (PID: ${whisperProcess.pid})`);
@@ -478,21 +510,6 @@ function performSubtitleGeneration(
       const output = data.toString().trim();
       if (output) {
         log.info(`📝 Whisper stdout: ${output}`);
-      }
-      
-      // Try to parse progress from whisper output if possible
-      const progressMatch = stdout.match(/(\d+)%/);
-      if (progressMatch) {
-        const now = Date.now();
-        if (now - lastProgressTime >= progressIntervalMs) {
-          lastProgressTime = now;
-          handleProgress(
-            { percent: parseInt(progressMatch[1]) },
-            queueItem,
-            mainWindow,
-            socketIo,
-          );
-        }
       }
     });
 
@@ -523,7 +540,8 @@ function performSubtitleGeneration(
           await fs.access(subtitlePath);
           log.info(`✅ Subtitle generation completed successfully!`);
           log.info(`📁 Subtitle file created: ${subtitlePath}`);
-          handleSubtitleGenerationEnd(resolve, mainWindow, queueItem, socketIo);
+          
+          handleSubtitleGenerationEnd(resolve, mainWindow, queueItem, socketIo, queue);
         } catch (error) {
           log.error(`❌ Subtitle file not found after generation: ${subtitlePath}`);
           handleSubtitleGenerationError(
@@ -557,6 +575,7 @@ function performSubtitleGeneration(
   });
 }
 
+// Note: This function is kept for potential future use but currently not called
 function handleProgress(
   progress: SubtitleProgress,
   queueItem: SubtitleGenerationQueueItem,
@@ -564,6 +583,8 @@ function handleProgress(
   socketIo: Server,
 ) {
   queueItem.percent = progress.percent || 0;
+  
+  console.log(`🎬 SubtitleQueue: Progress update for ${queueItem.fileName}: ${queueItem.percent}%`);
 
   const progressInfo = {
     id: queueItem.id,
@@ -572,6 +593,7 @@ function handleProgress(
   };
 
   if (mainWindow && !mainWindow.isDestroyed()) {
+    console.log(`🎬 SubtitleQueue: Sending progress to frontend: ${queueItem.percent}%`);
     mainWindow.webContents.send("subtitle-generation-progress", progressInfo);
   }
 
@@ -583,16 +605,20 @@ function handleSubtitleGenerationEnd(
   mainWindow: Electron.BrowserWindow | null,
   queueItem: SubtitleGenerationQueueItem,
   socketIo: Server,
+  queue: SubtitleGenerationQueue,
 ) {
-  queueItem.percent = 100;
   queueItem.status = "completed";
+
+  log.info(`🎉 Subtitle generation completed for: ${queueItem.fileName}`);
 
   const completeInfo = {
     id: queueItem.id,
-    queue: getSubtitleGenerationQueueInstance().getQueue(),
+    queueItem: queueItem,
+    queue: queue.getQueue(),
   };
 
   if (mainWindow && !mainWindow.isDestroyed()) {
+    console.log("🎬 SubtitleQueue: Sending completion event to frontend");
     mainWindow.webContents.send("subtitle-generation-complete", completeInfo);
   }
 

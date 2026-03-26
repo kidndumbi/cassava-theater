@@ -118,7 +118,7 @@ export const Episode: React.FC<EpisodeProps> = ({
     });
     
     if (handleFilepathChange) {
-      handleFilepathChange(newActiveSubtitlePath || "None", {
+      handleFilepathChange(newActiveSubtitlePath || "", {
         ...episode,
         ...subtitleData,
       });
