@@ -61,6 +61,18 @@ export interface MainNotificationsAPI {
       queue: ConversionQueueItem[];
     }) => void,
   ) => void;
+  subtitleGenerationProgress: (
+    callback: (progress: { queue: SubtitleGenerationQueueItem[] }) => void,
+  ) => void;
+  subtitleGenerationUpdatedFromBackend: (
+    callback: (progress: { queue: SubtitleGenerationQueueItem[] }) => void,
+  ) => void;
+  subtitleGenerationCompleted: (
+    callback: (progress: {
+      queueItem: SubtitleGenerationQueueItem;
+      queue: SubtitleGenerationQueueItem[];
+    }) => void,
+  ) => void;
   youtubeDownloadProgress: (
     callback: (progress: { queue: YoutubeDownloadQueueItem[] }) => void,
   ) => void;
@@ -281,9 +293,32 @@ export interface LlmAPI {
 }
 
 export interface SubtitleAPI {
+  // Legacy functions for backward compatibility
   generateSubtitles: (request: SubtitleGenerationRequest) => Promise<SubtitleGenerationResponse>;
   checkSubtitleStatus: (jobId: string) => Promise<SubtitleGeneration | null>;
   getExistingSubtitles: (videoPath: string) => Promise<string[]>;
+
+  // New queue management functions
+  addToSubtitleGenerationQueue: (
+    inputPath: string,
+    language?: string,
+    format?: string,
+    model?: string
+  ) => Promise<{ success: boolean; queue: SubtitleGenerationQueueItem[] }>;
+  addToSubtitleGenerationQueueBulk: (
+    inputPaths: string[],
+    language?: string,
+    format?: string,
+    model?: string
+  ) => Promise<{ success: boolean; queue: SubtitleGenerationQueueItem[] }>;
+  pauseSubtitleGenerationItem: (id: string) => Promise<{ success: boolean; queue: SubtitleGenerationQueueItem[] }>;
+  unpauseSubtitleGenerationItem: (id: string) => Promise<{ success: boolean; queue: SubtitleGenerationQueueItem[] }>;
+  isSubtitleItemPaused: (id: string) => Promise<boolean>;
+  getCurrentProcessingSubtitleItem: () => Promise<SubtitleGenerationQueueItem | null>;
+  getSubtitleGenerationQueue: () => Promise<SubtitleGenerationQueueItem[]>;
+  removeFromSubtitleGenerationQueue: (id: string) => Promise<{ success: boolean; queue: SubtitleGenerationQueueItem[] }>;
+  initializeSubtitleGenerationQueue: () => Promise<boolean>;
+  swapSubtitleQueueItems: (id1: string, id2: string) => Promise<{ success: boolean; queue: SubtitleGenerationQueueItem[] }>;
 }
 
 declare global {

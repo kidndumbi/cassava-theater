@@ -8,6 +8,7 @@ import { Processing } from "./processing/Processing";
 import { useSelector } from "react-redux";
 import { selYoutubeDownloadProgress } from "../store/youtubeDownload.slice";
 import { selConvertToMp4Progress } from "../store/mp4ConversionNew.slice";
+import { selSubtitleGenerationProgress } from "../store/subtitleGeneration.slice";
 import { useState } from "react";
 
 const StatusDisplayItem = ({
@@ -40,6 +41,9 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
   const { open, openModal, closeModal } = useModalState(false);
   const youtubeDownloadProgressQueue = useSelector(selYoutubeDownloadProgress);
   const mp4ConversionProgressNew = useSelector(selConvertToMp4Progress);
+  const subtitleGenerationProgressNew = useSelector(selSubtitleGenerationProgress);
+
+  console.log("🎬 StatusDisplay: Subtitle generation progress:", subtitleGenerationProgressNew);
 
   const [toolToShow, setToolToShow] = useState<string>("mp4-conversion");
 
@@ -52,7 +56,8 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
 
   const processing =
     mp4ConversionProgressNew.length > 0 ||
-    youtubeDownloadProgressQueue.length > 0;
+    youtubeDownloadProgressQueue.length > 0 ||
+    subtitleGenerationProgressNew.length > 0;
 
   return (
     <Box
@@ -111,6 +116,21 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
           />
         </StatusDisplayItem>
       )}
+      {subtitleGenerationProgressNew.length > 0 && (
+        <StatusDisplayItem
+          onClick={() => {
+            setToolToShow("subtitle-generation");
+            openModal();
+          }}
+        >
+          <Chip
+            label={`Subtitle Generation (${subtitleGenerationProgressNew.length})`}
+            variant="outlined"
+            size="small"
+            sx={chipSx}
+          />
+        </StatusDisplayItem>
+      )}
 
       <AppModal
         open={open}
@@ -122,6 +142,7 @@ export const StatusDisplay = ({ port }: StatusDisplayProps) => {
           toolToShow={toolToShow}
           youtubeDownloadProgressList={youtubeDownloadProgressQueue}
           mp4ConversionProgress={mp4ConversionProgressNew}
+          subtitleGenerationProgress={subtitleGenerationProgressNew}
         />
       </AppModal>
     </Box>

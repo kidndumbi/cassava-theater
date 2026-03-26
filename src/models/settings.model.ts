@@ -15,6 +15,7 @@ export interface SettingsModel {
     mp4ConversionStatus: boolean;
     userConnectionStatus: boolean;
     youtubeDownloadStatus?: boolean;
+    subtitleGenerationStatus?: boolean;
   };
   ollamaModel: string;
   subtitleOverlay: {

@@ -34,5 +34,10 @@ export enum AppSocketEvents {
   MP4_CONVERSION_PROGRESS = "mp4-conversion-progress",
   MP4_CONVERSION_ITEM_COMPLETED = "mp4-conversion-item-completed",
   MP4_CONVERION_ITEM_CANCELLED = "mp4-converion-item-cancelled",
+  SUBTITLE_GENERATION_REMOVE_FROM_QUEUE = "subtitle-generation-remove-from-queue",
+  SUBTITLE_GENERATION_PROGRESS = "subtitle-generation-progress",
+  SUBTITLE_GENERATION_COMPLETE = "subtitle-generation-complete",
+  SUBTITLE_GENERATION_ITEM_CANCELLED = "subtitle-generation-item-cancelled",
+  SUBTITLE_GENERATION_QUEUE_UPDATED = "subtitle-generation-queue-updated",
   IMAGES_GET_BASE64 = "images-get-base64",
 }
