@@ -29,6 +29,7 @@ import { ConversionQueueItem } from "./models/conversion-queue-item.model";
 import { LlmIPCChannels } from "./enums/llm-IPC-Channels.enum";
 import { LlmResponseChunk } from "./models/llm-response-chunk.model";
 import { SubtitleIPCChannels } from "./enums/subtitleIPCChannels.enum";
+import { SubtitleGenerationQueueItem } from "./models/subtitle-generation-queue-item.model";
 import { 
   SubtitleGenerationRequest, 
   SubtitleGenerationResponse, 
@@ -216,6 +217,49 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
         progress: {
           queueItem: ConversionQueueItem;
           queue: ConversionQueueItem[];
+        },
+      ) => callback(progress),
+    );
+  },
+  subtitleGenerationProgress: (
+    callback: (progress: { queue: SubtitleGenerationQueueItem[] }) => void,
+  ) => {
+    ipcRenderer.on(
+      "subtitle-generation-progress",
+      (
+        event: Electron.IpcRendererEvent,
+        progress: {
+          queue: SubtitleGenerationQueueItem[];
+        },
+      ) => callback(progress),
+    );
+  },
+  subtitleGenerationUpdatedFromBackend: (
+    callback: (progress: { queue: SubtitleGenerationQueueItem[] }) => void,
+  ) => {
+    ipcRenderer.on(
+      "subtitle-generation-update-from-backend",
+      (
+        event: Electron.IpcRendererEvent,
+        progress: {
+          queue: SubtitleGenerationQueueItem[];
+        },
+      ) => callback(progress),
+    );
+  },
+  subtitleGenerationCompleted: (
+    callback: (progress: {
+      queueItem: SubtitleGenerationQueueItem;
+      queue: SubtitleGenerationQueueItem[];
+    }) => void,
+  ) => {
+    ipcRenderer.on(
+      "subtitle-generation-complete",
+      (
+        event: Electron.IpcRendererEvent,
+        progress: {
+          queueItem: SubtitleGenerationQueueItem;
+          queue: SubtitleGenerationQueueItem[];
         },
       ) => callback(progress),
     );
@@ -575,6 +619,7 @@ contextBridge.exposeInMainWorld("llmAPI", {
 });
 
 contextBridge.exposeInMainWorld("subtitleAPI", {
+  // Legacy functions for backward compatibility
   generateSubtitles: (request: SubtitleGenerationRequest): Promise<SubtitleGenerationResponse> => {
     return ipcRenderer.invoke(SubtitleIPCChannels.GenerateSubtitles, request);
   },
@@ -583,5 +628,59 @@ contextBridge.exposeInMainWorld("subtitleAPI", {
   },
   getExistingSubtitles: (videoPath: string): Promise<string[]> => {
     return ipcRenderer.invoke(SubtitleIPCChannels.GetExistingSubtitles, videoPath);
+  },
+
+  // New queue management functions
+  addToSubtitleGenerationQueue: (
+    inputPath: string,
+    language?: string,
+    format?: string,
+    model?: string
+  ) => {
+    return ipcRenderer.invoke(
+      SubtitleIPCChannels.AddToSubtitleGenerationQueue,
+      inputPath,
+      language,
+      format,
+      model
+    );
+  },
+  addToSubtitleGenerationQueueBulk: (
+    inputPaths: string[],
+    language?: string,
+    format?: string,
+    model?: string
+  ) => {
+    return ipcRenderer.invoke(
+      SubtitleIPCChannels.AddToSubtitleGenerationQueueBulk,
+      inputPaths,
+      language,
+      format,
+      model
+    );
+  },
+  pauseSubtitleGenerationItem: (id: string) => {
+    return ipcRenderer.invoke(SubtitleIPCChannels.PauseSubtitleGenerationItem, id);
+  },
+  unpauseSubtitleGenerationItem: (id: string) => {
+    return ipcRenderer.invoke(SubtitleIPCChannels.UnpauseSubtitleGenerationItem, id);
+  },
+  isSubtitleItemPaused: (id: string) => {
+    return ipcRenderer.invoke(SubtitleIPCChannels.IsSubtitleItemPaused, id);
+  },
+  getCurrentProcessingSubtitleItem: () => {
+    return ipcRenderer.invoke(SubtitleIPCChannels.GetCurrentProcessingSubtitleItem);
+  },
+  getSubtitleGenerationQueue: () => {
+    return ipcRenderer.invoke(SubtitleIPCChannels.GetSubtitleGenerationQueue);
+  },
+  removeFromSubtitleGenerationQueue: (id: string) => {
+    return ipcRenderer.invoke(SubtitleIPCChannels.RemoveFromSubtitleGenerationQueue, id);
+  },
+  initializeSubtitleGenerationQueue: () => {
+    return ipcRenderer.invoke(SubtitleIPCChannels.InitializeSubtitleGenerationQueue);
+  },
+  swapSubtitleQueueItems: (id1: string, id2: string) => {
+    return ipcRenderer.invoke(SubtitleIPCChannels.SwapSubtitleQueueItems, id1, id2);
   },
 });

@@ -79,46 +79,25 @@ export const Episode: React.FC<EpisodeProps> = ({
   const handleGenerateSubtitles = async () => {
     setIsGeneratingSubtitles(true);
     try {
-      const response = await window.subtitleAPI.generateSubtitles({
-        videoPath: episode.filePath,
-        format: 'vtt',
-        language: 'en',
-        model: 'base'
-      });
+      // Add to subtitle generation queue
+      const response = await window.subtitleAPI.addToSubtitleGenerationQueue(
+        episode.filePath,
+        'en', // language
+        'vtt', // format
+        'base' // model
+      );
       
       if (response.success) {
-        // If subtitle already exists, update immediately
-        if (response.subtitlePath) {
-          await handleSubtitleUpdate({
-            subtitlePath: response.subtitlePath,
-            activeSubtitleLanguage: 'en'
-          });
-        } else {
-          // Poll for completion if generation started
-          const pollForCompletion = async () => {
-            const status = await window.subtitleAPI.checkSubtitleStatus(response.jobId);
-            if (status?.status === 'completed' && status.subtitlePath) {
-              await handleSubtitleUpdate({
-                subtitlePath: status.subtitlePath,
-                activeSubtitleLanguage: 'en'
-              });
-              setIsGeneratingSubtitles(false);
-            } else if (status?.status === 'failed') {
-              console.error('Subtitle generation failed:', status.error);
-              setIsGeneratingSubtitles(false);
-            } else if (status?.status === 'generating' || status?.status === 'pending') {
-              // Continue polling
-              setTimeout(pollForCompletion, 2000);
-            }
-          };
-          setTimeout(pollForCompletion, 2000);
-        }
+        console.log('✅ Added to subtitle generation queue:', episode.filePath);
+        // The subtitle generation will be handled by the queue system
+        // and progress will be shown in the Processing tab
+        setIsGeneratingSubtitles(false);
       } else {
-        console.error('Failed to start subtitle generation:', response.error);
+        console.error('Failed to add to subtitle generation queue');
         setIsGeneratingSubtitles(false);
       }
     } catch (error) {
-      console.error('Error generating subtitles:', error);
+      console.error('Error adding to subtitle generation queue:', error);
       setIsGeneratingSubtitles(false);
     }
   };

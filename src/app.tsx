@@ -33,6 +33,7 @@ import { StatusDisplay } from "./renderer/components/StatusDisplay";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Mp4ConversionEvents } from "./Mp4ConversionEvents";
+import { SubtitleGenerationEvents } from "./SubtitleGenerationEvents";
 import { useGetAllSettings } from "./renderer/hooks/settings/useGetAllSettings";
 import { YoutubeDownloadEvents } from "./YoutubeDownloadEvents";
 import { useUpdatePlaylist } from "./renderer/hooks/useUpdatePlaylist";
@@ -121,6 +122,7 @@ root.render(
             <DndProvider backend={HTML5Backend}>
               <App />
               <Mp4ConversionEvents />
+              <SubtitleGenerationEvents />
               <YoutubeDownloadEvents />
             </DndProvider>
 
