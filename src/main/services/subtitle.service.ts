@@ -541,7 +541,7 @@ function performSubtitleGeneration(
           log.info(`✅ Subtitle generation completed successfully!`);
           log.info(`📁 Subtitle file created: ${subtitlePath}`);
           
-          handleSubtitleGenerationEnd(resolve, mainWindow, queueItem, socketIo, queue);
+          handleSubtitleGenerationEnd(resolve, mainWindow, queueItem, socketIo, queue, subtitlePath);
         } catch (error) {
           log.error(`❌ Subtitle file not found after generation: ${subtitlePath}`);
           handleSubtitleGenerationError(
@@ -606,6 +606,7 @@ function handleSubtitleGenerationEnd(
   queueItem: SubtitleGenerationQueueItem,
   socketIo: Server,
   queue: SubtitleGenerationQueue,
+  subtitlePath: string,
 ) {
   queueItem.status = "completed";
 
@@ -614,7 +615,8 @@ function handleSubtitleGenerationEnd(
   const completeInfo = {
     id: queueItem.id,
     queueItem: queueItem,
-    queue: queue.getQueue(),
+    subtitlePath: normalizeFilePath(subtitlePath), // Include the subtitle path for frontend
+    // Note: Don't include queue here since item will be removed after this event
   };
 
   if (mainWindow && !mainWindow.isDestroyed()) {

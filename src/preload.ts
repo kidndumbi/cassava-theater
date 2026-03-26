@@ -250,7 +250,7 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
   subtitleGenerationCompleted: (
     callback: (progress: {
       queueItem: SubtitleGenerationQueueItem;
-      queue: SubtitleGenerationQueueItem[];
+      subtitlePath: string;
     }) => void,
   ) => {
     ipcRenderer.on(
@@ -259,7 +259,7 @@ contextBridge.exposeInMainWorld("mainNotificationsAPI", {
         event: Electron.IpcRendererEvent,
         progress: {
           queueItem: SubtitleGenerationQueueItem;
-          queue: SubtitleGenerationQueueItem[];
+          subtitlePath: string;
         },
       ) => callback(progress),
     );
