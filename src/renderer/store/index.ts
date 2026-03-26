@@ -5,6 +5,7 @@ import scrollPointReducer from "./scrollPoint.slice";
 import { youtubeDownloadSlice } from "./youtubeDownload.slice";
 import { mp4ConversionNewSlice } from "./mp4ConversionNew.slice";
 import { subtitleGenerationSlice } from "./subtitleGeneration.slice";
+import { subtitleSyncSlice } from "./subtitleSync.slice";
 import { chatHistorySlice } from "./chatHistory.slice";
 
 const store = configureStore({
@@ -14,6 +15,7 @@ const store = configureStore({
     youtubeDownload: youtubeDownloadSlice.reducer,
     mp4ConversionNew: mp4ConversionNewSlice.reducer,
     subtitleGeneration: subtitleGenerationSlice.reducer,
+    subtitleSync: subtitleSyncSlice.reducer,
     chatHistory: chatHistorySlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>

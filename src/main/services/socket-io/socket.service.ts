@@ -16,6 +16,7 @@ import { registerYoutubeHandlers } from "./youtubeSocket.handlers";
 import { registerCurrentlyPlayingHandlers } from "./currentlyPlayingSocket.handlers";
 import { registerMp4ConversionHandlers } from "./mp4ConversionSocket.handlers";
 import { registerSubtitleGenerationHandlers } from "./subtitleSocket.handlers";
+import { registerSubtitleSyncHandlers } from "./subtitleSyncSocket.handlers";
 import { registerImagesSocketHandlers } from "./imagesSocket.handlers";
 import { registerLlmSocketHandlers } from "./llmSocket.handlers";
 
@@ -100,6 +101,7 @@ export async function initializeSocket(
     registerCurrentlyPlayingHandlers(socket);
     registerMp4ConversionHandlers(socket, mainWindow);
     registerSubtitleGenerationHandlers(socket, mainWindow);
+    registerSubtitleSyncHandlers(socket, mainWindow);
     registerImagesSocketHandlers(socket);
     registerLlmSocketHandlers(socket);
   });
