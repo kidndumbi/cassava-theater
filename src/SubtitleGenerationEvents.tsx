@@ -28,7 +28,7 @@ export const SubtitleGenerationEvents = () => {
       console.log("🎬 SubtitleGenerationEvents: Received progress update:", progress);
       dispatch(
         subtitleGenerationActions.setSubtitleGenerationProgress(
-          progress.queue,
+          progress.queue, 
         ),
       );
     });
@@ -37,8 +37,8 @@ export const SubtitleGenerationEvents = () => {
     window.mainNotificationsAPI.subtitleGenerationUpdatedFromBackend(
       async (progress) => {
         console.log("🎬 SubtitleGenerationEvents: Received backend update:", progress);
-        dispatch(
-          subtitleGenerationActions.setSubtitleGenerationProgress( 
+        dispatch( 
+          subtitleGenerationActions.setSubtitleGenerationProgress(  
             progress.queue,
           ),
         );

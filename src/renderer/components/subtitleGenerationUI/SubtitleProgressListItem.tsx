@@ -1,7 +1,6 @@
-import { Box, Button, Checkbox, Typography } from "@mui/material";
+import { Box, Button, Checkbox, Typography, Chip } from "@mui/material";
 import theme from "../../theme";
 import { SubtitleGenerationQueueItem } from "../../../models/subtitle-generation-queue-item.model";
-import { CircularProgressWithLabel } from "../common/CircularProgressWithLabel";
 import { DragPreviewImage, useDrag, useDrop } from "react-dnd";
 import { useEffect, useRef } from "react";
 import { useDragPreviewImage } from "../../hooks/useDragPreviewImage";
@@ -18,6 +17,55 @@ const FilePathText = ({ path }: { path: string }) => (
     {path}
   </Typography>
 );
+
+const StatusChip = ({ status }: { status: string }) => {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending":
+        return theme.palette.warning.main;
+      case "processing":
+        return theme.palette.info.main;
+      case "completed":
+        return theme.palette.success.main;
+      case "failed":
+        return theme.palette.error.main;
+      case "paused":
+        return theme.palette.secondary.main;
+      default:
+        return theme.customVariables.appWhiteSmoke;
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "Pending";
+      case "processing":
+        return "Processing...";
+      case "completed":
+        return "Completed";
+      case "failed":
+        return "Failed";
+      case "paused":
+        return "Paused";
+      default:
+        return status;
+    }
+  };
+
+  return (
+    <Chip
+      label={getStatusLabel(status)}
+      size="small"
+      sx={{
+        backgroundColor: getStatusColor(status),
+        color: theme.customVariables.appWhiteSmoke,
+        fontWeight: "bold",
+        minWidth: "90px",
+      }}
+    />
+  );
+};
 
 const ProgressCheckbox = () => (
   <Checkbox
@@ -137,9 +185,7 @@ export const SubtitleProgressListItem = ({
                   Pause
                 </Button>
               ))}
-            {isProcessing && (
-              <CircularProgressWithLabel value={progress.percent || 0} />
-            )}
+            <StatusChip status={progress.status || "pending"} />
             <Button
               size="small"
               variant="contained"

@@ -85,9 +85,9 @@ export const SubtitleLanguagesModal: React.FC<SubtitleLanguagesModalProps> = ({
   onSave,
 }) => {
   const [subtitlePaths, setSubtitlePaths] = useState({
-    en: videoData.subtitlePath || "",
-    es: videoData.subtitlePathEs || "",
-    fr: videoData.subtitlePathFr || "",
+    en: videoData.subtitlePath && videoData.subtitlePath.trim().toLowerCase() !== "none" ? videoData.subtitlePath : "",
+    es: videoData.subtitlePathEs && videoData.subtitlePathEs.trim().toLowerCase() !== "none" ? videoData.subtitlePathEs : "",
+    fr: videoData.subtitlePathFr && videoData.subtitlePathFr.trim().toLowerCase() !== "none" ? videoData.subtitlePathFr : "",
   });
   
   const [activeLanguage, setActiveLanguage] = useState<'en' | 'es' | 'fr' | null>(
@@ -97,9 +97,9 @@ export const SubtitleLanguagesModal: React.FC<SubtitleLanguagesModalProps> = ({
   useEffect(() => {
     if (open) {
       setSubtitlePaths({
-        en: videoData.subtitlePath || "",
-        es: videoData.subtitlePathEs || "",
-        fr: videoData.subtitlePathFr || "",
+        en: videoData.subtitlePath && videoData.subtitlePath.trim().toLowerCase() !== "none" ? videoData.subtitlePath : "",
+        es: videoData.subtitlePathEs && videoData.subtitlePathEs.trim().toLowerCase() !== "none" ? videoData.subtitlePathEs : "",
+        fr: videoData.subtitlePathFr && videoData.subtitlePathFr.trim().toLowerCase() !== "none" ? videoData.subtitlePathFr : "",
       });
       setActiveLanguage(videoData.activeSubtitleLanguage || null);
     }
@@ -140,10 +140,17 @@ export const SubtitleLanguagesModal: React.FC<SubtitleLanguagesModalProps> = ({
   };
 
   const handleSave = async () => {
+    const cleanPath = (path: string) => {
+      if (!path || path.trim() === "" || path.trim().toLowerCase() === "none") {
+        return null;
+      }
+      return path;
+    };
+
     const subtitleData = {
-      subtitlePath: subtitlePaths.en || null,
-      subtitlePathEs: subtitlePaths.es || null,
-      subtitlePathFr: subtitlePaths.fr || null,
+      subtitlePath: cleanPath(subtitlePaths.en),
+      subtitlePathEs: cleanPath(subtitlePaths.es),
+      subtitlePathFr: cleanPath(subtitlePaths.fr),
       activeSubtitleLanguage: activeLanguage,
     };
 
