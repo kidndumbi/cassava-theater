@@ -292,49 +292,11 @@ export function syncSubtitleWithAlass(
     console.log(`📹 Video: ${videoFilePath}`);
     console.log(`📄 Subtitle: ${subtitleFilePath}`);
     
-    // Debug: Check PATH and alass location
-    console.log(`🔍 Debugging PATH and alass location:`);
-    console.log(`PATH: ${process.env.PATH}`);
-    console.log(`Platform: ${process.platform}`);
+    // Use known alass location
+    const alassPath = 'C:\\alass\\alass.bat';
     
-    // Try to find alass.bat in common locations
-    const possiblePaths = [
-      'C:\\alass\\alass.bat', // User's actual alass location
-      'alass.bat', // Try PATH second
-      'C:\\tools\\alass\\alass.bat',
-      process.env.USERPROFILE + '\\alass\\alass.bat',
-      process.env.USERPROFILE + '\\Downloads\\alass\\alass.bat',
-      process.env.USERPROFILE + '\\Desktop\\alass\\alass.bat'
-    ];
-    
-    let alassPath = null;
-    for (const testPath of possiblePaths) {
-      if (testPath === 'alass.bat' || fs.existsSync(testPath)) {
-        alassPath = testPath;
-        console.log(`✅ Found alass at: ${alassPath}`);
-        break;
-      }
-    }
-    
-    // If we found alass.bat via PATH, try to get the full path
-    if (alassPath === 'alass.bat') {
-      console.log('🔍 Attempting to resolve full path for alass.bat...');
-      try {
-        // Try to get the full path using where command
-        const fullPath = execSync('where alass.bat', { encoding: 'utf8' }).toString().trim().split('\n')[0];
-        if (fullPath && fs.existsSync(fullPath)) {
-          alassPath = fullPath;
-          console.log(`✅ Resolved full path: ${alassPath}`);
-        }
-      } catch (error) {
-        console.log('⚠️  Could not resolve full path, will use alass.bat as-is');
-      }
-    }
-    
-    if (!alassPath) {
-      console.log('❌ Could not find alass.bat in any common location');
-      console.log('🔍 Please tell me where you put the alass files');
-      reject(new Error('alass.bat not found. Please provide the full path to alass.bat'));
+    if (!fs.existsSync(alassPath)) {
+      reject(new Error('alass.bat not found at C:\\alass\\alass.bat. Please ensure alass is installed there.'));
       return;
     }
     
@@ -533,83 +495,6 @@ export function syncSubtitleWithAlass(
       }
     }, 5 * 60 * 1000);
   });
-}
-
-// Simple test function to verify alass works
-export async function testAlass(): Promise<void> {
-  console.log('🧪 Testing alass integration...');
-  
-  try {
-    // Find alass.bat in common locations
-    const possiblePaths = [
-      'alass.bat',
-      'C:\\alass\\alass.bat',
-      'C:\\tools\\alass\\alass.bat',
-      process.env.USERPROFILE + '\\alass\\alass.bat',
-      process.env.USERPROFILE + '\\Downloads\\alass\\alass.bat',
-      process.env.USERPROFILE + '\\Desktop\\alass\\alass.bat'
-    ];
-    
-    let alassPath = null;
-    for (const testPath of possiblePaths) {
-      if (testPath === 'alass.bat' || fs.existsSync(testPath)) {
-        alassPath = testPath;
-        console.log(`✅ Found alass at: ${alassPath}`);
-        break;
-      }
-    }
-    
-    if (!alassPath) {
-      throw new Error('alass.bat not found. Please provide the full path to alass.bat');
-    }
-    
-    // Test that alass.bat can be executed
-    const testProcess = spawn(alassPath, ['--help'], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      shell: process.platform === 'win32'
-    });
-    
-    let output = '';
-    
-    testProcess.stdout?.on('data', (data) => {
-      output += data.toString();
-    });
-    
-    testProcess.stderr?.on('data', (data) => {
-      output += data.toString();
-    });
-    
-    return new Promise((resolve, reject) => {
-      testProcess.on('close', (code) => {
-        console.log(`📋 alass.bat test completed with exit code: ${code}`);
-        
-        if (output.includes('USAGE') || output.includes('alass')) {
-          console.log('✅ alass.bat is working correctly!');
-          console.log('🎯 Ready to use syncSubtitleWithAlass function');
-          console.log('');
-          console.log('📝 To test with actual files, call:');
-          console.log('   syncSubtitleWithAlass("path/to/video.mp4", "path/to/subtitle.vtt")');
-          resolve();
-        } else {
-          console.log('⚠️  Unexpected output from alass.bat');
-          console.log('Output:', output);
-          reject(new Error('alass.bat test produced unexpected output'));
-        }
-      });
-      
-      testProcess.on('error', (error) => {
-        console.error('❌ Failed to run alass.bat test:', error);
-        if (error.message.includes('ENOENT')) {
-          reject(new Error('alass.bat not found. Make sure you provide the full path to alass.bat'));
-        } else {
-          reject(error);
-        }
-      });
-    });
-  } catch (error) {
-    console.error('❌ Test failed:', error);
-    throw error;
-  }
 }
 
 export const deleteFile = async (
