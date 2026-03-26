@@ -404,7 +404,12 @@ export const getVideoJsonData = async (
     const data = await videoDbDataService.getVideo(
       normalizeFilePath(currentVideo.filePath),
     );
-    return data || EMPTY_JSON_RESPONSE;
+    
+    // Ensure the returned data always includes the filePath
+    const result = data || EMPTY_JSON_RESPONSE;
+    result.filePath = currentVideo.filePath;
+    
+    return result;
   } catch (error) {
     console.error("An error occurred:", error);
     return null;
@@ -433,6 +438,7 @@ export const saveVideoJsonData = async (
     if (newVideoJsonData && newVideoJsonData.videoProgressScreenshot) {
       newVideoJsonData.videoProgressScreenshot = null;
     }
+    console.log(`Saving video JSON data for ${newFilePath}:`, newVideoJsonData);
     await videoDbDataService.putVideo(
       normalizeFilePath(newFilePath),
       newVideoJsonData,

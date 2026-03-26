@@ -70,7 +70,7 @@ export interface MainNotificationsAPI {
   subtitleGenerationCompleted: (
     callback: (progress: {
       queueItem: SubtitleGenerationQueueItem;
-      queue: SubtitleGenerationQueueItem[];
+      subtitlePath: string;
     }) => void,
   ) => void;
   youtubeDownloadProgress: (
