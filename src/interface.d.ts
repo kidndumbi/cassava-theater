@@ -8,6 +8,11 @@ import { PlaylistPlayRequestModel } from "./models/playlistPlayRequest.model";
 import { PlaylistCommands } from "./models/playlist-commands.model";
 import { LlmResponseChunk } from "./models/llm-response-chunk.model";
 import { OllamaModel } from "./models/ollamaModel.model";
+import { 
+  SubtitleGenerationRequest, 
+  SubtitleGenerationResponse, 
+  SubtitleGeneration 
+} from "./models/subtitle.model";
 export interface IElectronAPI {
   desktop: boolean;
 }
@@ -275,6 +280,12 @@ export interface LlmAPI {
   pingOllamaServer: (model?: string) => Promise<boolean>;
 }
 
+export interface SubtitleAPI {
+  generateSubtitles: (request: SubtitleGenerationRequest) => Promise<SubtitleGenerationResponse>;
+  checkSubtitleStatus: (jobId: string) => Promise<SubtitleGeneration | null>;
+  getExistingSubtitles: (videoPath: string) => Promise<string[]>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -293,5 +304,6 @@ declare global {
     playlistCommandsAPI: PlaylistCommandsAPI;
     currentlyPlayingAPI: CurrentlyPlayingAPI;
     llmAPI: LlmAPI;
+    subtitleAPI: SubtitleAPI;
   }
 }
