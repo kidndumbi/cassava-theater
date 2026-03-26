@@ -174,6 +174,7 @@ export const SubtitleSyncProgressListItem = ({
             <FilePathText path={getDisplayText()} />
           </Box>
           <Box className="flex gap-2" sx={{ alignItems: "center" }}>
+            {isProcessing && <StatusChip status={progress.status} />}
             {!isProcessing && (
               <>
                 <StatusChip status={progress.status} />
@@ -198,9 +199,7 @@ export const SubtitleSyncProgressListItem = ({
                 )}
               </>
             )}
-            {isProcessing && (
-              <CircularProgressWithLabel value={progress.percent} />
-            )}
+
             <Button
               size="small"
               variant="contained"
