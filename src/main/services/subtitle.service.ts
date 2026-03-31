@@ -443,8 +443,16 @@ function performSubtitleGeneration(
     log.info(`📂 Video directory: ${videoDir}`);
     log.info(`🎯 Target subtitle file: ${subtitlePath}`);
 
+    // Set up environment variables for proper Unicode handling on Windows
+    const env = {
+      ...process.env,
+      PYTHONIOENCODING: 'utf-8',
+      PYTHONUTF8: '1',
+    };
+
     const whisperProcess = spawn('whisper', args, {
-      stdio: ['ignore', 'pipe', 'pipe']
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: env
     });
 
     queue.setCurrentWhisperProcess(whisperProcess);
