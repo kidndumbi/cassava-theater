@@ -6,7 +6,6 @@ import { getMainWindow } from "../mainWindowManager";
 import { loggingService as log } from "./main-logging.service";
 import { normalizeFilePath } from "./helpers";
 import { SubtitleGenerationQueueItem } from "../../models/subtitle-generation-queue-item.model";
-import * as subtitleQueueDataService from "./subtitleQueueDataDb.service";
 import { getSocketIoGlobal } from "../socketGlobalManager";
 import { v4 as uuidv4 } from "uuid";
 import { Server } from "socket.io";
@@ -46,17 +45,7 @@ class SubtitleGenerationQueue {
   ) {}
 
   async initializeProcessing() {
-    await this.loadQueue();
     this.processQueue();
-  }
-
-  private async loadQueue() {
-    const savedQueue =
-      (await subtitleQueueDataService.getAllSubtitleQueueItems()) || [];
-    this.queue = savedQueue.map((item) => ({
-      ...item,
-      status: item.status === "processing" ? "pending" : item.status,
-    }));
   }
 
   async add(
@@ -89,10 +78,8 @@ class SubtitleGenerationQueue {
     };
 
     console.log("🎬 SubtitleQueue: Creating queue item:", newData);
-    const dbData = await subtitleQueueDataService.putSubtitleQueueItem(id, newData);
-    console.log("🎬 SubtitleQueue: Item saved to DB:", dbData);
     
-    this.queue.push(dbData);
+    this.queue.push(newData);
     console.log("🎬 SubtitleQueue: Current queue length:", this.queue.length);
     
     // Emit queue update to frontend
@@ -119,7 +106,6 @@ class SubtitleGenerationQueue {
         ...item,
         status: "paused",
       };
-      subtitleQueueDataService.putSubtitleQueueItem(item.id, this.queue[itemIndex]);
       return {
         success: true,
         queue: this.queue,
@@ -139,7 +125,6 @@ class SubtitleGenerationQueue {
         ...item,
         status: "pending",
       };
-      subtitleQueueDataService.putSubtitleQueueItem(item.id, this.queue[itemIndex]);
       this.processQueue();
       return {
         success: true,
@@ -165,7 +150,6 @@ class SubtitleGenerationQueue {
     }
 
     this.queue.splice(itemIndex, 1);
-    subtitleQueueDataService.deleteSubtitleQueueItem(id);
     this.socketIo.emit(AppSocketEvents.SUBTITLE_GENERATION_ITEM_CANCELLED, {
       queue: this.queue,
     });
@@ -182,7 +166,6 @@ class SubtitleGenerationQueue {
     }
     if (this.currentProcessingItem) {
       this.currentProcessingItem.status = "failed";
-      subtitleQueueDataService.deleteSubtitleQueueItem(this.currentProcessingItem.id);
       this.currentProcessingItem = null;
     }
     this.isProcessing = false;
@@ -199,7 +182,6 @@ class SubtitleGenerationQueue {
     if (nextItem) {
       this.currentProcessingItem = nextItem;
       nextItem.status = "processing";
-      subtitleQueueDataService.putSubtitleQueueItem(nextItem.id, nextItem);
       try {
         await this.processor(nextItem, this, this.progressIntervalMs);
         // Remove item from queue when completed successfully
@@ -207,7 +189,6 @@ class SubtitleGenerationQueue {
         if (idx !== -1) {
           console.log(`🎬 SubtitleQueue: Removing completed item from queue: ${nextItem.fileName}`);
           this.queue.splice(idx, 1);
-          subtitleQueueDataService.deleteSubtitleQueueItem(nextItem.id);
           
           // Notify frontend of queue update after removal
           const mainWindow = getMainWindow();
@@ -221,7 +202,6 @@ class SubtitleGenerationQueue {
       } catch (error) {
         nextItem.status = "failed";
         nextItem.error = error instanceof Error ? error.message : "Unknown error";
-        subtitleQueueDataService.putSubtitleQueueItem(nextItem.id, nextItem);
         log.error(`Subtitle generation failed for ${nextItem.videoPath}:`, error);
         
         // Notify frontend of the failed item status update
@@ -284,18 +264,6 @@ class SubtitleGenerationQueue {
       this.queue[index2],
       this.queue[index1],
     ];
-
-    // Update queueIndex in DB and in memory
-    this.queue[index1].queueIndex = index1;
-    this.queue[index2].queueIndex = index2;
-    await subtitleQueueDataService.putSubtitleQueueItem(
-      this.queue[index1].id,
-      this.queue[index1],
-    );
-    await subtitleQueueDataService.putSubtitleQueueItem(
-      this.queue[index2].id,
-      this.queue[index2],
-    );
 
     return { success: true, queue: this.queue };
   }
