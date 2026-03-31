@@ -22,6 +22,7 @@ if (require("electron-squirrel-startup")) {
 }
 
 appSetup.initializeFfmpeg();
+appSetup.initializeLibreTranslate();
 cleanUp.runAppOpeningCleanup();
 
 // Main Window Management
@@ -79,6 +80,7 @@ app.on("ready", async () => {
 
 app.on("before-quit", async () => {
   try {
+    appSetup.stopLibreTranslate();
     await levelDBService.close();
     log.info("Application shutdown completed");
   } catch (err) {
