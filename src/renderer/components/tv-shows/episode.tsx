@@ -107,22 +107,9 @@ export const Episode: React.FC<EpisodeProps> = ({
     subtitlePath?: string | null;
     subtitlePathEs?: string | null;
     subtitlePathFr?: string | null;
-    activeSubtitleLanguage?: 'en' | 'es' | 'fr' | null;
   }) => {
     await updateSubtitleLanguages(subtitleData, episode);
     
-    // For backward compatibility, still call the legacy handler if active subtitle changed
-    const newActiveSubtitlePath = getActiveSubtitlePath({
-      ...episode,
-      ...subtitleData,
-    });
-    
-    if (handleFilepathChange) {
-      handleFilepathChange(newActiveSubtitlePath || "", {
-        ...episode,
-        ...subtitleData,
-      });
-    }
   };
 
   const [hasError, setHasError] = useState(false);
@@ -300,18 +287,14 @@ export const Episode: React.FC<EpisodeProps> = ({
             subtitlePath?: string | null;
             subtitlePathEs?: string | null;
             subtitlePathFr?: string | null;
-            activeSubtitleLanguage?: 'en' | 'es' | 'fr' | null;
           } = {};
 
           if (targetLanguage === 'es') {
             subtitleUpdate.subtitlePathEs = translatedFilePath;
-            subtitleUpdate.activeSubtitleLanguage = 'es';
           } else if (targetLanguage === 'fr') {
             subtitleUpdate.subtitlePathFr = translatedFilePath;
-            subtitleUpdate.activeSubtitleLanguage = 'fr';
           } else if (targetLanguage === 'en') {
             subtitleUpdate.subtitlePath = translatedFilePath;
-            subtitleUpdate.activeSubtitleLanguage = 'en';
           }
 
           // Update the subtitle data in the database

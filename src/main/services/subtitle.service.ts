@@ -62,7 +62,7 @@ class SubtitleGenerationQueue {
 
     // Validate format parameter
     const validFormats = ["vtt", "srt", "ass"] as const;
-    const validatedFormat = format && validFormats.includes(format as any) 
+    const validatedFormat = format && validFormats.includes(format as typeof validFormats[number]) 
       ? (format as "vtt" | "srt" | "ass") 
       : "vtt";
 
@@ -91,9 +91,11 @@ class SubtitleGenerationQueue {
       });
     }
     
-    this.socketIo.emit(AppSocketEvents.SUBTITLE_GENERATION_QUEUE_UPDATED, {
-      queue: this.queue,
-    });
+    if (this.socketIo) {
+      this.socketIo.emit(AppSocketEvents.SUBTITLE_GENERATION_QUEUE_UPDATED, {
+        queue: this.queue,
+      });
+    }
     
     this.processQueue();
   }
@@ -150,9 +152,11 @@ class SubtitleGenerationQueue {
     }
 
     this.queue.splice(itemIndex, 1);
-    this.socketIo.emit(AppSocketEvents.SUBTITLE_GENERATION_ITEM_CANCELLED, {
-      queue: this.queue,
-    });
+    if (this.socketIo) {
+      this.socketIo.emit(AppSocketEvents.SUBTITLE_GENERATION_ITEM_CANCELLED, {
+        queue: this.queue,
+      });
+    }
     return {
       success: true,
       queue: this.queue,
@@ -369,6 +373,11 @@ async function processSubtitleGeneration(
   const mainWindow = getMainWindow();
   const socketIo = getSocketIoGlobal();
 
+  // Validate required properties
+  if (!queueItem.videoPath || !queueItem.format || !queueItem.id) {
+    throw new Error('Missing required properties in queue item');
+  }
+
   if (await subtitleAlreadyExists(queueItem.videoPath, queueItem.format)) {
     // Remove item from queue if subtitle already exists
     const idx = queue.getQueue().findIndex((i) => i.id === queueItem.id);
@@ -376,6 +385,10 @@ async function processSubtitleGeneration(
       queue.removeItem(queueItem.id);
     }
     return;
+  }
+
+  if (!socketIo) {
+    throw new Error('Socket.IO instance not available');
   }
 
   await performSubtitleGeneration(
@@ -424,10 +437,16 @@ function performSubtitleGeneration(
   socketIo: Server,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
+    // Validate required properties at the start
+    if (!queueItem.videoPath || !queueItem.format || !queueItem.language || !queueItem.model) {
+      reject(new Error('Missing required properties in queue item'));
+      return;
+    }
+
     const subtitlePath = getSubtitlePath(queueItem.videoPath, queueItem.format);
     const videoDir = path.dirname(queueItem.videoPath);
 
-    const args = [
+    const args: string[] = [
       queueItem.videoPath,
       '--output_format', queueItem.format,
       '--output_dir', videoDir,
@@ -478,18 +497,16 @@ function performSubtitleGeneration(
       log.info(`⏳ Subtitle generation in progress... (PID: ${whisperProcess.pid})`);
     }, 10000); // Log every 10 seconds
 
-    let stdout = '';
     let stderr = '';
 
-    whisperProcess.stdout?.on('data', (data) => {
-      stdout += data.toString();
+    whisperProcess.stdout?.on('data', (data: Buffer) => {
       const output = data.toString().trim();
       if (output) {
         log.info(`📝 Whisper stdout: ${output}`);
       }
     });
 
-    whisperProcess.stderr?.on('data', (data) => {
+    whisperProcess.stderr?.on('data', (data: Buffer) => {
       stderr += data.toString();
       const errorOutput = data.toString().trim();
       if (errorOutput) {
@@ -506,7 +523,7 @@ function performSubtitleGeneration(
       }
     });
 
-    whisperProcess.on('close', async (code) => {
+    whisperProcess.on('close', async (code: number | null) => {
       clearInterval(heartbeatInterval);
       log.info(`🏁 Whisper process completed with exit code: ${code}`);
 
@@ -521,7 +538,7 @@ function performSubtitleGeneration(
         } catch (error) {
           log.error(`❌ Subtitle file not found after generation: ${subtitlePath}`);
           handleSubtitleGenerationError(
-            queueItem.videoPath, 
+            queueItem.videoPath || 'Unknown path', 
             new Error('Subtitle file not created'), 
             reject, 
             queueItem
@@ -535,7 +552,7 @@ function performSubtitleGeneration(
           log.error(errorMessage);
         }
         handleSubtitleGenerationError(
-          queueItem.videoPath,
+          queueItem.videoPath || 'Unknown path',
           new Error(errorMessage),
           reject,
           queueItem
@@ -543,15 +560,17 @@ function performSubtitleGeneration(
       }
     });
 
-    whisperProcess.on('error', (error) => {
+    whisperProcess.on('error', (error: Error) => {
       clearInterval(heartbeatInterval);
       log.error(`❌ Failed to start Whisper process:`, error);
-      handleSubtitleGenerationError(queueItem.videoPath, error, reject, queueItem);
+      handleSubtitleGenerationError(queueItem.videoPath || 'Unknown path', error, reject, queueItem);
     });
   });
 }
 
 // Note: This function is kept for potential future use but currently not called
+// Note: This function is kept for potential future use but currently not called
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function handleProgress(
   progress: SubtitleProgress,
   queueItem: SubtitleGenerationQueueItem,
@@ -607,7 +626,7 @@ function handleSubtitleGenerationEnd(
 function handleSubtitleGenerationError(
   filePath: string,
   error: Error,
-  reject: (reason?: any) => void,
+  reject: (reason?: Error) => void,
   queueItem: SubtitleGenerationQueueItem,
 ) {
   log.error(`Subtitle generation failed for "${filePath}": ${error.message}`);
