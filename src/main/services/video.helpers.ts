@@ -37,7 +37,7 @@ export const filterByCategory = (
       const hasFileName = Boolean(video.fileName);
       // The regex checks if fileName ends with a dot and one or more non-dot characters,
       // ensuring that the fileName includes a valid file extension.
-      const hasValidExtension = /\.[^.]+$/.test(video.fileName);
+      const hasValidExtension = video.fileName ? /\.[^.]+$/.test(video.fileName) : false;
       return hasFileName && hasValidExtension;
     });
   }
@@ -142,8 +142,8 @@ const processFiles = async (
 
       if (helpers.isVideoFile(file) || stats.isDirectory()) {
         const data = await populateVideoData(file, filePath, stats, category);
-        data.filePath = normalizeFilePath(data.filePath);
-        if (data) {
+        if (data && data.filePath) {
+          data.filePath = normalizeFilePath(data.filePath);
           videoData.push(data);
         }
       }
@@ -167,7 +167,7 @@ export const populateVideoData = async (
       normalizeFilePath(fullFilePath),
     );
     const duration =
-      videoDb?.duration > 0
+      videoDb?.duration && videoDb.duration > 0
         ? videoDb.duration
         : await calculateDuration(fullFilePath);
     const videoData = createVideoDataObject(
@@ -176,7 +176,7 @@ export const populateVideoData = async (
       stats.isDirectory(),
       stats.birthtimeMs,
       filePath,
-      duration,
+      duration || 0,
       videoDb,
       category,
     );
@@ -311,6 +311,11 @@ export const updateParentVideoData = async (
   const grandParentJsonFileContents = await videoDbDataService.getVideo(
     normalizeFilePath(grandParentJsonFilePath),
   );
+  
+  if (!grandParentJsonFileContents) {
+    throw new Error("Grand parent video data not found");
+  }
+  
   grandParentJsonFileContents.lastVideoPlayed = currentVideo.filePath;
   grandParentJsonFileContents.lastVideoPlayedTime = currentTime;
   grandParentJsonFileContents.lastVideoPlayedDate = new Date().toISOString();
