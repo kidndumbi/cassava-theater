@@ -77,6 +77,8 @@ export const Episode: React.FC<EpisodeProps> = ({
   const handleTranslationClick = () => setOpenTranslationModal(true);
 
   const handleGenerateSubtitles = async () => {
+    if (!episode.filePath) return;
+    
     setIsGeneratingSubtitles(true);
     try {
       // Add to subtitle generation queue
@@ -142,15 +144,21 @@ export const Episode: React.FC<EpisodeProps> = ({
   );
 
   React.useEffect(() => {
+    if (!episode.filePath) return;
+    
     let isMounted = true;
     (async () => {
-      const result = await isInMp4ConversionQueue(episode.filePath);
+      const result = await isInMp4ConversionQueue(episode.filePath!);
       if (isMounted) setIsInQueue(result);
     })();
     return () => {
       isMounted = false;
     };
   }, [episode.filePath]);
+
+  if (!episode.filePath) {
+    return null;
+  }
 
   return (
     <Box key={episode.filePath} className="episode-container">
@@ -189,9 +197,9 @@ export const Episode: React.FC<EpisodeProps> = ({
         )}
         <VideoTypeContainer
           className={!settings?.showVideoType ? "hover-content" : ""}
-          alwaysShow={settings?.showVideoType}
+          alwaysShow={!!settings?.showVideoType}
         >
-          <VideoTypeChip filePath={episode.filePath} />
+          {episode.filePath && <VideoTypeChip filePath={episode.filePath} />}
         </VideoTypeContainer>
       </HoverBox>
 
@@ -216,18 +224,19 @@ export const Episode: React.FC<EpisodeProps> = ({
             <NotesIcon />
           </AppIconButton>
 
-          {getFileExtension(episode.filePath) !== "mp4" && !isInQueue && (
+          {episode.filePath && getFileExtension(episode.filePath) !== "mp4" && !isInQueue && (
             <AppIconButton
               tooltip="Convert to MP4"
               onClick={async () => {
+                if (!episode.filePath) return;
                 const { success, queue, message } = await addToConversionQueue(
                   episode.filePath,
                 );
                 if (!success) {
-                  handleConvertToMp4Result?.(false, message, queue);
+                  handleConvertToMp4Result?.(false, message, queue || []);
                   return;
                 }
-                handleConvertToMp4Result?.(true, message, queue);
+                handleConvertToMp4Result?.(true, message, queue || []);
                 setIsInQueue(true);
               }}
             >
@@ -237,6 +246,7 @@ export const Episode: React.FC<EpisodeProps> = ({
           <AppIconButton
             tooltip="delete"
             onClick={async () => {
+              if (!episode.filePath) return;
               setMessage("Are you sure you want to delete this episode?");
               const dialogDecision = await openDialog();
               if (dialogDecision === "Ok") {
