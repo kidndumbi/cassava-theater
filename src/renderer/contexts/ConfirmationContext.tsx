@@ -68,7 +68,9 @@ export const ConfirmationProvider: FC<{ children: React.ReactNode }> = ({
 export const useConfirmation = (defaultMessage?: string) => {
   const contextValue = useContext(ConfirmationContext);
 
-  if (!contextValue) return null;
+  if (!contextValue) {
+    throw new Error("useConfirmation must be used within a ConfirmationProvider");
+  }
 
   // Wrap openDialog to inject the default message if not provided
   const openDialogWithDefault = (
