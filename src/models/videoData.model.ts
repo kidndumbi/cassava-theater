@@ -17,7 +17,7 @@ export interface VideoDataModel {
   like?: boolean;
   duration?: number;
   currentTime?: number;
-  videoProgressScreenshot?: string;
+  videoProgressScreenshot?: string | null;
   movie_details?: MovieDetails | null;
   tv_show_details?: TvShowDetails | null;
   season_id?: string | null;

@@ -43,7 +43,7 @@ export const PosterCard: React.FC<PosterCardProps> = ({
       className={`m-1 flex flex-col`}
       sx={{ maxWidth: width, minWidth: width, position: "relative" }}
     >
-      {showVideoType && video.filePath && (
+      {showVideoType && video?.filePath && (
         <Box
           sx={{
             position: "absolute",

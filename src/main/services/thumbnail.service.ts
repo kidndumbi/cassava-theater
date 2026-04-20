@@ -36,8 +36,8 @@ function getVideoDimensions(
         return;
       }
 
-      const width = !isNaN(stream.width) ? stream.width : 1920; // Default width
-      const height = !isNaN(stream.height) ? stream.height : 1080;
+      const width = stream.width && !isNaN(stream.width) ? stream.width : 1920; // Default width
+      const height = stream.height && !isNaN(stream.height) ? stream.height : 1080;
       resolve({ width, height });
     });
   });
@@ -87,7 +87,7 @@ export async function generateThumbnail(
   try {
     const dbScreenshot =
       await videoScreenshotDbService.getVideoScreenshot(videoPath);
-    if (dbScreenshot?.currentTime === currentTime) {
+    if (dbScreenshot?.currentTime === currentTime && dbScreenshot.image) {
       return dbScreenshot.image;
     }
 

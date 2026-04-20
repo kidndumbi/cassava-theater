@@ -64,14 +64,14 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
     queryKey: ["videoJsonData", selectedFolder?.folderPath],
     queryFn: () => {
       return window.videoAPI.getVideoJsonData({
-        filePath: selectedFolder.folderPath,
+        filePath: selectedFolder?.folderPath,
       });
     },
     enabled: !!selectedFolder?.folderPath,
   });
 
   const [selectedFolderDisplayType, setSelectedFolderDisplayType] =
-    useState<ListDisplayType>(null);
+    useState<ListDisplayType>("grid");
 
   useEffect(() => {
     if (videoJsonData) {
@@ -102,12 +102,13 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
 
   const getImageUrl = useCallback(
     (movie: VideoDataModel) => {
-      if (movie?.poster) {
-        return getUrl("file", movie.poster, null, port);
+      if (movie?.poster && port) {
+        return getUrl("file", movie.poster, null, port) || "";
       }
       if (movie?.movie_details?.poster_path) {
-        return getTmdbImageUrl(movie.movie_details.poster_path);
+        return getTmdbImageUrl(movie.movie_details.poster_path) || "";
       }
+      return "";
     },
     [getTmdbImageUrl, port],
   );
@@ -132,7 +133,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
   };
 
   const resetAllVideosCurrentTime = async () => {
-    if (!selectedFolder) return;
+    if (!selectedFolder || !videos) return;
 
     const promises = videos.map((videoData) => {
       return saveJsonData({
@@ -164,7 +165,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
             selectedItem={selectedFolder}
             setSelectedItem={(folder) => {
               const selectedFolder = folders.find((f) => f.id === folder.id);
-              setSelectedFolder(selectedFolder);
+              setSelectedFolder(selectedFolder || null);
             }}
             backgroundColor={theme.palette.primary.main}
             dragging={setDragging}
@@ -220,7 +221,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
                 onUpdateVideoJsonData={async (data) => {
                   const filePath = selectedFolder.folderPath;
                   const { display } = data;
-                  setSelectedFolderDisplayType(display);
+                  setSelectedFolderDisplayType(display || "grid");
 
                   saveJsonData({
                     currentVideo: {
@@ -240,7 +241,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
               <LoadingIndicator message="Loading videos..." />
             )}
 
-            {!error && !isVideosLoading && !isVideoJsonLoading && (
+            {!error && !isVideosLoading && !isVideoJsonLoading && selectedFolder && (
               <CustomFolderVideosPanel
                 displayType={selectedFolderDisplayType}
                 selectedFolder={selectedFolder}
@@ -276,7 +277,7 @@ export const CustomFolderPage = ({ menuId }: CustomFolderProps) => {
         title="Edit Folder"
       >
         <CustomFolderAddEdit
-          folder={selectedFolder}
+          folder={selectedFolder || undefined}
           onEdit={async (changes) => {
             if (!selectedFolder || Object.keys(changes).length === 0) return;
             const updatedFolders = folders.map((f) =>

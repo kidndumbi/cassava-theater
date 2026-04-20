@@ -115,8 +115,8 @@ export const CustomFolderVideosPanel = ({
         ["videoData", selectedFolder.folderPath, false, "customFolder"],
         (oldData: VideoDataModel[] = []) =>
           oldData.map((m) => {
-            if (m.filePath === savedData.currentVideo.filePath) {
-              return { ...m, ...savedData.newVideoJsonData };
+            if (m.filePath === savedData?.currentVideo.filePath) {
+              return { ...m, ...savedData?.newVideoJsonData };
             }
             return m;
           }),
@@ -163,7 +163,9 @@ export const CustomFolderVideosPanel = ({
       );
       openDialog("Delete").then((dialogDecision) => {
         if (dialogDecision !== "Ok") return;
-        deleteFile(video.filePath);
+        if (video.filePath) {
+          deleteFile(video.filePath);
+        }
       });
     }
   };
@@ -192,7 +194,9 @@ export const CustomFolderVideosPanel = ({
                   showSnackbar(message, "error");
                   return;
                 }
-                dispatch(mp4ConversionNewActions.setConversionProgress(queue));
+                if (queue) {
+                  dispatch(mp4ConversionNewActions.setConversionProgress(queue));
+                }
               }
             },
           },
@@ -247,7 +251,7 @@ export const CustomFolderVideosPanel = ({
           flexDirection={displayType === "list" ? "column" : "row"}
           gap={2}
         >
-          {videos?.length > 0 ? (
+          {videos && videos.length > 0 ? (
             videos.map((video, idx) =>
               video ? (
                 <CustomFolderVideoCard
@@ -331,13 +335,15 @@ export const CustomFolderVideosPanel = ({
         title="Playlists"
         fullScreen={false}
       >
-        <PlaylistSelect
-          playlists={playlists}
-          video={selectedPlaylistVideo}
-          updatePlaylist={(playlist) => {
-            updatePlaylist(playlist);
-          }}
-        ></PlaylistSelect>
+        {selectedPlaylistVideo && (
+          <PlaylistSelect
+            playlists={playlists || []}
+            video={selectedPlaylistVideo}
+            updatePlaylist={(playlist) => {
+              updatePlaylist(playlist);
+            }}
+          />
+        )}
       </AppModal>
     </>
   );

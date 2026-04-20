@@ -176,7 +176,7 @@ export const fetchVideosData = async ({
 
   try {
     const videoData: VideoDataModel[] = await videoDataHelpers.getRootVideoData(
-      null,
+      {} as Electron.IpcMainInvokeEvent,
       filePath,
       category,
     );
@@ -185,7 +185,7 @@ export const fetchVideosData = async ({
 
     if (includeThumbnail) {
       const getVideoThumbnailsPromises = videoData.map((video) =>
-        videoDataHelpers.getVideoThumbnail(video, video.duration),
+        videoDataHelpers.getVideoThumbnail(video, video.duration || 0),
       );
 
       updatedVideoData = await Promise.all(getVideoThumbnailsPromises);
@@ -242,7 +242,7 @@ export const AddTvShowFolder = async (data: {
       }
     }
 
-    await saveVideoJsonData(null, {
+    await saveVideoJsonData({} as Electron.IpcMainInvokeEvent, {
       currentVideo: { filePath: tvShowFolderPath } as VideoDataModel,
       newVideoJsonData: {
         tv_show_details: tvShowDetails,
@@ -259,6 +259,10 @@ export const AddTvShowFolder = async (data: {
       stats,
       "tvShows",
     );
+
+    if (!videoData) {
+      throw new Error(`Failed to create video data for TV show: ${tvShowName}`);
+    }
 
     return videoData;
   } catch (error) {
@@ -291,7 +295,7 @@ export const fetchVideoDetails = async (
       normalizeFilePath(filePath),
     );
     const duration =
-      videoDbData?.duration > 0
+      videoDbData?.duration && videoDbData.duration > 0
         ? videoDbData.duration
         : await videoDataHelpers.calculateDuration(filePath);
     const fileName = path.basename(filePath);
@@ -307,19 +311,21 @@ export const fetchVideoDetails = async (
       category,
     );
 
-    if (videoDetails?.movie_details && !videoDetails?.movie_details.credits) {
+    if (videoDetails?.movie_details && !videoDetails?.movie_details.credits && videoDetails.movie_details.id) {
       const movie_details = await getMovieOrTvShowById(
-        videoDetails?.movie_details.id.toString(),
+        videoDetails.movie_details.id.toString(),
         "movie",
-      );
+      ) as VideoDataModel['movie_details'];
 
-      await videoDbDataService.putVideo(
-        normalizeFilePath(videoDetails.filePath),
-        {
-          movie_details,
-        },
-      );
-      videoDetails.movie_details = movie_details;
+      if (videoDetails.filePath) {
+        await videoDbDataService.putVideo(
+          normalizeFilePath(videoDetails.filePath),
+          {
+            movie_details,
+          },
+        );
+        videoDetails.movie_details = movie_details;
+      }
     }
 
     const processedVideoData = await videoDataHelpers.getVideoThumbnail(
@@ -355,7 +361,7 @@ export const fetchFolderDetails = async (
         basename,
         dirPath,
         videoDbData,
-        videoDbData?.tv_show_details,
+        videoDbData?.tv_show_details || null,
         sortedChildFolders,
       );
 
@@ -368,12 +374,14 @@ export const fetchFolderDetails = async (
         "tv",
       )) as TvShowDetails;
 
-      await videoDbDataService.putVideo(
-        normalizeFilePath(videoDetails.filePath),
-        {
-          tv_show_details: tv_show_details,
-        },
-      );
+      if (videoDetails.filePath) {
+        await videoDbDataService.putVideo(
+          normalizeFilePath(videoDetails.filePath),
+          {
+            tv_show_details: tv_show_details,
+          },
+        );
+      }
     }
 
     return videoDetails;
@@ -436,7 +444,7 @@ export const saveVideoJsonData = async (
 
   try {
     if (newVideoJsonData && newVideoJsonData.videoProgressScreenshot) {
-      newVideoJsonData.videoProgressScreenshot = null;
+      newVideoJsonData.videoProgressScreenshot = undefined;
     }
     console.log(`Saving video JSON data for ${newFilePath}:`, newVideoJsonData);
     await videoDbDataService.putVideo(
@@ -465,7 +473,7 @@ export const saveCurrentTime = async (
       throw new Error("currentVideo.filePath is undefined");
     }
 
-    currentVideo.videoProgressScreenshot = null;
+    currentVideo.videoProgressScreenshot = undefined;
 
     let videoDbData = await videoDbDataService.getVideo(
       normalizeFilePath(currentVideo.filePath),

@@ -47,7 +47,9 @@ class SubtitleSyncQueue {
       queue: SubtitleSyncQueue,
       progressIntervalMs: number,
     ) => Promise<void>,
-  ) {}
+  ) {
+    this.socketIo = getSocketIoGlobal();
+  }
 
   async initializeProcessing() {
     await this.loadQueue();
@@ -100,9 +102,11 @@ class SubtitleSyncQueue {
       });
     }
     
-    this.socketIo.emit(AppSocketEvents.SUBTITLE_SYNC_QUEUE_UPDATED, {
-      queue: this.queue,
-    });
+    if (this.socketIo) {
+      this.socketIo.emit(AppSocketEvents.SUBTITLE_SYNC_QUEUE_UPDATED, {
+        queue: this.queue,
+      });
+    }
   }
 
   pauseItem(id: string) {
@@ -114,7 +118,7 @@ class SubtitleSyncQueue {
         status: "paused",
         paused: true,
       };
-      subtitleSyncQueueDataService.putSubtitleSyncQueueItem(item.id, this.queue[itemIndex]);
+      subtitleSyncQueueDataService.putSubtitleSyncQueueItem(id, this.queue[itemIndex]);
       return {
         success: true,
         queue: this.queue,
@@ -135,7 +139,7 @@ class SubtitleSyncQueue {
         status: "pending",
         paused: false,
       };
-      subtitleSyncQueueDataService.putSubtitleSyncQueueItem(item.id, this.queue[itemIndex]);
+      subtitleSyncQueueDataService.putSubtitleSyncQueueItem(id, this.queue[itemIndex]);
       this.processQueue();
       return {
         success: true,
@@ -162,9 +166,11 @@ class SubtitleSyncQueue {
 
     this.queue.splice(itemIndex, 1);
     subtitleSyncQueueDataService.deleteSubtitleSyncQueueItem(id);
-    this.socketIo.emit(AppSocketEvents.SUBTITLE_SYNC_ITEM_CANCELLED, {
-      queue: this.queue,
-    });
+    if (this.socketIo) {
+      this.socketIo.emit(AppSocketEvents.SUBTITLE_SYNC_ITEM_CANCELLED, {
+        queue: this.queue,
+      });
+    }
     return {
       success: true,
       queue: this.queue,
@@ -173,8 +179,11 @@ class SubtitleSyncQueue {
 
   private cancelCurrentProcessing() {
     if (this.currentProcessingItem) {
-      this.currentProcessingItem.status = "failed";
-      subtitleSyncQueueDataService.deleteSubtitleSyncQueueItem(this.currentProcessingItem.id);
+      const currentItem = this.currentProcessingItem;
+      currentItem.status = "failed";
+      if (currentItem.id) {
+        subtitleSyncQueueDataService.deleteSubtitleSyncQueueItem(currentItem.id);
+      }
       this.currentProcessingItem = null;
     }
     this.isProcessing = false;
@@ -188,17 +197,18 @@ class SubtitleSyncQueue {
       (item) => item.status === "pending" && !item.paused,
     );
 
-    if (nextItem) {
+    if (nextItem && nextItem.id) {
+      const itemId = nextItem.id; // Store ID to ensure TypeScript knows it's defined
       this.currentProcessingItem = nextItem;
       nextItem.status = "processing";
-      subtitleSyncQueueDataService.putSubtitleSyncQueueItem(nextItem.id, nextItem);
+      subtitleSyncQueueDataService.putSubtitleSyncQueueItem(itemId, nextItem);
       try {
         await this.processor(nextItem, this, this.progressIntervalMs);
         // Remove item from queue when completed
-        const idx = this.queue.findIndex((i) => i.id === nextItem.id);
+        const idx = this.queue.findIndex((i) => i.id === itemId);
         if (idx !== -1) {
           this.queue.splice(idx, 1);
-          subtitleSyncQueueDataService.deleteSubtitleSyncQueueItem(nextItem.id);
+          subtitleSyncQueueDataService.deleteSubtitleSyncQueueItem(itemId);
           
           // Notify frontend of queue update after removal
           const mainWindow = getMainWindow();
@@ -211,7 +221,9 @@ class SubtitleSyncQueue {
       } catch (error) {
         nextItem.status = "failed";
         nextItem.error = error instanceof Error ? error.message : "Unknown error";
-        subtitleSyncQueueDataService.putSubtitleSyncQueueItem(nextItem.id, nextItem);
+        if (nextItem.id) {
+          subtitleSyncQueueDataService.putSubtitleSyncQueueItem(nextItem.id, nextItem);
+        }
         loggingService.error(`Subtitle sync failed for ${nextItem.videoPath}:`, error);
         
         // Notify frontend of the failed item status update
@@ -272,14 +284,16 @@ class SubtitleSyncQueue {
     // Update queueIndex in DB and in memory
     this.queue[index1].queueIndex = index1;
     this.queue[index2].queueIndex = index2;
-    await subtitleSyncQueueDataService.putSubtitleSyncQueueItem(
-      this.queue[index1].id,
-      this.queue[index1],
-    );
-    await subtitleSyncQueueDataService.putSubtitleSyncQueueItem(
-      this.queue[index2].id,
-      this.queue[index2],
-    );
+    if (this.queue[index1].id && this.queue[index2].id) {
+      await subtitleSyncQueueDataService.putSubtitleSyncQueueItem(
+        this.queue[index1].id,
+        this.queue[index1],
+      );
+      await subtitleSyncQueueDataService.putSubtitleSyncQueueItem(
+        this.queue[index2].id,
+        this.queue[index2],
+      );
+    }
 
     return { success: true, queue: this.queue };
   }
@@ -404,6 +418,10 @@ async function processSubtitleSync(
   const mainWindow = getMainWindow();
   const socketIo = getSocketIoGlobal();
 
+  if (!queueItem.videoPath || !queueItem.subtitlePath || !queueItem.id) {
+    throw new Error("Invalid queue item: missing required properties (id, videoPath, or subtitlePath)");
+  }
+
   loggingService.info(`Starting subtitle sync for ${queueItem.fileName}`);
   
   // Update status to processing and notify frontend
@@ -417,7 +435,9 @@ async function processSubtitleSync(
   };
   
   mainWindow?.webContents.send("subtitle-sync-progress", processingUpdate);
-  socketIo.emit(AppSocketEvents.SUBTITLE_SYNC_PROGRESS, processingUpdate);
+  if (socketIo) {
+    socketIo.emit(AppSocketEvents.SUBTITLE_SYNC_PROGRESS, processingUpdate);
+  }
 
   try {
     // Perform the subtitle sync using alass
@@ -437,7 +457,9 @@ async function processSubtitleSync(
     queueItem.status = "completed";
     queueItem.percent = 100;
     
-    await subtitleSyncQueueDataService.putSubtitleSyncQueueItem(queueItem.id, queueItem);
+    if (queueItem.id) {
+      await subtitleSyncQueueDataService.putSubtitleSyncQueueItem(queueItem.id, queueItem);
+    }
 
     loggingService.info(`Subtitle sync completed: ${syncedSubtitlePath}`);
 
@@ -476,7 +498,9 @@ async function processSubtitleSync(
     };
     
     mainWindow?.webContents.send("subtitle-sync-completed", completedUpdate);
-    socketIo.emit(AppSocketEvents.SUBTITLE_SYNC_COMPLETED, completedUpdate);
+    if (socketIo) {
+      socketIo.emit(AppSocketEvents.SUBTITLE_SYNC_COMPLETED, completedUpdate);
+    }
     
   } catch (error) {
     loggingService.error(`Subtitle sync failed for ${queueItem.fileName}:`, error);
