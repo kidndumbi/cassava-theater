@@ -32,8 +32,8 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
   };
 
   const getImageUlr = () => {
-    if (movie.poster) {
-      return getUrl("file", movie.poster, null, settings?.port);
+    if (movie.poster && settings?.port) {
+      return getUrl("file", movie.poster, null, settings.port);
     }
     if (movie?.movie_details?.poster_path) {
       return getTmdbImageUrl(movie.movie_details.poster_path);
@@ -68,8 +68,8 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
         menuItems={getMenuItems(movie)}
       >
         <PosterCard
-          imageUrl={getImageUlr()}
-          altText={movie.fileName}
+          imageUrl={getImageUlr() ?? ""}
+          altText={movie.fileName ?? "Unknown Title"}
           footer={
             <Box className="mt-2">
               <Typography variant="subtitle1" align="center">

@@ -47,8 +47,8 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
   );
 
   const imageUrl = useCallback(() => {
-    if (movie.poster) {
-      return getUrl("file", movie.poster, null, settings?.port);
+    if (movie.poster && settings?.port) {
+      return getUrl("file", movie.poster, null, settings.port);
     }
     if (movie?.movie_details?.poster_path) {
       return getTmdbImageUrl(movie.movie_details.poster_path);
@@ -83,8 +83,8 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
         menuItems={getMenuItems(movie)}
       >
         <PosterCard
-          imageUrl={imageUrl()}
-          altText={movie.fileName}
+          imageUrl={imageUrl() ?? ""}
+          altText={movie.fileName ?? "Unknown Title"}
           currentTime={movie.currentTime}
           duration={movie.duration}
           footer={

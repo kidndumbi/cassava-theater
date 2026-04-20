@@ -53,7 +53,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
     data: videoDetails,
     isLoading: loadingVideoDetails,
     refetch,
-  } = useVideoDetailsQuery({ path: videoPath, category: "movies" });
+  } = useVideoDetailsQuery({ path: videoPath || "", category: "movies" });
 
   const { mutate: updateVideoData } = useMutation({
     mutationFn: window.videoAPI.saveVideoJsonData,
@@ -70,6 +70,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   });
 
   const { mutateAsync: saveTmdbData } = useSaveJsonData((data, savedData) => {
+    if (!savedData) return;
     queryClient.setQueryData(
       ["videoDetails", videoPath, "movies"],
       (oldData: VideoDataModel) => ({
@@ -155,6 +156,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
   };
 
   const handleMovieSelect = async (movie_details: MovieDetails) => {
+    if (!videoPath) return;
     const extraMovieDetails = await getExtraMovieDetails(
       videoPath,
       movie_details,
@@ -185,8 +187,8 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
 
   // --- Extracted Logic ---
   const getImageUlr = (movie: VideoDataModel) => {
-    if (movie.backdrop) {
-      return getUrl("file", movie.backdrop, null, settings?.port);
+    if (movie.backdrop && settings?.port) {
+      return getUrl("file", movie.backdrop, null, settings.port);
     }
     if (movie?.movie_details?.backdrop_path) {
       return getTmdbImageUrl(movie.movie_details.backdrop_path, "original");
@@ -195,7 +197,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
 
   useEffect(() => {
     if (videoDetails) {
-      setImageUrl(getImageUlr(videoDetails));
+      setImageUrl(getImageUlr(videoDetails) || "");
     }
   }, [videoDetails, getTmdbImageUrl]);
 
@@ -274,7 +276,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
               toggleCastAndCrew={() => setOpenDrawer(!openDrawer)}
               handleBackClick={handleBackClick}
               handleOpenModal={handleOpenModal}
-              videoDetails={videoDetails}
+              videoDetails={videoDetails || null}
               videoPath={videoPath}
               updateSubtitle={updateSubtitle}
               getVideoDetails={() => {
@@ -291,7 +293,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
               }}
             />
             <MovieDetailsContent
-              videoDetails={videoDetails}
+              videoDetails={videoDetails || null}
               handlePlay={handlePlay}
               currentTabValue={currentTabValue}
               onTabChange={onTabChange}
@@ -302,7 +304,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
       <Box>
         <CustomTabPanel value={currentTabValue} index={0}>
           <AppNotes
-            videoData={videoDetails}
+            videoData={videoDetails || null}
             currentVideoTime={0}
             handleVideoSeek={handleVideoSeek}
           />
@@ -318,7 +320,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = ({ videoPath, menuId }) => {
         handleImageUpdate={handleImageUpdate}
       />
       <CustomDrawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
-        <MovieCastAndCrew credits={videoDetails?.movie_details?.credits} />
+        <MovieCastAndCrew credits={videoDetails?.movie_details?.credits || { cast: [], crew: [] }} />
       </CustomDrawer>
       <AppModal
         open={isChatModalOpen}

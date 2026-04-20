@@ -92,13 +92,14 @@ export const Movies: React.FC<MoviesProps> = ({
   };
 
   const getImageUrl = useCallback(
-    (movie: VideoDataModel) => {
-      if (movie?.poster) {
-        return getUrl("file", movie.poster, null, settings?.port);
+    (movie: VideoDataModel): string => {
+      if (movie?.poster && settings?.port) {
+        return getUrl("file", movie.poster, null, settings.port) || "";
       }
       if (movie?.movie_details?.poster_path) {
-        return getTmdbImageUrl(movie.movie_details.poster_path);
+        return getTmdbImageUrl(movie.movie_details.poster_path) || "";
       }
+      return "";
     },
     [getTmdbImageUrl, settings?.port],
   );
@@ -148,16 +149,18 @@ export const Movies: React.FC<MoviesProps> = ({
                 width: "345px",
               }}
             >
-              <PosterCard
-                imageUrl={getImageUrl(randomMovie)}
-                altText={randomMovie?.fileName || ""}
-                onClick={() => handlePosterClick(randomMovie?.filePath || "")}
-                height="400px"
-                width="266px"
-                footer={
-                  <span>{trimFileName(randomMovie?.fileName || "")}</span>
-                }
-              />
+              {randomMovie && (
+                <PosterCard
+                  imageUrl={getImageUrl(randomMovie)}
+                  altText={randomMovie?.fileName || ""}
+                  onClick={() => handlePosterClick(randomMovie?.filePath || "")}
+                  height="400px"
+                  width="266px"
+                  footer={
+                    <span>{trimFileName(randomMovie?.fileName || "")}</span>
+                  }
+                />
+              )}
             </Paper>
           </Modal>
         </>

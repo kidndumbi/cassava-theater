@@ -1,7 +1,7 @@
 import { useQueries } from "@tanstack/react-query";
 import { PlaylistModel } from "../../models/playlist.model";
 
-export const useGetPlaylistVideoData = (playlist: PlaylistModel) => {
+export const useGetPlaylistVideoData = (playlist: PlaylistModel | null | undefined) => {
   return useQueries({
     queries: Array.isArray(playlist?.videos)
       ? playlist?.videos.map((filepath) => ({

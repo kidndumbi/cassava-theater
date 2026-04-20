@@ -109,7 +109,9 @@ export const Mp4ProgressList = ({
             }}
             buttonText="Cancel"
             itemDroped={(item: DragMp4ProgressItem) => {
-              handleCancel(item.progressData.id);
+              if (item.progressData.id) {
+                handleCancel(item.progressData.id);
+              }
             }}
             accept={["MP4_CONVERSION"]}
             backgroundColor={theme.palette.primary.main}

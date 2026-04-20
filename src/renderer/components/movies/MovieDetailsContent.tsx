@@ -26,7 +26,7 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
   const releaseYear = videoDetails?.movie_details?.release_date
     ? `(${getYearFromDate(videoDetails.movie_details.release_date)})`
     : "";
-  const hasProgress = videoDetails?.currentTime > 0;
+  const hasProgress = (videoDetails?.currentTime ?? 0) > 0;
   const showProgressScreenshot =
     hasProgress && videoDetails?.videoProgressScreenshot && !hasError;
 
@@ -42,22 +42,24 @@ const MovieDetailsContent: React.FC<MovieDetailsContentProps> = ({
       </h2>
       <p className="max-w-[50%]">{videoDetails?.movie_details?.overview}</p>
 
-      <MovieDetailsButtons
-        videoDetails={videoDetails}
-        handlePlay={handlePlay}
-      />
+      {videoDetails && (
+        <MovieDetailsButtons
+          videoDetails={videoDetails}
+          handlePlay={handlePlay}
+        />
+      )}
 
       {showProgressScreenshot && (
         <>
           <img
-            src={videoDetails.videoProgressScreenshot}
+            src={videoDetails.videoProgressScreenshot ?? undefined}
             alt={videoDetails.fileName}
             className="m-0 mb-4 h-[200px] w-[300px] rounded-lg"
             onError={handleImageError}
           />
           <Box className="pr-5">
             <VideoProgressBar
-              current={videoDetails.currentTime}
+              current={videoDetails.currentTime || 0}
               total={videoDetails.duration || 0}
             />
           </Box>

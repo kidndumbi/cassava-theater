@@ -92,6 +92,7 @@ const MovieList: React.FC<MovieListProps> = ({
 
   const { mutateAsync: saveVideoJsonData } = useSaveJsonData(
     (data, variables) => {
+      if (!variables) return;
       queryClient.setQueryData(
         ["videoData", settings?.movieFolderPath, false, "movies"],
         (oldData: VideoDataModel[] = []) =>
@@ -167,7 +168,7 @@ const MovieList: React.FC<MovieListProps> = ({
       if (
         (await openDialog(
           "Delete",
-          null,
+          undefined,
           "Are you sure you want to delete this Movie?",
         )) !== "Ok"
       )
@@ -200,7 +201,7 @@ const MovieList: React.FC<MovieListProps> = ({
                     return;
                   }
                   dispatch(
-                    mp4ConversionNewActions.setConversionProgress(queue),
+                    mp4ConversionNewActions.setConversionProgress(queue || []),
                   );
                 } else {
                   console.error("File path is undefined.");
@@ -257,7 +258,9 @@ const MovieList: React.FC<MovieListProps> = ({
       menuItems.push({
         label: "Refresh Movie Info",
         action: () => {
-          handleSelectMovie(movie.movie_details, movie);
+          if (movie.movie_details) {
+            handleSelectMovie(movie.movie_details, movie);
+          }
         },
       });
     }
@@ -305,7 +308,7 @@ const MovieList: React.FC<MovieListProps> = ({
                 movie={movie}
                 onPosterClick={handlePosterClick}
                 getImageUrl={getImageUrl}
-                alwaysShowVideoType={settings?.showVideoType}
+                alwaysShowVideoType={settings?.showVideoType ?? false}
                 dragging={setDragging}
               />
             </div>
@@ -332,9 +335,11 @@ const MovieList: React.FC<MovieListProps> = ({
         handleClose={handleCloseSuggestionsModal}
         fileName={removeVidExt(selectedMovie?.fileName) || ""}
         filePath={selectedMovie?.filePath || ""}
-        handleSelectMovie={(movie_details: MovieDetails) =>
-          handleSelectMovie(movie_details, selectedMovie)
-        }
+        handleSelectMovie={(movie_details: MovieDetails) => {
+          if (selectedMovie) {
+            handleSelectMovie(movie_details, selectedMovie);
+          }
+        }}
         handleImageUpdate={(data: VideoDataModel, filePath: string) => {
           if (!filePath) return;
           saveVideoJsonData({
@@ -380,13 +385,15 @@ const MovieList: React.FC<MovieListProps> = ({
         title="Playlists"
         fullScreen={false}
       >
-        <PlaylistSelect
-          playlists={playlists}
-          video={selectedPlaylistVideo}
-          updatePlaylist={(playlist) => {
-            updatePlaylist(playlist);
-          }}
-        ></PlaylistSelect>
+        {selectedPlaylistVideo && (
+          <PlaylistSelect
+            playlists={playlists || []}
+            video={selectedPlaylistVideo}
+            updatePlaylist={(playlist) => {
+              updatePlaylist(playlist);
+            }}
+          ></PlaylistSelect>
+        )}
       </AppModal>
     </>
   );

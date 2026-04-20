@@ -76,7 +76,7 @@ export const HomePage: React.FC<HomePageProps> = ({
     menuId,
     setCurrentVideo,
     getSingleEpisodeDetails,
-    settings?.playNonMp4Videos,
+    settings?.playNonMp4Videos ?? false,
     async () => {
       setMessage(
         <Alert icon={<WarningIcon fontSize="inherit" />} severity="warning">
@@ -146,7 +146,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       <Box>
         <ResumeMovieList
           loadingMovies={loadingResumeMovies}
-          sortedMovies={resumeMovies}
+          sortedMovies={resumeMovies ?? []}
           handlePosterClick={handlePosterClick}
           handleResetTime={async (video) => {
             await saveMovieData({
@@ -160,7 +160,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       <Box sx={{ marginTop: "20px" }}>
         <ResumeTvShowLists
           loadingTvShows={loadingResumeTvShows}
-          sortedTvShows={resumeTvShows}
+          sortedTvShows={resumeTvShows ?? []}
           handlePosterClick={handlePosterClick}
           loadingItems={loadingItems}
         />
@@ -200,7 +200,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       <Box>
         <WatchLaterList
           handlePosterClick={handlePosterClick}
-          watchLaterVideos={watchLaterVideos}
+          watchLaterVideos={watchLaterVideos ?? []}
           loadingWatchLater={isLoadingWatchLaterVideos}
           onRemoveFromWatchLater={async (video) => {
             await saveMovieData({

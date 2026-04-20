@@ -59,7 +59,9 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
       (index) => selectedPlaylist?.videos[index],
     );
 
-    setNonExistentVideos(undefinedVideosPaths || []);
+    setNonExistentVideos(
+      undefinedVideosPaths?.filter((path): path is string => path !== undefined) || []
+    );
 
     const cleanedVideos = selectedPlaylistVideos?.filter(
       (video) => video !== undefined && video !== null,

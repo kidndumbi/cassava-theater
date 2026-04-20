@@ -60,7 +60,7 @@ export const PlaylistDrawerPanel = ({
             onClick={async () => {
               const previousVideo =
                 await window.currentlyPlayingAPI.getPreviousPlaylistVideo();
-              if (previousVideo) {
+              if (previousVideo && playlist?.id) {
                 setCurrentVideo(previousVideo);
                 updatePlaylist({
                   id: playlist.id,
@@ -82,7 +82,7 @@ export const PlaylistDrawerPanel = ({
             onClick={async () => {
               const nextVideo =
                 await window.currentlyPlayingAPI.getNextPlaylistVideo();
-              if (nextVideo) {
+              if (nextVideo && playlist?.id) {
                 setCurrentVideo(nextVideo);
                 updatePlaylist({
                   id: playlist.id,
@@ -105,17 +105,19 @@ export const PlaylistDrawerPanel = ({
       <List>
         {hasVideos ? (
           playlistVideos?.map((video, idx) => (
-            <PlaylistDrawerItem
-              player={player}
-              idx={idx}
-              key={video?.filePath || idx}
-              video={video}
-              isCurrent={
-                currentVideo?.filePath &&
-                video?.filePath === currentVideo.filePath
-              }
-              onPlayVideo={onPlayVideo}
-            ></PlaylistDrawerItem>
+            player && (
+              <PlaylistDrawerItem
+                player={player}
+                idx={idx}
+                key={video?.filePath || idx}
+                video={video}
+                isCurrent={
+                  !!(currentVideo?.filePath &&
+                  video?.filePath === currentVideo.filePath)
+                }
+                onPlayVideo={onPlayVideo}
+              ></PlaylistDrawerItem>
+            )
           ))
         ) : (
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>

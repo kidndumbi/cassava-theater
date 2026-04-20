@@ -35,7 +35,7 @@ export const MovieListItem: React.FC<MovieListItemProps> = ({
     }),
   });
 
-  const previewSrc = useDragPreviewImage(movie.fileName);
+  const previewSrc = useDragPreviewImage(movie.fileName || "");
 
   React.useEffect(() => {
     dragging(isDragging, idx);
@@ -45,7 +45,7 @@ export const MovieListItem: React.FC<MovieListItemProps> = ({
 
   return (
     <>
-      <DragPreviewImage connect={dragPreview} src={previewSrc} />
+      {previewSrc && <DragPreviewImage connect={dragPreview} src={previewSrc} />}
       <div ref={ref}>
         <Box onContextMenu={onContextMenu}>
           <PosterCard
