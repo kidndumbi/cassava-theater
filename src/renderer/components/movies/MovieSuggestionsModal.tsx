@@ -148,10 +148,12 @@ const MovieSuggestionsModal: React.FC<MovieSuggestionsModalProps> = ({
 
     return (
       <CustomImages
-        posterUrl={videoDetails?.poster}
-        backdropUrl={videoDetails?.backdrop}
+        posterUrl={videoDetails?.poster || ""}
+        backdropUrl={videoDetails?.backdrop || ""}
         updateImage={(data) => {
-          handleImageUpdate(data, videoDetails?.filePath);
+          if (videoDetails?.filePath) {
+            handleImageUpdate(data, videoDetails.filePath);
+          }
         }}
       />
     );

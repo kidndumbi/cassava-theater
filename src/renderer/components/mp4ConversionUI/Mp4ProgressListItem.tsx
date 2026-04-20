@@ -65,7 +65,9 @@ export const Mp4ProgressListItem = ({
     canDrop: () => !isProcessing,
     drop(item) {
       if (item.index === idx) return;
-      onSwap(item.progressData.id, progress.id);
+      if (item.progressData.id && progress.id) {
+        onSwap(item.progressData.id, progress.id);
+      }
       item.index = idx;
     },
     collect: (monitor) => ({
@@ -97,7 +99,7 @@ export const Mp4ProgressListItem = ({
 
   return (
     <>
-      <DragPreviewImage connect={dragPreview} src={previewSrc} />
+      {previewSrc && <DragPreviewImage connect={dragPreview} src={previewSrc} />}
       <div ref={ref}>
         <Box
           className="flex place-content-between items-center rounded-md p-1"
@@ -114,7 +116,7 @@ export const Mp4ProgressListItem = ({
             <Box sx={{ display: "flex", justifyContent: "center" }}>
               {!isProcessing && <ProgressCheckbox />}
             </Box>
-            <FilePathText path={progress.outputPath} />
+            <FilePathText path={progress.outputPath || ""} />
           </Box>
           <Box className="flex gap-2" sx={{ alignItems: "center" }}>
             {!isProcessing &&
@@ -122,7 +124,7 @@ export const Mp4ProgressListItem = ({
                 <Button
                   size="small"
                   variant="outlined"
-                  onClick={() => onResume(progress.id)}
+                  onClick={() => progress.id && onResume(progress.id)}
                   sx={{ alignSelf: "center" }}
                 >
                   Resume
@@ -131,20 +133,20 @@ export const Mp4ProgressListItem = ({
                 <Button
                   size="small"
                   variant="contained"
-                  onClick={() => onPause(progress.id)}
+                  onClick={() => progress.id && onPause(progress.id)}
                   sx={{ alignSelf: "center" }}
                 >
                   Pause
                 </Button>
               ))}
             {isProcessing && (
-              <CircularProgressWithLabel value={progress.percent} />
+              <CircularProgressWithLabel value={progress.percent ?? 0} />
             )}
             <Button
               size="small"
               variant="contained"
               color="error"
-              onClick={() => onCancel(progress.id)}
+              onClick={() => progress.id && onCancel(progress.id)}
               sx={{ alignSelf: "center" }}
             >
               Cancel

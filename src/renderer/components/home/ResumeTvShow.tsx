@@ -2,7 +2,6 @@ import React from "react";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { getUrl, removeVidExt, trimFileName } from "../../util/helperFunctions";
-import { VideoProgressBar } from "../common/VideoProgressBar";
 import { PosterCard } from "../common/PosterCard";
 import TvShowDetailsButtons from "../tv-shows/TvShowDetailsButtons";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
@@ -30,13 +29,13 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
   const { openDialog, setMessage } = useConfirmation();
 
   const imageUrl = React.useMemo(() => {
-    if (tvShow.poster) {
-      return getUrl("file", tvShow.poster, null, settings?.port);
+    if (tvShow.poster && settings?.port) {
+      return getUrl("file", tvShow.poster, null, settings.port) || "";
     }
     if (tvShow?.tv_show_details?.poster_path) {
-      return getTmdbImageUrl(tvShow.tv_show_details.poster_path);
+      return getTmdbImageUrl(tvShow.tv_show_details.poster_path) || "";
     }
-    return undefined;
+    return "";
   }, [
     tvShow.poster,
     tvShow.tv_show_details?.poster_path,
@@ -84,7 +83,7 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
     </Box>
   );
 
-  const loadingOverlay = loadingItems[tvShow.filePath] && (
+  const loadingOverlay = tvShow.filePath && loadingItems[tvShow.filePath] && (
     <Box className="absolute left-0 top-0 flex h-full w-full items-center justify-center bg-[rgba(0,0,0,0.5)]">
       <CircularProgress />
     </Box>
@@ -99,9 +98,9 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
     >
       <PosterCard
         imageUrl={imageUrl}
-        altText={tvShow.fileName}
-        currentTime={tvShow.lastVideoPlayedTime}
-        duration={tvShow.lastVideoPlayedDuration}
+        altText={tvShow.fileName ?? "Unknown"}
+        currentTime={tvShow.lastVideoPlayedTime ?? undefined}
+        duration={tvShow.lastVideoPlayedDuration ?? undefined}
         footer={footerContent}
       />
       {loadingOverlay}
