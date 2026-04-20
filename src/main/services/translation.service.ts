@@ -28,25 +28,31 @@ export async function translateSubtitles(
     // Parse VTT structure
     const translatedLines: string[] = [];
     let i = 0;
+    let subtitleBlockCount = 0;
 
     while (i < lines.length) {
       const line = lines[i];
+      const trimmedLine = line.trim();
 
       // Keep WEBVTT header
-      if (line === "WEBVTT" || line === "" || /^\d+$/.test(line.trim())) {
+      if (line === "WEBVTT" || line === "" || /^\d+$/.test(trimmedLine)) {
         translatedLines.push(line);
         i++;
         continue;
       }
 
-      // Keep timestamp lines
-      if (/^\d{2}:\d{2}:\d{2}\.\d{3} --> \d{2}:\d{2}:\d{2}\.\d{3}$/.test(line)) {
+      // Keep timestamp lines - handle multiple VTT formats
+      // Supports: HH:MM:SS.mmm --> HH:MM:SS.mmm (dots) and HH:MM:SS,mmm --> HH:MM:SS,mmm (commas)
+      // Also handles variable digit counts for seconds/milliseconds
+      if (/^\d{1,2}:\d{2}:\d{1,2}[.,]\d{1,3} --> \d{1,2}:\d{2}:\d{1,2}[.,]\d{1,3}$/.test(trimmedLine)) {
         translatedLines.push(line);
         i++;
+        subtitleBlockCount++;
 
         // Collect all subtitle text lines for this subtitle block
         const textLines: string[] = [];
-        while (i < lines.length && lines[i].trim() !== "" && !/^\d+$/.test(lines[i].trim()) && !/^\d{2}:\d{2}:\d{2}\.\d{3} --> \d{2}:\d{2}:\d{2}\.\d{3}$/.test(lines[i])) {
+        
+        while (i < lines.length && lines[i].trim() !== "" && !/^\d+$/.test(lines[i].trim()) && !/^\d{1,2}:\d{2}:\d{1,2}[.,]\d{1,3} --> \d{1,2}:\d{2}:\d{1,2}[.,]\d{1,3}$/.test(lines[i].trim())) {
           textLines.push(lines[i]);
           i++;
         }
@@ -58,6 +64,11 @@ export async function translateSubtitles(
           if (textToTranslate) {
             try {
               const translatedText = await callLibreTranslate(textToTranslate, sourceLanguage, targetLanguage, libretranslateUrl);
+              
+              // Check if translation actually occurred (simple heuristic)
+              if (translatedText === textToTranslate) {
+                log.warn(`Translation returned identical text - LibreTranslate may not be working properly`);
+              }
               
               // Split translated text back into lines if needed (preserve line breaks)
               const translatedLines_local = translatedText.split(" ");
@@ -84,6 +95,8 @@ export async function translateSubtitles(
       translatedLines.push(line);
       i++;
     }
+    
+    log.info(`Processed ${subtitleBlockCount} subtitle blocks`);
 
     // Generate new filename with language suffix
     const dir = path.dirname(vttFilePath);
@@ -111,27 +124,32 @@ async function callLibreTranslate(
   targetLanguage: string,
   libretranslateUrl: string
 ): Promise<string> {
+  const requestBody = {
+    q: text,
+    source: sourceLanguage,
+    target: targetLanguage,
+    format: "text",
+  };
+
   const response = await fetch(`${libretranslateUrl}/translate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      q: text,
-      source: sourceLanguage,
-      target: targetLanguage,
-      format: "text",
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
+    log.error(`LibreTranslate API error response: ${errorText}`);
     throw new Error(`LibreTranslate API error: ${response.status} ${response.statusText}`);
   }
 
   const result = await response.json();
   
   if (!result.translatedText) {
-    throw new Error("Invalid response from LibreTranslate API");
+    log.error(`Invalid response structure: ${JSON.stringify(result)}`);
+    throw new Error("Invalid response from LibreTranslate API - missing translatedText");
   }
 
   return result.translatedText;
