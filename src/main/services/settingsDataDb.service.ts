@@ -29,7 +29,8 @@ export const setSetting = async <K extends keyof SettingsModel>(
   value: SettingsModel[K],
 ): Promise<SettingsModel[K]> => {
   const settings = await getAllSettings();
-  settings[key] = value;
-  await setAllSettings(settings);
+  const updatedSettings = settings || {} as SettingsModel;
+  updatedSettings[key] = value;
+  await setAllSettings(updatedSettings);
   return value;
 };

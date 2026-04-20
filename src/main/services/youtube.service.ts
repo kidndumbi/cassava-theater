@@ -165,7 +165,7 @@ class YoutubeDownloadQueue {
                 progressData,
               );
 
-              this.socketIo.emit(
+              this.socketIo?.emit(
                 AppSocketEvents.YT_DOWNLOAD_PROGRESS,
                 progressData,
               );
@@ -202,7 +202,7 @@ class YoutubeDownloadQueue {
         "youtube-download-completed",
         completionData,
       );
-      this.socketIo.emit(
+      this.socketIo?.emit(
         AppSocketEvents.YT_DOWNLOAD_ITEM_COMPLETED,
         completionData,
       );
@@ -247,7 +247,7 @@ class YoutubeDownloadQueue {
       this.isProcessing = false; // Reset processing state
     }
     this.queue.splice(index, 1);
-    this.socketIo.emit(AppSocketEvents.YT_DOWNLOAD_ITEM_CANCELLED, {
+    this.socketIo?.emit(AppSocketEvents.YT_DOWNLOAD_ITEM_CANCELLED, {
       queue: this.queue,
     });
     this.processQueue(); // Process the queue after removal

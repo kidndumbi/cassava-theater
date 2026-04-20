@@ -73,7 +73,7 @@ function AppListPanelItem({
 
   return (
     <>
-      <DragPreviewImage connect={dragPreview} src={previewSrc} />
+      {previewSrc && <DragPreviewImage connect={dragPreview} src={previewSrc} />}
       <div ref={ref}>
         <ListItem
           key={menuItem.id}

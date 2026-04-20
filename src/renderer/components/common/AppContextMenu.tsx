@@ -60,7 +60,7 @@ export const AppContextMenu = ({
         anchorPosition={
           contextMenu
             ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-            : null
+            : undefined
         }
         open={contextMenu !== null}
         onClose={() => setContextMenu(null)}
