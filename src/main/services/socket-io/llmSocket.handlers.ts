@@ -34,7 +34,7 @@ export function registerLlmSocketHandlers(socket: Socket) {
         callback({ success: true, data: llmResponse });
       } catch (error) {
         log.error("Error getting LLM response:", error);
-        callback({ success: false, error: error.message });
+        callback({ success: false, error: error instanceof Error ? error.message : String(error) });
       }
     },
   );
@@ -66,7 +66,7 @@ export function registerLlmSocketHandlers(socket: Socket) {
         callback({ success: true, data: streamId });
       } catch (error) {
         log.error("Error getting LLM response by chunks:", error);
-        callback({ success: false, error: error.message });
+        callback({ success: false, error: error instanceof Error ? error.message : String(error) });
       }
     },
   );
@@ -86,7 +86,7 @@ export function registerLlmSocketHandlers(socket: Socket) {
         callback({ success: true, data: models });
       } catch (error) {
         log.error("Error getting Ollama models:", error);
-        callback({ success: false, error: error.message });
+        callback({ success: false, error: error instanceof Error ? error.message : String(error) });
       }
     },
   );
@@ -106,7 +106,7 @@ export function registerLlmSocketHandlers(socket: Socket) {
         callback({ success: true, data: canceled });
       } catch (error) {
         log.error("Error canceling LLM stream:", error);
-        callback({ success: false, error: error.message });
+        callback({ success: false, error: error instanceof Error ? error.message : String(error) });
       }
     },
   );
@@ -130,7 +130,7 @@ export function registerLlmSocketHandlers(socket: Socket) {
         callback({ success: true, data: pingResult });
       } catch (error) {
         log.error("Error pinging Ollama server:", error);
-        callback({ success: false, error: error.message });
+        callback({ success: false, error: error instanceof Error ? error.message : String(error) });
       }
     },
   );

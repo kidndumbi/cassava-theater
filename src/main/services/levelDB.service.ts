@@ -82,7 +82,7 @@ class LevelDBService {
       // Cast the result to Collections[T] to satisfy TypeScript
       return (await this.db.get(collectionKey)) as Collections[T];
     } catch (err) {
-      if (err.code === "LEVEL_NOT_FOUND") return null;
+      if (err && typeof err === 'object' && 'code' in err && err.code === "LEVEL_NOT_FOUND") return null;
       log.error(`DB get failed for ${collectionKey}:`, err);
       throw err;
     }

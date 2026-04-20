@@ -82,6 +82,11 @@ const cleanUpVideoData = async () => {
 
     for (const video of videoDbData) {
       try {
+        if (!video.filePath) {
+          // Skip videos without valid file paths
+          continue;
+        }
+        
         if (!(await helpers.fileExists(video.filePath))) {
           await videoDbDataService.deleteVideo(video.filePath);
         } else if (video.videoProgressScreenshot) {
@@ -90,7 +95,7 @@ const cleanUpVideoData = async () => {
         }
       } catch (error) {
         log.error(
-          `Error processing key in cleanUpVideoData "${video.filePath}":`,
+          `Error processing key in cleanUpVideoData "${video.filePath ?? 'unknown'}":`,
           error,
         );
       }

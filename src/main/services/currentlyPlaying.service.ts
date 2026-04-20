@@ -36,7 +36,7 @@ class CurrentlyPlayingService {
         this.getCurrentPlaylist(),
       );
     }
-    if (this.currentPlaylist?.videos?.length > 0) {
+    if (this.currentPlaylist?.videos && this.currentPlaylist.videos.length > 0) {
       await this.setVideosFromDb(this.currentPlaylist.videos);
     }
     return {
@@ -88,7 +88,7 @@ class CurrentlyPlayingService {
 
   setCurrentTime(currentTime: number) {
     const socketIo = getSocketIoGlobal();
-    if (socketIo) {
+    if (socketIo && this.currentVideo) {
       this.currentVideo.currentTime = currentTime;
       socketIo.emit(AppSocketEvents.CURRENTLY_PLAYING_CURRENTTIME, currentTime);
     }

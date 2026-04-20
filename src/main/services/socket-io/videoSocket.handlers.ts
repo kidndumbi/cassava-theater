@@ -137,7 +137,7 @@ export function registerVideoHandlers(
       }) => void,
     ) => {
       try {
-        const updatedVideoData = await saveCurrentTime(null, {
+        const updatedVideoData = await saveCurrentTime({} as Electron.IpcMainInvokeEvent, {
           currentVideo: requestData?.data?.currentVideo,
           currentTime: requestData?.data?.currentTime,
           isEpisode: requestData?.data?.isEpisode,

@@ -90,7 +90,7 @@ class ConversionQueue {
         status: "paused",
         paused: true,
       };
-      conversionQueueDataService.putQueueItem(item.id, this.queue[itemIndex]);
+      conversionQueueDataService.putQueueItem(id, this.queue[itemIndex]);
       return {
         success: true,
         queue: this.queue,
@@ -111,7 +111,7 @@ class ConversionQueue {
         status: "pending",
         paused: false,
       };
-      conversionQueueDataService.putQueueItem(item.id, this.queue[itemIndex]);
+      conversionQueueDataService.putQueueItem(id, this.queue[itemIndex]);
       this.processQueue();
       return {
         success: true,
@@ -138,7 +138,7 @@ class ConversionQueue {
 
     this.queue.splice(itemIndex, 1);
     conversionQueueDataService.deleteQueueItem(id);
-    this.socketIo.emit(AppSocketEvents.MP4_CONVERION_ITEM_CANCELLED, {
+    this.socketIo?.emit(AppSocketEvents.MP4_CONVERION_ITEM_CANCELLED, {
       queue: this.queue,
     });
     return {
@@ -154,8 +154,12 @@ class ConversionQueue {
     }
     if (this.currentProcessingItem) {
       this.currentProcessingItem.status = "failed";
-      conversionQueueDataService.deleteQueueItem(this.currentProcessingItem.id);
-      deleteFile(this.currentProcessingItem.outputPath);
+      if (this.currentProcessingItem.id) {
+        conversionQueueDataService.deleteQueueItem(this.currentProcessingItem.id);
+      }
+      if (this.currentProcessingItem.outputPath) {
+        deleteFile(this.currentProcessingItem.outputPath);
+      }
       this.currentProcessingItem = null;
     }
     this.isProcessing = false;
@@ -169,7 +173,7 @@ class ConversionQueue {
       (item) => item.status === "pending" && !item.paused,
     );
 
-    if (nextItem) {
+    if (nextItem && nextItem.id) {
       this.currentProcessingItem = nextItem;
       nextItem.status = "processing";
       conversionQueueDataService.putQueueItem(nextItem.id, nextItem);
@@ -179,7 +183,9 @@ class ConversionQueue {
         const idx = this.queue.findIndex((i) => i.id === nextItem.id);
         if (idx !== -1) {
           this.queue.splice(idx, 1);
-          conversionQueueDataService.deleteQueueItem(nextItem.id);
+          if (nextItem.id) {
+            conversionQueueDataService.deleteQueueItem(nextItem.id);
+          }
         }
       } catch (error) {
         nextItem.status = "failed";
@@ -245,12 +251,13 @@ class ConversionQueue {
     ) {
       this.queue[index1].queueIndex = index1;
       this.queue[index2].queueIndex = index2;
+      // After swap, queue[index1] has id2 and queue[index2] has id1
       await conversionQueueDataService.putQueueItem(
-        this.queue[index1].id,
+        id2,
         this.queue[index1],
       );
       await conversionQueueDataService.putQueueItem(
-        this.queue[index2].id,
+        id1,
         this.queue[index2],
       );
     }
@@ -364,14 +371,21 @@ async function processConversion(
   const mainWindow = getMainWindow();
   const socketIo = getSocketIoGlobal();
 
+  if (!queueItem.outputPath) {
+    throw new Error("Output path is required for conversion");
+  }
+
   if (await isAlreadyConverted(queueItem.outputPath)) {
     // Remove item from queue if already converted
     const idx = queue.getQueue().findIndex((i) => i.id === queueItem.id);
-    if (idx !== -1) {
+    if (idx !== -1 && queueItem.id) {
       queue.removeItem(queueItem.id);
-      this.saveQueue?.();
     }
     return;
+  }
+
+  if (!socketIo) {
+    throw new Error("Socket.IO server is not available for conversion");
   }
 
   await performConversion(
@@ -425,6 +439,11 @@ function performConversion(
   return new Promise((resolve, reject) => {
     let lastProgressTime = 0;
 
+    if (!queueItem.inputPath || !queueItem.outputPath) {
+      reject(new Error("Input and output paths are required for conversion"));
+      return;
+    }
+
     const ffmpegCommand = ffmpeg(queueItem.inputPath)
       .output(queueItem.outputPath)
       .on("progress", (progress: ConversionProgress) => {
@@ -438,7 +457,7 @@ function performConversion(
         handleConversionEnd(resolve, mainWindow, queueItem, socketIo),
       )
       .on("error", (err: Error) =>
-        handleConversionError(queueItem.inputPath, err, reject, queue),
+        handleConversionError(queueItem.inputPath!, err, reject, queue),
       );
 
     queue.setCurrentFFmpegProcess(ffmpegCommand);
@@ -490,12 +509,18 @@ async function handleConversionEnd(
   queueItem: ConversionQueueItem,
   socketIo: Server,
 ) {
-  console.log(`\nFinished: "${queueItem.outputPath}"`);
+  console.log(`\nFinished: "${queueItem.outputPath ?? 'unknown'}"`); 
   try {
+    if (!queueItem.inputPath || !queueItem.outputPath) {
+      console.error("Missing paths for conversion completion");
+      resolve();
+      return;
+    }
+
     const previousData = await videoDbDataService.getVideo(
       normalizeFilePath(queueItem.inputPath),
     );
-    await videoDbDataService.putVideo(queueItem.outputPath, previousData);
+    await videoDbDataService.putVideo(queueItem.outputPath, previousData || {});
     await deleteFile(queueItem.inputPath);
 
     const completionData = {
@@ -511,7 +536,7 @@ async function handleConversionEnd(
     resolve();
   } catch (error) {
     console.error(
-      `Error handling metadata for "${queueItem.outputPath}":`,
+      `Error handling metadata for "${queueItem.outputPath ?? 'unknown'}":`,
       error,
     );
     resolve();
