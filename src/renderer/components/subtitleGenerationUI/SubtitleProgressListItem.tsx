@@ -5,7 +5,7 @@ import { DragPreviewImage, useDrag, useDrop } from "react-dnd";
 import { useEffect, useRef } from "react";
 import { useDragPreviewImage } from "../../hooks/useDragPreviewImage";
 
-const FilePathText = ({ path }: { path: string }) => (
+const FilePathText = ({ path }: { path: string | undefined }) => (
   <Typography
     variant="body2"
     sx={{
@@ -14,7 +14,7 @@ const FilePathText = ({ path }: { path: string }) => (
     }}
     component="div"
   >
-    {path}
+    {path || "Unknown file"}
   </Typography>
 );
 
@@ -113,7 +113,9 @@ export const SubtitleProgressListItem = ({
     canDrop: () => !isProcessing,
     drop(item) {
       if (item.index === idx) return;
-      onSwap(item.progressData.id, progress.id);
+      if (item.progressData.id && progress.id) {
+        onSwap(item.progressData.id, progress.id);
+      }
       item.index = idx;
     },
     collect: (monitor) => ({
@@ -145,7 +147,7 @@ export const SubtitleProgressListItem = ({
 
   return (
     <>
-      <DragPreviewImage connect={dragPreview} src={previewSrc} />
+      {previewSrc && <DragPreviewImage connect={dragPreview} src={previewSrc} />}
       <div ref={ref}>
         <Box
           className="flex place-content-between items-center rounded-md p-1"
@@ -166,11 +168,12 @@ export const SubtitleProgressListItem = ({
           </Box>
           <Box className="flex gap-2" sx={{ alignItems: "center" }}>
             {!isProcessing &&
+              progress.id &&
               (progress.status === "paused" ? (
                 <Button
                   size="small"
                   variant="outlined"
-                  onClick={() => onResume(progress.id)}
+                  onClick={() => progress.id && onResume(progress.id)}
                   sx={{ alignSelf: "center" }}
                 >
                   Resume
@@ -179,22 +182,24 @@ export const SubtitleProgressListItem = ({
                 <Button
                   size="small"
                   variant="contained"
-                  onClick={() => onPause(progress.id)}
+                  onClick={() => progress.id && onPause(progress.id)}
                   sx={{ alignSelf: "center" }}
                 >
                   Pause
                 </Button>
               ))}
             <StatusChip status={progress.status || "pending"} />
-            <Button
-              size="small"
-              variant="contained"
-              color="error"
-              onClick={() => onCancel(progress.id)}
-              sx={{ alignSelf: "center" }}
-            >
-              Cancel
-            </Button>
+            {progress.id && (
+              <Button
+                size="small"
+                variant="contained"
+                color="error"
+                onClick={() => progress.id && onCancel(progress.id)}
+                sx={{ alignSelf: "center" }}
+              >
+                Cancel
+              </Button>
+            )}
           </Box>
         </Box>
       </div>

@@ -8,19 +8,19 @@ export const videoCommandsHandler = (
 ) => {
   switch (command) {
     case "play":
-      playerHandle?.play();
+      playerHandle?.play?.();
       break;
     case "pause":
-      playerHandle?.pause();
+      playerHandle?.pause?.();
       break;
     case "forward30":
-      playerHandle?.skipBy(30);
+      playerHandle?.skipBy?.(30);
       break;
     case "backward10":
-      playerHandle?.skipBy(-10);
+      playerHandle?.skipBy?.(-10);
       break;
     case "restart":
-      playerHandle?.startPlayingAt(0);
+      playerHandle?.startPlayingAt?.(0);
       break;
     case "volumeDown":
       playerHandle?.setVolume((prev) => Math.max(prev - 0.1, 0));
@@ -30,9 +30,7 @@ export const videoCommandsHandler = (
       playerHandle?.setVolume((prev) => Math.min(prev + 0.1, 1));
       break;
     case "nextEpisode":
-      if (playerHandle && playerHandle?.triggereNextEpisode) {
-        playerHandle.triggereNextEpisode();
-      }
+      playerHandle?.triggereNextEpisode?.();
       break;
     case "speed-1":
     case "speed-1.25":

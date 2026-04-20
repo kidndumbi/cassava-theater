@@ -166,9 +166,9 @@ export const LandingPage = () => {
       >
         {renderActivePage(activeMenu, {
           loadingMovies,
-          movies,
+          movies: movies || [],
           loadingTvShows,
-          tvShows,
+          tvShows: tvShows || [],
           refreshData,
           getMovies,
           getTvShows,

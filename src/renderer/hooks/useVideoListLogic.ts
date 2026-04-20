@@ -13,8 +13,12 @@ export const useVideoListLogic = () => {
   const { updateVideoDBCurrentTime } = useVideoPlayerLogic();
 
   const setCurrentVideo = (video: VideoDataModel | null) => {
-    dispatch(videoPlayerActions.setCurrentVideo(video));
-    window.currentlyPlayingAPI.setCurrentVideo(video);
+    if (video === null) {
+      dispatch(videoPlayerActions.clearCurrentVideo());
+    } else {
+      dispatch(videoPlayerActions.setCurrentVideo(video));
+      window.currentlyPlayingAPI.setCurrentVideo(video);
+    }
   };
 
   const handleVideoSelect = (video: VideoDataModel) => {
@@ -31,7 +35,7 @@ export const useVideoListLogic = () => {
   const clearPlayer = () => {
     dispatch(videoPlayerActions.clearVideoPlayer());
     setCurrentVideo(null);
-    window.currentlyPlayingAPI.setCurrentPlaylist(null);
+    window.currentlyPlayingAPI.setCurrentPlaylist({ playlist: null });
   };
 
   return {

@@ -66,7 +66,7 @@ export const PlaylistsVideo: React.FC<{
     }),
   });
 
-  const previewSrc = useDragPreviewImage(video.fileName);
+  const previewSrc = useDragPreviewImage(video.fileName || "");
 
   React.useEffect(() => {
     dragging(isDragging, idx);
@@ -76,7 +76,7 @@ export const PlaylistsVideo: React.FC<{
 
   return (
     <>
-      <DragPreviewImage connect={dragPreview} src={previewSrc} />
+      {previewSrc && <DragPreviewImage connect={dragPreview} src={previewSrc} />}
       <div
         ref={ref}
         style={{
@@ -111,7 +111,7 @@ export const PlaylistsVideo: React.FC<{
           <div>
             {displayType === "grid" ? (
               <PosterCard
-                imageUrl={getImageUrl(video)}
+                imageUrl={getImageUrl(video) || ""}
                 altText={video.fileName || ""}
                 currentTime={video.currentTime}
                 duration={video.duration}
@@ -125,7 +125,7 @@ export const PlaylistsVideo: React.FC<{
                 video={video}
                 getImageUrl={getImageUrl}
                 onClick={() => onPlayVideo(idx)}
-                showVideoType={settings?.showVideoType}
+                showVideoType={settings?.showVideoType ?? false}
               />
             )}
           </div>

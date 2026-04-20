@@ -65,7 +65,9 @@ export const Episodes: React.FC<EpisodesProps> = ({
 
   const deleteFileMutation = useDeleteFile((result, filePath) => {
     showSnackbar("File deleted successfully", "success");
-    episodeDeleted(filePath);
+    if (filePath) {
+      episodeDeleted(filePath);
+    }
   });
 
   const { mutate: updatePlaylist } = useMutation({
@@ -83,6 +85,10 @@ export const Episodes: React.FC<EpisodesProps> = ({
       !settings?.playNonMp4Videos &&
       !episode.filePath?.toLowerCase().endsWith(".mp4")
     ) {
+      if (!episode.filePath) {
+        showSnackbar("Episode file path is missing", "error");
+        return;
+      }
       const queued = await isInMp4ConversionQueue(episode.filePath);
       const baseMsg =
         "This video is not in MP4 format and cannot be played directly.";
@@ -101,7 +107,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
       );
       if (dialogDecision === "Ok") {
         const { queue, success } = await addToConversionQueue(episode.filePath);
-        if (!success) {
+        if (!success && queue) {
           dispatch(
             mp4ConversionNewActions.setConversionProgress(
               queue,
@@ -144,7 +150,7 @@ export const Episodes: React.FC<EpisodesProps> = ({
             onEpisodeClick={() => handleEpisodeClick(episode)}
             handleFilepathChange={handleFilepathChange}
             handleConvertToMp4Result={(success, message, queue) => {
-              if (success) {
+              if (success && queue) {
                 dispatch(
                   mp4ConversionNewActions.setConversionProgress(
                     queue,
@@ -187,13 +193,15 @@ export const Episodes: React.FC<EpisodesProps> = ({
         title="Playlists"
         fullScreen={false}
       >
-        <PlaylistSelect
-          playlists={playlists}
-          video={selectedPlaylistVideo}
-          updatePlaylist={(playlist) => {
-            updatePlaylist(playlist);
-          }}
-        ></PlaylistSelect>
+        {selectedPlaylistVideo && (
+          <PlaylistSelect
+            playlists={playlists || []}
+            video={selectedPlaylistVideo}
+            updatePlaylist={(playlist) => {
+              updatePlaylist(playlist);
+            }}
+          ></PlaylistSelect>
+        )}
       </AppModal>
     </>
   );

@@ -41,7 +41,7 @@ const useHandlePosterClick = (
     startFromBeginning = false,
   ) => {
     if (video.filePath) {
-      setLoadingItems((prev) => ({ ...prev, [video.filePath]: true }));
+      setLoadingItems((prev) => ({ ...prev, [video.filePath as string]: true }));
     }
     try {
       const selectedVideo = await getSelectedVideo(videoType, video);
@@ -61,7 +61,7 @@ const useHandlePosterClick = (
       log.error("Error handling poster click:", err);
     } finally {
       if (video.filePath) {
-        setLoadingItems((prev) => ({ ...prev, [video.filePath]: false }));
+        setLoadingItems((prev) => ({ ...prev, [video.filePath as string]: false }));
       }
     }
   };

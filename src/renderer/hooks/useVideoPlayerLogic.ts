@@ -32,9 +32,9 @@ export const useVideoPlayerLogic = () => {
   };
 
   const updateVideoDBCurrentTime = async (isEpisode = false) => {
-    if (isEmptyObject(currentVideo) || !player) return;
+    if (!currentVideo || isEmptyObject(currentVideo) || !player) return;
 
-    if (player.currentTime > currentVideo.duration) {
+    if (!currentVideo.duration || player.currentTime > currentVideo.duration) {
       return;
     }
 
@@ -59,6 +59,8 @@ export const useVideoPlayerLogic = () => {
   };
 
   const resetVideo = () => {
+    if (!currentVideo || isEmptyObject(currentVideo)) return;
+
     const newVideoJsonData: VideoDataModel = {
       ...currentVideo,
       currentTime: 1,

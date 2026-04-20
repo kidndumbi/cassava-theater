@@ -5,7 +5,6 @@ import React, {
   useMemo,
   useImperativeHandle,
   forwardRef,
-  use,
 } from "react";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useMouseActivity } from "../../hooks/useMouseActivity";
@@ -92,7 +91,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const { mutateAsync: setSetting } = useSetSetting();
   const saveJsonDataMutation = useSaveJsonData();
     const videoPlayerRef = useRef<HTMLVideoElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null!);
     const [error, setError] = useState<string | null>(null);
     const castAndCrewModal = useModalState(false);
     const notesModal = useModalState(false);
@@ -115,7 +114,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const [sliderValue, setSliderValue] = useState<number | null>(null);
     const debouncedSliderValue = useDebounce(sliderValue, 300);
     const isMouseActive = useMouseActivity();
-    const isNotMp4VideoFormat = currentVideo?.isMkv || currentVideo?.isAvi;
+    const isNotMp4VideoFormat = !!(currentVideo?.isMkv || currentVideo?.isAvi);
     const [videoUrl, setVideoUrl] = useState<string>("");
     const [subtitleCacheBuster, setSubtitleCacheBuster] = useState<number>(Date.now());
 
@@ -148,7 +147,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       setPlaybackSpeed,
     } = useVideoPlayer(
       () => onVideoEnded(currentVideo?.filePath || "", nextEpisode),
-      currentVideo,
+      currentVideo ?? undefined,
       startFromBeginning,
       triggeredOnPlayInterval,
     );
@@ -175,7 +174,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
         port,
       );
     useEffect(() => {
-      setVideoUrl(getVideoUrl());
+      setVideoUrl(getVideoUrl() || "");
     }, [currentVideo, startFromBeginning, port]);
     
     // Reset subtitle cache buster when subtitle file or active language changes
@@ -187,7 +186,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       // Use active subtitle path based on the activeSubtitleLanguage setting
       const activeSubtitlePath = currentVideo ? getActiveSubtitlePath(currentVideo) : subtitleFilePath;
       const baseUrl = getUrl("file", activeSubtitlePath, null, port);
-      return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : baseUrl;
+      return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : "";
     };
 
     // Get subtitle URL for overlay based on selected language
@@ -210,7 +209,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       if (!subtitlePath) return null;
       
       const baseUrl = getUrl("file", subtitlePath, null, port);
-      return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : baseUrl;
+      return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : null;
     };
 
     useEffect(() => {
@@ -236,7 +235,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
 
     useEffect(() => {
       const fetchCastAndCrew = async () => {
-        if (isTvShow) {
+        if (isTvShow && currentVideo?.filePath) {
           const tvShowPath = removeLastSegments(currentVideo.filePath, 2);
           const tvShowDetails = await window.videoAPI.fetchFolderDetails({
             path: tvShowPath,
@@ -256,7 +255,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             setCastAndCrewContent(
               <MovieCastAndCrew credits={currentVideo.movie_details.credits} />,
             );
-          } else {
+          } else if (currentVideo.filePath) {
             const movieDetails = await window.videoAPI.fetchVideoDetails({
               path: currentVideo.filePath,
               category: "movie",
@@ -314,7 +313,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       
       // Force both video and subtitle reload by updating URLs with cache busting
       setSubtitleCacheBuster(Date.now());
-      setVideoUrl(getVideoUrl());
+      setVideoUrl(getVideoUrl() || "");
       
       // Seek back to the previous position after a short delay to allow video to load
       setTimeout(() => {
@@ -395,14 +394,14 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       <span className="absolute bottom-2.5 left-5 text-sm text-white">
         {formattedTime +
           " / " +
-          (secondsTohhmmss(currentVideo?.duration) || "")}
+          (secondsTohhmmss(currentVideo?.duration || 0) || "")}
       </span>
     );
 
     const renderSlider = () => (
       <Box className="absolute bottom-0.5 left-5 m-0 w-[calc(100%-40px)] max-w-full p-0 text-white">
         <AppSlider
-          max={currentVideo.duration}
+          max={currentVideo?.duration || 0}
           value={mkvCurrentTime}
           onChange={(event, newValue) => {
             setSliderValue(newValue as number);
@@ -508,7 +507,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
               }
               filePath={currentVideo?.filePath}
               handleOpenNotesModal={handleOpenNotesModal}
-              nextEpisode={nextEpisode}
+              nextEpisode={nextEpisode || undefined}
             />
           </>
         )}
@@ -536,7 +535,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
         <SubtitleOverlayControlModal
           open={subtitleOverlayControlModal.open}
           onClose={subtitleOverlayControlModal.setOpen.bind(null, false)}
-          videoData={currentVideo}
+          videoData={currentVideo || undefined}
           isEnabled={subtitleOverlayEnabled}
           selectedLanguage={subtitleOverlayLanguage}
           fontSize={subtitleOverlayFontSize}

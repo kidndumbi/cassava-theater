@@ -101,7 +101,9 @@ export const SubtitleProgressList = ({
             }}
             buttonText="Cancel"
             itemDroped={(item: DragSubtitleProgressItem) => {
-              handleCancel(item.progressData.id);
+              if (item.progressData.id) {
+                handleCancel(item.progressData.id);
+              }
             }}
             accept={["SUBTITLE_GENERATION"]}
             backgroundColor={theme.palette.primary.main}

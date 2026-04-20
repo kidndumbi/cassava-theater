@@ -135,9 +135,11 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const queryClient = new QueryClient();
 
   const { mutateAsync: saveJsonData } = useSaveJsonData((_, variables) => {
-    queryClient.invalidateQueries({
-      queryKey: ["videoDetails", variables.currentVideo.filePath, "movies"],
-    });
+    if (variables) {
+      queryClient.invalidateQueries({
+        queryKey: ["videoDetails", variables.currentVideo.filePath, "movies"],
+      });
+    }
   });
 
   const handleAddPlaylist = newPlaylistModal.openModal;
@@ -176,11 +178,12 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const getImageUrl = useCallback(
     (movie: VideoDataModel) => {
       if (movie?.poster) {
-        return getUrl("file", movie.poster, null, settings?.port);
+        return getUrl("file", movie.poster, null, settings?.port || "") ?? undefined;
       }
       if (movie?.movie_details?.poster_path) {
         return getTmdbImageUrl(movie.movie_details.poster_path);
       }
+      return undefined;
     },
     [getTmdbImageUrl, settings?.port],
   );
@@ -210,11 +213,11 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
         await window.currentlyPlayingAPI.setCurrentPlaylist({
           playlist: {
             ...selectedPlaylist,
-            videos: selectedPlaylistVideosCleaned.map((c) => c.filePath),
+            videos: selectedPlaylistVideosCleaned.map((c) => c.filePath).filter((path): path is string => path !== undefined),
           },
           shuffle,
         });
-      const video = currentPlaylist.videosDetails.find(
+      const video = currentPlaylist.videosDetails?.find(
         (v) => v.filePath === currentPlaylist.videos[0],
       );
       if (video) {
@@ -275,7 +278,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
             setSelectedItem={(playlist) => {
               const selectedPlaylist = playlists?.find(
                 (p) => p.id === playlist.id,
-              );
+              ) ?? null;
               setSelectedPlaylist(selectedPlaylist);
             }}
             backgroundColor={theme.palette.secondary.main}
@@ -321,7 +324,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
               />
             )}
             <PlaylistVideosPanel
-              displayType={selectedPlaylist?.display}
+              displayType={selectedPlaylist?.display || "grid"}
               videos={selectedPlaylistVideosCleaned}
               getImageUrl={getImageUrl}
               selectedPlaylist={selectedPlaylist}

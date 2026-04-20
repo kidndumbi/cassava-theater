@@ -27,6 +27,9 @@ const videoPlayerSlice = createSlice({
     setCurrentVideo: (state, action: PayloadAction<VideoDataModel>) => {
       state.currentVideo = { ...state.currentVideo, ...action.payload };
     },
+    clearCurrentVideo: (state) => {
+      state.currentVideo = null;
+    },
     setVideoPlayer: (state, action) => {
       state.videoPlayer = action.payload;
     },

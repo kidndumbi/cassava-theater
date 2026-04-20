@@ -36,7 +36,7 @@ export const YoutubeDownload = () => {
   const [fileExists, setFileExists] = useState(false);
 
   const destinationOptions = useRef<{ name: string; filePath: string }[]>([]);
-  const [destination, setDestination] = useLocalStorage<string | null>(null);
+  const [destination, setDestination] = useLocalStorage<string | null>("youtube-destination", null);
   const [parseError, setParseError] = useState<string | null>(null);
 
   useEffect(() => {

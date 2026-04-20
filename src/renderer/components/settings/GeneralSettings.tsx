@@ -18,9 +18,9 @@ import { OllamaModel } from "../../../models/ollamaModel.model";
 
 interface GeneralSettingsProps {
   settings: SettingsModel;
-  handleFolderSelection: (settingName: string) => Promise<void>;
+  handleFolderSelection: (settingName: keyof SettingsModel) => Promise<void>;
   handleUpdateSetting: (
-    settingName: string,
+    settingName: keyof SettingsModel,
     value: SettingsModel[keyof SettingsModel],
     confirmationtext?: string,
   ) => Promise<void>;
@@ -53,7 +53,7 @@ export const GeneralSettings: React.FC<GeneralSettingsProps> = ({
   const renderFolderSetting = (
     label: string,
     value: string,
-    settingName: string,
+    settingName: keyof SettingsModel,
   ) => (
     <div style={{ display: "flex", alignItems: "center" }}>
       <AppTextField label={label} value={value} theme={theme} />

@@ -114,7 +114,9 @@ export const SubtitleSyncProgressListItem = ({
     canDrop: () => !isProcessing,
     drop(item) {
       if (item.index === idx) return;
-      onSwap(item.progressData.id, progress.id);
+      if (item.progressData.id && progress.id) {
+        onSwap(item.progressData.id, progress.id);
+      }
       item.index = idx;
     },
     collect: (monitor) => ({
@@ -154,7 +156,9 @@ export const SubtitleSyncProgressListItem = ({
 
   return (
     <>
-      <DragPreviewImage connect={dragPreview} src={previewSrc} />
+      {previewSrc && (
+        <DragPreviewImage connect={dragPreview} src={previewSrc} />
+      )}
       <div ref={ref}>
         <Box
           className="flex place-content-between items-center rounded-md p-1"
@@ -174,15 +178,17 @@ export const SubtitleSyncProgressListItem = ({
             <FilePathText path={getDisplayText()} />
           </Box>
           <Box className="flex gap-2" sx={{ alignItems: "center" }}>
-            {isProcessing && <StatusChip status={progress.status} />}
+            {isProcessing && progress.status && (
+              <StatusChip status={progress.status} />
+            )}
             {!isProcessing && (
               <>
-                <StatusChip status={progress.status} />
+                {progress.status && <StatusChip status={progress.status} />}
                 {progress.paused ? (
                   <Button
                     size="small"
                     variant="outlined"
-                    onClick={() => onResume(progress.id)}
+                    onClick={() => progress.id && onResume(progress.id)}
                     sx={{ alignSelf: "center" }}
                   >
                     Resume
@@ -191,7 +197,7 @@ export const SubtitleSyncProgressListItem = ({
                   <Button
                     size="small"
                     variant="contained"
-                    onClick={() => onPause(progress.id)}
+                    onClick={() => progress.id && onPause(progress.id)}
                     sx={{ alignSelf: "center" }}
                   >
                     Pause
@@ -204,7 +210,7 @@ export const SubtitleSyncProgressListItem = ({
               size="small"
               variant="contained"
               color="error"
-              onClick={() => onCancel(progress.id)}
+              onClick={() => progress.id && onCancel(progress.id)}
               sx={{ alignSelf: "center" }}
             >
               Cancel

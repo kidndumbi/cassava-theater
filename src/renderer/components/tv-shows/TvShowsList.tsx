@@ -92,6 +92,7 @@ export const TvShowsList = React.memo(function TvShowsList(
 
   const { mutateAsync: saveVideoJsonData } = useSaveJsonData(
     (data, variables) => {
+      if (!variables) return;
       queryClient.setQueryData(
         ["videoData", settings?.tvShowsFolderPath, false, "tvShows"],
         (oldData: VideoDataModel[] = []) =>
@@ -166,13 +167,14 @@ export const TvShowsList = React.memo(function TvShowsList(
     },
   });
 
-  const getImageUlr = (show: VideoDataModel) => {
+  const getImageUlr = (show: VideoDataModel): string | undefined => {
     if (show.poster) {
-      return getUrl("file", show.poster, null, settings?.port);
+      return getUrl("file", show.poster, null, settings?.port || "") || undefined;
     }
     if (show?.tv_show_details?.poster_path) {
       return getTmdbImageUrl(show.tv_show_details.poster_path);
     }
+    return undefined;
   };
 
   const handleDelete = async (filePath: string) => {
@@ -226,7 +228,7 @@ export const TvShowsList = React.memo(function TvShowsList(
       menuItems.push({
         label: "Refresh TV Show Info",
         action: () => {
-          if (show.tv_show_details.id) {
+          if (show.tv_show_details?.id) {
             linkTvShowMutation({
               filePath: show.filePath || "",
               tv_show_details: show.tv_show_details,
@@ -293,7 +295,9 @@ export const TvShowsList = React.memo(function TvShowsList(
             type: string;
             show: VideoDataModel;
           }) => {
-            handleDelete(item?.show?.filePath);
+            if (item?.show?.filePath) {
+              handleDelete(item.show.filePath);
+            }
           }}
           accept={["VIDEO"]}
         />
@@ -308,7 +312,7 @@ export const TvShowsList = React.memo(function TvShowsList(
         fileName={selectedTvShow?.filePath?.split("/").pop() || ""}
         filePath={selectedTvShow?.filePath || ""}
         handleSelectTvShow={(tv_show_details) => {
-          if (tv_show_details.id) {
+          if (tv_show_details.id && selectedTvShow) {
             linkTvShowMutation({
               filePath: selectedTvShow.filePath || "",
               tv_show_details,
