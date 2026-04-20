@@ -72,7 +72,7 @@ export function registerPlaylistHandlers(
         const playlist = await playlistDbService.getPlaylist(
           requestData.data.id,
         );
-        callback({ success: true, data: playlist });
+        callback({ success: true, data: playlist ?? undefined });
       } catch (error) {
         log.error("Error fetching playlists:", error);
         callback({ success: false, error: "Failed to fetch playlists" });

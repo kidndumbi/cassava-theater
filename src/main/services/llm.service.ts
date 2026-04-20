@@ -88,9 +88,13 @@ const handleResponse = (
   const mainWindow = getMainWindow();
 
   if (responseReceiver === "mobile") {
-    socketIo.to(socketId).emit(event, data);
+    if (socketIo) {
+      socketIo.to(socketId).emit(event, data);
+    }
   } else if (responseReceiver === "desktop") {
-    mainWindow.webContents.send("video-ai-chat-data-chunks", data);
+    if (mainWindow) {
+      mainWindow.webContents.send("video-ai-chat-data-chunks", data);
+    }
   }
 };
 
@@ -104,9 +108,13 @@ const handleError = (
   const mainWindow = getMainWindow();
 
   if (responseReceiver === "mobile") {
-    socketIo.to(socketId).emit(event + "_error", errorMessage);
+    if (socketIo) {
+      socketIo.to(socketId).emit(event + "_error", errorMessage);
+    }
   } else if (responseReceiver === "desktop") {
-    mainWindow.webContents.send("video-ai-chat-response-error", errorMessage);
+    if (mainWindow) {
+      mainWindow.webContents.send("video-ai-chat-response-error", errorMessage);
+    }
   }
 };
 

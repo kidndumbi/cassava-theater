@@ -17,7 +17,7 @@ export function registerSettingsHandlers(socket: Socket) {
     ) => {
       try {
         const settings = await settingsDataDbService.getAllSettings();
-        callback({ success: true, data: settings });
+        callback({ success: true, data: settings ?? undefined });
       } catch (error) {
         log.error("Error fetching videos data:", error);
         callback({ success: false, error: "Failed to fetch videos data" });
