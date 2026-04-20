@@ -16,7 +16,7 @@ export const ConfirmationProvider: FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState("Are you sure");
+  const [message, setMessage] = useState<React.ReactNode>("Are you sure");
   const [procedButtonText, setProcedButtonText] = useState("");
   const [hideOkButton, setHideOkButton] = useState(false);
   const [resolve, setResolve] =

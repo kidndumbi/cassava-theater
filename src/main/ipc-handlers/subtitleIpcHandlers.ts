@@ -45,7 +45,7 @@ export const subtitleIpcHandlers = () => {
       // Find the item in queue by ID and convert to legacy format
       const queue = getSubtitleGenerationQueue();
       const item = queue.find(queueItem => queueItem.id === jobId);
-      if (!item) return null;
+      if (!item || !item.videoPath) return null;
       
       return {
         videoPath: item.videoPath,

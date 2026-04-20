@@ -82,13 +82,17 @@ export const videosIpcHandlers = () => {
   ipcMain.handle(
     VideoIPCChannels.GetScreenshot,
     async (_event: Electron.IpcMainInvokeEvent, videoData: VideoDataModel) => {
+      if (!videoData.filePath) {
+        throw new Error("Video file path is required");
+      }
+      
       const duration =
-        videoData?.duration > 0
+        videoData?.duration && videoData.duration > 0
           ? videoData.duration
           : await calculateDuration(videoData.filePath);
       const screenshot = await generateThumbnail(
         videoData.filePath,
-        videoData.currentTime,
+        videoData.currentTime ?? 0,
         duration,
       );
       return screenshot;
