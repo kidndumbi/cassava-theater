@@ -50,12 +50,12 @@ const App = () => {
   const { data: settings } = useGetAllSettings();
   const { showSnackbar } = useSnackbar();
   const appVideoPlayerRef = useRef<AppVideoPlayerHandle>(null);
-  const userConnectionStatus = useRef<boolean>(null);
+  const userConnectionStatus = useRef<boolean | null>(null);
   const { setCurrentVideo } = useVideoListLogic();
 
   useEffect(() => {
     userConnectionStatus.current =
-      settings?.notifications?.userConnectionStatus;
+      settings?.notifications?.userConnectionStatus ?? null;
   }, [settings?.notifications?.userConnectionStatus]);
 
   useEffect(() => {
@@ -179,7 +179,7 @@ function AppRoutes({
       emit<PlaylistModel>("plalylistSet", playlist);
 
       const videoToPlay = shuffle
-        ? currentPlaylist?.videosDetails.find(
+        ? currentPlaylist?.videosDetails?.find(
             (v) => v.filePath === currentPlaylist.videos[0],
           )
         : video;
@@ -190,14 +190,18 @@ function AppRoutes({
       }
 
       setCurrentVideo(videoToPlay);
-      updatePlaylist({
-        id: playlistId,
-        playlist: {
-          ...playlist,
-          lastVideoPlayed: videoToPlay.filePath,
-          lastVideoPlayedDate: new Date().toISOString(),
-        },
-      });
+      
+      if (playlistId) {
+        updatePlaylist({
+          id: playlistId,
+          playlist: {
+            ...playlist,
+            lastVideoPlayed: videoToPlay.filePath,
+            lastVideoPlayedDate: new Date().toISOString(),
+          },
+        });
+      }
+      
       goToPlayer();
     });
   }, []);
