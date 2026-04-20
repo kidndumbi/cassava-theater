@@ -119,6 +119,9 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
       poster: string;
       backdrop: string;
     }) => {
+      if (!tvShowsFolderPath) {
+        throw new Error("TV Shows folder path is required");
+      }
       return await AddTvShowFolder({
         tvShowName,
         subfolders,
@@ -264,10 +267,10 @@ export const AddTvShowFolder: React.FC<AddTvShowFolderProps> = ({
         filePath={""}
         handleSelectTvShow={handleSelectTvShow}
         handleImageUpdate={(data: VideoDataModel) => {
-          if (data.poster !== undefined) {
+          if (data.poster !== undefined && data.poster !== null) {
             setPoster(data.poster);
           }
-          if (data.backdrop !== undefined) {
+          if (data.backdrop !== undefined && data.backdrop !== null) {
             setBackdrop(data.backdrop);
           }
         }}

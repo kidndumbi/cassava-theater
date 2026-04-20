@@ -71,7 +71,7 @@ export const Processing = ({
               setSelectedListItem(tool);
             }}
           />
-          <Box sx={{ width: "100%" }}>{getView(selectedListItem?.id)}</Box>
+          <Box sx={{ width: "100%" }}>{getView(selectedListItem?.id || "")}</Box>
         </Box>
       </Box>
     </>

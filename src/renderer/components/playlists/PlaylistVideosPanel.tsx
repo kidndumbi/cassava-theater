@@ -51,7 +51,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
   };
 
   const handleInfo = (videoIdx: number) => {
-    if (typeof videoIdx === "number" && videos?.[videoIdx]) {
+    if (typeof videoIdx === "number" && videos?.[videoIdx]?.filePath) {
       navToDetails(videos[videoIdx].filePath);
     }
   };
@@ -66,7 +66,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
     // Update playlist with new order
     const updated = {
       ...selectedPlaylist,
-      videos: updatedVideos.map((v) => v.filePath),
+      videos: updatedVideos.map((v) => v.filePath).filter((fp): fp is string => fp !== undefined),
     };
     updatePlaylist(updated.id, updated);
   };
@@ -93,7 +93,7 @@ export const PlaylistVideosPanel: React.FC<PlaylistVideosPanelProps> = ({
           flexDirection={displayType === "list" ? "column" : "row"}
           gap={2}
         >
-          {videos?.length > 0 ? (
+          {videos && videos.length > 0 && selectedPlaylist ? (
             videos.map((video, idx) =>
               video ? (
                 <PlaylistsVideo

@@ -100,7 +100,7 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
           ) : (
             <TvShowSuggestions
               fileName={fileName}
-              tvShowSuggestions={tvShowSuggestions}
+              tvShowSuggestions={tvShowSuggestions || []}
               id={id}
               handleSelectTvShow={(tvShowDetails) => {
                 handleSelectTvShow(tvShowDetails);
@@ -117,9 +117,9 @@ export const TvShowSuggestionsModal: React.FC<TvShowSuggestionsModalProps> = ({
 
         <CustomTabPanel value={currentTabValue} index={1}>
           <CustomImages
-            posterUrl={tvShowDetails?.poster}
-            backdropUrl={tvShowDetails?.backdrop}
-            updateImage={(data) => { handleImageUpdate(data, tvShowDetails?.filePath) }}
+            posterUrl={tvShowDetails?.poster || ""}
+            backdropUrl={tvShowDetails?.backdrop || ""}
+            updateImage={(data) => { handleImageUpdate(data, tvShowDetails?.filePath || filePath) }}
           />
         </CustomTabPanel>
       </Paper>

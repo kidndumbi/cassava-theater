@@ -30,7 +30,7 @@ const TvShowListItem: React.FC<TvShowListItemProps> = ({
     }),
   });
 
-  const previewSrc = useDragPreviewImage(show.fileName);
+  const previewSrc = useDragPreviewImage(show.fileName || "");
 
   React.useEffect(() => {
     dragging(isDragging, idx);
@@ -40,10 +40,10 @@ const TvShowListItem: React.FC<TvShowListItemProps> = ({
 
   return (
     <>
-      <DragPreviewImage connect={dragPreview} src={previewSrc} />
+      {previewSrc && <DragPreviewImage connect={dragPreview} src={previewSrc} />}
       <div ref={ref}>
         <PosterCard
-          imageUrl={getImageUrl(show)}
+          imageUrl={getImageUrl(show) || ""}
           altText={show.fileName || ""}
           onClick={() => show.filePath && handlePosterClick(show.filePath)}
           footer={trimFileName(show.fileName ?? "")}

@@ -81,7 +81,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   });
 
   const { updateSubtitle } = useSubtitle();
-  const [tvShowBackgroundUrl, setTvShowBackgroundUrl] = useState("");
+  const [tvShowBackgroundUrl, setTvShowBackgroundUrl] = useState<string | undefined>("");
   const { getTmdbImageUrl, getBackgroundGradient } = useTmdbImageUrl();
   const navigate = useNavigate();
   const { setCurrentVideo } = useVideoListLogic();
@@ -132,7 +132,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
 
   const theme = useTheme();
 
-  const nextEpisodeRef = useRef<VideoDataModel | null>(null);
+  const nextEpisodeRef = useRef<VideoDataModel | undefined>(undefined);
 
   useEffect(() => {
     window.llmAPI.pingOllamaServer().then((isConnected) => {
@@ -146,16 +146,19 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     if (nextEpisodeRef.current) {
       return nextEpisodeRef.current;
     }
-    const currentIndex = episodes?.findIndex(
+    if (!episodes || episodes.length === 0) {
+      return undefined;
+    }
+    const currentIndex = episodes.findIndex(
       (episode) => episode.filePath === episodeLastWatched?.filePath,
     );
-    if (currentIndex !== -1 && currentIndex < episodes?.length - 1) {
+    if (currentIndex !== -1 && currentIndex < episodes.length - 1) {
       const foundNext = episodes[currentIndex + 1];
       nextEpisodeRef.current = foundNext;
       return foundNext;
     }
-    nextEpisodeRef.current = null;
-    return null;
+    nextEpisodeRef.current = undefined;
+    return undefined;
   }, [episodeLastWatched, episodes]);
 
   const { data: settings } = useGetAllSettings();
@@ -163,7 +166,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   const getImageUrl = (show: VideoDataModel) => {
     const { backdrop, tv_show_details } = show;
     if (backdrop) {
-      return getUrl("file", backdrop, null, settings?.port);
+      return getUrl("file", backdrop, null, settings?.port || "");
     } else if (tv_show_details?.backdrop_path) {
       return getTmdbImageUrl(tv_show_details.backdrop_path, "original");
     }
@@ -195,8 +198,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     setSeasonOverview(selectedSeason?.overview ?? "");
     setSeasonAirDate(selectedSeason?.air_date ?? "");
     setSeasonPosterPath(
-      selectedSeason?.poster_path &&
-        getTmdbImageUrl(selectedSeason.poster_path, "original"),
+      (selectedSeason?.poster_path &&
+        getTmdbImageUrl(selectedSeason.poster_path, "original")) ||
+        "",
     );
     setEpisodesQuery(path);
   };
@@ -204,7 +208,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
   function updateBackgroundAndSeason(tvShowDetails: VideoDataModel) {
     const backgroundUrl = getImageUrl(tvShowDetails);
 
-    setTvShowBackgroundUrl(backgroundUrl);
+    setTvShowBackgroundUrl(backgroundUrl || "");
 
     const selSeason = getSelectedSeason(tvShowDetails);
     setSelectedSeason(selSeason);
@@ -241,7 +245,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
     const newSeasonFullPath = event.target.value as string;
     setSelectedSeason(newSeasonFullPath);
 
-    setSeasonDetails(newSeasonFullPath, tvShowDetails);
+    if (tvShowDetails) {
+      setSeasonDetails(newSeasonFullPath, tvShowDetails);
+    }
   };
 
   const onEpisodeClick = (episode: VideoDataModel) => {
@@ -326,7 +332,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       currentVideo,
       newVideoJsonData,
     }: {
-      currentVideo: { filePath: string | null };
+      currentVideo: { filePath: string | undefined };
       newVideoJsonData: VideoDataModel;
     }) => {
       return window.videoAPI.saveVideoJsonData({
@@ -346,7 +352,9 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
 
       setTimeout(() => {
         setSelectedSeason(currentSelectedSeason);
-        setSeasonDetails(currentSelectedSeason, tvShowDetails);
+        if (tvShowDetails) {
+          setSeasonDetails(currentSelectedSeason, tvShowDetails);
+        }
       }, 0);
     },
     onError: () => {
@@ -417,7 +425,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
       <Box
         className="relative h-screen w-screen bg-cover"
         style={{
-          backgroundImage: getBackgroundGradient(tvShowBackgroundUrl),
+          backgroundImage: getBackgroundGradient(tvShowBackgroundUrl || ""),
         }}
       >
         {loadingFolderDetails ? (
@@ -493,7 +501,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 {tvShowDetails?.tv_show_details?.overview}
               </p>
 
-              {episodes?.length > 0 && tvShowDetails?.lastVideoPlayed && (
+              {episodes && episodes.length > 0 && tvShowDetails?.lastVideoPlayed && (
                 <TvShowDetailsButtons
                   tvShowDetails={tvShowDetails}
                   onContinueClick={onContinueClick}
@@ -554,7 +562,7 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
             overview={seasonOverview}
             onEpisodeClick={onEpisodeClick}
             loadingEpisodes={loadingEpisodes}
-            episodes={episodes}
+            episodes={episodes || []}
             theme={theme}
             seasonPosterPath={seasonPosterPath}
             handleFilepathChange={async (
@@ -573,10 +581,10 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
                 },
               );
               const normalizedLastPlayed =
-                tvShowDetails.lastVideoPlayed.replace(/\\/g, "/");
+                tvShowDetails?.lastVideoPlayed?.replace(/\\/g, "/");
               if (filepath === normalizedLastPlayed) {
                 saveVideoJsonDataMutation.mutate({
-                  currentVideo: { filePath: videoPath },
+                  currentVideo: { filePath: videoPath || "" },
                   newVideoJsonData: {
                     lastVideoPlayed: null,
                     lastVideoPlayedTime: 0,
@@ -619,9 +627,11 @@ const TvShowDetails: React.FC<TvShowDetailsProps> = ({
         />
       </AppModal>
       <CustomDrawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
-        <TvShowCastAndCrew
-          aggregateCredits={tvShowDetails?.tv_show_details?.aggregate_credits}
-        />
+        {tvShowDetails?.tv_show_details?.aggregate_credits && (
+          <TvShowCastAndCrew
+            aggregateCredits={tvShowDetails.tv_show_details.aggregate_credits}
+          />
+        )}
       </CustomDrawer>
       <AppModal
         open={isChatModalOpen}
