@@ -13,9 +13,9 @@ export function useSetSetting() {
       }) => window.settingsAPI.setSetting(key, value),
       onSuccess: (data, variables) => {
         queryClient.setQueryData<SettingsModel>(["settings"], (old) => ({
-          ...old,
+          ...(old || {}),
           [variables.key]: variables.value,
-        }));
+        }) as SettingsModel);
       },
     });
   }

@@ -98,6 +98,7 @@ export const useVideoPlayer = (
   const updateSourceWithStart = useCallback(
     (additionalSeconds: number): string => {
       try {
+        if (!globalVideoPlayer) return "";
         const url = new URL(globalVideoPlayer.src, window.location.href);
         let newStart = (totalSecondsRef.current || 0) + additionalSeconds;
         if (videoData?.duration) {
@@ -107,7 +108,7 @@ export const useVideoPlayer = (
         return url.toString();
       } catch (e) {
         console.error("Failed to update the src URL:", e);
-        return globalVideoPlayer.src;
+        return globalVideoPlayer?.src || "";
       }
     },
     [globalVideoPlayer, videoData],

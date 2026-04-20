@@ -78,7 +78,7 @@ const getUrl = (
   start: number | null = null,
   port: string,
 ) => {
-  if (isExternalUrl(filePath)) return filePath;
+  if (filePath && isExternalUrl(filePath)) return filePath;
 
   return `http://localhost:${port}/${type}?path=${encodeURIComponent(
     filePath || "",

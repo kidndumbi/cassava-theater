@@ -43,9 +43,9 @@ export const VideoPlayerPage = forwardRef<
   useEffect(() => {
     window.currentlyPlayingAPI
       .getCurrentPlaylist()
-      .then((playlist: PlaylistModel) => {
+      .then((playlist: Partial<PlaylistModel> | null) => {
         if (playlist) {
-          setPlaylist(playlist);
+          setPlaylist(playlist as PlaylistModel);
         }
       });
   }, []);
@@ -96,8 +96,10 @@ export const VideoPlayerPage = forwardRef<
   };
 
   const onSubtitleChange = async (sub: string | null) => {
-    await updateSubtitle(sub, currentVideo);
-    setSubtitleFilePath(sub);
+    if (currentVideo) {
+      await updateSubtitle(sub, currentVideo);
+      setSubtitleFilePath(sub);
+    }
   };
 
   const pathBuildingStrategies: Record<string, (filePath: string) => string> = {
@@ -150,14 +152,16 @@ export const VideoPlayerPage = forwardRef<
           await window.currentlyPlayingAPI.getNextPlaylistVideo();
         if (nextVideo) {
           setCurrentVideo(nextVideo);
-          updatePlaylist({
-            id: playlist.id,
-            playlist: {
-              ...playlist,
-              lastVideoPlayed: nextVideo.filePath,
-              lastVideoPlayedDate: new Date().toISOString(),
-            },
-          });
+          if (playlist) {
+            updatePlaylist({
+              id: playlist.id,
+              playlist: {
+                ...playlist,
+                lastVideoPlayed: nextVideo.filePath,
+                lastVideoPlayedDate: new Date().toISOString(),
+              },
+            });
+          }
         } else {
           playlistControlPanel.setOpen(true);
         }
@@ -187,10 +191,10 @@ export const VideoPlayerPage = forwardRef<
     <>
       <AppVideoPlayer
         ref={appVideoPlayerRef}
-        port={settings?.port}
+        port={settings?.port || ""}
         settings={settings}
         isTvShow={isTvShow}
-        episodes={episodes}
+        episodes={episodes || []}
         startFromBeginning={startFromBeginning}
         handleCancel={handleCancel}
         triggeredOnPlayInterval={saveVideoDBCurrentTime}
@@ -200,16 +204,18 @@ export const VideoPlayerPage = forwardRef<
         onVideoEnded={onVideoEnded}
         playNextEpisode={playNextEpisode}
         findNextEpisode={(currentFilePath: string) => {
-          const currentIndex = episodes?.findIndex(
+          if (!episodes) return null;
+          
+          const currentIndex = episodes.findIndex(
             (episode) => episode.filePath === currentFilePath,
           );
-          if (currentIndex !== -1 && currentIndex < episodes?.length - 1) {
+          if (currentIndex !== -1 && currentIndex < episodes.length - 1) {
             return episodes[currentIndex + 1];
           }
           return null;
         }}
         openPlaylistControls={
-          playlist?.videos?.length > 0
+          playlist?.videos && playlist.videos.length > 0
             ? playlistControlPanel.setOpen.bind(null, true)
             : undefined
         }
@@ -220,18 +226,20 @@ export const VideoPlayerPage = forwardRef<
         anchor="right"
       >
         <PlaylistDrawerPanel
-          playlist={playlist}
+          playlist={playlist || undefined}
           currentVideo={currentVideo}
           onPlayVideo={(video) => {
             setCurrentVideo(video);
-            updatePlaylist({
-              id: playlist.id,
-              playlist: {
-                ...playlist,
-                lastVideoPlayed: video.filePath,
-                lastVideoPlayedDate: new Date().toISOString(),
-              },
-            });
+            if (playlist) {
+              updatePlaylist({
+                id: playlist.id,
+                playlist: {
+                  ...playlist,
+                  lastVideoPlayed: video.filePath,
+                  lastVideoPlayedDate: new Date().toISOString(),
+                },
+              });
+            }
           }}
         />
       </CustomDrawer>

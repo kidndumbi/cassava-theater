@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 
 type VideoProps = {
-  videoPlayerRef: React.RefObject<HTMLVideoElement>;
+  videoPlayerRef: React.RefObject<HTMLVideoElement | null>;
   getSubtitleUrl: () => string;
   subtitleFilePath: string | null;
   isMkv: boolean;
@@ -28,7 +28,8 @@ const Video: React.FC<VideoProps> = ({
           onError(errorMessage);
         }
       } catch (err) {
-        onError(err);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        onError(errorMessage);
       }
     };
 
@@ -42,7 +43,7 @@ const Video: React.FC<VideoProps> = ({
       className="h-full w-full object-contain"
       controls={!isMkv}
       playsInline
-      src={videoUrl || null}
+      src={videoUrl || undefined}
       onClick={onClick}
       onError={(e) => {
         const error = e.currentTarget.error;

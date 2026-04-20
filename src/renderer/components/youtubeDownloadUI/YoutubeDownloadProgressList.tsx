@@ -51,7 +51,7 @@ export const YoutubeDownloadProgressList = ({
     dispatch(youtubeDownloadActions.setDownloadProgress(queue));
   };
 
-  const items = progressList;
+  const items = progressList ?? [];
   const count = items.length;
 
   return (

@@ -84,7 +84,7 @@ export const useNoteListLogic = () => {
   };
 
   const getNotesAndOverview = async (path: string) => {
-    const videoDetails = await window.videoAPI.fetchVideoDetails({ path, category: null });
+    const videoDetails = await window.videoAPI.fetchVideoDetails({ path, category: "" });
     const { notes, overview } = videoDetails;
     return { notes, overview };
   };
