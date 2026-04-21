@@ -30,6 +30,93 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   const [isCorrect, setIsCorrect] = useState<boolean>(false);
   const [exerciseCompleted, setExerciseCompleted] = useState<boolean>(false);
 
+  // Send state updates to socket clients via IPC
+  const sendStateUpdate = () => {
+    const state = {
+      activeCue: activeCue ? {
+        id: activeCue.id || `cue-${Date.now()}`,
+        text: activeCue.text,
+        startTime: activeCue.startTime,
+        endTime: activeCue.endTime
+      } : null,
+      scrambledWords,
+      selectedWords,
+      originalText,
+      showResult,
+      isCorrect,
+      exerciseCompleted,
+      enabled: enabled || false
+    };
+
+    // Send to main process for broadcasting to mobile clients
+    if (window.languageLearningAPI && window.languageLearningAPI.sendMessage) {
+      window.languageLearningAPI.sendMessage('language-learning-state-update', state);
+    }
+  };
+
+  // Listen for remote commands from mobile app
+  useEffect(() => {
+    if (!window.languageLearningAPI) return;
+
+    const handleSelectWord = (_event: any, data: { word: string; index: number }) => {
+      if (exerciseCompleted) return;
+      
+      setSelectedWords(prev => [...prev, data.word]);
+      setScrambledWords(prev => prev.filter((_, i) => i !== data.index));
+    };
+
+    const handleRemoveWord = (_event: any, data: { index: number }) => {
+      if (exerciseCompleted) return;
+      
+      const word = selectedWords[data.index];
+      if (word) {
+        setSelectedWords(prev => prev.filter((_, i) => i !== data.index));
+        setScrambledWords(prev => [...prev, word]);
+      }
+    };
+
+    const handleSubmit = () => {
+      if (selectedWords.length === 0) return;
+      
+      const userText = selectedWords.join(' ');
+      const correct = userText === originalText;
+      
+      setIsCorrect(correct);
+      setShowResult(true);
+      setExerciseCompleted(true);
+    };
+
+    const handleReset = () => {
+      const words = originalText.split(/\s+/).filter(word => word.length > 0);
+      const scrambled = [...words].sort(() => Math.random() - 0.5);
+      
+      setScrambledWords(scrambled);
+      setSelectedWords([]);
+      setShowResult(false);
+      setIsCorrect(false);
+      setExerciseCompleted(false);
+    };
+
+    // Register IPC listeners
+    window.languageLearningAPI.on('language-learning-select-word', handleSelectWord);
+    window.languageLearningAPI.on('language-learning-remove-word', handleRemoveWord);
+    window.languageLearningAPI.on('language-learning-submit', handleSubmit);
+    window.languageLearningAPI.on('language-learning-reset', handleReset);
+
+    return () => {
+      // Cleanup listeners
+      window.languageLearningAPI.removeAllListeners('language-learning-select-word');
+      window.languageLearningAPI.removeAllListeners('language-learning-remove-word');
+      window.languageLearningAPI.removeAllListeners('language-learning-submit');
+      window.languageLearningAPI.removeAllListeners('language-learning-reset');
+    };
+  }, [selectedWords, originalText, exerciseCompleted]);
+
+  // Send state updates when relevant state changes
+  useEffect(() => {
+    sendStateUpdate();
+  }, [activeCue, scrambledWords, selectedWords, showResult, isCorrect, exerciseCompleted, enabled]);
+
   // Fetch and parse VTT file when URL changes
   useEffect(() => {
     if (!subtitleUrl || !enabled) {

@@ -780,3 +780,20 @@ contextBridge.exposeInMainWorld("subtitleSyncAPI", {
     return ipcRenderer.invoke(SubtitleSyncIPCChannels.SwapQueueItems, id1, id2);
   },
 });
+
+contextBridge.exposeInMainWorld("languageLearningAPI", {
+  // Send messages to main process
+  sendMessage: (channel: string, data?: any) => {
+    ipcRenderer.send(channel, data);
+  },
+  
+  // Listen for events from main process
+  on: (channel: string, callback: (...args: any[]) => void) => {
+    ipcRenderer.on(channel, callback);
+  },
+  
+  // Remove listeners
+  removeAllListeners: (channel: string) => {
+    ipcRenderer.removeAllListeners(channel);
+  },
+});

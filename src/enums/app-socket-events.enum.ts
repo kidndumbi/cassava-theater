@@ -45,4 +45,10 @@ export enum AppSocketEvents {
   SUBTITLE_SYNC_ITEM_CANCELLED = "subtitle-sync-item-cancelled",
   SUBTITLE_SYNC_QUEUE_UPDATED = "subtitle-sync-queue-updated",
   IMAGES_GET_BASE64 = "images-get-base64",
+  LANGUAGE_LEARNING_GET_STATE = "language-learning-get-state",
+  LANGUAGE_LEARNING_SELECT_WORD = "language-learning-select-word",
+  LANGUAGE_LEARNING_REMOVE_WORD = "language-learning-remove-word",
+  LANGUAGE_LEARNING_SUBMIT = "language-learning-submit",
+  LANGUAGE_LEARNING_RESET = "language-learning-reset",
+  LANGUAGE_LEARNING_STATE_UPDATE = "language-learning-state-update",
 }

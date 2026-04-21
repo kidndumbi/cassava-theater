@@ -357,6 +357,12 @@ export interface SubtitleSyncAPI {
   swapQueueItems: (id1: string, id2: string) => Promise<{ success: boolean; queue: SubtitleSyncQueueItem[] }>;
 }
 
+export interface LanguageLearningAPI {
+  sendMessage: (channel: string, data?: any) => void;
+  on: (channel: string, callback: (...args: any[]) => void) => void;
+  removeAllListeners: (channel: string) => void;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -377,5 +383,6 @@ declare global {
     llmAPI: LlmAPI;
     subtitleAPI: SubtitleAPI;
     subtitleSyncAPI: SubtitleSyncAPI;
+    languageLearningAPI: LanguageLearningAPI;
   }
 }
