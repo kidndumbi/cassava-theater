@@ -21,6 +21,8 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
   const [cues, setCues] = useState<VTTCue[]>([]);
   const [activeCue, setActiveCue] = useState<VTTCue | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showCopyButton, setShowCopyButton] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   // Fetch and parse VTT file when URL changes
   useEffect(() => {
@@ -66,15 +68,33 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     setActiveCue(active);
   }, [cues, currentTime]);
 
+  // Handle copying subtitle text to clipboard
+  const handleCopyText = async () => {
+    if (!activeCue || hideText) return;
+    
+    try {
+      await navigator.clipboard.writeText(activeCue.text);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+    }
+  };
+
   // Don't render anything if not enabled, not visible, loading, or no active cue
   if (!enabled || !isVisible || loading || !activeCue) {
     return null;
   }
 
   return (
-    <div className="absolute top-4 z-50 pointer-events-none" style={{ right: '80px' }}>
+    <div 
+      className="absolute top-4 z-50" 
+      style={{ right: '80px' }}
+      onMouseEnter={() => setShowCopyButton(true)}
+      onMouseLeave={() => setShowCopyButton(false)}
+    >
       <div
-        className="bg-black bg-opacity-75 text-white px-4 py-2 rounded-lg shadow-lg"
+        className="bg-black bg-opacity-75 text-white px-4 py-2 rounded-lg shadow-lg relative"
         style={{
           fontSize: `${fontSize}px`,
           lineHeight: '1.4',
@@ -90,6 +110,18 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
           activeCue.text.split('\n').map((line, index) => (
             <div key={index}>{line}</div>
           ))
+        )}
+        
+        {/* Copy Button - only show when not hiding text and on hover */}
+        {!hideText && showCopyButton && (
+          <button
+            onClick={handleCopyText}
+            className="absolute top-1 right-1 bg-gray-700 hover:bg-gray-600 text-white rounded px-2 py-1 text-xs transition-colors pointer-events-auto"
+            style={{ fontSize: '12px' }}
+            title="Copy subtitle text"
+          >
+            {copySuccess ? '✓' : '📋'}
+          </button>
         )}
       </div>
       
