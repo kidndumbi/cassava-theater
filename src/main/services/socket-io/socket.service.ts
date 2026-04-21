@@ -19,6 +19,7 @@ import { registerSubtitleGenerationHandlers } from "./subtitleSocket.handlers";
 import { registerSubtitleSyncHandlers } from "./subtitleSyncSocket.handlers";
 import { registerImagesSocketHandlers } from "./imagesSocket.handlers";
 import { registerLlmSocketHandlers } from "./llmSocket.handlers";
+import { registerLanguageLearningHandlers } from "./languageLearningSocket.handlers";
 
 // Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {
@@ -104,6 +105,7 @@ export async function initializeSocket(
     registerSubtitleSyncHandlers(socket, mainWindow);
     registerImagesSocketHandlers(socket);
     registerLlmSocketHandlers(socket);
+    registerLanguageLearningHandlers(socket, mainWindow);
   });
 
   server.listen(port, () => {

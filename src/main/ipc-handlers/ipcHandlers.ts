@@ -12,6 +12,7 @@ import { theMovieDbIpcHandlers } from "./theMovieDbIpcHandlers";
 import { videosIpcHandlers } from "./videosIpcHandlers";
 import { youtubeIpcHandlers } from "./youtubeIpcHandlers";
 import { translationIpcHandlers } from "./translationIpcHandlers";
+import { languageLearningIpcHandlers } from "./languageLearningIpcHandlers";
 
 export function registerIpcHandlers() {
   settingsIpcHandlers();
@@ -28,4 +29,5 @@ export function registerIpcHandlers() {
   llmIpcHandlers();
   subtitleIpcHandlers();
   subtitleSyncIpcHandlers();
+  languageLearningIpcHandlers();
 }
