@@ -26,10 +26,12 @@ interface SubtitleOverlayControlModalProps {
   selectedLanguage: 'en' | 'es' | 'fr' | null;
   fontSize: number;
   hideText: boolean;
+  languageLearningEnabled: boolean;
   onToggleEnabled: (enabled: boolean) => void;
   onLanguageChange: (language: 'en' | 'es' | 'fr' | null) => void;
   onFontSizeChange: (fontSize: number) => void;
   onToggleHideText: (hideText: boolean) => void;
+  onToggleLanguageLearning: (enabled: boolean) => void;
 }
 
 const StyledFormControl = styled(FormControl)(({ theme }) => ({
@@ -83,15 +85,18 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
   selectedLanguage,
   fontSize,
   hideText,
+  languageLearningEnabled,
   onToggleEnabled,
   onLanguageChange,
   onFontSizeChange,
   onToggleHideText,
+  onToggleLanguageLearning,
 }) => {
   const [localEnabled, setLocalEnabled] = useState(isEnabled);
   const [localLanguage, setLocalLanguage] = useState<'en' | 'es' | 'fr' | null>(selectedLanguage);
   const [localFontSize, setLocalFontSize] = useState<number>(fontSize);
   const [localHideText, setLocalHideText] = useState<boolean>(hideText);
+  const [localLanguageLearningEnabled, setLocalLanguageLearningEnabled] = useState<boolean>(languageLearningEnabled);
 
   useEffect(() => {
     if (open) {
@@ -99,8 +104,9 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
       setLocalLanguage(selectedLanguage);
       setLocalFontSize(fontSize);
       setLocalHideText(hideText);
+      setLocalLanguageLearningEnabled(languageLearningEnabled);
     }
-  }, [open, isEnabled, selectedLanguage, fontSize, hideText]);
+  }, [open, isEnabled, selectedLanguage, fontSize, hideText, languageLearningEnabled]);
 
   // Get available languages based on subtitle paths
   const getAvailableLanguages = () => {
@@ -128,6 +134,7 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
     onLanguageChange(localEnabled ? localLanguage : null);
     onFontSizeChange(localFontSize);
     onToggleHideText(localHideText);
+    onToggleLanguageLearning(localLanguageLearningEnabled);
     onClose();
   };
 
@@ -205,6 +212,21 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
                 />
               }
               label="Hide subtitle text (show 'Text Hidden' instead)"
+              sx={{ "& .MuiFormControlLabel-label": { color: "white" } }}
+            />
+          )}
+
+          {/* Language Learning Toggle */}
+          {localEnabled && (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={localLanguageLearningEnabled}
+                  onChange={(e) => setLocalLanguageLearningEnabled(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label="Enable Language Learning overlay"
               sx={{ "& .MuiFormControlLabel-label": { color: "white" } }}
             />
           )}
