@@ -7,6 +7,7 @@ interface SubtitleOverlayProps {
   isVisible?: boolean;
   enabled?: boolean;
   fontSize?: number;
+  hideText?: boolean;
 }
 
 const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
@@ -15,6 +16,7 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
   isVisible = true,
   enabled = false,
   fontSize = 16,
+  hideText = false,
 }) => {
   const [cues, setCues] = useState<VTTCue[]>([]);
   const [activeCue, setActiveCue] = useState<VTTCue | null>(null);
@@ -82,9 +84,13 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
           minWidth: '200px',
         }}
       >
-        {activeCue.text.split('\n').map((line, index) => (
-          <div key={index}>{line}</div>
-        ))}
+        {hideText ? (
+          <div style={{ color: 'red' }}>Text Hidden</div>
+        ) : (
+          activeCue.text.split('\n').map((line, index) => (
+            <div key={index}>{line}</div>
+          ))
+        )}
       </div>
       
       {/* Debug info - remove in production */}
