@@ -518,6 +518,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           isVisible={!subtitleModalOpen}
           enabled={languageLearningEnabled}
           fontSize={subtitleOverlayFontSize}
+          onPause={pause}
         />
 
         {(isMouseActive || subtitleModalOpen) && (
