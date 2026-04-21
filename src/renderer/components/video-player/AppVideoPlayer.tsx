@@ -30,6 +30,7 @@ import { useDebounce } from "@uidotdev/usehooks";
 import CustomDrawer from "../common/CustomDrawer";
 import SubtitleOverlay from "./SubtitleOverlay";
 import SubtitleOverlayControlModal from "./SubtitleOverlayControlModal";
+import LanguageLearning from "./LanguageLearning";
 import { MovieCastAndCrew } from "../common/MovieCastAndCrew";
 import { TvShowCastAndCrew } from "../common/TvShowCastAndCrew";
 import { useModalState } from "../../hooks/useModalState";
@@ -114,6 +115,9 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const [subtitleOverlayHideText, setSubtitleOverlayHideText] = useState(
       currentVideo?.subtitleOverlayHideText ?? false
     );
+    const [languageLearningEnabled, setLanguageLearningEnabled] = useState(
+      currentVideo?.languageLearningEnabled ?? false
+    );
     const [sliderValue, setSliderValue] = useState<number | null>(null);
     const debouncedSliderValue = useDebounce(sliderValue, 300);
     const isMouseActive = useMouseActivity();
@@ -126,6 +130,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       setSubtitleOverlayEnabled(currentVideo?.subtitleOverlayEnabled ?? false);
       setSubtitleOverlayLanguage(currentVideo?.subtitleOverlayLanguage ?? null);
       setSubtitleOverlayHideText(currentVideo?.subtitleOverlayHideText ?? false);
+      setLanguageLearningEnabled(currentVideo?.languageLearningEnabled ?? false);
     }, [currentVideo?.filePath]); // Re-run when video changes
 
     // Sync font size when settings change
@@ -409,6 +414,23 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       }
     };
 
+    const handleLanguageLearningToggle = async (enabled: boolean) => {
+      setLanguageLearningEnabled(enabled);
+      if (currentVideo) {
+        try {
+          await saveJsonDataMutation.mutateAsync({
+            currentVideo,
+            newVideoJsonData: {
+              ...currentVideo,
+              languageLearningEnabled: enabled,
+            },
+          });
+        } catch (error) {
+          console.error('Failed to save language learning enabled setting:', error);
+        }
+      }
+    };
+
  
 
     const renderTimeDisplay = () => (
@@ -489,6 +511,15 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           hideText={subtitleOverlayHideText}
         />
 
+        {/* Language Learning Component */}
+        <LanguageLearning
+          subtitleUrl={getOverlaySubtitleUrl(subtitleOverlayLanguage)}
+          currentTime={currentTime || 0}
+          isVisible={!subtitleModalOpen}
+          enabled={languageLearningEnabled}
+          fontSize={subtitleOverlayFontSize}
+        />
+
         {(isMouseActive || subtitleModalOpen) && (
           <>
             <VideoPlayerActionsContainer
@@ -562,10 +593,12 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           selectedLanguage={subtitleOverlayLanguage}
           fontSize={subtitleOverlayFontSize}
           hideText={subtitleOverlayHideText}
+          languageLearningEnabled={languageLearningEnabled}
           onToggleEnabled={handleSubtitleOverlayToggle}
           onLanguageChange={handleSubtitleOverlayLanguageChange}
           onFontSizeChange={handleSubtitleOverlayFontSizeChange}
           onToggleHideText={handleSubtitleOverlayHideTextToggle}
+          onToggleLanguageLearning={handleLanguageLearningToggle}
         />
 
         {isNotMp4VideoFormat && isMouseActive && (
