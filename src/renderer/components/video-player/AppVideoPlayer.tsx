@@ -111,6 +111,9 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const [subtitleOverlayFontSize, setSubtitleOverlayFontSize] = useState(
       settings?.subtitleOverlay?.fontSize ?? 16
     );
+    const [subtitleOverlayHideText, setSubtitleOverlayHideText] = useState(
+      currentVideo?.subtitleOverlayHideText ?? false
+    );
     const [sliderValue, setSliderValue] = useState<number | null>(null);
     const debouncedSliderValue = useDebounce(sliderValue, 300);
     const isMouseActive = useMouseActivity();
@@ -122,6 +125,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     useEffect(() => {
       setSubtitleOverlayEnabled(currentVideo?.subtitleOverlayEnabled ?? false);
       setSubtitleOverlayLanguage(currentVideo?.subtitleOverlayLanguage ?? null);
+      setSubtitleOverlayHideText(currentVideo?.subtitleOverlayHideText ?? false);
     }, [currentVideo?.filePath]); // Re-run when video changes
 
     // Sync font size when settings change
@@ -388,6 +392,23 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       }
     };
 
+    const handleSubtitleOverlayHideTextToggle = async (hideText: boolean) => {
+      setSubtitleOverlayHideText(hideText);
+      if (currentVideo) {
+        try {
+          await saveJsonDataMutation.mutateAsync({
+            currentVideo,
+            newVideoJsonData: {
+              ...currentVideo,
+              subtitleOverlayHideText: hideText,
+            },
+          });
+        } catch (error) {
+          console.error('Failed to save subtitle overlay hide text setting:', error);
+        }
+      }
+    };
+
  
 
     const renderTimeDisplay = () => (
@@ -465,6 +486,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           isVisible={!subtitleModalOpen}
           enabled={subtitleOverlayEnabled}
           fontSize={subtitleOverlayFontSize}
+          hideText={subtitleOverlayHideText}
         />
 
         {(isMouseActive || subtitleModalOpen) && (
@@ -539,9 +561,11 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           isEnabled={subtitleOverlayEnabled}
           selectedLanguage={subtitleOverlayLanguage}
           fontSize={subtitleOverlayFontSize}
+          hideText={subtitleOverlayHideText}
           onToggleEnabled={handleSubtitleOverlayToggle}
           onLanguageChange={handleSubtitleOverlayLanguageChange}
           onFontSizeChange={handleSubtitleOverlayFontSizeChange}
+          onToggleHideText={handleSubtitleOverlayHideTextToggle}
         />
 
         {isNotMp4VideoFormat && isMouseActive && (
