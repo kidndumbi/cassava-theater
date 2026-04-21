@@ -7,6 +7,7 @@ interface LanguageLearningProps {
   isVisible?: boolean;
   enabled?: boolean;
   fontSize?: number;
+  onPause?: () => void;
 }
 
 const LanguageLearning: React.FC<LanguageLearningProps> = ({
@@ -15,6 +16,7 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   isVisible = true,
   enabled = false,
   fontSize = 16,
+  onPause,
 }) => {
   const [cues, setCues] = useState<VTTCue[]>([]);
   const [activeCue, setActiveCue] = useState<VTTCue | null>(null);
@@ -149,6 +151,7 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
     <div 
       className="absolute z-50" 
       style={{ right: '80px', top: '120px' }}
+      onClick={() => onPause?.()}
     >
       <div
         className="bg-blue-900 bg-opacity-90 text-white p-4 rounded-lg shadow-lg relative"
