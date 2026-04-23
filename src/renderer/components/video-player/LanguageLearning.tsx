@@ -48,6 +48,12 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
         startTime: activeCue.startTime,
         endTime: activeCue.endTime
       } : null,
+      activeNativeCue: activeNativeCue ? {
+        id: activeNativeCue.id || `native-cue-${Date.now()}`,
+        text: activeNativeCue.text,
+        startTime: activeNativeCue.startTime,
+        endTime: activeNativeCue.endTime
+      } : null,
       scrambledWords,
       selectedWords,
       originalText,
@@ -124,7 +130,7 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   // Send state updates when relevant state changes
   useEffect(() => {
     sendStateUpdate();
-  }, [activeCue, scrambledWords, selectedWords, showResult, isCorrect, exerciseCompleted, enabled]);
+  }, [activeCue, activeNativeCue, scrambledWords, selectedWords, showResult, isCorrect, exerciseCompleted, enabled]);
 
   // Fetch and parse VTT file when URL changes
   useEffect(() => {
