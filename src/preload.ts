@@ -26,7 +26,7 @@ import { PlaylistCommands } from "./models/playlist-commands.model";
 import { AppSocketEvents } from "./enums/app-socket-events.enum";
 import { CurrentlyPlayingIPCChannels } from "./enums/currently-playing-IPCChannels.enum";
 import { ConversionQueueItem } from "./models/conversion-queue-item.model";
-import { LlmIPCChannels } from "./enums/llm-IPC-Channels.enum";
+import { LlmIPCChannels, LanguageLearningIPCChannels } from "./enums/llm-IPC-Channels.enum";
 import { LlmResponseChunk } from "./models/llm-response-chunk.model";
 import { SubtitleIPCChannels } from "./enums/subtitleIPCChannels.enum";
 import { SubtitleSyncIPCChannels } from "./enums/subtitleSyncIPCChannels.enum";
@@ -795,5 +795,30 @@ contextBridge.exposeInMainWorld("languageLearningAPI", {
   // Remove listeners
   removeAllListeners: (channel: string) => {
     ipcRenderer.removeAllListeners(channel);
+  },
+
+  // Exercise database methods
+  saveExercise: (exerciseData: any) => {
+    return ipcRenderer.invoke(LanguageLearningIPCChannels.SAVE_EXERCISE, exerciseData);
+  },
+
+  getExercise: (key: string) => {
+    return ipcRenderer.invoke(LanguageLearningIPCChannels.GET_EXERCISE, key);
+  },
+
+  getExercisesByVideo: (videoFilePath: string) => {
+    return ipcRenderer.invoke(LanguageLearningIPCChannels.GET_EXERCISES_BY_VIDEO, videoFilePath);
+  },
+
+  getAllExercises: () => {
+    return ipcRenderer.invoke(LanguageLearningIPCChannels.GET_ALL_EXERCISES);
+  },
+
+  deleteExercise: (key: string) => {
+    return ipcRenderer.invoke(LanguageLearningIPCChannels.DELETE_EXERCISE, key);
+  },
+
+  updateExerciseStats: (key: string, isCorrect: boolean) => {
+    return ipcRenderer.invoke(LanguageLearningIPCChannels.UPDATE_EXERCISE_STATS, key, isCorrect);
   },
 });
