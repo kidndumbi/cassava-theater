@@ -6,6 +6,7 @@ import { HomePage } from "../../components/home/Home";
 import { PlaylistsPage } from "../../components/playlists/PlaylistsPage";
 import { ToolsPage } from "../../components/tools/ToolsPage";
 import { CustomFolderPage } from "../../components/Custom-folder-new/customFolderPage";
+import { LanguagePracticePage } from "../../components/language-practice/LanguagePracticePage";
 
 export interface RenderActivePageProps {
   loadingMovies: boolean;
@@ -56,6 +57,8 @@ export const renderActivePage = (
       return <ToolsPage />;
     case "app-custom-folders":
       return <CustomFolderPage menuId={activeMenu.id} />;
+    case "app-language-practice":
+      return <LanguagePracticePage menuId={activeMenu.id} />;
     default:
       return <div>Page not found</div>;
   }

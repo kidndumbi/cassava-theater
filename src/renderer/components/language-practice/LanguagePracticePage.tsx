@@ -1,0 +1,805 @@
+import React, { useEffect, useState } from "react";
+import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
+import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete } from "@mui/icons-material";
+import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
+import { AppModal } from "../common/AppModal";
+import { useModalState } from "../../hooks/useModalState";
+
+interface LanguagePracticePageProps {
+  menuId: string;
+}
+
+export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
+  menuId,
+}) => {
+  // Exercise data
+  const [allExercises, setAllExercises] = useState<LanguageLearningExerciseModel[]>([]);
+  const [currentExercise, setCurrentExercise] = useState<LanguageLearningExerciseModel | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Exercise state
+  const [scrambledWords, setScrambledWords] = useState<string[]>([]);
+  const [selectedWords, setSelectedWords] = useState<string[]>([]);
+  const [originalText, setOriginalText] = useState<string>('');
+  const [showResult, setShowResult] = useState<boolean>(false);
+  const [isCorrect, setIsCorrect] = useState<boolean>(false);
+  const [exerciseCompleted, setExerciseCompleted] = useState<boolean>(false);
+
+  // Modal state for exercises list
+  const {
+    open: isExercisesListOpen,
+    openModal: openExercisesList,
+    closeModal: closeExercisesList,
+  } = useModalState(false);
+
+  // Modal state for delete confirmation
+  const {
+    open: isDeleteDialogOpen,
+    openModal: openDeleteDialog,
+    closeModal: closeDeleteDialog,
+  } = useModalState(false);
+
+  // Exercise to delete
+  const [exerciseToDelete, setExerciseToDelete] = useState<LanguageLearningExerciseModel | null>(null);
+
+  // Load all exercises from database
+  const loadExercises = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      if (!window.languageLearningAPI) {
+        throw new Error('Language Learning API not available');
+      }
+
+      const response = await window.languageLearningAPI.getAllExercises();
+      
+      if (response.success && response.data) {
+        setAllExercises(response.data);
+        if (response.data.length > 0) {
+          selectRandomExercise(response.data);
+        } else {
+          setError('No exercises found in database. Start watching videos with language learning enabled to collect exercises.');
+        }
+      } else {
+        throw new Error(response.error || 'Failed to load exercises');
+      }
+    } catch (err) {
+      console.error('Error loading exercises:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load exercises');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Select a random exercise from the available exercises
+  const selectRandomExercise = (exercises: LanguageLearningExerciseModel[]) => {
+    if (exercises.length === 0) return;
+    
+    const randomIndex = Math.floor(Math.random() * exercises.length);
+    const exercise = exercises[randomIndex];
+    
+    setCurrentExercise(exercise);
+    resetExerciseState(exercise.practiceLanguageText);
+  };
+
+  // Reset exercise state for a new text
+  const resetExerciseState = (text: string) => {
+    const cleanText = text.replace(/\n/g, ' ').trim();
+    setOriginalText(cleanText);
+    
+    // Split into words and scramble
+    const words = cleanText.split(/\s+/).filter(word => word.length > 0);
+    const scrambled = [...words].sort(() => Math.random() - 0.5);
+    
+    setScrambledWords(scrambled);
+    setSelectedWords([]);
+    setShowResult(false);
+    setIsCorrect(false);
+    setExerciseCompleted(false);
+  };
+
+  // Handle word selection
+  const handleWordClick = (word: string, index: number) => {
+    if (exerciseCompleted) return;
+    
+    setSelectedWords(prev => [...prev, word]);
+    setScrambledWords(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Handle word removal
+  const handleRemoveWord = (index: number) => {
+    if (exerciseCompleted) return;
+    
+    const word = selectedWords[index];
+    setSelectedWords(prev => prev.filter((_, i) => i !== index));
+    setScrambledWords(prev => [...prev, word]);
+  };
+
+  // Submit answer
+  const handleSubmit = async () => {
+    if (selectedWords.length === 0) return;
+    
+    const userText = selectedWords.join(' ');
+    const correct = userText === originalText;
+    
+    setIsCorrect(correct);
+    setShowResult(true);
+    setExerciseCompleted(true);
+
+    // Update exercise statistics
+    if (currentExercise?.id && window.languageLearningAPI) {
+      try {
+        await window.languageLearningAPI.updateExerciseStats(currentExercise.id, correct);
+      } catch (error) {
+        console.error('Failed to update exercise stats:', error);
+      }
+    }
+  };
+
+  // Reset current exercise
+  const handleReset = () => {
+    if (currentExercise) {
+      resetExerciseState(currentExercise.practiceLanguageText);
+    }
+  };
+
+  // Get next random exercise
+  const handleNext = () => {
+    selectRandomExercise(allExercises);
+  };
+
+  // Handle delete exercise confirmation
+  const handleDeleteClick = (exercise: LanguageLearningExerciseModel) => {
+    setExerciseToDelete(exercise);
+    openDeleteDialog();
+  };
+
+  // Confirm delete exercise
+  const handleConfirmDelete = async () => {
+    if (!exerciseToDelete?.id || !window.languageLearningAPI) return;
+
+    try {
+      const response = await window.languageLearningAPI.deleteExercise(exerciseToDelete.id);
+      if (response.success) {
+        // Remove from local state
+        const updatedExercises = allExercises.filter(ex => ex.id !== exerciseToDelete.id);
+        setAllExercises(updatedExercises);
+        
+        // If this was the current exercise, select a new one
+        if (currentExercise?.id === exerciseToDelete.id) {
+          if (updatedExercises.length > 0) {
+            selectRandomExercise(updatedExercises);
+          } else {
+            setCurrentExercise(null);
+            setError('No exercises remaining in database.');
+          }
+        }
+        
+        console.log('Exercise deleted successfully:', exerciseToDelete.id);
+      } else {
+        console.error('Failed to delete exercise:', response.error);
+      }
+    } catch (error) {
+      console.error('Error deleting exercise:', error);
+    } finally {
+      closeDeleteDialog();
+      setExerciseToDelete(null);
+    }
+  };
+
+  // Function to identify and group duplicate exercises
+  const getDuplicateGroups = () => {
+    const groups: { [key: string]: LanguageLearningExerciseModel[] } = {};
+    
+    allExercises.forEach(exercise => {
+      const key = exercise.practiceLanguageText.trim().toLowerCase();
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(exercise);
+    });
+    
+    // Return only groups with more than one exercise (duplicates)
+    return Object.entries(groups).filter(([_, exercises]) => exercises.length > 1);
+  };
+
+  // Load exercises on component mount
+  useEffect(() => {
+    loadExercises();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "60vh",
+          padding: 3,
+        }}
+      >
+        <CircularProgress sx={{ mb: 2 }} />
+        <Typography variant="h6" color="text.secondary">
+          Loading exercises...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "60vh",
+          padding: 3,
+          textAlign: "center",
+        }}
+      >
+        <School sx={{ fontSize: 80, mb: 2, color: "text.disabled" }} />
+        <Typography variant="h5" component="h1" gutterBottom color="error">
+          No Exercises Available
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 600 }}>
+          {error}
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<Refresh />}
+          onClick={loadExercises}
+        >
+          Retry
+        </Button>
+      </Box>
+    );
+  }
+
+  if (!currentExercise) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "60vh",
+          padding: 3,
+        }}
+      >
+        <Typography variant="h6" color="text.secondary">
+          No exercise selected
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box
+      sx={{
+        maxWidth: 1000,
+        margin: "0 auto",
+        padding: 3,
+        minHeight: "100vh",
+      }}
+    >
+      {/* Header */}
+      <Box sx={{ textAlign: "center", mb: 4 }}>
+        <School sx={{ fontSize: 60, mb: 2, color: "primary.main" }} />
+        <Typography variant="h4" component="h1" gutterBottom>
+          Language Practice
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Total exercises available: {allExercises.length}
+        </Typography>
+        <Button
+          variant="outlined"
+          startIcon={<ListIcon />}
+          onClick={openExercisesList}
+          sx={{ mt: 1 }}
+        >
+          View All Exercises
+        </Button>
+      </Box>
+
+      {/* Exercise Card */}
+      <Card 
+        sx={{ 
+          bgcolor: 'primary.dark', 
+          color: 'primary.contrastText',
+          mb: 3,
+          minHeight: 500
+        }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          {/* Exercise Info */}
+          <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Chip 
+                label={`${currentExercise.practiceLanguage.toUpperCase()} → ${currentExercise.nativeLanguage.toUpperCase()}`} 
+                size="small" 
+                color="secondary"
+              />
+              {currentExercise.difficulty && (
+                <Chip 
+                  label={currentExercise.difficulty} 
+                  size="small" 
+                  variant="outlined"
+                  sx={{ color: 'white', borderColor: 'white' }}
+                />
+              )}
+              <Chip 
+                label={`${currentExercise.wordCount} words`} 
+                size="small" 
+                variant="outlined"
+                sx={{ color: 'white', borderColor: 'white' }}
+              />
+            </Box>
+            
+            {/* Practice Statistics */}
+            {(currentExercise.practiceCount && currentExercise.practiceCount > 0) && (
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Chip 
+                  label={`${currentExercise.practiceCount} attempts`}
+                  size="small" 
+                  variant="outlined"
+                  sx={{ color: 'lightblue', borderColor: 'lightblue' }}
+                />
+                <Chip 
+                  label={`${currentExercise.correctCount || 0} correct`}
+                  size="small" 
+                  variant="outlined"
+                  sx={{ color: 'lightgreen', borderColor: 'lightgreen' }}
+                />
+                <Chip 
+                  label={`${(currentExercise.practiceCount - (currentExercise.correctCount || 0))} wrong`}
+                  size="small" 
+                  variant="outlined"
+                  sx={{ color: 'lightcoral', borderColor: 'lightcoral' }}
+                />
+                {currentExercise.accuracyRate !== undefined && (
+                  <Chip 
+                    label={`${Math.round(currentExercise.accuracyRate)}% accuracy`}
+                    size="small" 
+                    variant="outlined"
+                    sx={{ color: 'gold', borderColor: 'gold' }}
+                  />
+                )}
+              </Box>
+            )}
+          </Box>
+
+          {/* Native Language Reference */}
+          <Card sx={{ mb: 4, bgcolor: 'grey.800', border: '1px solid', borderColor: 'grey.600' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Typography variant="caption" sx={{ color: 'grey.400', mb: 1, display: 'block' }}>
+                Reference ({currentExercise.nativeLanguage.toUpperCase()}):
+              </Typography>
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  color: 'white',
+                  textAlign: 'center',
+                  fontSize: '1.1rem',
+                  lineHeight: 1.5
+                }}
+              >
+                {currentExercise.nativeLanguageText}
+              </Typography>
+            </CardContent>
+          </Card>
+
+          {/* User's Arrangement */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="caption" sx={{ color: 'primary.light', mb: 1, display: 'block' }}>
+              Your arrangement:
+            </Typography>
+            <Box 
+              sx={{
+                bgcolor: 'primary.light',
+                color: 'primary.dark',
+                p: 2,
+                borderRadius: 1,
+                minHeight: 60,
+                border: '2px dashed',
+                borderColor: 'primary.main',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              {selectedWords.length === 0 ? (
+                <Typography sx={{ fontStyle: 'italic', color: 'primary.main' }}>
+                  Click words below to arrange them...
+                </Typography>
+              ) : (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {selectedWords.map((word, index) => (
+                    <Button
+                      key={`selected-${index}`}
+                      onClick={() => handleRemoveWord(index)}
+                      disabled={exerciseCompleted}
+                      variant="contained"
+                      color="success"
+                      size="small"
+                      sx={{ minWidth: 'auto' }}
+                    >
+                      {word}
+                    </Button>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          </Box>
+
+          {/* Available Words */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="caption" sx={{ color: 'primary.light', mb: 1, display: 'block' }}>
+              Available words:
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {scrambledWords.map((word, index) => (
+                <Button
+                  key={`scrambled-${index}`}
+                  onClick={() => handleWordClick(word, index)}
+                  disabled={exerciseCompleted}
+                  variant="outlined"
+                  sx={{ 
+                    color: 'white', 
+                    borderColor: 'white',
+                    '&:hover': {
+                      bgcolor: 'primary.light',
+                      color: 'primary.dark'
+                    }
+                  }}
+                >
+                  {word}
+                </Button>
+              ))}
+            </Box>
+          </Box>
+
+          {/* Control Buttons */}
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mb: 3 }}>
+            <Button
+              onClick={handleSubmit}
+              disabled={selectedWords.length === 0 || exerciseCompleted}
+              variant="contained"
+              color="success"
+              startIcon={<CheckCircle />}
+            >
+              Submit
+            </Button>
+            <Button
+              onClick={handleReset}
+              variant="contained"
+              color="warning"
+              startIcon={<Refresh />}
+            >
+              Reset
+            </Button>
+            {exerciseCompleted && (
+              <Button
+                onClick={handleNext}
+                variant="contained"
+                color="secondary"
+                startIcon={<School />}
+              >
+                Next Exercise
+              </Button>
+            )}
+          </Box>
+
+          {/* Result Feedback */}
+          {showResult && (
+            <Card 
+              sx={{ 
+                bgcolor: isCorrect ? 'success.dark' : 'error.dark',
+                textAlign: 'center'
+              }}
+            >
+              <CardContent>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    color: 'white',
+                    mb: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 1
+                  }}
+                >
+                  {isCorrect ? (
+                    <>
+                      <CheckCircle /> Correct!
+                    </>
+                  ) : (
+                    <>
+                      <Cancel /> Incorrect
+                    </>
+                  )}
+                </Typography>
+                {!isCorrect && (
+                  <Typography variant="body2" sx={{ color: 'white', opacity: 0.9 }}>
+                    Correct answer: "{originalText}"
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Exercise Source Info */}
+      {currentExercise.videoFileName && (
+        <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', color: 'white' }}>
+          From: {currentExercise.videoFileName}
+        </Typography>
+      )}
+
+      {/* Exercises List Modal */}
+      <AppModal
+        open={isExercisesListOpen}
+        onClose={closeExercisesList}
+        title={`All Exercises (${allExercises.length})`}
+        fullScreen={true}
+      >
+        <Box sx={{ p: 3 }}>
+          {/* Summary Statistics */}
+          <Card sx={{ mb: 3, bgcolor: 'info.dark' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ color: 'white', mb: 2 }}>
+                Exercise Database Summary
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Chip 
+                  label={`${allExercises.length} Total Exercises`} 
+                  color="primary" 
+                  variant="outlined" 
+                />
+                <Chip 
+                  label={`${getDuplicateGroups().length} Duplicate Groups`} 
+                  color="warning" 
+                  variant="outlined" 
+                />
+                <Chip 
+                  label={`${getDuplicateGroups().reduce((sum, [_, exercises]) => sum + exercises.length, 0)} Duplicate Exercises`} 
+                  color="error" 
+                  variant="outlined" 
+                />
+                <Chip 
+                  label={`${new Set(allExercises.map(ex => ex.practiceLanguage)).size} Languages`} 
+                  color="secondary" 
+                  variant="outlined" 
+                />
+                <Chip 
+                  label={`${new Set(allExercises.map(ex => ex.videoFileName)).size} Videos`} 
+                  color="success" 
+                  variant="outlined" 
+                />
+              </Box>
+            </CardContent>
+          </Card>
+
+          {/* Duplicate Groups */}
+          {getDuplicateGroups().length > 0 && (
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, color: 'white' }}>
+                <FileCopy color="warning" />
+                Duplicate Exercises ({getDuplicateGroups().length} groups)
+              </Typography>
+              
+              {getDuplicateGroups().map(([text, exercises], groupIndex) => (
+                <Accordion key={groupIndex} sx={{ mb: 1 }}>
+                  <AccordionSummary expandIcon={<ExpandMore />}>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                        "{text.length > 80 ? text.substring(0, 80) + '...' : text}"
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {exercises.length} duplicates • Languages: {[...new Set(exercises.map(ex => ex.practiceLanguage))].join(', ')}
+                      </Typography>
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <TableContainer>
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Video</TableCell>
+                            <TableCell>Language</TableCell>
+                            <TableCell>Time</TableCell>
+                            <TableCell>Practiced</TableCell>
+                            <TableCell>Accuracy</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {exercises.map((exercise, exIndex) => (
+                            <TableRow key={exIndex}>
+                              <TableCell>
+                                <Typography variant="body2" sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {exercise.videoFileName || 'Unknown'}
+                                </Typography>
+                              </TableCell>
+                              <TableCell>
+                                <Chip 
+                                  label={`${exercise.practiceLanguage} → ${exercise.nativeLanguage}`} 
+                                  size="small" 
+                                  color="secondary" 
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2">
+                                  {Math.floor(exercise.startTime / 60)}:{String(Math.floor(exercise.startTime % 60)).padStart(2, '0')}
+                                </Typography>
+                              </TableCell>
+                              <TableCell>
+                                {exercise.practiceCount ? (
+                                  <Typography variant="body2">
+                                    {exercise.practiceCount} times
+                                  </Typography>
+                                ) : (
+                                  <Typography variant="body2" color="text.secondary">
+                                    Never
+                                  </Typography>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {exercise.accuracyRate !== undefined ? (
+                                  <Chip 
+                                    label={`${Math.round(exercise.accuracyRate)}%`} 
+                                    size="small" 
+                                    color={exercise.accuracyRate >= 80 ? 'success' : exercise.accuracyRate >= 60 ? 'warning' : 'error'}
+                                  />
+                                ) : (
+                                  <Typography variant="body2" color="text.secondary">
+                                    N/A
+                                  </Typography>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+            </Box>
+          )}
+
+          {/* All Exercises Table */}
+          <Typography variant="h6" sx={{ mb: 2, color: 'white' }}>
+            All Exercises
+          </Typography>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Practice Text</TableCell>
+                  <TableCell>Native Text</TableCell>
+                  <TableCell>Languages</TableCell>
+                  <TableCell>Video</TableCell>
+                  <TableCell>Difficulty</TableCell>
+                  <TableCell>Stats</TableCell>
+                  <TableCell>Created</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {allExercises.map((exercise, index) => (
+                  <TableRow key={exercise.id || index}>
+                    <TableCell>
+                      <Typography variant="body2" sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {exercise.practiceLanguageText}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {exercise.nativeLanguageText}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip 
+                        label={`${exercise.practiceLanguage} → ${exercise.nativeLanguage}`} 
+                        size="small" 
+                        color="secondary" 
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" sx={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {exercise.videoFileName || 'Unknown'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      {exercise.difficulty && (
+                        <Chip 
+                          label={exercise.difficulty} 
+                          size="small" 
+                          color={exercise.difficulty === 'easy' ? 'success' : exercise.difficulty === 'medium' ? 'warning' : 'error'}
+                        />
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {exercise.practiceCount ? (
+                        <Box>
+                          <Typography variant="caption" display="block">
+                            {exercise.correctCount || 0}/{exercise.practiceCount} correct
+                          </Typography>
+                          {exercise.accuracyRate !== undefined && (
+                            <Typography variant="caption" color="text.secondary">
+                              {Math.round(exercise.accuracyRate)}% accuracy
+                            </Typography>
+                          )}
+                        </Box>
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">
+                          Not practiced
+                        </Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="caption">
+                        {new Date(exercise.createdAt).toLocaleDateString()}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <IconButton 
+                        onClick={() => handleDeleteClick(exercise)}
+                        color="error"
+                        size="small"
+                        sx={{ '&:hover': { bgcolor: 'error.dark' } }}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      </AppModal>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={closeDeleteDialog}
+      >
+        <DialogTitle>Delete Exercise</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Are you sure you want to delete this exercise?
+          </Typography>
+          {exerciseToDelete && (
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                <strong>Practice Text:</strong> {exerciseToDelete.practiceLanguageText}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                <strong>Native Text:</strong> {exerciseToDelete.nativeLanguageText}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                <strong>From:</strong> {exerciseToDelete.videoFileName || 'Unknown video'}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDeleteDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+};
