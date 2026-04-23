@@ -231,11 +231,24 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
       return;
     }
 
-    // Only save if we have meaningful text in both languages
+    // Extract and validate both language texts
     const practiceText = activeCue.text.replace(/\n/g, ' ').trim();
     const nativeText = activeNativeCue.text.replace(/\n/g, ' ').trim();
     
-    if (!practiceText || !nativeText || practiceText.length < 3 || nativeText.length < 3) {
+    // Only save if we have meaningful text in BOTH languages
+    if (!practiceText || !nativeText) {
+      console.log('Skipping exercise save: Missing text in one or both languages', {
+        hasPracticeText: !!practiceText,
+        hasNativeText: !!nativeText
+      });
+      return;
+    }
+    
+    if (practiceText.length < 3 || nativeText.length < 3) {
+      console.log('Skipping exercise save: Text too short in one or both languages', {
+        practiceLength: practiceText.length,
+        nativeLength: nativeText.length
+      });
       return;
     }
 
