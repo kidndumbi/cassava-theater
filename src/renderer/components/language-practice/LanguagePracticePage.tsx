@@ -525,11 +525,9 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                     </>
                   )}
                 </Typography>
-                {!isCorrect && (
-                  <Typography variant="body2" sx={{ color: 'white', opacity: 0.9 }}>
-                    Correct answer: "{originalText}"
-                  </Typography>
-                )}
+                <Typography variant="body2" sx={{ color: 'white', opacity: 0.9 }}>
+                  {isCorrect ? `"${originalText}"` : `Correct answer: "${originalText}"`}
+                </Typography>
               </CardContent>
             </Card>
           )}
