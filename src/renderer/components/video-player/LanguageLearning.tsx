@@ -3,6 +3,7 @@ import { VTTCue, parseVTT, findActiveCue } from "../../util/vttParser";
 
 interface LanguageLearningProps {
   subtitleUrl: string | null;
+  nativeSubtitleUrl: string | null;
   currentTime: number;
   isVisible?: boolean;
   enabled?: boolean;
@@ -13,6 +14,7 @@ interface LanguageLearningProps {
 
 const LanguageLearning: React.FC<LanguageLearningProps> = ({
   subtitleUrl,
+  nativeSubtitleUrl,
   currentTime,
   isVisible = true,
   enabled = false,
@@ -23,6 +25,11 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   const [cues, setCues] = useState<VTTCue[]>([]);
   const [activeCue, setActiveCue] = useState<VTTCue | null>(null);
   const [loading, setLoading] = useState(false);
+  
+  // Native language subtitle state
+  const [nativeCues, setNativeCues] = useState<VTTCue[]>([]);
+  const [activeNativeCue, setActiveNativeCue] = useState<VTTCue | null>(null);
+  const [nativeLoading, setNativeLoading] = useState(false);
   
   // Language learning exercise state
   const [scrambledWords, setScrambledWords] = useState<string[]>([]);
@@ -152,6 +159,39 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
     fetchSubtitles();
   }, [subtitleUrl, enabled]);
 
+  // Fetch and parse native language VTT file
+  useEffect(() => {
+    if (!nativeSubtitleUrl || !enabled) {
+      setNativeCues([]);
+      setActiveNativeCue(null);
+      return;
+    }
+
+    const fetchNativeSubtitles = async () => {
+      setNativeLoading(true);
+      
+      try {
+        const response = await fetch(nativeSubtitleUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch native subtitles: ${response.statusText}`);
+        }
+        
+        const vttContent = await response.text();
+        const parsedCues = parseVTT(vttContent);
+        setNativeCues(parsedCues);
+        
+        console.log(`Parsed ${parsedCues.length} native subtitle cues for language learning`);
+      } catch (err) {
+        console.error("Error fetching/parsing native subtitles for language learning:", err);
+        setNativeCues([]);
+      } finally {
+        setNativeLoading(false);
+      }
+    };
+
+    fetchNativeSubtitles();
+  }, [nativeSubtitleUrl, enabled]);
+
   // Find active cue based on current time
   useEffect(() => {
     if (cues.length === 0) {
@@ -162,6 +202,17 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
     const active = findActiveCue(cues, currentTime);
     setActiveCue(active);
   }, [cues, currentTime]);
+
+  // Find active native cue based on current time
+  useEffect(() => {
+    if (nativeCues.length === 0) {
+      setActiveNativeCue(null);
+      return;
+    }
+
+    const active = findActiveCue(nativeCues, currentTime);
+    setActiveNativeCue(active);
+  }, [nativeCues, currentTime]);
 
   // Scramble words when active cue changes
   useEffect(() => {
@@ -255,6 +306,21 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
         <div className="text-center mb-3 font-semibold text-blue-200">
           {language} Exercise
         </div>
+
+        {/* Native Language Reference */}
+        {activeNativeCue && (
+          <div className="mb-4 p-3 bg-gray-800 bg-opacity-60 rounded-lg border border-gray-600">
+            <div className="text-xs text-gray-300 mb-1">Reference (Native Language):</div>
+            <div 
+              className="text-white text-center leading-relaxed"
+              style={{ fontSize: `${Math.max(12, fontSize - 1)}px` }}
+            >
+              {activeNativeCue.text.split('\n').map((line, index) => (
+                <div key={index}>{line}</div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* User's current arrangement */}
         <div className="mb-3">

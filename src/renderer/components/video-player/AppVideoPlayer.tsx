@@ -231,6 +231,14 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       return language ? languageMap[language] : 'Language Learning';
     };
 
+    // Get native language subtitle URL (usually English for reference)
+    const getNativeSubtitleUrl = () => {
+      if (!currentVideo?.subtitlePath) return null;
+      
+      const baseUrl = getUrl("file", currentVideo.subtitlePath, null, port);
+      return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : null;
+    };
+
     useEffect(() => {
       if (videoPlayerRef.current) {
         setPlayer(videoPlayerRef.current);
@@ -524,6 +532,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
         {/* Language Learning Component */}
         <LanguageLearning
           subtitleUrl={getOverlaySubtitleUrl(subtitleOverlayLanguage)}
+          nativeSubtitleUrl={getNativeSubtitleUrl()}
           currentTime={currentTime || 0}
           isVisible={!subtitleModalOpen}
           enabled={languageLearningEnabled}
