@@ -221,6 +221,16 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : null;
     };
 
+    // Get human-readable language name for display
+    const getLanguageDisplayName = (language: 'en' | 'es' | 'fr' | null): string => {
+      const languageMap: Record<string, string> = {
+        'en': 'English',
+        'es': 'Spanish', 
+        'fr': 'French'
+      };
+      return language ? languageMap[language] : 'Language Learning';
+    };
+
     useEffect(() => {
       if (videoPlayerRef.current) {
         setPlayer(videoPlayerRef.current);
@@ -518,6 +528,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           isVisible={!subtitleModalOpen}
           enabled={languageLearningEnabled}
           fontSize={subtitleOverlayFontSize}
+          language={getLanguageDisplayName(subtitleOverlayLanguage)}
           onPause={pause}
         />
 

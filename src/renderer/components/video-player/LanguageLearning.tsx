@@ -7,6 +7,7 @@ interface LanguageLearningProps {
   isVisible?: boolean;
   enabled?: boolean;
   fontSize?: number;
+  language?: string;
   onPause?: () => void;
 }
 
@@ -16,6 +17,7 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   isVisible = true,
   enabled = false,
   fontSize = 16,
+  language = 'Language Learning',
   onPause,
 }) => {
   const [cues, setCues] = useState<VTTCue[]>([]);
@@ -251,7 +253,7 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
       >
         {/* Title */}
         <div className="text-center mb-3 font-semibold text-blue-200">
-          Language Learning Exercise
+          {language} Exercise
         </div>
 
         {/* User's current arrangement */}

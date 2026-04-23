@@ -129,6 +129,10 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
 
   const availableLanguages = getAvailableLanguages();
 
+  // Validation: if overlay is enabled and languages are available, a language must be selected
+  const isLanguageSelectionRequired = localEnabled && availableLanguages.length > 0 && !localLanguage;
+  const canApply = !isLanguageSelectionRequired;
+
   const handleSave = () => {
     onToggleEnabled(localEnabled);
     onLanguageChange(localEnabled ? localLanguage : null);
@@ -188,6 +192,7 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
                 value={localLanguage || ''}
                 onChange={(e) => handleLanguageChange(e.target.value as 'en' | 'es' | 'fr' || null)}
                 label="Language"
+                error={isLanguageSelectionRequired}
               >
                 <MenuItem value="">
                   <em>None</em>
@@ -199,6 +204,13 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
                 ))}
               </Select>
             </StyledFormControl>
+          )}
+
+          {/* Language Selection Required Warning */}
+          {isLanguageSelectionRequired && (
+            <Typography variant="body2" sx={{ color: "#f44336", mt: -1 }}>
+              Please select a language to enable subtitle overlay.
+            </Typography>
           )}
 
           {/* Hide Text Toggle */}
@@ -302,7 +314,12 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
         <Button onClick={handleCancel} color="secondary">
           Cancel
         </Button>
-        <Button onClick={handleSave} color="primary" variant="contained">
+        <Button 
+          onClick={handleSave} 
+          color="primary" 
+          variant="contained"
+          disabled={!canApply}
+        >
           Apply
         </Button>
       </DialogActions>
