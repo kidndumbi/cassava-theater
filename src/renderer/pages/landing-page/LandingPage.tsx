@@ -9,6 +9,7 @@ import {
   FeaturedPlayList,
   Handyman,
   Home,
+  School,
 } from "@mui/icons-material";
 import Grid from "@mui/material/Grid2";
 import { renderActivePage } from "./RenderActivePage";
@@ -111,6 +112,13 @@ export const LandingPage = () => {
       id: "app-tools",
       label: "Tools",
       icon: <Handyman />,
+      handler: handleMenuClick,
+      menuType: "default",
+    },
+    {
+      id: "app-language-practice",
+      label: "Language Practice",
+      icon: <School />,
       handler: handleMenuClick,
       menuType: "default",
     },
