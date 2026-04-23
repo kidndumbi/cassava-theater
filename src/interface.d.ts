@@ -361,6 +361,14 @@ export interface LanguageLearningAPI {
   sendMessage: (channel: string, data?: any) => void;
   on: (channel: string, callback: (...args: any[]) => void) => void;
   removeAllListeners: (channel: string) => void;
+  
+  // Exercise database methods
+  saveExercise: (exerciseData: any) => Promise<{ success: boolean; data?: any; error?: string }>;
+  getExercise: (key: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+  getExercisesByVideo: (videoFilePath: string) => Promise<{ success: boolean; data?: any[]; error?: string }>;
+  getAllExercises: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+  deleteExercise: (key: string) => Promise<{ success: boolean; error?: string }>;
+  updateExerciseStats: (key: string, isCorrect: boolean) => Promise<{ success: boolean; error?: string }>;
 }
 
 declare global {

@@ -10,6 +10,7 @@ import { SubtitleSyncQueueItem } from "../../models/subtitle-sync-queue-item.mod
 import { SettingsModel } from "../../models/settings.model";
 import { VideoScreenshotModel } from "../../models/video-screenshot.model";
 import { PlaylistModel } from "../../models/playlist.model";
+import { LanguageLearningExerciseModel } from "../../models/language-learning-exercise.model";
 
 // Define your database collections
 type Collections = {
@@ -20,7 +21,8 @@ type Collections = {
   subtitleSyncQueueItems: SubtitleSyncQueueItem;
   settings: SettingsModel;
   videoScreenshots: VideoScreenshotModel;
-  playlists: PlaylistModel; 
+  playlists: PlaylistModel;
+  languageLearningExercises: LanguageLearningExerciseModel;
 };
 
 type CollectionName = keyof Collections;

@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { VTTCue, parseVTT, findActiveCue } from "../../util/vttParser";
+import { VideoDataModel } from "../../../models/videoData.model";
 
 interface LanguageLearningProps {
   subtitleUrl: string | null;
   nativeSubtitleUrl: string | null;
   currentTime: number;
+  currentVideo?: VideoDataModel | null;
+  subtitleOverlayLanguage?: 'en' | 'es' | 'fr' | null;
   isVisible?: boolean;
   enabled?: boolean;
   fontSize?: number;
@@ -16,6 +19,8 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   subtitleUrl,
   nativeSubtitleUrl,
   currentTime,
+  currentVideo,
+  subtitleOverlayLanguage,
   isVisible = true,
   enabled = false,
   fontSize = 16,
@@ -219,6 +224,50 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
     const active = findActiveCue(nativeCues, currentTime);
     setActiveNativeCue(active);
   }, [nativeCues, currentTime]);
+
+  // Auto-save exercise data when both native and practice cues are available
+  useEffect(() => {
+    if (!activeCue || !activeNativeCue || !currentVideo?.filePath || !subtitleOverlayLanguage) {
+      return;
+    }
+
+    // Only save if we have meaningful text in both languages
+    const practiceText = activeCue.text.replace(/\n/g, ' ').trim();
+    const nativeText = activeNativeCue.text.replace(/\n/g, ' ').trim();
+    
+    if (!practiceText || !nativeText || practiceText.length < 3 || nativeText.length < 3) {
+      return;
+    }
+
+    // Prepare exercise data for saving
+    const exerciseData = {
+      videoFilePath: currentVideo.filePath,
+      videoFileName: currentVideo.fileName,
+      nativeLanguageText: nativeText,
+      practiceLanguageText: practiceText,
+      nativeLanguage: 'en' as const, // Assuming English is always native
+      practiceLanguage: subtitleOverlayLanguage,
+      startTime: activeCue.startTime,
+      endTime: activeCue.endTime,
+      duration: activeCue.endTime - activeCue.startTime,
+      wordCount: practiceText.split(/\s+/).length
+    };
+
+    // Save to database via IPC
+    if (window.languageLearningAPI && window.languageLearningAPI.saveExercise) {
+      window.languageLearningAPI.saveExercise(exerciseData)
+        .then(() => {
+          console.log('Exercise data saved:', {
+            practice: practiceText.substring(0, 50) + '...',
+            native: nativeText.substring(0, 50) + '...',
+            language: subtitleOverlayLanguage
+          });
+        })
+        .catch((error: any) => {
+          console.error('Failed to save exercise data:', error);
+        });
+    }
+  }, [activeCue, activeNativeCue, currentVideo, subtitleOverlayLanguage]);
 
   // Scramble words when active cue changes
   useEffect(() => {
