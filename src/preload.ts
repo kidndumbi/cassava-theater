@@ -818,6 +818,10 @@ contextBridge.exposeInMainWorld("languageLearningAPI", {
     return ipcRenderer.invoke(LanguageLearningIPCChannels.DELETE_EXERCISE, key);
   },
 
+  updateExercise: (key: string, exerciseData: any) => {
+    return ipcRenderer.invoke(LanguageLearningIPCChannels.UPDATE_EXERCISE, key, exerciseData);
+  },
+
   updateExerciseStats: (key: string, isCorrect: boolean) => {
     return ipcRenderer.invoke(LanguageLearningIPCChannels.UPDATE_EXERCISE_STATS, key, isCorrect);
   },

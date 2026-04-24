@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
-import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete } from "@mui/icons-material";
+import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { AppModal } from "../common/AppModal";
 import { CopyButton } from "../common/CopyButton";
@@ -41,8 +41,25 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     closeModal: closeDeleteDialog,
   } = useModalState(false);
 
+  // Modal state for edit exercise
+  const {
+    open: isEditDialogOpen,
+    openModal: openEditDialog,
+    closeModal: closeEditDialog,
+  } = useModalState(false);
+
   // Exercise to delete
   const [exerciseToDelete, setExerciseToDelete] = useState<LanguageLearningExerciseModel | null>(null);
+
+  // Edit form state
+  const [editForm, setEditForm] = useState({
+    practiceLanguageText: '',
+    nativeLanguageText: '',
+    practiceLanguage: '' as 'en' | 'es' | 'fr' | '',
+    nativeLanguage: '' as 'en' | 'es' | 'fr' | '',
+    difficulty: '' as 'easy' | 'medium' | 'hard' | ''
+  });
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Load all exercises from database
   const loadExercises = async () => {
@@ -155,6 +172,64 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
   const handleDeleteClick = (exercise: LanguageLearningExerciseModel) => {
     setExerciseToDelete(exercise);
     openDeleteDialog();
+  };
+
+  // Handle edit exercise
+  const handleEditClick = () => {
+    if (!currentExercise) return;
+    
+    setEditForm({
+      practiceLanguageText: currentExercise.practiceLanguageText,
+      nativeLanguageText: currentExercise.nativeLanguageText,
+      practiceLanguage: currentExercise.practiceLanguage,
+      nativeLanguage: currentExercise.nativeLanguage,
+      difficulty: currentExercise.difficulty || ''
+    });
+    openEditDialog();
+  };
+
+  // Handle edit form submission
+  const handleEditSubmit = async () => {
+    if (!currentExercise?.id || !window.languageLearningAPI) return;
+
+    setIsUpdating(true);
+    try {
+      const updatedExercise: LanguageLearningExerciseModel = {
+        ...currentExercise,
+        practiceLanguageText: editForm.practiceLanguageText,
+        nativeLanguageText: editForm.nativeLanguageText,
+        practiceLanguage: editForm.practiceLanguage as 'en' | 'es' | 'fr',
+        nativeLanguage: editForm.nativeLanguage as 'en' | 'es' | 'fr',
+        difficulty: editForm.difficulty || undefined,
+        wordCount: editForm.practiceLanguageText.split(/\s+/).filter(word => word.length > 0).length
+      };
+
+      const response = await window.languageLearningAPI.updateExercise(currentExercise.id, updatedExercise);
+      
+      if (response.success) {
+        // Update current exercise
+        setCurrentExercise(updatedExercise);
+        
+        // Update exercises list
+        setAllExercises(prev => prev.map(ex => 
+          ex.id === currentExercise.id ? updatedExercise : ex
+        ));
+        
+        // Reset exercise state with new text
+        resetExerciseState(updatedExercise.practiceLanguageText);
+        
+        closeEditDialog();
+        console.log('Exercise updated successfully:', currentExercise.id);
+      } else {
+        console.error('Failed to update exercise:', response.error);
+        alert('Failed to update exercise: ' + (response.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error updating exercise:', error);
+      alert('Error updating exercise: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   // Confirm delete exercise
@@ -374,6 +449,17 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                 )}
               </Box>
             )}
+            
+            {/* Edit Button */}
+            <Button
+              onClick={handleEditClick}
+              variant="outlined"
+              size="small"
+              startIcon={<Edit />}
+              sx={{ color: 'white', borderColor: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
+            >
+              Edit
+            </Button>
           </Box>
 
           {/* Native Language Reference */}
@@ -815,6 +901,94 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
           </Button>
           <Button onClick={handleConfirmDelete} color="error" variant="contained">
             Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Exercise Dialog */}
+      <Dialog
+        open={isEditDialogOpen}
+        onClose={closeEditDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Edit Exercise</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+            <TextField
+              label="Practice Language Text"
+              multiline
+              rows={3}
+              value={editForm.practiceLanguageText}
+              onChange={(e) => setEditForm(prev => ({ ...prev, practiceLanguageText: e.target.value }))}
+              fullWidth
+              helperText="The text that users will practice arranging"
+            />
+            
+            <TextField
+              label="Native Language Text (Reference)"
+              multiline
+              rows={3}
+              value={editForm.nativeLanguageText}
+              onChange={(e) => setEditForm(prev => ({ ...prev, nativeLanguageText: e.target.value }))}
+              fullWidth
+              helperText="The reference text shown to help users"
+            />
+            
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <FormControl fullWidth>
+                <InputLabel>Practice Language</InputLabel>
+                <Select
+                  value={editForm.practiceLanguage}
+                  label="Practice Language"
+                  onChange={(e) => setEditForm(prev => ({ ...prev, practiceLanguage: e.target.value as 'en' | 'es' | 'fr' | '' }))}
+                >
+                  <MenuItem value="en">English</MenuItem>
+                  <MenuItem value="es">Spanish</MenuItem>
+                  <MenuItem value="fr">French</MenuItem>
+                </Select>
+              </FormControl>
+              
+              <FormControl fullWidth>
+                <InputLabel>Native Language</InputLabel>
+                <Select
+                  value={editForm.nativeLanguage}
+                  label="Native Language"
+                  onChange={(e) => setEditForm(prev => ({ ...prev, nativeLanguage: e.target.value as 'en' | 'es' | 'fr' | '' }))}
+                >
+                  <MenuItem value="en">English</MenuItem>
+                  <MenuItem value="es">Spanish</MenuItem>
+                  <MenuItem value="fr">French</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            
+            <FormControl fullWidth>
+              <InputLabel>Difficulty</InputLabel>
+              <Select
+                value={editForm.difficulty}
+                label="Difficulty"
+                onChange={(e) => setEditForm(prev => ({ ...prev, difficulty: e.target.value as 'easy' | 'medium' | 'hard' | '' }))}
+              >
+                <MenuItem value="">Not Set</MenuItem>
+                <MenuItem value="easy">Easy</MenuItem>
+                <MenuItem value="medium">Medium</MenuItem>
+                <MenuItem value="hard">Hard</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeEditDialog} color="primary">
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleEditSubmit} 
+            color="primary" 
+            variant="contained"
+            disabled={isUpdating || !editForm.practiceLanguageText.trim() || !editForm.nativeLanguageText.trim()}
+          >
+            {isUpdating ? 'Updating...' : 'Update Exercise'}
           </Button>
         </DialogActions>
       </Dialog>
