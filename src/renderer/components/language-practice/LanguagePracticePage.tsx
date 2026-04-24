@@ -76,7 +76,7 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
       if (response.success && response.data) {
         setAllExercises(response.data);
         if (response.data.length > 0) {
-          selectRandomExercise(response.data);
+          selectNextExercise(response.data);
         } else {
           setError('No exercises found in database. Start watching videos with language learning enabled to collect exercises.');
         }
@@ -91,15 +91,53 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     }
   };
 
-  // Select a random exercise from the available exercises
-  const selectRandomExercise = (exercises: LanguageLearningExerciseModel[]) => {
+  // Select next exercise using smart prioritization algorithm
+  const selectNextExercise = (exercises: LanguageLearningExerciseModel[]) => {
     if (exercises.length === 0) return;
     
-    const randomIndex = Math.floor(Math.random() * exercises.length);
-    const exercise = exercises[randomIndex];
+    // Smart selection algorithm prioritizing exercises that need attention
+    const scoredExercises = exercises.map(exercise => {
+      let score = 0;
+      
+      // Priority 1: Never practiced exercises (highest score)
+      if (!exercise.practiceCount || exercise.practiceCount === 0) {
+        score += 1000;
+      } else {
+        // Priority 2: Low practice count (inverse relationship)
+        score += Math.max(0, 100 - exercise.practiceCount);
+        
+        // Priority 3: Low accuracy rate (needs more work)
+        if (exercise.accuracyRate !== undefined) {
+          score += Math.max(0, 100 - exercise.accuracyRate);
+        }
+      }
+      
+      // Priority 4: Older exercises (created earlier, likely seen less recently)
+      const daysSinceCreated = (Date.now() - new Date(exercise.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+      score += daysSinceCreated * 0.1; // Small bonus for older exercises
+      
+      // Add small random factor to prevent deterministic selection
+      score += Math.random() * 10;
+      
+      return { exercise, score };
+    });
     
-    setCurrentExercise(exercise);
-    resetExerciseState(exercise.practiceLanguageText);
+    // Sort by score (highest first) and select from top candidates
+    scoredExercises.sort((a, b) => b.score - a.score);
+    
+    // Select from top 20% to maintain some variety while prioritizing neglected exercises
+    const topCandidates = Math.max(1, Math.ceil(scoredExercises.length * 0.2));
+    const selectedIndex = Math.floor(Math.random() * topCandidates);
+    const selectedExercise = scoredExercises[selectedIndex].exercise;
+    
+    console.log(`Selected exercise with score ${scoredExercises[selectedIndex].score.toFixed(1)}:`, {
+      text: selectedExercise.practiceLanguageText.substring(0, 50) + '...',
+      practiceCount: selectedExercise.practiceCount || 0,
+      accuracyRate: selectedExercise.accuracyRate || 'N/A'
+    });
+    
+    setCurrentExercise(selectedExercise);
+    resetExerciseState(selectedExercise.practiceLanguageText);
   };
 
   // Reset exercise state for a new text
@@ -163,9 +201,9 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     }
   };
 
-  // Get next random exercise
+  // Get next prioritized exercise
   const handleNext = () => {
-    selectRandomExercise(allExercises);
+    selectNextExercise(allExercises);
   };
 
   // Handle delete exercise confirmation
@@ -246,7 +284,7 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
         // If this was the current exercise, select a new one
         if (currentExercise?.id === exerciseToDelete.id) {
           if (updatedExercises.length > 0) {
-            selectRandomExercise(updatedExercises);
+            selectNextExercise(updatedExercises);
           } else {
             setCurrentExercise(null);
             setError('No exercises remaining in database.');
@@ -979,6 +1017,19 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
           </Box>
         </DialogContent>
         <DialogActions>
+          <Button 
+            onClick={() => {
+              if (currentExercise) {
+                closeEditDialog();
+                handleDeleteClick(currentExercise);
+              }
+            }}
+            color="error"
+            startIcon={<Delete />}
+            sx={{ mr: 'auto' }}
+          >
+            Delete
+          </Button>
           <Button onClick={closeEditDialog} color="primary">
             Cancel
           </Button>
