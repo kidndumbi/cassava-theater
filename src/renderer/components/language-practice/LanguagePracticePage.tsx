@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import React, { useEffect, useState, useMemo } from "react";
+import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem, Pagination, Stack } from "@mui/material";
 import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate, Star, StarBorder } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { AppModal } from "../common/AppModal";
@@ -63,6 +63,10 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
   
   // State for collapsible duplicate exercises section
   const [isDuplicatesSectionExpanded, setIsDuplicatesSectionExpanded] = useState(false);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25); // Exercises per page
 
   // Generate Google Translate URL
   const generateGoogleTranslateUrl = (sourceText: string, sourceLang: string, targetLang: string): string => {
@@ -365,8 +369,8 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     }
   };
 
-  // Function to identify and group duplicate exercises
-  const getDuplicateGroups = () => {
+  // Function to identify and group duplicate exercises (memoized for performance)
+  const getDuplicateGroups = useMemo(() => {
     const groups: { [key: string]: LanguageLearningExerciseModel[] } = {};
     
     allExercises.forEach(exercise => {
@@ -379,7 +383,21 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     
     // Return only groups with more than one exercise (duplicates)
     return Object.entries(groups).filter(([_, exercises]) => exercises.length > 1);
-  };
+  }, [allExercises]);
+
+  // Pagination calculations (memoized)
+  const paginatedExercises = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return allExercises.slice(startIndex, endIndex);
+  }, [allExercises, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(allExercises.length / pageSize);
+
+  // Reset to first page when exercises change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [allExercises.length]);
 
   // Load exercises on component mount
   useEffect(() => {
@@ -826,12 +844,12 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                   variant="outlined" 
                 />
                 <Chip 
-                  label={`${getDuplicateGroups().length} Duplicate Groups`} 
+                  label={`${getDuplicateGroups.length} Duplicate Groups`} 
                   color="warning" 
                   variant="outlined" 
                 />
                 <Chip 
-                  label={`${getDuplicateGroups().reduce((sum, [_, exercises]) => sum + exercises.length, 0)} Duplicate Exercises`} 
+                  label={`${getDuplicateGroups.reduce((sum, [_, exercises]) => sum + exercises.length, 0)} Duplicate Exercises`} 
                   color="error" 
                   variant="outlined" 
                 />
@@ -855,7 +873,7 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
           </Card>
 
           {/* Duplicate Groups */}
-          {getDuplicateGroups().length > 0 && (
+          {getDuplicateGroups.length > 0 && (
             <Accordion 
               expanded={isDuplicatesSectionExpanded}
               onChange={(_, isExpanded) => setIsDuplicatesSectionExpanded(isExpanded)}
@@ -864,11 +882,11 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
               <AccordionSummary expandIcon={<ExpandMore />}>
                 <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'white' }}>
                   <FileCopy color="warning" />
-                  Duplicate Exercises ({getDuplicateGroups().length} groups)
+                  Duplicate Exercises ({getDuplicateGroups.length} groups)
                 </Typography>
               </AccordionSummary>
               <AccordionDetails>
-                {getDuplicateGroups().map(([text, exercises], groupIndex) => (
+                {getDuplicateGroups.map(([text, exercises], groupIndex) => (
                   <Accordion key={groupIndex} sx={{ mb: 1 }}>
                     <AccordionSummary expandIcon={<ExpandMore />}>
                       <Box sx={{ flex: 1 }}>
@@ -949,95 +967,118 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
           )}
 
           {/* All Exercises Table */}
-          <Typography variant="h6" sx={{ mb: 2, color: 'white' }}>
-            All Exercises
-          </Typography>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Practice Text</TableCell>
-                  <TableCell>Native Text</TableCell>
-                  <TableCell>Languages</TableCell>
-                  <TableCell>Video</TableCell>
-                  <TableCell>Difficulty</TableCell>
-                  <TableCell>Stats</TableCell>
-                  <TableCell>Created</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {allExercises.map((exercise, index) => (
-                  <TableRow key={exercise.id || index}>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {exercise.practiceLanguageText}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {exercise.nativeLanguageText}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={`${exercise.practiceLanguage} → ${exercise.nativeLanguage}`} 
-                        size="small" 
-                        color="secondary" 
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" sx={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {exercise.videoFileName || 'Unknown'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      {exercise.difficulty && (
-                        <Chip 
-                          label={exercise.difficulty} 
-                          size="small" 
-                          color={exercise.difficulty === 'easy' ? 'success' : exercise.difficulty === 'medium' ? 'warning' : 'error'}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {exercise.practiceCount ? (
-                        <Box>
-                          <Typography variant="caption" display="block">
-                            {exercise.correctCount || 0}/{exercise.practiceCount} correct
-                          </Typography>
-                          {exercise.accuracyRate !== undefined && (
-                            <Typography variant="caption" color="text.secondary">
-                              {Math.round(exercise.accuracyRate)}% accuracy
-                            </Typography>
-                          )}
-                        </Box>
-                      ) : (
-                        <Typography variant="caption" color="text.secondary">
-                          Not practiced
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="caption">
-                        {new Date(exercise.createdAt).toLocaleDateString()}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <IconButton 
-                        onClick={() => handleDeleteClick(exercise)}
-                        color="error"
-                        size="small"
-                        sx={{ '&:hover': { bgcolor: 'error.dark' } }}
-                      >
-                        <Delete />
-                      </IconButton>
-                    </TableCell>
+          <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ color: 'white' }}>
+                All Exercises
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'grey.400' }}>
+                Showing {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, allExercises.length)} of {allExercises.length}
+              </Typography>
+            </Box>
+            
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Practice Text</TableCell>
+                    <TableCell>Native Text</TableCell>
+                    <TableCell>Languages</TableCell>
+                    <TableCell>Video</TableCell>
+                    <TableCell>Difficulty</TableCell>
+                    <TableCell>Stats</TableCell>
+                    <TableCell>Created</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {paginatedExercises.map((exercise, index) => (
+                    <TableRow key={exercise.id || index}>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {exercise.practiceLanguageText}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {exercise.nativeLanguageText}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={`${exercise.practiceLanguage} → ${exercise.nativeLanguage}`} 
+                          size="small" 
+                          color="secondary" 
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" sx={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {exercise.videoFileName || 'Unknown'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        {exercise.difficulty && (
+                          <Chip 
+                            label={exercise.difficulty} 
+                            size="small" 
+                            color={exercise.difficulty === 'easy' ? 'success' : exercise.difficulty === 'medium' ? 'warning' : 'error'}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {exercise.practiceCount ? (
+                          <Box>
+                            <Typography variant="caption" display="block">
+                              {exercise.correctCount || 0}/{exercise.practiceCount} correct
+                            </Typography>
+                            {exercise.accuracyRate !== undefined && (
+                              <Typography variant="caption" color="text.secondary">
+                                {Math.round(exercise.accuracyRate)}% accuracy
+                              </Typography>
+                            )}
+                          </Box>
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">
+                            Not practiced
+                          </Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="caption">
+                          {new Date(exercise.createdAt).toLocaleDateString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <IconButton 
+                          onClick={() => handleDeleteClick(exercise)}
+                          color="error"
+                          size="small"
+                          sx={{ '&:hover': { bgcolor: 'error.dark' } }}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <Stack direction="row" justifyContent="center" alignItems="center" sx={{ mt: 3 }}>
+                <Pagination 
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={(_, page) => setCurrentPage(page)}
+                  color="primary"
+                  size="large"
+                  showFirstButton
+                  showLastButton
+                />
+              </Stack>
+            )}
+          </Box>
         </Box>
       </AppModal>
 
