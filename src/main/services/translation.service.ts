@@ -1,6 +1,119 @@
 import { loggingService as log } from "./main-logging.service";
 import * as path from "path";
 import * as fs from "fs";
+import { putLanguageLearningExercise, generateExerciseKey, calculateDifficulty } from "./languageLearningExerciseDb.service";
+import { LanguageLearningExerciseModel } from "../../models/language-learning-exercise.model";
+
+/**
+ * Extract video file path from VTT file path
+ */
+function getVideoFilePathFromVTT(vttFilePath: string): string {
+  const dir = path.dirname(vttFilePath);
+  const baseName = path.basename(vttFilePath, '.vtt');
+  
+  // Remove language suffixes like .en, .es, etc.
+  const cleanBaseName = baseName.replace(/\.(en|es|fr)$/, '');
+  
+  // Common video extensions
+  const videoExtensions = ['.mp4', '.mkv', '.avi', '.mov', '.wmv', '.flv', '.webm'];
+  
+  // Try to find the actual video file
+  for (const ext of videoExtensions) {
+    const videoPath = path.join(dir, cleanBaseName + ext);
+    if (fs.existsSync(videoPath)) {
+      return videoPath;
+    }
+  }
+  
+  // If no video file found, return assumed mp4 path
+  return path.join(dir, cleanBaseName + '.mp4');
+}
+
+/**
+ * Parse VTT timestamp to seconds
+ */
+function parseVTTTimestamp(timestamp: string): number {
+  const [hours, minutes, secondsWithMs] = timestamp.split(':');
+  const [seconds, milliseconds] = secondsWithMs.split(/[.,]/);
+  
+  return parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds) + (parseInt(milliseconds || '0') / 1000);
+}
+
+/**
+ * Parse VTT timestamp line to get start and end times
+ */
+function parseVTTTimestampLine(timestampLine: string): { startTime: number; endTime: number } {
+  const [startTimeStr, endTimeStr] = timestampLine.split(' --> ');
+  return {
+    startTime: parseVTTTimestamp(startTimeStr.trim()),
+    endTime: parseVTTTimestamp(endTimeStr.trim())
+  };
+}
+
+/**
+ * Save language learning exercise from translation
+ */
+async function saveLanguageLearningExercise(
+  originalText: string,
+  translatedText: string,
+  sourceLanguage: string,
+  targetLanguage: string,
+  timestampLine: string,
+  vttFilePath: string
+): Promise<void> {
+  try {
+    // Parse timestamps
+    const { startTime, endTime } = parseVTTTimestampLine(timestampLine);
+    
+    // Get video file path and filename
+    const videoFilePath = getVideoFilePathFromVTT(vttFilePath);
+    const videoFileName = path.basename(videoFilePath);
+    
+    // Calculate exercise properties
+    const wordCount = originalText.split(/\s+/).filter(word => word.length > 0).length;
+    const difficulty = calculateDifficulty(originalText);
+    const duration = endTime - startTime;
+    
+    // Skip very short or very long texts
+    if (wordCount < 2 || wordCount > 25 || originalText.length < 10) {
+      return;
+    }
+    
+    // Create exercise model
+    const exercise: Partial<LanguageLearningExerciseModel> = {
+      videoFilePath,
+      videoFileName,
+      nativeLanguageText: targetLanguage === 'en' ? translatedText : originalText,
+      practiceLanguageText: targetLanguage === 'en' ? originalText : translatedText,
+      nativeLanguage: (targetLanguage === 'en' ? targetLanguage : sourceLanguage) as 'en' | 'es' | 'fr',
+      practiceLanguage: (targetLanguage === 'en' ? sourceLanguage : targetLanguage) as 'en' | 'es' | 'fr',
+      startTime,
+      endTime,
+      duration,
+      wordCount,
+      difficulty,
+      createdAt: Date.now(),
+      tags: ['auto-generated', 'translation']
+    };
+    
+    // Validate that languages are different (same validation as in LanguageLearning component)
+    if (exercise.nativeLanguage === exercise.practiceLanguage) {
+      log.warn(`Skipping exercise - same languages: ${exercise.nativeLanguage}`);
+      return;
+    }
+    
+    // Generate unique key
+    const exerciseKey = generateExerciseKey(videoFilePath, startTime, endTime);
+    
+    // Save to database
+    await putLanguageLearningExercise(exerciseKey, exercise);
+    
+    log.info(`Created language learning exercise: ${exercise.practiceLanguage} → ${exercise.nativeLanguage}, ${wordCount} words`);
+    
+  } catch (error) {
+    log.error(`Failed to save language learning exercise:`, error);
+  }
+}
 
 export async function translateSubtitles(
   vttFilePath: string,
@@ -29,6 +142,7 @@ export async function translateSubtitles(
     const translatedLines: string[] = [];
     let i = 0;
     let subtitleBlockCount = 0;
+    let exercisesCreated = 0;
 
     while (i < lines.length) {
       const line = lines[i];
@@ -46,6 +160,7 @@ export async function translateSubtitles(
       // Also handles variable digit counts for seconds/milliseconds
       if (/^\d{1,2}:\d{2}:\d{1,2}[.,]\d{1,3} --> \d{1,2}:\d{2}:\d{1,2}[.,]\d{1,3}$/.test(trimmedLine)) {
         translatedLines.push(line);
+        const timestampLine = trimmedLine; // Store for language exercise
         i++;
         subtitleBlockCount++;
 
@@ -68,6 +183,21 @@ export async function translateSubtitles(
               // Check if translation actually occurred (simple heuristic)
               if (translatedText === textToTranslate) {
                 log.warn(`Translation returned identical text - LibreTranslate may not be working properly`);
+              } else {
+                // Save as language learning exercise (only if translation was successful and different)
+                try {
+                  await saveLanguageLearningExercise(
+                    textToTranslate,
+                    translatedText, 
+                    sourceLanguage,
+                    targetLanguage,
+                    timestampLine,
+                    vttFilePath
+                  );
+                  exercisesCreated++;
+                } catch (exerciseError) {
+                  log.error(`Failed to save language exercise:`, exerciseError);
+                }
               }
               
               // Split translated text back into lines if needed (preserve line breaks)
@@ -97,6 +227,7 @@ export async function translateSubtitles(
     }
     
     log.info(`Processed ${subtitleBlockCount} subtitle blocks`);
+    log.info(`Created ${exercisesCreated} language learning exercises`);
 
     // Generate new filename with language suffix
     const dir = path.dirname(vttFilePath);
