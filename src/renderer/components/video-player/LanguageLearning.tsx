@@ -46,9 +46,6 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   
   // UI visibility state (separate from functionality)
   const [isUIVisible, setIsUIVisible] = useState<boolean>(true);
-  
-  // Track saved exercises to prevent duplicates
-  const [savedExerciseKeys, setSavedExerciseKeys] = useState<Set<string>>(new Set());
 
   // Send state updates to socket clients via IPC
   const sendStateUpdate = () => {
@@ -230,103 +227,6 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
     const active = findActiveCue(nativeCues, currentTime);
     setActiveNativeCue(active);
   }, [nativeCues, currentTime]);
-
-  // Auto-save exercise data when both native and practice cues are available
-  useEffect(() => {
-    if (!activeCue || !activeNativeCue || !currentVideo?.filePath || !subtitleOverlayLanguage) {
-      return;
-    }
-
-    const saveExerciseData = async () => {      
-      // Recheck dependencies since this is an async function
-      if (!activeCue || !activeNativeCue || !currentVideo?.filePath || !subtitleOverlayLanguage) {
-        return;
-      }
-
-      // Extract and validate both language texts
-      const practiceText = activeCue.text.replace(/\n/g, ' ').trim();
-      const nativeText = activeNativeCue.text.replace(/\n/g, ' ').trim();
-      
-      // Only save if we have meaningful text in BOTH languages
-      if (!practiceText || !nativeText) {
-        return;
-      }
-      
-      if (practiceText.length < 3 || nativeText.length < 3) {
-        return;
-      }
-
-      // Only save if the texts are different (otherwise it's not a useful language learning exercise)
-      if (practiceText === nativeText) {
-        return;
-      }
-
-      // Only save if the languages are different (no point in en->en exercises)
-      const nativeLanguage = 'en'; // Assuming English is always native
-      if (nativeLanguage === subtitleOverlayLanguage) {
-        return;
-      }
-
-      // Generate unique key for this exercise to prevent duplicates
-      const cleanPath = currentVideo.filePath.replace(/[^a-zA-Z0-9]/g, '_');
-      const exerciseKey = `${cleanPath}:${activeCue.startTime.toFixed(1)}:${activeCue.endTime.toFixed(1)}`;
-      
-      // Check if we've already saved this exercise in this session (quick check)
-      if (savedExerciseKeys.has(exerciseKey)) {
-        return;
-      }
-
-      // Check if exercise already exists in database (prevents cross-session duplicates)
-      if (window.languageLearningAPI && window.languageLearningAPI.getExercise) {
-        try {
-          const existingExercise = await window.languageLearningAPI.getExercise(exerciseKey);
-          if (existingExercise?.data) {
-            // Mark as saved in memory to prevent future checks this session
-            setSavedExerciseKeys(prev => new Set(prev).add(exerciseKey));
-            return;
-          }
-        } catch (error) {
-          console.error('Error checking exercise existence:', error);
-          // Continue with save attempt even if check fails
-        }
-      }
-
-      // Prepare exercise data for saving
-      const exerciseData = {
-        videoFilePath: currentVideo.filePath,
-        videoFileName: currentVideo.fileName,
-        nativeLanguageText: nativeText,
-        practiceLanguageText: practiceText,
-        nativeLanguage: 'en' as const, // Assuming English is always native
-        practiceLanguage: subtitleOverlayLanguage,
-        startTime: activeCue.startTime,
-        endTime: activeCue.endTime,
-        duration: activeCue.endTime - activeCue.startTime,
-        wordCount: practiceText.split(/\s+/).length
-      };
-
-      // Save to database via IPC
-      if (window.languageLearningAPI && window.languageLearningAPI.saveExercise) {
-        try {
-          await window.languageLearningAPI.saveExercise(exerciseData);
-          // Mark this exercise as saved to prevent duplicates
-          setSavedExerciseKeys(prev => new Set(prev).add(exerciseKey));
-          
-          console.log('Exercise data saved:', {
-            practice: practiceText.substring(0, 50) + '...',
-            native: nativeText.substring(0, 50) + '...',
-            language: subtitleOverlayLanguage,
-            key: exerciseKey
-          });
-        } catch (error) {
-          console.error('Failed to save exercise data:', error);
-        }
-      }
-    };
-
-    // Call the async function
-    saveExerciseData();
-  }, [activeCue, activeNativeCue, currentVideo, subtitleOverlayLanguage]);
 
   // Scramble words when active cue changes
   useEffect(() => {
