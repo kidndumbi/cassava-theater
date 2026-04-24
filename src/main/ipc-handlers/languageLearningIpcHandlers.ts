@@ -152,6 +152,32 @@ export const languageLearningIpcHandlers = () => {
     }
   });
 
+  // Update exercise
+  ipcMain.handle(LanguageLearningIPCChannels.UPDATE_EXERCISE, async (_event, key: string, exerciseData: Partial<LanguageLearningExerciseModel>) => {
+    try {
+      console.log('=== UPDATING LANGUAGE LEARNING EXERCISE ===');
+      console.log('Exercise key:', key);
+      console.log('Update data:', JSON.stringify(exerciseData, null, 2));
+      
+      // Recalculate difficulty if practice text changed
+      if (exerciseData.practiceLanguageText) {
+        exerciseData.difficulty = calculateDifficulty(exerciseData.practiceLanguageText);
+        console.log('Recalculated difficulty:', exerciseData.difficulty);
+      }
+      
+      const updatedExercise = await putLanguageLearningExercise(key, exerciseData);
+      console.log('Successfully updated exercise:', JSON.stringify(updatedExercise, null, 2));
+      console.log('============================================');
+      
+      log.info(`Exercise updated: ${key}`);
+      return { success: true, data: updatedExercise };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      log.error(`Error updating exercise ${key}:`, error);
+      return { success: false, error: errorMessage };
+    }
+  });
+
   // Update exercise statistics
   ipcMain.handle(LanguageLearningIPCChannels.UPDATE_EXERCISE_STATS, async (_event, key: string, isCorrect: boolean) => {
     try {

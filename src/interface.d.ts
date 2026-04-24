@@ -368,6 +368,7 @@ export interface LanguageLearningAPI {
   getExercisesByVideo: (videoFilePath: string) => Promise<{ success: boolean; data?: any[]; error?: string }>;
   getAllExercises: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
   deleteExercise: (key: string) => Promise<{ success: boolean; error?: string }>;
+  updateExercise: (key: string, exerciseData: any) => Promise<{ success: boolean; data?: any; error?: string }>;
   updateExerciseStats: (key: string, isCorrect: boolean) => Promise<{ success: boolean; error?: string }>;
 }
 

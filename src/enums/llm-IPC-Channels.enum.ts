@@ -15,5 +15,6 @@ export enum LanguageLearningIPCChannels {
   GET_EXERCISES_BY_VIDEO = "language-learning:getExercisesByVideo",
   GET_ALL_EXERCISES = "language-learning:getAllExercises",
   DELETE_EXERCISE = "language-learning:deleteExercise",
+  UPDATE_EXERCISE = "language-learning:updateExercise",
   UPDATE_EXERCISE_STATS = "language-learning:updateExerciseStats",
 }
