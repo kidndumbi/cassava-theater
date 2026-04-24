@@ -19,8 +19,6 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   subtitleUrl,
   nativeSubtitleUrl,
   currentTime,
-  currentVideo,
-  subtitleOverlayLanguage,
   isVisible = true,
   enabled = false,
   fontSize = 16,
@@ -34,7 +32,6 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   // Native language subtitle state
   const [nativeCues, setNativeCues] = useState<VTTCue[]>([]);
   const [activeNativeCue, setActiveNativeCue] = useState<VTTCue | null>(null);
-  const [nativeLoading, setNativeLoading] = useState(false);
   
   // Language learning exercise state
   const [scrambledWords, setScrambledWords] = useState<string[]>([]);
@@ -182,8 +179,6 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
     }
 
     const fetchNativeSubtitles = async () => {
-      setNativeLoading(true);
-      
       try {
         const response = await fetch(nativeSubtitleUrl);
         if (!response.ok) {
@@ -198,8 +193,6 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
       } catch (err) {
         console.error("Error fetching/parsing native subtitles for language learning:", err);
         setNativeCues([]);
-      } finally {
-        setNativeLoading(false);
       }
     };
 
