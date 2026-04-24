@@ -3,6 +3,7 @@ import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Tab
 import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { AppModal } from "../common/AppModal";
+import { CopyButton } from "../common/CopyButton";
 import { useModalState } from "../../hooks/useModalState";
 
 interface LanguagePracticePageProps {
@@ -376,22 +377,31 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
           </Box>
 
           {/* Native Language Reference */}
-          <Card sx={{ mb: 4, bgcolor: 'grey.800', border: '1px solid', borderColor: 'grey.600' }}>
+          <Card sx={{ mb: 4, bgcolor: 'grey.800', border: '1px solid', borderColor: 'grey.600', position: 'relative' }}>
             <CardContent sx={{ py: 2 }}>
-              <Typography variant="caption" sx={{ color: 'grey.400', mb: 1, display: 'block' }}>
-                Reference ({currentExercise.nativeLanguage.toUpperCase()}):
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  color: 'white',
-                  textAlign: 'center',
-                  fontSize: '1.1rem',
-                  lineHeight: 1.5
-                }}
-              >
-                {currentExercise.nativeLanguageText}
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="caption" sx={{ color: 'grey.400', mb: 1, display: 'block' }}>
+                    Reference ({currentExercise.nativeLanguage.toUpperCase()}):
+                  </Typography>
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      color: 'white',
+                      textAlign: 'center',
+                      fontSize: '1.1rem',
+                      lineHeight: 1.5
+                    }}
+                  >
+                    {currentExercise.nativeLanguageText}
+                  </Typography>
+                </Box>
+                <CopyButton 
+                  text={currentExercise.nativeLanguageText}
+                  color="inherit"
+                  sx={{ color: 'grey.400', '&:hover': { color: 'white' } }}
+                />
+              </Box>
             </CardContent>
           </Card>
 
@@ -500,34 +510,44 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
             <Card 
               sx={{ 
                 bgcolor: isCorrect ? 'success.dark' : 'error.dark',
-                textAlign: 'center'
+                textAlign: 'center',
+                position: 'relative'
               }}
             >
               <CardContent>
-                <Typography 
-                  variant="h6" 
-                  sx={{ 
-                    color: 'white',
-                    mb: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 1
-                  }}
-                >
-                  {isCorrect ? (
-                    <>
-                      <CheckCircle /> Correct!
-                    </>
-                  ) : (
-                    <>
-                      <Cancel /> Incorrect
-                    </>
-                  )}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'white', opacity: 0.9 }}>
-                  {isCorrect ? `"${originalText}"` : `Correct answer: "${originalText}"`}
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        color: 'white',
+                        mb: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 1
+                      }}
+                    >
+                      {isCorrect ? (
+                        <>
+                          <CheckCircle /> Correct!
+                        </>
+                      ) : (
+                        <>
+                          <Cancel /> Incorrect
+                        </>
+                      )}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'white', opacity: 0.9 }}>
+                      {isCorrect ? `"${originalText}"` : `Correct answer: "${originalText}"`}
+                    </Typography>
+                  </Box>
+                  <CopyButton 
+                    text={originalText}
+                    color="inherit"
+                    sx={{ color: 'white', opacity: 0.8, '&:hover': { opacity: 1 } }}
+                  />
+                </Box>
               </CardContent>
             </Card>
           )}
