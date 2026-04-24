@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem, Pagination, Stack } from "@mui/material";
-import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate, Star, StarBorder } from "@mui/icons-material";
+import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem, Pagination, Stack, OutlinedInput, InputAdornment } from "@mui/material";
+import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate, Star, StarBorder, Search, Clear, FilterList } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { AppModal } from "../common/AppModal";
 import { CopyButton } from "../common/CopyButton";
@@ -67,6 +67,16 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(25); // Exercises per page
+  
+  // Filter state
+  const [filters, setFilters] = useState({
+    searchText: '',
+    practiceLanguage: 'all' as 'all' | 'en' | 'es' | 'fr',
+    nativeLanguage: 'all' as 'all' | 'en' | 'es' | 'fr',
+    difficulty: 'all' as 'all' | 'easy' | 'medium' | 'hard',
+    practiceStatus: 'all' as 'all' | 'never' | 'low-accuracy' | 'high-accuracy' | 'favorites',
+    videoSource: 'all' as string
+  });
 
   // Generate Google Translate URL
   const generateGoogleTranslateUrl = (sourceText: string, sourceLang: string, targetLang: string): string => {
@@ -385,19 +395,100 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     return Object.entries(groups).filter(([_, exercises]) => exercises.length > 1);
   }, [allExercises]);
 
-  // Pagination calculations (memoized)
+  // Get unique video sources for filter dropdown (memoized)
+  const uniqueVideoSources = useMemo(() => {
+    const sources = [...new Set(allExercises.map(ex => ex.videoFileName).filter((name): name is string => Boolean(name)))];
+    return sources.sort();
+  }, [allExercises]);
+
+  // Filter exercises based on current filters (memoized)
+  const filteredExercises = useMemo(() => {
+    return allExercises.filter(exercise => {
+      // Text search
+      if (filters.searchText) {
+        const searchLower = filters.searchText.toLowerCase();
+        const matchesText = 
+          exercise.practiceLanguageText.toLowerCase().includes(searchLower) ||
+          exercise.nativeLanguageText.toLowerCase().includes(searchLower) ||
+          (exercise.videoFileName && exercise.videoFileName.toLowerCase().includes(searchLower));
+        if (!matchesText) return false;
+      }
+      
+      // Practice language filter
+      if (filters.practiceLanguage !== 'all' && exercise.practiceLanguage !== filters.practiceLanguage) {
+        return false;
+      }
+      
+      // Native language filter
+      if (filters.nativeLanguage !== 'all' && exercise.nativeLanguage !== filters.nativeLanguage) {
+        return false;
+      }
+      
+      // Difficulty filter
+      if (filters.difficulty !== 'all' && exercise.difficulty !== filters.difficulty) {
+        return false;
+      }
+      
+      // Practice status filter
+      if (filters.practiceStatus !== 'all') {
+        switch (filters.practiceStatus) {
+          case 'never':
+            if (exercise.practiceCount && exercise.practiceCount > 0) return false;
+            break;
+          case 'low-accuracy':
+            if (!exercise.accuracyRate || exercise.accuracyRate >= 70) return false;
+            break;
+          case 'high-accuracy':
+            if (!exercise.accuracyRate || exercise.accuracyRate < 80) return false;
+            break;
+          case 'favorites':
+            if (!isFavorite(exercise)) return false;
+            break;
+        }
+      }
+      
+      // Video source filter
+      if (filters.videoSource !== 'all' && exercise.videoFileName !== filters.videoSource) {
+        return false;
+      }
+      
+      return true;
+    });
+  }, [allExercises, filters, isFavorite]);
+
+  // Pagination calculations (memoized) - now works with filtered exercises
   const paginatedExercises = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
     const endIndex = startIndex + pageSize;
-    return allExercises.slice(startIndex, endIndex);
-  }, [allExercises, currentPage, pageSize]);
+    return filteredExercises.slice(startIndex, endIndex);
+  }, [filteredExercises, currentPage, pageSize]);
 
-  const totalPages = Math.ceil(allExercises.length / pageSize);
+  const totalPages = Math.ceil(filteredExercises.length / pageSize);
 
-  // Reset to first page when exercises change
+  // Reset to first page when filters or exercises change
   useEffect(() => {
     setCurrentPage(1);
-  }, [allExercises.length]);
+  }, [filteredExercises.length]);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setFilters({
+      searchText: '',
+      practiceLanguage: 'all',
+      nativeLanguage: 'all', 
+      difficulty: 'all',
+      practiceStatus: 'all',
+      videoSource: 'all'
+    });
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = Object.values(filters).some(value => value !== 'all' && value !== '');
+
+  // Update individual filter
+  const updateFilter = <K extends keyof typeof filters>(key: K, value: typeof filters[K]) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
 
   // Load exercises on component mount
   useEffect(() => {
@@ -971,12 +1062,141 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6" sx={{ color: 'white' }}>
                 All Exercises
+                {hasActiveFilters && (
+                  <Chip 
+                    label={`${filteredExercises.length} filtered`}
+                    size="small" 
+                    color="info" 
+                    sx={{ ml: 2 }}
+                  />
+                )}
               </Typography>
               <Typography variant="body2" sx={{ color: 'grey.400' }}>
-                Showing {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, allExercises.length)} of {allExercises.length}
+                Showing {filteredExercises.length === 0 ? 0 : ((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, filteredExercises.length)} of {filteredExercises.length}
+                {hasActiveFilters && (
+                  <Typography component="span" sx={{ color: 'grey.500', ml: 1 }}>({allExercises.length} total)</Typography>
+                )}
               </Typography>
             </Box>
-            
+
+            {/* Filter Controls */}
+            <Card sx={{ mb: 3, bgcolor: 'grey.900', border: '1px solid', borderColor: 'grey.700' }}>
+              <CardContent sx={{ pb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <FilterList sx={{ color: 'grey.400' }} />
+                  <Typography variant="subtitle2" sx={{ color: 'grey.300' }}>
+                    Filters
+                  </Typography>
+                  {hasActiveFilters && (
+                    <Button 
+                      size="small" 
+                      onClick={clearFilters}
+                      startIcon={<Clear />}
+                      sx={{ ml: 'auto', color: 'grey.400' }}
+                    >
+                      Clear All
+                    </Button>
+                  )}
+                </Box>
+                
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                  {/* Search */}
+                  <TextField
+                    placeholder="Search exercises, videos..."
+                    value={filters.searchText}
+                    onChange={(e) => updateFilter('searchText', e.target.value)}
+                    size="small"
+                    sx={{ minWidth: 250 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search sx={{ color: 'grey.400' }} />
+                        </InputAdornment>
+                      ),
+                      sx: { bgcolor: 'grey.800', '& fieldset': { borderColor: 'grey.600' } }
+                    }}
+                  />
+                  
+                  {/* Practice Language */}
+                  <FormControl size="small" sx={{ minWidth: 140 }}>
+                    <InputLabel sx={{ color: 'grey.400' }}>Practice Lang</InputLabel>
+                    <Select
+                      value={filters.practiceLanguage}
+                      onChange={(e) => updateFilter('practiceLanguage', e.target.value as any)}
+                      sx={{ bgcolor: 'grey.800', '& fieldset': { borderColor: 'grey.600' } }}
+                    >
+                      <MenuItem value="all">All Languages</MenuItem>
+                      <MenuItem value="en">English</MenuItem>
+                      <MenuItem value="es">Spanish</MenuItem>
+                      <MenuItem value="fr">French</MenuItem>
+                    </Select>
+                  </FormControl>
+                  
+                  {/* Native Language */}
+                  <FormControl size="small" sx={{ minWidth: 130 }}>
+                    <InputLabel sx={{ color: 'grey.400' }}>Native Lang</InputLabel>
+                    <Select
+                      value={filters.nativeLanguage}
+                      onChange={(e) => updateFilter('nativeLanguage', e.target.value as any)}
+                      sx={{ bgcolor: 'grey.800', '& fieldset': { borderColor: 'grey.600' } }}
+                    >
+                      <MenuItem value="all">All Languages</MenuItem>
+                      <MenuItem value="en">English</MenuItem>
+                      <MenuItem value="es">Spanish</MenuItem>
+                      <MenuItem value="fr">French</MenuItem>
+                    </Select>
+                  </FormControl>
+                  
+                  {/* Difficulty */}
+                  <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <InputLabel sx={{ color: 'grey.400' }}>Difficulty</InputLabel>
+                    <Select
+                      value={filters.difficulty}
+                      onChange={(e) => updateFilter('difficulty', e.target.value as any)}
+                      sx={{ bgcolor: 'grey.800', '& fieldset': { borderColor: 'grey.600' } }}
+                    >
+                      <MenuItem value="all">All Levels</MenuItem>
+                      <MenuItem value="easy">Easy</MenuItem>
+                      <MenuItem value="medium">Medium</MenuItem>
+                      <MenuItem value="hard">Hard</MenuItem>
+                    </Select>
+                  </FormControl>
+                  
+                  {/* Practice Status */}
+                  <FormControl size="small" sx={{ minWidth: 140 }}>
+                    <InputLabel sx={{ color: 'grey.400' }}>Status</InputLabel>
+                    <Select
+                      value={filters.practiceStatus}
+                      onChange={(e) => updateFilter('practiceStatus', e.target.value as any)}
+                      sx={{ bgcolor: 'grey.800', '& fieldset': { borderColor: 'grey.600' } }}
+                    >
+                      <MenuItem value="all">All Status</MenuItem>
+                      <MenuItem value="never">Never Practiced</MenuItem>
+                      <MenuItem value="low-accuracy">Low Accuracy (&lt;70%)</MenuItem>
+                      <MenuItem value="high-accuracy">High Accuracy (≥80%)</MenuItem>
+                      <MenuItem value="favorites">⭐ Favorites</MenuItem>
+                    </Select>
+                  </FormControl>
+                  
+                  {/* Video Source */}
+                  <FormControl size="small" sx={{ minWidth: 160 }}>
+                    <InputLabel sx={{ color: 'grey.400' }}>Video Source</InputLabel>
+                    <Select
+                      value={filters.videoSource}
+                      onChange={(e) => updateFilter('videoSource', e.target.value)}
+                      sx={{ bgcolor: 'grey.800', '& fieldset': { borderColor: 'grey.600' } }}
+                    >
+                      <MenuItem value="all">All Videos</MenuItem>
+                      {uniqueVideoSources.map(source => (
+                        <MenuItem key={source} value={source}>
+                          {source.length > 25 ? `${source.substring(0, 25)}...` : source}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+              </CardContent>
+            </Card>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
@@ -992,74 +1212,104 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedExercises.map((exercise, index) => (
-                    <TableRow key={exercise.id || index}>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {exercise.practiceLanguageText}
+                  {filteredExercises.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} sx={{ textAlign: 'center', py: 4 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {hasActiveFilters ? 'No exercises match your filters' : 'No exercises found'}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {exercise.nativeLanguageText}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip 
-                          label={`${exercise.practiceLanguage} → ${exercise.nativeLanguage}`} 
-                          size="small" 
-                          color="secondary" 
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" sx={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {exercise.videoFileName || 'Unknown'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        {exercise.difficulty && (
-                          <Chip 
-                            label={exercise.difficulty} 
+                        {hasActiveFilters && (
+                          <Button 
                             size="small" 
-                            color={exercise.difficulty === 'easy' ? 'success' : exercise.difficulty === 'medium' ? 'warning' : 'error'}
-                          />
+                            onClick={clearFilters}
+                            sx={{ mt: 1 }}
+                          >
+                            Clear Filters
+                          </Button>
                         )}
-                      </TableCell>
-                      <TableCell>
-                        {exercise.practiceCount ? (
-                          <Box>
-                            <Typography variant="caption" display="block">
-                              {exercise.correctCount || 0}/{exercise.practiceCount} correct
-                            </Typography>
-                            {exercise.accuracyRate !== undefined && (
-                              <Typography variant="caption" color="text.secondary">
-                                {Math.round(exercise.accuracyRate)}% accuracy
-                              </Typography>
-                            )}
-                          </Box>
-                        ) : (
-                          <Typography variant="caption" color="text.secondary">
-                            Not practiced
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="caption">
-                          {new Date(exercise.createdAt).toLocaleDateString()}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <IconButton 
-                          onClick={() => handleDeleteClick(exercise)}
-                          color="error"
-                          size="small"
-                          sx={{ '&:hover': { bgcolor: 'error.dark' } }}
-                        >
-                          <Delete />
-                        </IconButton>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    paginatedExercises.map((exercise, index) => (
+                      <TableRow key={exercise.id || index}>
+                        <TableCell>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body2" sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {exercise.practiceLanguageText}
+                            </Typography>
+                            {isFavorite(exercise) && (
+                              <Star sx={{ fontSize: 16, color: 'gold' }} />
+                            )}
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {exercise.nativeLanguageText}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip 
+                            label={`${exercise.practiceLanguage} → ${exercise.nativeLanguage}`} 
+                            size="small" 
+                            color="secondary" 
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" sx={{ maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {exercise.videoFileName || 'Unknown'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          {exercise.difficulty && (
+                            <Chip 
+                              label={exercise.difficulty} 
+                              size="small" 
+                              color={exercise.difficulty === 'easy' ? 'success' : exercise.difficulty === 'medium' ? 'warning' : 'error'}
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {exercise.practiceCount ? (
+                            <Box>
+                              <Typography variant="caption" display="block">
+                                {exercise.correctCount || 0}/{exercise.practiceCount} correct
+                              </Typography>
+                              {exercise.accuracyRate !== undefined && (
+                                <Chip
+                                  label={`${Math.round(exercise.accuracyRate)}%`}
+                                  size="small"
+                                  color={exercise.accuracyRate >= 80 ? 'success' : exercise.accuracyRate >= 60 ? 'warning' : 'error'}
+                                  variant="outlined"
+                                />
+                              )}
+                            </Box>
+                          ) : (
+                            <Chip 
+                              label="Not practiced" 
+                              size="small" 
+                              variant="outlined"
+                              color="default"
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="caption">
+                            {new Date(exercise.createdAt).toLocaleDateString()}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <IconButton 
+                            onClick={() => handleDeleteClick(exercise)}
+                            color="error"
+                            size="small"
+                            sx={{ '&:hover': { bgcolor: 'error.dark' } }}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>
