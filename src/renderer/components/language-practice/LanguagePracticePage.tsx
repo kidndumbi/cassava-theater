@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
-import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit } from "@mui/icons-material";
+import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { AppModal } from "../common/AppModal";
 import { CopyButton } from "../common/CopyButton";
@@ -60,6 +60,18 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     difficulty: '' as 'easy' | 'medium' | 'hard' | ''
   });
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Generate Google Translate URL
+  const generateGoogleTranslateUrl = (sourceText: string, sourceLang: string, targetLang: string): string => {
+    const encodedText = encodeURIComponent(sourceText);
+    return `https://translate.google.com/?sl=${sourceLang}&tl=${targetLang}&text=${encodedText}&op=translate`;
+  };
+
+  // Open Google Translate in new tab
+  const openGoogleTranslate = (text: string, sourceLang: string, targetLang: string) => {
+    const url = generateGoogleTranslateUrl(text, sourceLang, targetLang);
+    window.open(url, '_blank');
+  };
 
   // Load all exercises from database
   const loadExercises = async () => {
@@ -520,11 +532,26 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                     {currentExercise.nativeLanguageText}
                   </Typography>
                 </Box>
-                <CopyButton 
-                  text={currentExercise.nativeLanguageText}
-                  color="inherit"
-                  sx={{ color: 'grey.400', '&:hover': { color: 'white' } }}
-                />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <CopyButton 
+                    text={currentExercise.nativeLanguageText}
+                    color="inherit"
+                    sx={{ color: 'grey.400', '&:hover': { color: 'white' } }}
+                  />
+                  {showResult && (
+                    <IconButton
+                      onClick={() => openGoogleTranslate(
+                        currentExercise.nativeLanguageText, 
+                        currentExercise.nativeLanguage, 
+                        currentExercise.practiceLanguage
+                      )}
+                      title="Check translation in Google Translate"
+                      sx={{ color: 'grey.400', '&:hover': { color: 'white' } }}
+                    >
+                      <Translate />
+                    </IconButton>
+                  )}
+                </Box>
               </Box>
             </CardContent>
           </Card>
@@ -666,11 +693,24 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                       {isCorrect ? `"${originalText}"` : `Correct answer: "${originalText}"`}
                     </Typography>
                   </Box>
-                  <CopyButton 
-                    text={originalText}
-                    color="inherit"
-                    sx={{ color: 'white', opacity: 0.8, '&:hover': { opacity: 1 } }}
-                  />
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <CopyButton 
+                      text={originalText}
+                      color="inherit"
+                      sx={{ color: 'white', opacity: 0.8, '&:hover': { opacity: 1 } }}
+                    />
+                    <IconButton
+                      onClick={() => openGoogleTranslate(
+                        originalText, 
+                        currentExercise.practiceLanguage, 
+                        currentExercise.nativeLanguage
+                      )}
+                      title="Check translation in Google Translate"
+                      sx={{ color: 'white', opacity: 0.8, '&:hover': { opacity: 1 } }}
+                    >
+                      <Translate />
+                    </IconButton>
+                  </Box>
                 </Box>
               </CardContent>
             </Card>
