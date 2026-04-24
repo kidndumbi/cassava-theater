@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
-import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate } from "@mui/icons-material";
+import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate, Star, StarBorder } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { AppModal } from "../common/AppModal";
 import { CopyButton } from "../common/CopyButton";
@@ -71,6 +71,53 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
   const openGoogleTranslate = (text: string, sourceLang: string, targetLang: string) => {
     const url = generateGoogleTranslateUrl(text, sourceLang, targetLang);
     window.open(url, '_blank');
+  };
+
+  // Check if exercise is marked as favorite
+  const isFavorite = (exercise: LanguageLearningExerciseModel): boolean => {
+    return exercise.tags?.includes('favorite') || false;
+  };
+
+  // Toggle favorite status of current exercise
+  const handleToggleFavorite = async () => {
+    if (!currentExercise?.id || !window.languageLearningAPI) return;
+
+    try {
+      const currentTags = currentExercise.tags || [];
+      const isCurrentlyFavorite = isFavorite(currentExercise);
+      
+      let updatedTags: string[];
+      if (isCurrentlyFavorite) {
+        // Remove favorite tag
+        updatedTags = currentTags.filter(tag => tag !== 'favorite');
+      } else {
+        // Add favorite tag
+        updatedTags = [...currentTags, 'favorite'];
+      }
+
+      const updatedExercise: LanguageLearningExerciseModel = {
+        ...currentExercise,
+        tags: updatedTags
+      };
+
+      const response = await window.languageLearningAPI.updateExercise(currentExercise.id, updatedExercise);
+      
+      if (response.success) {
+        // Update current exercise
+        setCurrentExercise(updatedExercise);
+        
+        // Update exercises list
+        setAllExercises(prev => prev.map(ex => 
+          ex.id === currentExercise.id ? updatedExercise : ex
+        ));
+        
+        console.log(`Exercise ${isCurrentlyFavorite ? 'removed from' : 'added to'} favorites:`, currentExercise.id);
+      } else {
+        console.error('Failed to update favorite status:', response.error);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
   };
 
   // Load all exercises from database
@@ -466,6 +513,19 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                 variant="outlined"
                 sx={{ color: 'white', borderColor: 'white' }}
               />
+              {isFavorite(currentExercise) && (
+                <Chip 
+                  icon={<Star sx={{ fontSize: '16px !important' }} />}
+                  label="Favorite" 
+                  size="small" 
+                  sx={{ 
+                    color: 'gold', 
+                    borderColor: 'gold',
+                    '& .MuiChip-icon': { color: 'gold' }
+                  }}
+                  variant="outlined"
+                />
+              )}
             </Box>
             
             {/* Practice Statistics */}
@@ -500,16 +560,33 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
               </Box>
             )}
             
-            {/* Edit Button */}
-            <Button
-              onClick={handleEditClick}
-              variant="outlined"
-              size="small"
-              startIcon={<Edit />}
-              sx={{ color: 'white', borderColor: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
-            >
-              Edit
-            </Button>
+            {/* Action Buttons */}
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                onClick={handleToggleFavorite}
+                variant="outlined"
+                size="small"
+                startIcon={isFavorite(currentExercise) ? <Star /> : <StarBorder />}
+                sx={{ 
+                  color: isFavorite(currentExercise) ? 'gold' : 'white', 
+                  borderColor: isFavorite(currentExercise) ? 'gold' : 'white', 
+                  '&:hover': { 
+                    bgcolor: isFavorite(currentExercise) ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.1)' 
+                  } 
+                }}
+              >
+                {isFavorite(currentExercise) ? 'Favorited' : 'Favorite'}
+              </Button>
+              <Button
+                onClick={handleEditClick}
+                variant="outlined"
+                size="small"
+                startIcon={<Edit />}
+                sx={{ color: 'white', borderColor: 'white', '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}
+              >
+                Edit
+              </Button>
+            </Box>
           </Box>
 
           {/* Native Language Reference */}
@@ -763,6 +840,11 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                 <Chip 
                   label={`${new Set(allExercises.map(ex => ex.videoFileName)).size} Videos`} 
                   color="success" 
+                  variant="outlined" 
+                />
+                <Chip 
+                  label={`${allExercises.filter(ex => isFavorite(ex)).length} Favorites`} 
+                  sx={{ color: 'gold', borderColor: 'gold' }}
                   variant="outlined" 
                 />
               </Box>
