@@ -261,6 +261,12 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
         return;
       }
 
+      // Only save if the languages are different (no point in en->en exercises)
+      const nativeLanguage = 'en'; // Assuming English is always native
+      if (nativeLanguage === subtitleOverlayLanguage) {
+        return;
+      }
+
       // Generate unique key for this exercise to prevent duplicates
       const cleanPath = currentVideo.filePath.replace(/[^a-zA-Z0-9]/g, '_');
       const exerciseKey = `${cleanPath}:${activeCue.startTime.toFixed(1)}:${activeCue.endTime.toFixed(1)}`;
