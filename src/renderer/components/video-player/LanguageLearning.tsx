@@ -409,7 +409,7 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
         style={{ right: '100px', top: '120px' }}
       >
         <button
-          onClick={() => setIsUIVisible(true)}
+          onClick={() =>  setIsUIVisible(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg transition-colors"
           title="Show Language Learning Exercise"
         >
@@ -428,7 +428,7 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
       onClick={() => onPause?.()}
     >
       <div
-        className="bg-blue-900 bg-opacity-90 text-white p-4 rounded-lg shadow-lg relative"
+        className="bg-blue-900 bg-opacity-20 text-white p-4 rounded-lg shadow-lg relative"
         style={{
           fontSize: `${Math.max(12, fontSize - 2)}px`,
           lineHeight: '1.4',
@@ -442,7 +442,9 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
             {language} Exercise
           </div>
           <button
-            onClick={() => setIsUIVisible(false)}
+            onClick={(ev) => { 
+              ev.stopPropagation();
+              setIsUIVisible(false) }}
             className="bg-blue-700 hover:bg-blue-600 text-white p-1 rounded transition-colors ml-2"
             title="Hide Language Learning Exercise"
           >
@@ -454,7 +456,7 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
 
         {/* Native Language Reference */}
         {activeNativeCue && (
-          <div className="mb-4 p-3 bg-gray-800 bg-opacity-60 rounded-lg border border-gray-600">
+          <div className="mb-4 p-3 bg-gray-800 bg-opacity-20 rounded-lg border border-gray-600">
             <div className="text-xs text-gray-300 mb-1">Reference (Native Language):</div>
             <div 
               className="text-white text-center leading-relaxed"
@@ -471,7 +473,7 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
         <div className="mb-3">
           <div className="text-xs text-blue-200 mb-1">Your arrangement:</div>
           <div 
-            className="bg-blue-800 bg-opacity-50 p-2 rounded min-h-[40px] border-2 border-dashed border-blue-400"
+            className="bg-blue-800 bg-opacity-20 p-2 rounded min-h-[40px] border-2 border-dashed border-blue-400"
             style={{ fontSize: `${fontSize}px` }}
           >
             {selectedWords.length === 0 ? (
@@ -543,12 +545,6 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
         )}
       </div>
       
-      {/* Debug info - remove in production */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="absolute top-full right-0 mt-2 text-xs text-white bg-blue-800 px-2 py-1 rounded">
-          Language Learning Cue #{activeCue?.id} ({activeCue?.startTime.toFixed(1)}s - {activeCue?.endTime.toFixed(1)}s)
-        </div>
-      )}
     </div>
   );
 };
