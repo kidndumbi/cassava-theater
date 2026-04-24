@@ -60,6 +60,9 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     difficulty: '' as 'easy' | 'medium' | 'hard' | ''
   });
   const [isUpdating, setIsUpdating] = useState(false);
+  
+  // State for collapsible duplicate exercises section
+  const [isDuplicatesSectionExpanded, setIsDuplicatesSectionExpanded] = useState(false);
 
   // Generate Google Translate URL
   const generateGoogleTranslateUrl = (sourceText: string, sourceLang: string, targetLang: string): string => {
@@ -853,89 +856,96 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
 
           {/* Duplicate Groups */}
           {getDuplicateGroups().length > 0 && (
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, color: 'white' }}>
-                <FileCopy color="warning" />
-                Duplicate Exercises ({getDuplicateGroups().length} groups)
-              </Typography>
-              
-              {getDuplicateGroups().map(([text, exercises], groupIndex) => (
-                <Accordion key={groupIndex} sx={{ mb: 1 }}>
-                  <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                        "{text.length > 80 ? text.substring(0, 80) + '...' : text}"
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {exercises.length} duplicates • Languages: {[...new Set(exercises.map(ex => ex.practiceLanguage))].join(', ')}
-                      </Typography>
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <TableContainer>
-                      <Table size="small">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>Video</TableCell>
-                            <TableCell>Language</TableCell>
-                            <TableCell>Time</TableCell>
-                            <TableCell>Practiced</TableCell>
-                            <TableCell>Accuracy</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {exercises.map((exercise, exIndex) => (
-                            <TableRow key={exIndex}>
-                              <TableCell>
-                                <Typography variant="body2" sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {exercise.videoFileName || 'Unknown'}
-                                </Typography>
-                              </TableCell>
-                              <TableCell>
-                                <Chip 
-                                  label={`${exercise.practiceLanguage} → ${exercise.nativeLanguage}`} 
-                                  size="small" 
-                                  color="secondary" 
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Typography variant="body2">
-                                  {Math.floor(exercise.startTime / 60)}:{String(Math.floor(exercise.startTime % 60)).padStart(2, '0')}
-                                </Typography>
-                              </TableCell>
-                              <TableCell>
-                                {exercise.practiceCount ? (
-                                  <Typography variant="body2">
-                                    {exercise.practiceCount} times
-                                  </Typography>
-                                ) : (
-                                  <Typography variant="body2" color="text.secondary">
-                                    Never
-                                  </Typography>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                {exercise.accuracyRate !== undefined ? (
-                                  <Chip 
-                                    label={`${Math.round(exercise.accuracyRate)}%`} 
-                                    size="small" 
-                                    color={exercise.accuracyRate >= 80 ? 'success' : exercise.accuracyRate >= 60 ? 'warning' : 'error'}
-                                  />
-                                ) : (
-                                  <Typography variant="body2" color="text.secondary">
-                                    N/A
-                                  </Typography>
-                                )}
-                              </TableCell>
+            <Accordion 
+              expanded={isDuplicatesSectionExpanded}
+              onChange={(_, isExpanded) => setIsDuplicatesSectionExpanded(isExpanded)}
+              sx={{ mb: 4, bgcolor: 'warning.dark' }}
+            >
+              <AccordionSummary expandIcon={<ExpandMore />}>
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'white' }}>
+                  <FileCopy color="warning" />
+                  Duplicate Exercises ({getDuplicateGroups().length} groups)
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {getDuplicateGroups().map(([text, exercises], groupIndex) => (
+                  <Accordion key={groupIndex} sx={{ mb: 1 }}>
+                    <AccordionSummary expandIcon={<ExpandMore />}>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                          "{text.length > 80 ? text.substring(0, 80) + '...' : text}"
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {exercises.length} duplicates • Languages: {[...new Set(exercises.map(ex => ex.practiceLanguage))].join(', ')}
+                        </Typography>
+                      </Box>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <TableContainer>
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Video</TableCell>
+                              <TableCell>Language</TableCell>
+                              <TableCell>Time</TableCell>
+                              <TableCell>Practiced</TableCell>
+                              <TableCell>Accuracy</TableCell>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </AccordionDetails>
-                </Accordion>
-              ))}
-            </Box>
+                          </TableHead>
+                          <TableBody>
+                            {exercises.map((exercise, exIndex) => (
+                              <TableRow key={exIndex}>
+                                <TableCell>
+                                  <Typography variant="body2" sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {exercise.videoFileName || 'Unknown'}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Chip 
+                                    label={`${exercise.practiceLanguage} → ${exercise.nativeLanguage}`} 
+                                    size="small" 
+                                    color="secondary" 
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body2">
+                                    {Math.floor(exercise.startTime / 60)}:{String(Math.floor(exercise.startTime % 60)).padStart(2, '0')}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell>
+                                  {exercise.practiceCount ? (
+                                    <Typography variant="body2">
+                                      {exercise.practiceCount} times
+                                    </Typography>
+                                  ) : (
+                                    <Typography variant="body2" color="text.secondary">
+                                      Never
+                                    </Typography>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {exercise.accuracyRate !== undefined ? (
+                                    <Chip 
+                                      label={`${Math.round(exercise.accuracyRate)}%`} 
+                                      size="small" 
+                                      color={exercise.accuracyRate >= 80 ? 'success' : exercise.accuracyRate >= 60 ? 'warning' : 'error'}
+                                    />
+                                  ) : (
+                                    <Typography variant="body2" color="text.secondary">
+                                      N/A
+                                    </Typography>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </AccordionDetails>
+                  </Accordion>
+                ))}
+              </AccordionDetails>
+            </Accordion>
           )}
 
           {/* All Exercises Table */}
