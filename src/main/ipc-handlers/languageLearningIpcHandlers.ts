@@ -74,7 +74,7 @@ export const languageLearningIpcHandlers = () => {
       console.log('=== SAVING LANGUAGE LEARNING EXERCISE ===');
       console.log('Received exercise data:', JSON.stringify(exerciseData, null, 2));
       
-      if (!exerciseData.videoFilePath || !exerciseData.startTime || !exerciseData.endTime) {
+      if (!exerciseData.videoFilePath || exerciseData.startTime == null || exerciseData.endTime == null) {
         throw new Error('Missing required exercise data: videoFilePath, startTime, endTime');
       }
 

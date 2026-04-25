@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem, Pagination, Stack, OutlinedInput, InputAdornment, Checkbox, ListItemText } from "@mui/material";
-import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate, Star, StarBorder, Bookmark, BookmarkBorder, Search, Clear, FilterList, LocalOffer as LocalOfferIcon, Add as AddIcon } from "@mui/icons-material";
+import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate, Star, StarBorder, Bookmark, BookmarkBorder, Search, Clear, FilterList, LocalOffer as LocalOfferIcon, Add as AddIcon, AddCircle as AddCircleIcon } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { AppModal } from "../common/AppModal";
 import { CopyButton } from "../common/CopyButton";
@@ -62,6 +62,13 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     closeModal: closeBulkDeleteDialog,
   } = useModalState(false);
 
+  // Modal state for create exercise
+  const {
+    open: isCreateDialogOpen,
+    openModal: openCreateDialog,
+    closeModal: closeCreateDialog,
+  } = useModalState(false);
+
   // Exercise to delete
   const [exerciseToDelete, setExerciseToDelete] = useState<LanguageLearningExerciseModel | null>(null);
   
@@ -77,6 +84,16 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     difficulty: '' as 'easy' | 'medium' | 'hard' | ''
   });
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Create form state
+  const [createForm, setCreateForm] = useState({
+    practiceLanguageText: '',
+    nativeLanguageText: '',
+    practiceLanguage: '' as 'en' | 'es' | 'fr' | '',
+    nativeLanguage: '' as 'en' | 'es' | 'fr' | '',
+    difficulty: '' as 'easy' | 'medium' | 'hard' | ''
+  });
+  const [isCreating, setIsCreating] = useState(false);
   
   // Tag management state
   const [allTags, setAllTags] = useState<string[]>([]);
@@ -98,6 +115,10 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
   // Edit form tag management
   const [editFormTags, setEditFormTags] = useState<string[]>([]);
   const [editFormNewTag, setEditFormNewTag] = useState('');
+  
+  // Create form tag management
+  const [createFormTags, setCreateFormTags] = useState<string[]>([]);
+  const [createFormNewTag, setCreateFormNewTag] = useState('');
   
   // Filter state
   const [filters, setFilters] = useState({
@@ -432,6 +453,90 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
       alert('Error updating exercise: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  // Handle create exercise
+  const handleCreateClick = () => {
+    setCreateForm({
+      practiceLanguageText: '',
+      nativeLanguageText: '',
+      practiceLanguage: '',
+      nativeLanguage: '',
+      difficulty: ''
+    });
+    
+    setCreateFormTags([]);
+    setCreateFormNewTag('');
+    loadTags(); // Load available tags
+    openCreateDialog();
+  };
+
+  // Handle create form submission
+  const handleCreateSubmit = async () => {
+    if (!window.languageLearningAPI) return;
+
+    // Validate form
+    if (!createForm.practiceLanguageText.trim() || !createForm.nativeLanguageText.trim()) {
+      alert('Both practice and native language texts are required');
+      return;
+    }
+
+    if (!createForm.practiceLanguage || !createForm.nativeLanguage) {
+      alert('Both languages must be selected');
+      return;
+    }
+
+    if (createForm.practiceLanguage === createForm.nativeLanguage) {
+      alert('Practice and native languages must be different');
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const newExercise: Partial<LanguageLearningExerciseModel> = {
+        practiceLanguageText: createForm.practiceLanguageText.trim(),
+        nativeLanguageText: createForm.nativeLanguageText.trim(),
+        practiceLanguage: createForm.practiceLanguage as 'en' | 'es' | 'fr',
+        nativeLanguage: createForm.nativeLanguage as 'en' | 'es' | 'fr',
+        difficulty: createForm.difficulty || undefined,
+        wordCount: createForm.practiceLanguageText.trim().split(/\s+/).filter(word => word.length > 0).length,
+        tags: [...createFormTags, 'manual-creation'],
+        createdAt: Date.now(),
+        practiceCount: 0,
+        accuracyRate: 0,
+        videoFileName: 'Manual Creation', // Indicate this was manually created
+        videoFilePath: 'manual-creation', // Required field for saveExercise
+        startTime: 0, // Required field for saveExercise - using 0 for manual exercises
+        endTime: 1, // Required field for saveExercise - using 1 for manual exercises
+        duration: 1 // Calculate duration based on start/end times
+      };
+
+      const response = await window.languageLearningAPI.saveExercise(newExercise);
+      
+      if (response.success && response.data) {
+        // Add to exercises list
+        const updatedExercises = [...allExercises, response.data];
+        setAllExercises(updatedExercises);
+        
+        // If no current exercise, make this the current one
+        if (!currentExercise) {
+          setCurrentExercise(response.data);
+          resetExerciseState(response.data.practiceLanguageText);
+        }
+        
+        closeCreateDialog();
+        console.log('Exercise created successfully:', response.data.id);
+        alert('Exercise created successfully!');
+      } else {
+        console.error('Failed to create exercise:', response.error);
+        alert('Failed to create exercise: ' + (response.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error creating exercise:', error);
+      alert('Error creating exercise: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -844,9 +949,17 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
           variant="outlined"
           startIcon={<LocalOfferIcon />}
           onClick={handleOpenTagModal}
-          sx={{ mt: 1 }}
+          sx={{ mt: 1, mr: 2 }}
         >
           Manage Tags
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<AddCircleIcon />}
+          onClick={handleCreateClick}
+          sx={{ mt: 1 }}
+        >
+          Create Exercise
         </Button>
       </Box>
 
@@ -1978,6 +2091,189 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
             disabled={isUpdating || !editForm.practiceLanguageText.trim() || !editForm.nativeLanguageText.trim()}
           >
             {isUpdating ? 'Updating...' : 'Update Exercise'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create Exercise Dialog */}
+      <Dialog
+        open={isCreateDialogOpen}
+        onClose={closeCreateDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Create New Exercise</DialogTitle>
+        <DialogContent>
+          <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
+            {/* Practice Language Text */}
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="Practice Language Text"
+              value={createForm.practiceLanguageText}
+              onChange={(e) => setCreateForm({...createForm, practiceLanguageText: e.target.value})}
+              placeholder="Text that users will practice arranging"
+              required
+            />
+
+            {/* Native Language Text */}
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="Native Language Text (Reference)"
+              value={createForm.nativeLanguageText}
+              onChange={(e) => setCreateForm({...createForm, nativeLanguageText: e.target.value})}
+              placeholder="Reference text shown to help users"
+              required
+            />
+
+            {/* Languages */}
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <FormControl fullWidth required>
+                <InputLabel>Practice Language</InputLabel>
+                <Select
+                  value={createForm.practiceLanguage}
+                  label="Practice Language"
+                  onChange={(e) => setCreateForm({...createForm, practiceLanguage: e.target.value as 'en' | 'es' | 'fr'})}
+                >
+                  <MenuItem value="en">English</MenuItem>
+                  <MenuItem value="es">Spanish</MenuItem>
+                  <MenuItem value="fr">French</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth required>
+                <InputLabel>Native Language</InputLabel>
+                <Select
+                  value={createForm.nativeLanguage}
+                  label="Native Language"
+                  onChange={(e) => setCreateForm({...createForm, nativeLanguage: e.target.value as 'en' | 'es' | 'fr'})}
+                >
+                  <MenuItem value="en">English</MenuItem>
+                  <MenuItem value="es">Spanish</MenuItem>
+                  <MenuItem value="fr">French</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+
+            {/* Difficulty */}
+            <FormControl fullWidth>
+              <InputLabel>Difficulty (Optional)</InputLabel>
+              <Select
+                value={createForm.difficulty}
+                label="Difficulty (Optional)"
+                onChange={(e) => setCreateForm({...createForm, difficulty: e.target.value as 'easy' | 'medium' | 'hard'})}
+              >
+                <MenuItem value="">Not Set</MenuItem>
+                <MenuItem value="easy">Easy</MenuItem>
+                <MenuItem value="medium">Medium</MenuItem>
+                <MenuItem value="hard">Hard</MenuItem>
+              </Select>
+            </FormControl>
+
+            {/* Tags Management */}
+            <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
+              <Typography variant="subtitle1" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LocalOfferIcon />
+                Exercise Tags
+              </Typography>
+
+              {/* Current Tags */}
+              {createFormTags.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Current Tags:
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {createFormTags.map((tag) => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        onDelete={() => setCreateFormTags(prev => prev.filter(t => t !== tag))}
+                        color="primary"
+                        variant="outlined"
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+              {/* Add New Tag */}
+              <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Add Tag"
+                  value={createFormNewTag}
+                  onChange={(e) => setCreateFormNewTag(e.target.value)}
+                  placeholder="Enter tag name..."
+                />
+                <Button
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  onClick={() => {
+                    const tagName = createFormNewTag.trim().toLowerCase();
+                    if (tagName && !createFormTags.includes(tagName)) {
+                      setCreateFormTags(prev => [...prev, tagName]);
+                      setCreateFormNewTag('');
+                    }
+                  }}
+                  disabled={!createFormNewTag.trim() || createFormTags.includes(createFormNewTag.trim().toLowerCase())}
+                >
+                  Add
+                </Button>
+              </Box>
+
+              {/* Existing Tags - Quick Add */}
+              {allTags.length > 0 && (
+                <Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Quick Add from Existing:
+                  </Typography>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: 0.5, 
+                    maxHeight: 120, 
+                    overflowY: 'auto',
+                    p: 1,
+                    bgcolor: 'background.default',
+                    borderRadius: 1
+                  }}>
+                    {allTags
+                      .filter(tag => !createFormTags.includes(tag))
+                      .map((tag) => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        onClick={() => setCreateFormTags(prev => [...prev, tag])}
+                        variant="outlined"
+                        size="small"
+                        sx={{ cursor: 'pointer' }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={closeCreateDialog}
+            disabled={isCreating}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleCreateSubmit} 
+            color="primary" 
+            variant="contained"
+            disabled={isCreating || !createForm.practiceLanguageText.trim() || !createForm.nativeLanguageText.trim() || !createForm.practiceLanguage || !createForm.nativeLanguage}
+          >
+            {isCreating ? 'Creating...' : 'Create Exercise'}
           </Button>
         </DialogActions>
       </Dialog>
