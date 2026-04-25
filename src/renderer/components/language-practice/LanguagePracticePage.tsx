@@ -55,6 +55,13 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     closeModal: closeTagModal,
   } = useModalState(false);
 
+  // Modal state for bulk duplicate removal confirmation
+  const {
+    open: isBulkDeleteDialogOpen,
+    openModal: openBulkDeleteDialog,
+    closeModal: closeBulkDeleteDialog,
+  } = useModalState(false);
+
   // Exercise to delete
   const [exerciseToDelete, setExerciseToDelete] = useState<LanguageLearningExerciseModel | null>(null);
   
@@ -80,6 +87,9 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
   
   // State for collapsible duplicate exercises section
   const [isDuplicatesSectionExpanded, setIsDuplicatesSectionExpanded] = useState(false);
+  
+  // State for bulk duplicate removal
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -669,6 +679,66 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     loadTags();
   };
 
+  // Handle bulk duplicate removal
+  const handleBulkRemoveDuplicates = async () => {
+    if (!window.languageLearningAPI || getDuplicateGroups.length === 0) return;
+
+    setIsBulkDeleting(true);
+    try {
+      let deletedCount = 0;
+      const updatedExercises = [...allExercises];
+      
+      // For each duplicate group, keep the first one and delete the rest
+      for (const [_, exercises] of getDuplicateGroups) {
+        // Sort by creation date (keep the oldest one)
+        const sortedExercises = exercises.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        
+        // Delete all except the first (oldest) one
+        for (let i = 1; i < sortedExercises.length; i++) {
+          const exerciseToDelete = sortedExercises[i];
+          if (exerciseToDelete.id) {
+            try {
+              const response = await window.languageLearningAPI.deleteExercise(exerciseToDelete.id);
+              if (response.success) {
+                // Remove from local state
+                const index = updatedExercises.findIndex(ex => ex.id === exerciseToDelete.id);
+                if (index > -1) {
+                  updatedExercises.splice(index, 1);
+                  deletedCount++;
+                }
+              } else {
+                console.error('Failed to delete duplicate exercise:', exerciseToDelete.id, response.error);
+              }
+            } catch (error) {
+              console.error('Error deleting duplicate exercise:', exerciseToDelete.id, error);
+            }
+          }
+        }
+      }
+      
+      // Update state with cleaned exercises
+      setAllExercises(updatedExercises);
+      
+      // If current exercise was deleted, select a new one
+      if (currentExercise && !updatedExercises.find(ex => ex.id === currentExercise.id)) {
+        if (updatedExercises.length > 0) {
+          selectNextExercise(updatedExercises);
+        } else {
+          setCurrentExercise(null);
+          setError('No exercises remaining in database.');
+        }
+      }
+      
+      console.log(`Successfully removed ${deletedCount} duplicate exercises`);
+      
+    } catch (error) {
+      console.error('Error during bulk duplicate removal:', error);
+    } finally {
+      setIsBulkDeleting(false);
+      closeBulkDeleteDialog();
+    }
+  };
+
   // Load exercises on component mount
   useEffect(() => {
     loadExercises();
@@ -1187,10 +1257,28 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
               sx={{ mb: 4, bgcolor: 'warning.dark' }}
             >
               <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'white' }}>
-                  <FileCopy color="warning" />
-                  Duplicate Exercises ({getDuplicateGroups.length} groups)
-                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', pr: 2 }}>
+                  <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'white' }}>
+                    <FileCopy color="warning" />
+                    Duplicate Exercises ({getDuplicateGroups.length} groups)
+                  </Typography>
+                  {getDuplicateGroups.length > 0 && (
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent accordion from toggling
+                        openBulkDeleteDialog();
+                      }}
+                      variant="contained"
+                      color="error"
+                      size="small"
+                      startIcon={<Delete />}
+                      disabled={isBulkDeleting}
+                      sx={{ ml: 2 }}
+                    >
+                      {isBulkDeleting ? 'Removing...' : 'Remove All Duplicates'}
+                    </Button>
+                  )}
+                </Box>
               </AccordionSummary>
               <AccordionDetails>
                 {getDuplicateGroups.map(([text, exercises], groupIndex) => (
@@ -1617,6 +1705,60 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
           </Button>
           <Button onClick={handleConfirmDelete} color="error" variant="contained">
             Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Bulk Delete Duplicates Confirmation Dialog */}
+      <Dialog
+        open={isBulkDeleteDialogOpen}
+        onClose={closeBulkDeleteDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Delete color="error" />
+          Remove All Duplicate Exercises
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 3 }}>
+            Are you sure you want to remove all duplicate exercises? This action cannot be undone.
+          </Typography>
+          
+          <Card sx={{ mb: 2, bgcolor: 'warning.50', border: '1px solid', borderColor: 'warning.200' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Typography variant="h6" color="warning.main" sx={{ mb: 1 }}>
+                What will happen:
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                • {getDuplicateGroups.length} duplicate groups will be processed<br/>
+                • {getDuplicateGroups.reduce((sum, [_, exercises]) => sum + exercises.length - 1, 0)} exercises will be deleted<br/>
+                • {getDuplicateGroups.length} exercises will remain (the oldest copy of each)<br/>
+                • {allExercises.length - getDuplicateGroups.reduce((sum, [_, exercises]) => sum + exercises.length - 1, 0)} total exercises will remain
+              </Typography>
+            </CardContent>
+          </Card>
+          
+          <Typography variant="body2" color="text.secondary">
+            The oldest exercise from each duplicate group will be kept based on creation date.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={closeBulkDeleteDialog} 
+            color="primary"
+            disabled={isBulkDeleting}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleBulkRemoveDuplicates} 
+            color="error" 
+            variant="contained"
+            disabled={isBulkDeleting}
+            startIcon={isBulkDeleting ? <CircularProgress size={16} /> : <Delete />}
+          >
+            {isBulkDeleting ? 'Removing Duplicates...' : 'Remove All Duplicates'}
           </Button>
         </DialogActions>
       </Dialog>
