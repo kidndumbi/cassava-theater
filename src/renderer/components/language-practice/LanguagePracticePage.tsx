@@ -85,6 +85,10 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(25); // Exercises per page
   
+  // Edit form tag management
+  const [editFormTags, setEditFormTags] = useState<string[]>([]);
+  const [editFormNewTag, setEditFormNewTag] = useState('');
+  
   // Filter state
   const [filters, setFilters] = useState({
     searchText: '',
@@ -365,6 +369,11 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
       nativeLanguage: targetExercise.nativeLanguage,
       difficulty: targetExercise.difficulty || ''
     });
+    
+    const exerciseTags = targetExercise.tags || [];
+    setEditFormTags(exerciseTags);
+    setEditFormNewTag('');
+    loadTags(); // Load available tags
     openEditDialog();
   };
 
@@ -381,7 +390,8 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
         practiceLanguage: editForm.practiceLanguage as 'en' | 'es' | 'fr',
         nativeLanguage: editForm.nativeLanguage as 'en' | 'es' | 'fr',
         difficulty: editForm.difficulty || undefined,
-        wordCount: editForm.practiceLanguageText.split(/\s+/).filter(word => word.length > 0).length
+        wordCount: editForm.practiceLanguageText.split(/\s+/).filter(word => word.length > 0).length,
+        tags: editFormTags // Add the tags from the form
       };
 
       const response = await window.languageLearningAPI.updateExercise(exerciseToEdit.id, updatedExercise);
@@ -389,7 +399,7 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
       if (response.success) {
         // Update current exercise if it's the one being edited
         if (currentExercise?.id === exerciseToEdit.id) {
-          setCurrentExercise(updatedExercise);
+          setCurrentExercise(response.data || updatedExercise);
           // Reset exercise state with new text for current exercise
           resetExerciseState(updatedExercise.practiceLanguageText);
         }
@@ -789,6 +799,20 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                   }}
                   variant="outlined"
                 />
+              )}
+              {/* Show current exercise tags for debugging */}
+              {currentExercise.tags && currentExercise.tags.length > 0 && (
+                <>
+                  {currentExercise.tags.map((tag) => (
+                    <Chip
+                      key={tag}
+                      label={tag}
+                      size="small"
+                      variant="outlined"
+                      sx={{ color: 'lightblue', borderColor: 'lightblue' }}
+                    />
+                  ))}
+                </>
               )}
             </Box>
             
@@ -1616,6 +1640,117 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                 <MenuItem value="hard">Hard</MenuItem>
               </Select>
             </FormControl>
+            
+            {/* Tags Management */}
+            <Box>
+              <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LocalOfferIcon /> Exercise Tags
+              </Typography>
+              
+              {/* Current Tags */}
+              {editFormTags.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Current Tags:
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {editFormTags.map((tag) => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        onDelete={() => {
+                          const newTags = editFormTags.filter(t => t !== tag);
+                          setEditFormTags(newTags);
+                        }}
+                        deleteIcon={<Delete />}
+                        variant="outlined"
+                        color="primary"
+                        sx={{
+                          '& .MuiChip-deleteIcon': {
+                            color: 'error.main',
+                            '&:hover': {
+                              color: 'error.dark'
+                            }
+                          }
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+              
+              {/* Add New Tag */}
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', mb: 2 }}>
+                <TextField
+                  label="Add Tag"
+                  value={editFormNewTag}
+                  onChange={(e) => setEditFormNewTag(e.target.value)}
+                  placeholder="Enter tag name..."
+                  size="small"
+                  fullWidth
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const tagName = editFormNewTag.trim().toLowerCase();
+                      if (tagName && !editFormTags.includes(tagName)) {
+                        const newTags = [...editFormTags, tagName];
+                        setEditFormTags(newTags);
+                        setEditFormNewTag('');
+                      }
+                    }
+                  }}
+                />
+                <Button
+                  onClick={() => {
+                    const tagName = editFormNewTag.trim().toLowerCase();
+                    if (tagName && !editFormTags.includes(tagName)) {
+                      const newTags = [...editFormTags, tagName];
+                      setEditFormTags(newTags);
+                      setEditFormNewTag('');
+                    }
+                  }}
+                  disabled={!editFormNewTag.trim() || editFormTags.includes(editFormNewTag.trim().toLowerCase())}
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  sx={{ minWidth: 100 }}
+                >
+                  Add
+                </Button>
+              </Box>
+              
+              {/* Existing Tags - Quick Add */}
+              {allTags.length > 0 && (
+                <Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Quick Add from Existing Tags:
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, maxHeight: 120, overflowY: 'auto', p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
+                    {allTags
+                      .filter(tag => !editFormTags.includes(tag))
+                      .map((tag) => (
+                        <Chip
+                          key={tag}
+                          label={tag}
+                          onClick={() => {
+                            if (!editFormTags.includes(tag)) {
+                              const newTags = [...editFormTags, tag];
+                              setEditFormTags(newTags);
+                            }
+                          }}
+                          variant="outlined"
+                          color="default"
+                          sx={{ 
+                            cursor: 'pointer',
+                            '&:hover': {
+                              bgcolor: 'primary.light',
+                              color: 'white'
+                            }
+                          }}
+                        />
+                      ))}
+                  </Box>
+                </Box>
+              )}
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions>
