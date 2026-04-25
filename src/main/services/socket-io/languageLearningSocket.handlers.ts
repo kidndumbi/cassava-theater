@@ -5,7 +5,9 @@ import { getCurrentLanguageLearningState, LanguageLearningState } from "../../ip
 import { 
   getAllLanguageLearningExercises,
   putLanguageLearningExercise,
-  updateExerciseStats
+  updateExerciseStats,
+  generateExerciseKey,
+  calculateDifficulty
 } from "../languageLearningExerciseDb.service";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { loggingService as log } from "../main-logging.service";
@@ -100,6 +102,46 @@ export function registerLanguageLearningHandlers(
         callback({ success: true, data: data.exercise });
       } catch (error) {
         log.error(`Failed to update exercise ${data.id}:`, error);
+        callback({ success: false, error: (error as Error).message });
+      }
+    },
+  );
+
+  // Create new exercise (for manual creation)
+  socket.on(
+    AppSocketEvents.LANGUAGE_LEARNING_CREATE_EXERCISE,
+    async (
+      data: { exercise: Partial<LanguageLearningExerciseModel> },
+      callback: (response: {
+        success: boolean;
+        data?: LanguageLearningExerciseModel;
+        error?: string;
+      }) => void,
+    ) => {
+      try {
+        log.info('Socket request: Create new language learning exercise');
+        const exerciseData = data.exercise;
+        
+        if (!exerciseData.videoFilePath || exerciseData.startTime == null || exerciseData.endTime == null) {
+          throw new Error('Missing required exercise data: videoFilePath, startTime, endTime');
+        }
+
+        const key = generateExerciseKey(
+          exerciseData.videoFilePath,
+          exerciseData.startTime,
+          exerciseData.endTime
+        );
+        
+        // Calculate difficulty if not provided
+        if (!exerciseData.difficulty && exerciseData.practiceLanguageText) {
+          exerciseData.difficulty = calculateDifficulty(exerciseData.practiceLanguageText);
+        }
+        
+        const savedExercise = await putLanguageLearningExercise(key, exerciseData);
+        log.info(`Successfully created exercise ${key}`);
+        callback({ success: true, data: savedExercise });
+      } catch (error) {
+        log.error('Failed to create exercise:', error);
         callback({ success: false, error: (error as Error).message });
       }
     },

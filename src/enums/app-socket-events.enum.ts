@@ -52,6 +52,7 @@ export enum AppSocketEvents {
   LANGUAGE_LEARNING_RESET = "language-learning-reset",
   LANGUAGE_LEARNING_STATE_UPDATE = "language-learning-state-update",
   LANGUAGE_LEARNING_GET_ALL_EXERCISES = "language-learning:get-all-exercises",
+  LANGUAGE_LEARNING_CREATE_EXERCISE = "language-learning:create-exercise",
   LANGUAGE_LEARNING_UPDATE_EXERCISE = "language-learning:update-exercise",
   LANGUAGE_LEARNING_UPDATE_EXERCISE_STATS = "language-learning:update-exercise-stats",
   TAG_GET_ALL_TAGS = "tag:get-all-tags",
