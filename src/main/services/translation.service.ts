@@ -108,7 +108,7 @@ async function saveLanguageLearningExercise(
       wordCount,
       difficulty,
       createdAt: Date.now(),
-      tags: ['auto-generated', 'translation']
+      tags: []
     };
     
     // Validate that languages are different (same validation as in LanguageLearning component)
