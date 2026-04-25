@@ -2,6 +2,13 @@ import { AppSocketEvents } from "../../../enums/app-socket-events.enum";
 import { Socket } from "socket.io";
 import { BrowserWindow } from "electron";
 import { getCurrentLanguageLearningState, LanguageLearningState } from "../../ipc-handlers/languageLearningIpcHandlers";
+import { 
+  getAllLanguageLearningExercises,
+  putLanguageLearningExercise,
+  updateExerciseStats
+} from "../languageLearningExerciseDb.service";
+import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
+import { loggingService as log } from "../main-logging.service";
 
 export function registerLanguageLearningHandlers(
   socket: Socket,
@@ -50,4 +57,74 @@ export function registerLanguageLearningHandlers(
   socket.on(AppSocketEvents.LANGUAGE_LEARNING_RESET, () => {
     mainWindow.webContents.send("language-learning-reset");
   });
+
+  // Mobile app handlers
+  // Get all exercises for mobile app
+  socket.on(
+    AppSocketEvents.LANGUAGE_LEARNING_GET_ALL_EXERCISES,
+    async (
+      _requestData: unknown,
+      callback: (response: {
+        success: boolean;
+        data?: LanguageLearningExerciseModel[];
+        error?: string;
+      }) => void,
+    ) => {
+      try {
+        log.info("Socket request: Get all language learning exercises");
+        const exercises = await getAllLanguageLearningExercises();
+        log.info(`Found ${exercises.length} language learning exercises`);
+        callback({ success: true, data: exercises });
+      } catch (error) {
+        log.error("Failed to get all exercises:", error);
+        callback({ success: false, error: (error as Error).message });
+      }
+    },
+  );
+
+  // Update exercise (for favorites and editing)
+  socket.on(
+    AppSocketEvents.LANGUAGE_LEARNING_UPDATE_EXERCISE,
+    async (
+      data: { id: string; exercise: LanguageLearningExerciseModel },
+      callback: (response: {
+        success: boolean;
+        data?: LanguageLearningExerciseModel;
+        error?: string;
+      }) => void,
+    ) => {
+      try {
+        log.info(`Socket request: Update language learning exercise ${data.id}`);
+        await putLanguageLearningExercise(data.id, data.exercise);
+        log.info(`Successfully updated exercise ${data.id}`);
+        callback({ success: true, data: data.exercise });
+      } catch (error) {
+        log.error(`Failed to update exercise ${data.id}:`, error);
+        callback({ success: false, error: (error as Error).message });
+      }
+    },
+  );
+
+  // Update exercise stats (for practice tracking)
+  socket.on(
+    AppSocketEvents.LANGUAGE_LEARNING_UPDATE_EXERCISE_STATS,
+    async (
+      data: { id: string; correct: boolean },
+      callback: (response: {
+        success: boolean;
+        data?: any;
+        error?: string;
+      }) => void,
+    ) => {
+      try {
+        log.info(`Socket request: Update exercise stats ${data.id}, correct: ${data.correct}`);
+        await updateExerciseStats(data.id, data.correct);
+        log.info(`Successfully updated stats for exercise ${data.id}`);
+        callback({ success: true });
+      } catch (error) {
+        log.error(`Failed to update exercise stats ${data.id}:`, error);
+        callback({ success: false, error: (error as Error).message });
+      }
+    },
+  );
 }
