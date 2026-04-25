@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem, Pagination, Stack, OutlinedInput, InputAdornment } from "@mui/material";
+import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem, Pagination, Stack, OutlinedInput, InputAdornment, Checkbox, ListItemText } from "@mui/material";
 import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate, Star, StarBorder, Bookmark, BookmarkBorder, Search, Clear, FilterList, LocalOffer as LocalOfferIcon, Add as AddIcon } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { AppModal } from "../common/AppModal";
@@ -96,7 +96,8 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     nativeLanguage: 'all' as 'all' | 'en' | 'es' | 'fr',
     difficulty: 'all' as 'all' | 'easy' | 'medium' | 'hard',
     practiceStatus: 'all' as 'all' | 'never' | 'low-accuracy' | 'high-accuracy' | 'favorites',
-    videoSource: 'all' as string
+    videoSource: 'all' as string,
+    tags: [] as string[]
   });
 
   // Generate Google Translate URL
@@ -479,6 +480,17 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     return sources.sort();
   }, [allExercises]);
 
+  // Get unique tags for filter dropdown (memoized)
+  const uniqueExerciseTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    allExercises.forEach(exercise => {
+      if (exercise.tags) {
+        exercise.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [allExercises]);
+
   // Filter exercises based on current filters (memoized)
   const filteredExercises = useMemo(() => {
     return allExercises.filter(exercise => {
@@ -530,6 +542,13 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
         return false;
       }
       
+      // Tags filter
+      if (filters.tags.length > 0) {
+        if (!exercise.tags || !filters.tags.some(selectedTag => exercise.tags!.includes(selectedTag))) {
+          return false;
+        }
+      }
+      
       return true;
     });
   }, [allExercises, filters, isFavorite]);
@@ -556,12 +575,18 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
       nativeLanguage: 'all', 
       difficulty: 'all',
       practiceStatus: 'all',
-      videoSource: 'all'
+      videoSource: 'all',
+      tags: []
     });
   };
 
   // Check if any filters are active
-  const hasActiveFilters = Object.values(filters).some(value => value !== 'all' && value !== '');
+  const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
+    if (key === 'tags') {
+      return Array.isArray(value) && value.length > 0;
+    }
+    return value !== 'all' && value !== '';
+  });
 
   // Update individual filter
   const updateFilter = <K extends keyof typeof filters>(key: K, value: typeof filters[K]) => {
@@ -1381,6 +1406,33 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                       {uniqueVideoSources.map(source => (
                         <MenuItem key={source} value={source}>
                           {source.length > 25 ? `${source.substring(0, 25)}...` : source}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  
+                  {/* Tags */}
+                  <FormControl size="small" sx={{ minWidth: 160 }}>
+                    <InputLabel sx={{ color: 'grey.400' }}>Tags</InputLabel>
+                    <Select
+                      multiple
+                      value={filters.tags}
+                      onChange={(e) => updateFilter('tags', e.target.value as string[])}
+                      sx={{ bgcolor: 'grey.800', '& fieldset': { borderColor: 'grey.600' } }}
+                      renderValue={(selected) => {
+                        if (selected.length === 0) {
+                          return 'All Tags';
+                        }
+                        if (selected.length === 1) {
+                          return selected[0];
+                        }
+                        return `${selected.length} tags`;
+                      }}
+                    >
+                      {uniqueExerciseTags.map(tag => (
+                        <MenuItem key={tag} value={tag}>
+                          <Checkbox checked={filters.tags.indexOf(tag) > -1} />
+                          <ListItemText primary={tag} />
                         </MenuItem>
                       ))}
                     </Select>
