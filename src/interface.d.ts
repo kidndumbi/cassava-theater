@@ -372,6 +372,13 @@ export interface LanguageLearningAPI {
   updateExerciseStats: (key: string, isCorrect: boolean) => Promise<{ success: boolean; error?: string }>;
 }
 
+export interface TagAPI {
+  getAllTags: () => Promise<{ success: boolean; data?: string[]; error?: string }>;
+  addTag: (tag: string) => Promise<{ success: boolean; error?: string }>;
+  deleteTag: (tag: string) => Promise<{ success: boolean; error?: string }>;
+  tagExists: (tag: string) => Promise<{ success: boolean; data?: boolean; error?: string }>;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -393,5 +400,6 @@ declare global {
     subtitleAPI: SubtitleAPI;
     subtitleSyncAPI: SubtitleSyncAPI;
     languageLearningAPI: LanguageLearningAPI;
+    tagAPI: TagAPI;
   }
 }

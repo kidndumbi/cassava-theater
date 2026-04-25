@@ -23,6 +23,7 @@ type Collections = {
   videoScreenshots: VideoScreenshotModel;
   playlists: PlaylistModel;
   languageLearningExercises: LanguageLearningExerciseModel;
+  appTags: string[]; // Array of unique tag strings
 };
 
 type CollectionName = keyof Collections;

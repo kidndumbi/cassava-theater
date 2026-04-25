@@ -37,6 +37,7 @@ import {
   SubtitleGenerationResponse, 
   SubtitleGeneration 
 } from "./models/subtitle.model";
+import { TagIPCChannels } from "./enums/tagIPCChannels.enum";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -824,5 +825,20 @@ contextBridge.exposeInMainWorld("languageLearningAPI", {
 
   updateExerciseStats: (key: string, isCorrect: boolean) => {
     return ipcRenderer.invoke(LanguageLearningIPCChannels.UPDATE_EXERCISE_STATS, key, isCorrect);
+  },
+});
+
+contextBridge.exposeInMainWorld("tagAPI", {
+  getAllTags: () => {
+    return ipcRenderer.invoke(TagIPCChannels.GetAllTags);
+  },
+  addTag: (tag: string) => {
+    return ipcRenderer.invoke(TagIPCChannels.AddTag, tag);
+  },
+  deleteTag: (tag: string) => {
+    return ipcRenderer.invoke(TagIPCChannels.DeleteTag, tag);
+  },
+  tagExists: (tag: string) => {
+    return ipcRenderer.invoke(TagIPCChannels.TagExists, tag);
   },
 });

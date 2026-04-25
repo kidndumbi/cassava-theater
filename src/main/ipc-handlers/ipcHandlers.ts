@@ -13,6 +13,7 @@ import { videosIpcHandlers } from "./videosIpcHandlers";
 import { youtubeIpcHandlers } from "./youtubeIpcHandlers";
 import { translationIpcHandlers } from "./translationIpcHandlers";
 import { languageLearningIpcHandlers } from "./languageLearningIpcHandlers";
+import { registerTagIpcHandlers } from "./tagIpcHandlers";
 
 export function registerIpcHandlers() {
   settingsIpcHandlers();
@@ -30,4 +31,5 @@ export function registerIpcHandlers() {
   subtitleIpcHandlers();
   subtitleSyncIpcHandlers();
   languageLearningIpcHandlers();
+  registerTagIpcHandlers();
 }
