@@ -9,6 +9,8 @@ interface AppModalProps {
   title: string;
   children: React.ReactNode;
   fullScreen?: boolean; // New prop to control fullscreen behavior
+  maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | false; // Material-UI Dialog maxWidth prop
+  fullWidth?: boolean; // Material-UI Dialog fullWidth prop
 }
 
 export const AppModal: React.FC<AppModalProps> = ({
@@ -17,12 +19,16 @@ export const AppModal: React.FC<AppModalProps> = ({
   title,
   children,
   fullScreen = false, // Default value set to false
+  maxWidth = 'md', // Default maxWidth
+  fullWidth = false, // Default fullWidth
 }) => {
   return (
     <Dialog
       open={open}
       onClose={onClose}
       fullScreen={fullScreen} // Use the new prop here
+      maxWidth={maxWidth} // Pass maxWidth to Dialog
+      fullWidth={fullWidth} // Pass fullWidth to Dialog
       slotProps={{
         paper: {
           style: {

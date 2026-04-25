@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem, Pagination, Stack, OutlinedInput, InputAdornment } from "@mui/material";
-import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate, Star, StarBorder, Bookmark, BookmarkBorder, Search, Clear, FilterList } from "@mui/icons-material";
+import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate, Star, StarBorder, Bookmark, BookmarkBorder, Search, Clear, FilterList, LocalOffer as LocalOfferIcon, Add as AddIcon } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { AppModal } from "../common/AppModal";
 import { CopyButton } from "../common/CopyButton";
@@ -48,6 +48,13 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     closeModal: closeEditDialog,
   } = useModalState(false);
 
+  // Modal state for tag management
+  const {
+    open: isTagModalOpen,
+    openModal: openTagModal,
+    closeModal: closeTagModal,
+  } = useModalState(false);
+
   // Exercise to delete
   const [exerciseToDelete, setExerciseToDelete] = useState<LanguageLearningExerciseModel | null>(null);
   
@@ -63,6 +70,13 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     difficulty: '' as 'easy' | 'medium' | 'hard' | ''
   });
   const [isUpdating, setIsUpdating] = useState(false);
+  
+  // Tag management state
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [newTagInput, setNewTagInput] = useState('');
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const [isDeletingTag, setIsDeletingTag] = useState<string | null>(null);
+  const [tagError, setTagError] = useState<string | null>(null);
   
   // State for collapsible duplicate exercises section
   const [isDuplicatesSectionExpanded, setIsDuplicatesSectionExpanded] = useState(false);
@@ -544,6 +558,82 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  // Load tags from database
+  const loadTags = async () => {
+    try {
+      if (!window.tagAPI) {
+        throw new Error('Tag API not available');
+      }
+
+      const response = await window.tagAPI.getAllTags();
+      
+      if (response.success && response.data) {
+        setAllTags(response.data);
+      } else {
+        setAllTags([]);
+      }
+    } catch (err) {
+      console.error('Error loading tags:', err);
+      setTagError(err instanceof Error ? err.message : 'Failed to load tags');
+      setAllTags([]);
+    }
+  };
+
+  // Add a new tag
+  const handleAddTag = async () => {
+    if (!newTagInput.trim() || !window.tagAPI) return;
+
+    setIsAddingTag(true);
+    setTagError(null);
+    
+    try {
+      const response = await window.tagAPI.addTag(newTagInput.trim());
+      
+      if (response.success) {
+        setNewTagInput('');
+        await loadTags(); // Refresh tags list
+        console.log('Tag added successfully:', newTagInput.trim());
+      } else {
+        setTagError(response.error || 'Failed to add tag');
+      }
+    } catch (error) {
+      console.error('Error adding tag:', error);
+      setTagError(error instanceof Error ? error.message : 'Failed to add tag');
+    } finally {
+      setIsAddingTag(false);
+    }
+  };
+
+  // Delete a tag
+  const handleDeleteTag = async (tag: string) => {
+    if (!window.tagAPI) return;
+
+    setIsDeletingTag(tag);
+    setTagError(null);
+    
+    try {
+      const response = await window.tagAPI.deleteTag(tag);
+      
+      if (response.success) {
+        await loadTags(); // Refresh tags list
+        console.log('Tag deleted successfully:', tag);
+      } else {
+        setTagError(response.error || 'Failed to delete tag');
+      }
+    } catch (error) {
+      console.error('Error deleting tag:', error);
+      setTagError(error instanceof Error ? error.message : 'Failed to delete tag');
+    } finally {
+      setIsDeletingTag(null);
+    }
+  };
+
+  // Open tag modal and load tags
+  const handleOpenTagModal = () => {
+    openTagModal();
+    loadTags();
+  };
+
   // Load exercises on component mount
   useEffect(() => {
     loadExercises();
@@ -641,9 +731,17 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
           variant="outlined"
           startIcon={<ListIcon />}
           onClick={openExercisesList}
-          sx={{ mt: 1 }}
+          sx={{ mt: 1, mr: 2 }}
         >
           View All Exercises
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<LocalOfferIcon />}
+          onClick={handleOpenTagModal}
+          sx={{ mt: 1 }}
+        >
+          Manage Tags
         </Button>
       </Box>
 
@@ -1554,6 +1652,124 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Tag Management Modal */}
+      <AppModal
+        open={isTagModalOpen}
+        onClose={closeTagModal}
+        title="Manage Tags"
+        maxWidth="sm"
+        fullWidth
+      >
+        <Box sx={{ p: 3 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Create and manage tags for organizing exercises. Tags are unique strings that help categorize content.
+          </Typography>
+
+          {/* Add New Tag */}
+          <Card sx={{ mb: 3, bgcolor: 'grey.50' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AddIcon /> Add New Tag
+              </Typography>
+              
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                <TextField
+                  label="Tag Name"
+                  value={newTagInput}
+                  onChange={(e) => setNewTagInput(e.target.value)}
+                  placeholder="Enter tag name..."
+                  size="small"
+                  fullWidth
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleAddTag();
+                    }
+                  }}
+                  disabled={isAddingTag}
+                  error={!!tagError}
+                />
+                <Button
+                  onClick={handleAddTag}
+                  disabled={!newTagInput.trim() || isAddingTag}
+                  variant="contained"
+                  startIcon={isAddingTag ? <CircularProgress size={16} /> : <AddIcon />}
+                  sx={{ minWidth: 100 }}
+                >
+                  {isAddingTag ? 'Adding...' : 'Add'}
+                </Button>
+              </Box>
+              
+              {tagError && (
+                <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
+                  {tagError}
+                </Typography>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Existing Tags */}
+          <Box>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Existing Tags ({allTags.length})
+            </Typography>
+            
+            {allTags.length === 0 ? (
+              <Card sx={{ bgcolor: 'grey.100' }}>
+                <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                  <LocalOfferIcon sx={{ fontSize: 48, color: 'grey.400', mb: 2 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    No tags created yet. Add your first tag above to get started.
+                  </Typography>
+                </CardContent>
+              </Card>
+            ) : (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {allTags.map((tag) => (
+                  <Chip
+                    key={tag}
+                    label={tag}
+                    onDelete={() => handleDeleteTag(tag)}
+                    deleteIcon={
+                      isDeletingTag === tag ? (
+                        <CircularProgress size={16} />
+                      ) : (
+                        <Delete />
+                      )
+                    }
+                    disabled={isDeletingTag === tag}
+                    variant="outlined"
+                    color="primary"
+                    sx={{
+                      '& .MuiChip-deleteIcon': {
+                        color: isDeletingTag === tag ? 'primary.main' : 'error.main',
+                        '&:hover': {
+                          color: 'error.dark'
+                        }
+                      }
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
+          </Box>
+
+          {/* Instructions */}
+          <Card sx={{ mt: 3, bgcolor: 'info.50', border: '1px solid', borderColor: 'info.200' }}>
+            <CardContent sx={{ py: 2 }}>
+              <Typography variant="caption" color="info.main" sx={{ fontWeight: 'medium' }}>
+                💡 Instructions:
+              </Typography>
+              <Typography variant="body2" color="info.dark" sx={{ mt: 1 }}>
+                • Tags must be unique (case-insensitive)
+                • Use simple, descriptive names
+                • To modify a tag, delete it and create a new one
+                • Tags help organize and filter exercises
+              </Typography>
+            </CardContent>
+          </Card>
+        </Box>
+      </AppModal>
     </Box>
   );
 };
