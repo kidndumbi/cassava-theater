@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Box, Typography, Button, Chip, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Accordion, AccordionSummary, AccordionDetails, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem, Pagination, Stack, OutlinedInput, InputAdornment } from "@mui/material";
-import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate, Star, StarBorder, Search, Clear, FilterList } from "@mui/icons-material";
+import { School, Refresh, CheckCircle, Cancel, List as ListIcon, ExpandMore, FileCopy, Delete, Edit, Translate, Star, StarBorder, Bookmark, BookmarkBorder, Search, Clear, FilterList } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { AppModal } from "../common/AppModal";
 import { CopyButton } from "../common/CopyButton";
@@ -98,6 +98,11 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
     return exercise.tags?.includes('favorite') || false;
   };
 
+  // Check if exercise is marked for review
+  const isMarkedForReview = (exercise: LanguageLearningExerciseModel): boolean => {
+    return exercise.tags?.includes('review') || false;
+  };
+
   // Toggle favorite status of current exercise
   const handleToggleFavorite = async () => {
     if (!currentExercise?.id || !window.languageLearningAPI) return;
@@ -137,6 +142,48 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
+    }
+  };
+
+  // Toggle review status of current exercise
+  const handleToggleReview = async () => {
+    if (!currentExercise?.id || !window.languageLearningAPI) return;
+
+    try {
+      const currentTags = currentExercise.tags || [];
+      const isCurrentlyMarkedForReview = isMarkedForReview(currentExercise);
+      
+      let updatedTags: string[];
+      if (isCurrentlyMarkedForReview) {
+        // Remove review tag
+        updatedTags = currentTags.filter(tag => tag !== 'review');
+      } else {
+        // Add review tag
+        updatedTags = [...currentTags, 'review'];
+      }
+
+      const updatedExercise: LanguageLearningExerciseModel = {
+        ...currentExercise,
+        tags: updatedTags
+      };
+
+      const response = await window.languageLearningAPI.updateExercise(currentExercise.id, updatedExercise);
+      
+      if (response.success) {
+        // Update current exercise
+        setCurrentExercise(updatedExercise);
+        
+        // Update exercises list
+        setAllExercises(prev => prev.map(ex => 
+          ex.id === currentExercise.id ? updatedExercise : ex
+        ));
+        
+        console.log(`Exercise ${isCurrentlyMarkedForReview ? 'removed from' : 'marked for'} review:`, currentExercise.id);
+      } else {
+        console.error('Failed to update review status:', response.error);
+      }
+    } catch (error) {
+      console.error('Error toggling review status:', error);
     }
   };
 
@@ -695,6 +742,21 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                 }}
               >
                 {isFavorite(currentExercise) ? 'Favorited' : 'Favorite'}
+              </Button>
+              <Button
+                onClick={handleToggleReview}
+                variant="outlined"
+                size="small"
+                startIcon={isMarkedForReview(currentExercise) ? <Bookmark /> : <BookmarkBorder />}
+                sx={{ 
+                  color: isMarkedForReview(currentExercise) ? 'lightblue' : 'white', 
+                  borderColor: isMarkedForReview(currentExercise) ? 'lightblue' : 'white', 
+                  '&:hover': { 
+                    bgcolor: isMarkedForReview(currentExercise) ? 'rgba(173,216,230,0.1)' : 'rgba(255,255,255,0.1)' 
+                  } 
+                }}
+              >
+                Review
               </Button>
               <Button
                 onClick={() => handleEditClick()}
