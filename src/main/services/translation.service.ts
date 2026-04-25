@@ -1,7 +1,7 @@
 import { loggingService as log } from "./main-logging.service";
 import * as path from "path";
 import * as fs from "fs";
-import { putLanguageLearningExercise, generateExerciseKey, calculateDifficulty } from "./languageLearningExerciseDb.service";
+import { putLanguageLearningExercise, generateExerciseKey, calculateDifficulty, getAllLanguageLearningExercises } from "./languageLearningExerciseDb.service";
 import { LanguageLearningExerciseModel } from "../../models/language-learning-exercise.model";
 
 /**
@@ -59,7 +59,8 @@ async function saveLanguageLearningExercise(
   sourceLanguage: string,
   targetLanguage: string,
   timestampLine: string,
-  vttFilePath: string
+  vttFilePath: string,
+  existingExercises: LanguageLearningExerciseModel[]
 ): Promise<void> {
   try {
     // Parse timestamps
@@ -69,13 +70,27 @@ async function saveLanguageLearningExercise(
     const videoFilePath = getVideoFilePathFromVTT(vttFilePath);
     const videoFileName = path.basename(videoFilePath);
     
-    // Calculate exercise properties
-    const wordCount = originalText.split(/\s+/).filter(word => word.length > 0).length;
+    // Calculate exercise properties - exclude standalone dashes from word count
+    const wordsWithoutDashes = originalText.replace(/\s+-\s+/g, ' ').split(/\s+/).filter(word => word.length > 0 && word !== '-');
+    const wordCount = wordsWithoutDashes.length;
     const difficulty = calculateDifficulty(originalText);
     const duration = endTime - startTime;
     
-    // Skip very short or very long texts
-    if (wordCount < 2 || wordCount > 25 || originalText.length < 10) {
+    // Skip very short or very long texts (minimum 4 words)
+    if (wordCount < 4 || wordCount > 25 || originalText.length < 10) {
+      return;
+    }
+    
+    // Determine practice text based on target language
+    const practiceText = targetLanguage === 'en' ? originalText : translatedText;
+    
+    // Check for duplicate practice text to prevent duplicates
+    const isDuplicate = existingExercises.some(exercise => 
+      exercise.practiceLanguageText === practiceText
+    );
+    
+    if (isDuplicate) {
+      log.info(`Skipping duplicate exercise text: "${practiceText.substring(0, 50)}..."`); 
       return;
     }
     
@@ -133,6 +148,10 @@ export async function translateSubtitles(
 
   try {
     log.info(`Translating subtitles from ${sourceLanguage} to ${targetLanguage}: ${vttFilePath}`);
+
+    // Fetch all existing exercises once for duplicate checking
+    const existingExercises = await getAllLanguageLearningExercises();
+    log.info(`Loaded ${existingExercises.length} existing exercises for duplicate checking`);
 
     // Read the VTT file content
     const vttContent = fs.readFileSync(vttFilePath, { encoding: "utf-8" });
@@ -192,7 +211,8 @@ export async function translateSubtitles(
                     sourceLanguage,
                     targetLanguage,
                     timestampLine,
-                    vttFilePath
+                    vttFilePath,
+                    existingExercises
                   );
                   exercisesCreated++;
                 } catch (exerciseError) {
