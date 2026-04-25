@@ -50,6 +50,9 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
 
   // Exercise to delete
   const [exerciseToDelete, setExerciseToDelete] = useState<LanguageLearningExerciseModel | null>(null);
+  
+  // Exercise to edit
+  const [exerciseToEdit, setExerciseToEdit] = useState<LanguageLearningExerciseModel | null>(null);
 
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -289,27 +292,29 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
   };
 
   // Handle edit exercise
-  const handleEditClick = () => {
-    if (!currentExercise) return;
+  const handleEditClick = (exercise?: LanguageLearningExerciseModel) => {
+    const targetExercise = exercise || currentExercise;
+    if (!targetExercise) return;
     
+    setExerciseToEdit(targetExercise);
     setEditForm({
-      practiceLanguageText: currentExercise.practiceLanguageText,
-      nativeLanguageText: currentExercise.nativeLanguageText,
-      practiceLanguage: currentExercise.practiceLanguage,
-      nativeLanguage: currentExercise.nativeLanguage,
-      difficulty: currentExercise.difficulty || ''
+      practiceLanguageText: targetExercise.practiceLanguageText,
+      nativeLanguageText: targetExercise.nativeLanguageText,
+      practiceLanguage: targetExercise.practiceLanguage,
+      nativeLanguage: targetExercise.nativeLanguage,
+      difficulty: targetExercise.difficulty || ''
     });
     openEditDialog();
   };
 
   // Handle edit form submission
   const handleEditSubmit = async () => {
-    if (!currentExercise?.id || !window.languageLearningAPI) return;
+    if (!exerciseToEdit?.id || !window.languageLearningAPI) return;
 
     setIsUpdating(true);
     try {
       const updatedExercise: LanguageLearningExerciseModel = {
-        ...currentExercise,
+        ...exerciseToEdit,
         practiceLanguageText: editForm.practiceLanguageText,
         nativeLanguageText: editForm.nativeLanguageText,
         practiceLanguage: editForm.practiceLanguage as 'en' | 'es' | 'fr',
@@ -318,22 +323,24 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
         wordCount: editForm.practiceLanguageText.split(/\s+/).filter(word => word.length > 0).length
       };
 
-      const response = await window.languageLearningAPI.updateExercise(currentExercise.id, updatedExercise);
+      const response = await window.languageLearningAPI.updateExercise(exerciseToEdit.id, updatedExercise);
       
       if (response.success) {
-        // Update current exercise
-        setCurrentExercise(updatedExercise);
+        // Update current exercise if it's the one being edited
+        if (currentExercise?.id === exerciseToEdit.id) {
+          setCurrentExercise(updatedExercise);
+          // Reset exercise state with new text for current exercise
+          resetExerciseState(updatedExercise.practiceLanguageText);
+        }
         
         // Update exercises list
         setAllExercises(prev => prev.map(ex => 
-          ex.id === currentExercise.id ? updatedExercise : ex
+          ex.id === exerciseToEdit.id ? updatedExercise : ex
         ));
         
-        // Reset exercise state with new text
-        resetExerciseState(updatedExercise.practiceLanguageText);
-        
         closeEditDialog();
-        console.log('Exercise updated successfully:', currentExercise.id);
+        setExerciseToEdit(null);
+        console.log('Exercise updated successfully:', exerciseToEdit.id);
       } else {
         console.error('Failed to update exercise:', response.error);
         alert('Failed to update exercise: ' + (response.error || 'Unknown error'));
@@ -690,7 +697,7 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                 {isFavorite(currentExercise) ? 'Favorited' : 'Favorite'}
               </Button>
               <Button
-                onClick={handleEditClick}
+                onClick={() => handleEditClick()}
                 variant="outlined"
                 size="small"
                 startIcon={<Edit />}
@@ -1298,14 +1305,26 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <IconButton 
-                            onClick={() => handleDeleteClick(exercise)}
-                            color="error"
-                            size="small"
-                            sx={{ '&:hover': { bgcolor: 'error.dark' } }}
-                          >
-                            <Delete />
-                          </IconButton>
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            <IconButton 
+                              onClick={() => handleEditClick(exercise)}
+                              color="primary"
+                              size="small"
+                              sx={{ '&:hover': { bgcolor: 'primary.dark' } }}
+                              title="Edit exercise"
+                            >
+                              <Edit />
+                            </IconButton>
+                            <IconButton 
+                              onClick={() => handleDeleteClick(exercise)}
+                              color="error"
+                              size="small"
+                              sx={{ '&:hover': { bgcolor: 'error.dark' } }}
+                              title="Delete exercise"
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     ))
@@ -1442,9 +1461,10 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
         <DialogActions>
           <Button 
             onClick={() => {
-              if (currentExercise) {
+              if (exerciseToEdit) {
                 closeEditDialog();
-                handleDeleteClick(currentExercise);
+                setExerciseToEdit(null);
+                handleDeleteClick(exerciseToEdit);
               }
             }}
             color="error"
@@ -1453,7 +1473,13 @@ export const LanguagePracticePage: React.FC<LanguagePracticePageProps> = ({
           >
             Delete
           </Button>
-          <Button onClick={closeEditDialog} color="primary">
+          <Button 
+            onClick={() => {
+              closeEditDialog();
+              setExerciseToEdit(null);
+            }} 
+            color="primary"
+          >
             Cancel
           </Button>
           <Button 
