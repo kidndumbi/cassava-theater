@@ -16,18 +16,20 @@ import {
 } from "@mui/material";
 import { Add as AddIcon, LocalOffer as LocalOfferIcon } from "@mui/icons-material";
 
+interface CreateExerciseDialogForm {
+  practiceLanguageText: string;
+  nativeLanguageText: string;
+  practiceLanguage: 'en' | 'es' | 'fr' | '';
+  nativeLanguage: 'en' | 'es' | 'fr' | '';
+  difficulty: 'easy' | 'medium' | 'hard' | '';
+}
+
 interface CreateExerciseDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: () => void;
-  form: {
-    practiceLanguageText: string;
-    nativeLanguageText: string;
-    practiceLanguage: 'en' | 'es' | 'fr' | '';
-    nativeLanguage: 'en' | 'es' | 'fr' | '';
-    difficulty: 'easy' | 'medium' | 'hard' | '';
-  };
-  onFormChange: <K extends keyof typeof form>(field: K, value: typeof form[K]) => void;
+  form: CreateExerciseDialogForm;
+  onFormChange: <K extends keyof CreateExerciseDialogForm>(field: K, value: CreateExerciseDialogForm[K]) => void;
   tags: string[];
   newTag: string;
   onTagsChange: (tags: string[]) => void;

@@ -127,7 +127,6 @@ export function registerLanguageLearningHandlers(
         }
 
         const key = generateExerciseKey(
-          exerciseData.videoFilePath,
           exerciseData.startTime,
           exerciseData.endTime
         );

@@ -17,20 +17,22 @@ import {
 import { Delete, Add as AddIcon, LocalOffer as LocalOfferIcon } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 
+interface EditExerciseDialogForm {
+  practiceLanguageText: string;
+  nativeLanguageText: string;
+  practiceLanguage: 'en' | 'es' | 'fr' | '';
+  nativeLanguage: 'en' | 'es' | 'fr' | '';
+  difficulty: 'easy' | 'medium' | 'hard' | '';
+}
+
 interface EditExerciseDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: () => void;
   onDelete: () => void;
   exercise: LanguageLearningExerciseModel | null;
-  form: {
-    practiceLanguageText: string;
-    nativeLanguageText: string;
-    practiceLanguage: 'en' | 'es' | 'fr' | '';
-    nativeLanguage: 'en' | 'es' | 'fr' | '';
-    difficulty: 'easy' | 'medium' | 'hard' | '';
-  };
-  onFormChange: <K extends keyof typeof form>(field: K, value: typeof form[K]) => void;
+  form: EditExerciseDialogForm;
+  onFormChange: <K extends keyof EditExerciseDialogForm>(field: K, value: EditExerciseDialogForm[K]) => void;
   tags: string[];
   newTag: string;
   onTagsChange: (tags: string[]) => void;
