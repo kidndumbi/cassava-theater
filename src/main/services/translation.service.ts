@@ -118,7 +118,7 @@ async function saveLanguageLearningExercise(
     }
     
     // Generate unique key
-    const exerciseKey = generateExerciseKey(videoFilePath, startTime, endTime);
+    const exerciseKey = generateExerciseKey( startTime, endTime);
     
     // Save to database
     await putLanguageLearningExercise(exerciseKey, exercise);

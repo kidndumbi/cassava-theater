@@ -79,11 +79,9 @@ export const languageLearningIpcHandlers = () => {
       }
 
       const key = generateExerciseKey(
-        exerciseData.videoFilePath,
         exerciseData.startTime,
         exerciseData.endTime
       );
-      console.log('Generated exercise key:', key);
 
       // Calculate difficulty if not provided
       if (!exerciseData.difficulty && exerciseData.practiceLanguageText) {

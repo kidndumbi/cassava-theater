@@ -1,6 +1,7 @@
 import { levelDBService } from "./levelDB.service";
 import { LanguageLearningExerciseModel } from "../../models/language-learning-exercise.model";
 import { loggingService as log } from "./main-logging.service";
+import { v4 as uuidv4 } from "uuid";
 
 const COLLECTION_NAME = "languageLearningExercises";
 
@@ -11,12 +12,10 @@ export type LanguageLearningExerciseKeyType = string;
  * Format: videoFilePath:startTime:endTime
  */
 export const generateExerciseKey = (
-  videoFilePath: string,
   startTime: number,
   endTime: number
 ): string => {
-  const cleanPath = videoFilePath.replace(/[^a-zA-Z0-9]/g, '_');
-  return `${cleanPath}:${startTime.toFixed(1)}:${endTime.toFixed(1)}`;
+  return `${uuidv4()}:${startTime.toFixed(1)}:${endTime.toFixed(1)}`;
 };
 
 /**

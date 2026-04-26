@@ -58,7 +58,7 @@ export const renderActivePage = (
     case "app-custom-folders":
       return <CustomFolderPage menuId={activeMenu.id} />;
     case "app-language-practice":
-      return <LanguagePracticePage menuId={activeMenu.id} />;
+      return <LanguagePracticePage />;
     default:
       return <div>Page not found</div>;
   }
