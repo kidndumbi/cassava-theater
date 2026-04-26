@@ -1,13 +1,16 @@
 import { AppSocketEvents } from "../../../enums/app-socket-events.enum";
 import { Socket } from "socket.io";
 import { BrowserWindow } from "electron";
-import { getCurrentLanguageLearningState, LanguageLearningState } from "../../ipc-handlers/languageLearningIpcHandlers";
-import { 
+import {
+  getCurrentLanguageLearningState,
+  LanguageLearningState,
+} from "../../ipc-handlers/languageLearningIpcHandlers";
+import {
   getAllLanguageLearningExercises,
   putLanguageLearningExercise,
   updateExerciseStats,
   generateExerciseKey,
-  calculateDifficulty
+  calculateDifficulty,
 } from "../languageLearningExerciseDb.service";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { loggingService as log } from "../main-logging.service";
@@ -27,7 +30,9 @@ export function registerLanguageLearningHandlers(
         error?: string;
       }) => void,
     ) => {
-      try {        const currentState = getCurrentLanguageLearningState();        callback({ success: true, data: currentState });
+      try {
+        const currentState = getCurrentLanguageLearningState();
+        callback({ success: true, data: currentState });
       } catch (error) {
         callback({ success: false, error: (error as Error).message });
       }
@@ -96,7 +101,9 @@ export function registerLanguageLearningHandlers(
       }) => void,
     ) => {
       try {
-        log.info(`Socket request: Update language learning exercise ${data.id}`);
+        log.info(
+          `Socket request: Update language learning exercise ${data.id}`,
+        );
         await putLanguageLearningExercise(data.id, data.exercise);
         log.info(`Successfully updated exercise ${data.id}`);
         callback({ success: true, data: data.exercise });
@@ -119,28 +126,53 @@ export function registerLanguageLearningHandlers(
       }) => void,
     ) => {
       try {
-        log.info('Socket request: Create new language learning exercise');
+        log.info("Socket request: Create new language learning exercise");
         const exerciseData = data.exercise;
-        
-        if (!exerciseData.videoFilePath || exerciseData.startTime == null || exerciseData.endTime == null) {
-          throw new Error('Missing required exercise data: videoFilePath, startTime, endTime');
+
+        if (
+          !exerciseData.videoFilePath ||
+          exerciseData.startTime == null ||
+          exerciseData.endTime == null
+        ) {
+          throw new Error(
+            "Missing required exercise data: videoFilePath, startTime, endTime",
+          );
+        }
+
+        const existingExercises = await getAllLanguageLearningExercises();
+
+        // Check for duplicate practice text to prevent duplicates
+        const isDuplicate = existingExercises.some(
+          (exercise) =>
+            exercise.practiceLanguageText === exerciseData.practiceLanguageText,
+        );
+
+        if (isDuplicate) {
+          throw new Error(
+            "An exercise with the same practice text already exists. Please modify the text to create a unique exercise.",
+          );
         }
 
         const key = generateExerciseKey(
           exerciseData.startTime,
-          exerciseData.endTime
+          exerciseData.endTime,
         );
-        
+
         // Calculate difficulty if not provided
         if (!exerciseData.difficulty && exerciseData.practiceLanguageText) {
-          exerciseData.difficulty = calculateDifficulty(exerciseData.practiceLanguageText);
+          exerciseData.difficulty = calculateDifficulty(
+            exerciseData.practiceLanguageText,
+          );
         }
-        
-        const savedExercise = await putLanguageLearningExercise(key, exerciseData);
+
+        const savedExercise = await putLanguageLearningExercise(
+          key,
+          exerciseData,
+        );
         log.info(`Successfully created exercise ${key}`);
         callback({ success: true, data: savedExercise });
       } catch (error) {
-        log.error('Failed to create exercise:', error);
+        log.error("Failed to create exercise:", error);
         callback({ success: false, error: (error as Error).message });
       }
     },
@@ -158,7 +190,9 @@ export function registerLanguageLearningHandlers(
       }) => void,
     ) => {
       try {
-        log.info(`Socket request: Update exercise stats ${data.id}, correct: ${data.correct}`);
+        log.info(
+          `Socket request: Update exercise stats ${data.id}, correct: ${data.correct}`,
+        );
         await updateExerciseStats(data.id, data.correct);
         log.info(`Successfully updated stats for exercise ${data.id}`);
         callback({ success: true });
