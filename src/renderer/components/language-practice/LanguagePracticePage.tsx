@@ -603,9 +603,9 @@ export const LanguagePracticePage: React.FC = () => {
       // Text search
       if (filters.searchText) {
         const searchLower = filters.searchText.toLowerCase();
-        const matchesText = 
-          exercise.practiceLanguageText.toLowerCase().includes(searchLower) ||
-          exercise.nativeLanguageText.toLowerCase().includes(searchLower) ||
+        const matchesText =
+          (typeof exercise.practiceLanguageText === 'string' && exercise.practiceLanguageText.toLowerCase().includes(searchLower)) ||
+          (typeof exercise.nativeLanguageText === 'string' && exercise.nativeLanguageText.toLowerCase().includes(searchLower)) ||
           (exercise.videoFileName && exercise.videoFileName.toLowerCase().includes(searchLower));
         if (!matchesText) return false;
       }
