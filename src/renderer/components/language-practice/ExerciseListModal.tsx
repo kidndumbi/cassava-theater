@@ -72,7 +72,7 @@ interface ExerciseListModalProps {
   onSelectExercise: (exercise: LanguageLearningExerciseModel) => void;
   onEditExercise: (exercise: LanguageLearningExerciseModel) => void;
   onDeleteExercise: (exercise: LanguageLearningExerciseModel) => void;
-  onUpdateFilter: <K extends keyof typeof filters>(key: K, value: typeof filters[K]) => void;
+  onUpdateFilter: <K extends keyof ExerciseListModalProps['filters']>(key: K, value: ExerciseListModalProps['filters'][K]) => void;
   onClearFilters: () => void;
 }
 
