@@ -1,27 +1,30 @@
 import React from "react";
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  Button, 
-  TextField, 
-  FormControl, 
-  InputLabel, 
-  Select, 
-  MenuItem, 
-  Box, 
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Box,
   Typography,
-  Chip
+  Chip,
 } from "@mui/material";
-import { Add as AddIcon, LocalOffer as LocalOfferIcon } from "@mui/icons-material";
+import {
+  Add as AddIcon,
+  LocalOffer as LocalOfferIcon,
+} from "@mui/icons-material";
 
 interface CreateExerciseDialogForm {
   practiceLanguageText: string;
   nativeLanguageText: string;
-  practiceLanguage: 'en' | 'es' | 'fr' | '';
-  nativeLanguage: 'en' | 'es' | 'fr' | '';
-  difficulty: 'easy' | 'medium' | 'hard' | '';
+  practiceLanguage: "en" | "es" | "fr" | "";
+  nativeLanguage: "en" | "es" | "fr" | "";
+  difficulty: "easy" | "medium" | "hard" | "";
 }
 
 interface CreateExerciseDialogProps {
@@ -29,7 +32,10 @@ interface CreateExerciseDialogProps {
   onClose: () => void;
   onSubmit: () => void;
   form: CreateExerciseDialogForm;
-  onFormChange: <K extends keyof CreateExerciseDialogForm>(field: K, value: CreateExerciseDialogForm[K]) => void;
+  onFormChange: <K extends keyof CreateExerciseDialogForm>(
+    field: K,
+    value: CreateExerciseDialogForm[K],
+  ) => void;
   tags: string[];
   newTag: string;
   onTagsChange: (tags: string[]) => void;
@@ -55,12 +61,12 @@ export const CreateExerciseDialog: React.FC<CreateExerciseDialogProps> = ({
     const tagName = newTag.trim().toLowerCase();
     if (tagName && !tags.includes(tagName)) {
       onTagsChange([...tags, tagName]);
-      onNewTagChange('');
+      onNewTagChange("");
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    onTagsChange(tags.filter(tag => tag !== tagToRemove));
+    onTagsChange(tags.filter((tag) => tag !== tagToRemove));
   };
 
   const addExistingTag = (tag: string) => {
@@ -70,27 +76,13 @@ export const CreateExerciseDialog: React.FC<CreateExerciseDialogProps> = ({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-    >
+    <Dialog open={isOpen} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Create New Exercise</DialogTitle>
       <DialogContent>
-        <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 1 }}>
-          {/* Practice Language Text */}
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            label="Practice Language Text"
-            value={form.practiceLanguageText}
-            onChange={(e) => onFormChange('practiceLanguageText', e.target.value)}
-            placeholder="Text that users will practice arranging"
-            required
-          />
-
+        <Box
+          component="form"
+          sx={{ display: "flex", flexDirection: "column", gap: 3, pt: 1 }}
+        >
           {/* Native Language Text */}
           <TextField
             fullWidth
@@ -98,32 +90,54 @@ export const CreateExerciseDialog: React.FC<CreateExerciseDialogProps> = ({
             rows={3}
             label="Native Language Text (Reference)"
             value={form.nativeLanguageText}
-            onChange={(e) => onFormChange('nativeLanguageText', e.target.value)}
+            onChange={(e) => onFormChange("nativeLanguageText", e.target.value)}
             placeholder="Reference text shown to help users"
+            required
+          />
+          {/* Practice Language Text */}
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Practice Language Text"
+            value={form.practiceLanguageText}
+            onChange={(e) =>
+              onFormChange("practiceLanguageText", e.target.value)
+            }
+            placeholder="Text that users will practice arranging"
             required
           />
 
           {/* Languages */}
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: "flex", gap: 2 }}>
             <FormControl fullWidth required>
-              <InputLabel>Practice Language</InputLabel>
+              <InputLabel>Native Language</InputLabel>
               <Select
-                value={form.practiceLanguage}
-                label="Practice Language"
-                onChange={(e) => onFormChange('practiceLanguage', e.target.value as 'en' | 'es' | 'fr')}
+                value={form.nativeLanguage}
+                label="Native Language"
+                onChange={(e) =>
+                  onFormChange(
+                    "nativeLanguage",
+                    e.target.value as "en" | "es" | "fr",
+                  )
+                }
               >
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="es">Spanish</MenuItem>
                 <MenuItem value="fr">French</MenuItem>
               </Select>
             </FormControl>
-
             <FormControl fullWidth required>
-              <InputLabel>Native Language</InputLabel>
+              <InputLabel>Practice Language</InputLabel>
               <Select
-                value={form.nativeLanguage}
-                label="Native Language"
-                onChange={(e) => onFormChange('nativeLanguage', e.target.value as 'en' | 'es' | 'fr')}
+                value={form.practiceLanguage}
+                label="Practice Language"
+                onChange={(e) =>
+                  onFormChange(
+                    "practiceLanguage",
+                    e.target.value as "en" | "es" | "fr",
+                  )
+                }
               >
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="es">Spanish</MenuItem>
@@ -131,14 +145,49 @@ export const CreateExerciseDialog: React.FC<CreateExerciseDialogProps> = ({
               </Select>
             </FormControl>
           </Box>
-
+          <Button
+            onClick={() => {
+              if (
+                form.nativeLanguage &&
+                form.nativeLanguageText.trim() &&
+                form.practiceLanguage &&
+                form.nativeLanguage
+              ) {
+                window.translationAPI
+                  .translateText({
+                    text: form.nativeLanguageText.trim(),
+                    sourceLanguage: form.nativeLanguage,
+                    targetLanguage: form.practiceLanguage,
+                  })
+                  .then((translatedText) => {
+                    onFormChange("practiceLanguageText", translatedText);
+                  })
+                  .catch((error: any) => {
+                    console.error("Translation error:", error);
+                    alert("Failed to translate text. Please try again.");
+                  });
+              } else {
+                alert(
+                  "Please fill in the native language text, select both practice and native languages before translating.",
+                );
+              }
+            }}
+            color="primary"
+          >
+            Translate
+          </Button>
           {/* Difficulty */}
           <FormControl fullWidth>
             <InputLabel>Difficulty (Optional)</InputLabel>
             <Select
               value={form.difficulty}
               label="Difficulty (Optional)"
-              onChange={(e) => onFormChange('difficulty', e.target.value as 'easy' | 'medium' | 'hard')}
+              onChange={(e) =>
+                onFormChange(
+                  "difficulty",
+                  e.target.value as "easy" | "medium" | "hard",
+                )
+              }
             >
               <MenuItem value="">Not Set</MenuItem>
               <MenuItem value="easy">Easy</MenuItem>
@@ -148,8 +197,18 @@ export const CreateExerciseDialog: React.FC<CreateExerciseDialogProps> = ({
           </FormControl>
 
           {/* Tags Management */}
-          <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2 }}>
-            <Typography variant="subtitle1" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box
+            sx={{
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 1,
+              p: 2,
+            }}
+          >
+            <Typography
+              variant="subtitle1"
+              sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}
+            >
               <LocalOfferIcon />
               Exercise Tags
             </Typography>
@@ -157,10 +216,14 @@ export const CreateExerciseDialog: React.FC<CreateExerciseDialogProps> = ({
             {/* Current Tags */}
             {tags.length > 0 && (
               <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1 }}
+                >
                   Current Tags:
                 </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                   {tags.map((tag) => (
                     <Chip
                       key={tag}
@@ -175,7 +238,7 @@ export const CreateExerciseDialog: React.FC<CreateExerciseDialogProps> = ({
             )}
 
             {/* Add New Tag */}
-            <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+            <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
               <TextField
                 fullWidth
                 size="small"
@@ -184,7 +247,7 @@ export const CreateExerciseDialog: React.FC<CreateExerciseDialogProps> = ({
                 onChange={(e) => onNewTagChange(e.target.value)}
                 placeholder="Enter tag name..."
                 onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     addTag();
                   }
                 }}
@@ -193,7 +256,9 @@ export const CreateExerciseDialog: React.FC<CreateExerciseDialogProps> = ({
                 variant="outlined"
                 startIcon={<AddIcon />}
                 onClick={addTag}
-                disabled={!newTag.trim() || tags.includes(newTag.trim().toLowerCase())}
+                disabled={
+                  !newTag.trim() || tags.includes(newTag.trim().toLowerCase())
+                }
               >
                 Add
               </Button>
@@ -202,31 +267,37 @@ export const CreateExerciseDialog: React.FC<CreateExerciseDialogProps> = ({
             {/* Existing Tags - Quick Add */}
             {allTags.length > 0 && (
               <Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1 }}
+                >
                   Quick Add from Existing:
                 </Typography>
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
-                  gap: 0.5, 
-                  maxHeight: 120, 
-                  overflowY: 'auto',
-                  p: 1,
-                  bgcolor: 'background.default',
-                  borderRadius: 1
-                }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 0.5,
+                    maxHeight: 120,
+                    overflowY: "auto",
+                    p: 1,
+                    bgcolor: "background.default",
+                    borderRadius: 1,
+                  }}
+                >
                   {allTags
-                    .filter(tag => !tags.includes(tag))
+                    .filter((tag) => !tags.includes(tag))
                     .map((tag) => (
-                    <Chip
-                      key={tag}
-                      label={tag}
-                      onClick={() => addExistingTag(tag)}
-                      variant="outlined"
-                      size="small"
-                      sx={{ cursor: 'pointer' }}
-                    />
-                  ))}
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        onClick={() => addExistingTag(tag)}
+                        variant="outlined"
+                        size="small"
+                        sx={{ cursor: "pointer" }}
+                      />
+                    ))}
                 </Box>
               </Box>
             )}
@@ -234,19 +305,22 @@ export const CreateExerciseDialog: React.FC<CreateExerciseDialogProps> = ({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button 
-          onClick={onClose}
-          disabled={isCreating}
-        >
+        <Button onClick={onClose} disabled={isCreating}>
           Cancel
         </Button>
-        <Button 
-          onClick={onSubmit} 
-          color="primary" 
+        <Button
+          onClick={onSubmit}
+          color="primary"
           variant="contained"
-          disabled={isCreating || !form.practiceLanguageText.trim() || !form.nativeLanguageText.trim() || !form.practiceLanguage || !form.nativeLanguage}
+          disabled={
+            isCreating ||
+            !form.practiceLanguageText.trim() ||
+            !form.nativeLanguageText.trim() ||
+            !form.practiceLanguage ||
+            !form.nativeLanguage
+          }
         >
-          {isCreating ? 'Creating...' : 'Create Exercise'}
+          {isCreating ? "Creating..." : "Create Exercise"}
         </Button>
       </DialogActions>
     </Dialog>

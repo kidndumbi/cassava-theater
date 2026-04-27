@@ -494,6 +494,17 @@ contextBridge.exposeInMainWorld("translationAPI", {
       args,
     ) as Promise<string>;
   },
+  translateText: (args: {
+    text: string;
+    sourceLanguage: string;
+    targetLanguage: string;
+    libretranslateUrl?: string;
+  }) => {
+    return ipcRenderer.invoke(
+      TranslationIPCChannels.TRANSLATE_TEXT,
+      args,
+    ) as Promise<string>;
+  },
   getSupportedLanguages: (libretranslateUrl?: string) => {
     return ipcRenderer.invoke(
       TranslationIPCChannels.GET_SUPPORTED_LANGUAGES,

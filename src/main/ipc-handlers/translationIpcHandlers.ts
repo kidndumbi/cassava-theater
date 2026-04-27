@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { translateSubtitles, getSupportedLanguages, detectLanguage } from "../services/translation.service";
+import { translateSubtitles, getSupportedLanguages, detectLanguage, callLibreTranslate } from "../services/translation.service";
 import { TranslationIPCChannels } from "../../enums/translationIPCChannels.enum";
 
 export const translationIpcHandlers = () => {
@@ -25,6 +25,36 @@ export const translationIpcHandlers = () => {
           throw new Error(`Error translating subtitles: ${error.message}`);
         } else {
           throw new Error("Error translating subtitles: Unknown error");
+        }
+      }
+    }
+  );
+
+  ipcMain.handle(
+    TranslationIPCChannels.TRANSLATE_TEXT,
+    async (_event: Electron.IpcMainInvokeEvent, args: {
+      text: string;
+      sourceLanguage: string;
+      targetLanguage: string;
+      libretranslateUrl?: string;
+    }) => {
+      try {
+        const { text, sourceLanguage, targetLanguage, libretranslateUrl = "http://localhost:5000" } = args;
+        if (!text) {
+          throw new Error("Text is not provided for translation.");
+        } 
+        if (!sourceLanguage) {
+          throw new Error("Source language is not provided for translation.");
+        }
+        if (!targetLanguage) {
+          throw new Error("Target language is not provided for translation.");
+        }
+        return await callLibreTranslate(text, sourceLanguage, targetLanguage, libretranslateUrl);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          throw new Error(`Error translating text: ${error.message}`);
+        } else {
+          throw new Error("Error translating text: Unknown error");
         }
       }
     }
