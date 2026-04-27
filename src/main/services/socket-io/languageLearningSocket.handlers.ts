@@ -207,11 +207,13 @@ export function registerLanguageLearningHandlers(
   socket.on(
     AppSocketEvents.TRANSLATE_TEXT,
     async (
-      data: {
-        text: string;
-        sourceLanguage: string;
-        targetLanguage: string;
-        libretranslateUrl?: string;
+      response: {
+        data: {
+          text: string;
+          sourceLanguage: string;
+          targetLanguage: string;
+          libretranslateUrl?: string;
+        };
       },
       callback: (response: {
         success: boolean;
@@ -225,7 +227,8 @@ export function registerLanguageLearningHandlers(
           sourceLanguage,
           targetLanguage,
           libretranslateUrl = "http://localhost:5000",
-        } = data;
+        } = response.data;
+
         if (!text) {
           throw new Error("Text is not provided for translation.");
         }
