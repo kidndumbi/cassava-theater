@@ -59,4 +59,5 @@ export enum AppSocketEvents {
   TAG_ADD_TAG = "tag:add-tag",
   TAG_DELETE_TAG = "tag:delete-tag",
   TAG_EXISTS = "tag:tag-exists",
+  TRANSLATE_TEXT = "translate:translate-text",
 }
