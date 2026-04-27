@@ -14,6 +14,7 @@ import {
 } from "../languageLearningExerciseDb.service";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { loggingService as log } from "../main-logging.service";
+import { callLibreTranslate } from "../translation.service";
 
 export function registerLanguageLearningHandlers(
   socket: Socket,
@@ -198,6 +199,50 @@ export function registerLanguageLearningHandlers(
         callback({ success: true });
       } catch (error) {
         log.error(`Failed to update exercise stats ${data.id}:`, error);
+        callback({ success: false, error: (error as Error).message });
+      }
+    },
+  );
+
+  socket.on(
+    AppSocketEvents.TRANSLATE_TEXT,
+    async (
+      data: {
+        text: string;
+        sourceLanguage: string;
+        targetLanguage: string;
+        libretranslateUrl?: string;
+      },
+      callback: (response: {
+        success: boolean;
+        data?: string;
+        error?: string;
+      }) => void,
+    ) => {
+      try {
+        const {
+          text,
+          sourceLanguage,
+          targetLanguage,
+          libretranslateUrl = "http://localhost:5000",
+        } = data;
+        if (!text) {
+          throw new Error("Text is not provided for translation.");
+        }
+        if (!sourceLanguage) {
+          throw new Error("Source language is not provided for translation.");
+        }
+        if (!targetLanguage) {
+          throw new Error("Target language is not provided for translation.");
+        }
+        const translatedText = await callLibreTranslate(
+          text,
+          sourceLanguage,
+          targetLanguage,
+          libretranslateUrl,
+        );
+        callback({ success: true, data: translatedText });
+      } catch (error) {
         callback({ success: false, error: (error as Error).message });
       }
     },
