@@ -194,6 +194,12 @@ export interface TranslationAPI {
     sourceLanguage?: string;
     libretranslateUrl?: string;
   }) => Promise<string>;
+  translateText: (args: {
+    text: string;
+    sourceLanguage: string;
+    targetLanguage: string;
+    libretranslateUrl?: string;
+  }) => Promise<string>;
   getSupportedLanguages: (libretranslateUrl?: string) => Promise<Array<{ code: string; name: string }>>;
   detectLanguage: (args: {
     text: string;

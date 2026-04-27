@@ -1,28 +1,32 @@
 import React from "react";
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  Button, 
-  TextField, 
-  FormControl, 
-  InputLabel, 
-  Select, 
-  MenuItem, 
-  Box, 
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Box,
   Typography,
-  Chip
+  Chip,
 } from "@mui/material";
-import { Delete, Add as AddIcon, LocalOffer as LocalOfferIcon } from "@mui/icons-material";
+import {
+  Delete,
+  Add as AddIcon,
+  LocalOffer as LocalOfferIcon,
+} from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 
 interface EditExerciseDialogForm {
   practiceLanguageText: string;
   nativeLanguageText: string;
-  practiceLanguage: 'en' | 'es' | 'fr' | '';
-  nativeLanguage: 'en' | 'es' | 'fr' | '';
-  difficulty: 'easy' | 'medium' | 'hard' | '';
+  practiceLanguage: "en" | "es" | "fr" | "";
+  nativeLanguage: "en" | "es" | "fr" | "";
+  difficulty: "easy" | "medium" | "hard" | "";
 }
 
 interface EditExerciseDialogProps {
@@ -32,7 +36,10 @@ interface EditExerciseDialogProps {
   onDelete: () => void;
   exercise: LanguageLearningExerciseModel | null;
   form: EditExerciseDialogForm;
-  onFormChange: <K extends keyof EditExerciseDialogForm>(field: K, value: EditExerciseDialogForm[K]) => void;
+  onFormChange: <K extends keyof EditExerciseDialogForm>(
+    field: K,
+    value: EditExerciseDialogForm[K],
+  ) => void;
   tags: string[];
   newTag: string;
   onTagsChange: (tags: string[]) => void;
@@ -60,12 +67,12 @@ export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
     const tagName = newTag.trim().toLowerCase();
     if (tagName && !tags.includes(tagName)) {
       onTagsChange([...tags, tagName]);
-      onNewTagChange('');
+      onNewTagChange("");
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    onTagsChange(tags.filter(tag => tag !== tagToRemove));
+    onTagsChange(tags.filter((tag) => tag !== tagToRemove));
   };
 
   const addExistingTag = (tag: string) => {
@@ -75,55 +82,92 @@ export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-    >
+    <Dialog open={isOpen} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Edit Exercise</DialogTitle>
       <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
-          <TextField
-            label="Practice Language Text"
-            multiline
-            rows={3}
-            value={form.practiceLanguageText}
-            onChange={(e) => onFormChange('practiceLanguageText', e.target.value)}
-            fullWidth
-            helperText="The text that users will practice arranging"
-          />
-          
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 3, mt: 2 }}>
           <TextField
             label="Native Language Text (Reference)"
             multiline
             rows={3}
             value={form.nativeLanguageText}
-            onChange={(e) => onFormChange('nativeLanguageText', e.target.value)}
+            onChange={(e) => onFormChange("nativeLanguageText", e.target.value)}
             fullWidth
             helperText="The reference text shown to help users"
           />
-          
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <TextField
+            label="Practice Language Text"
+            multiline
+            rows={3}
+            value={form.practiceLanguageText}
+            onChange={(e) =>
+              onFormChange("practiceLanguageText", e.target.value)
+            }
+            fullWidth
+            helperText="The text that users will practice arranging"
+          />
+
+          <Button
+            onClick={() => {
+              if (
+                form.nativeLanguage &&
+                form.nativeLanguageText.trim() &&
+                form.practiceLanguage &&
+                form.nativeLanguage
+              ) {
+                window.translationAPI
+                  .translateText({
+                    text: form.nativeLanguageText.trim(),
+                    sourceLanguage: form.nativeLanguage,
+                    targetLanguage: form.practiceLanguage,
+                  })
+                  .then((translatedText) => {
+                    onFormChange("practiceLanguageText", translatedText);
+                  })
+                  .catch((error: any) => {
+                    console.error("Translation error:", error);
+                    alert("Failed to translate text. Please try again.");
+                  });
+              } else {
+                alert(
+                  "Please fill in the native language text, select both practice and native languages before translating.",
+                );
+              }
+            }}
+            color="primary"
+          >
+            Translate
+          </Button>
+
+          <Box sx={{ display: "flex", gap: 2 }}>
             <FormControl fullWidth>
-              <InputLabel>Practice Language</InputLabel>
+              <InputLabel>Native Language</InputLabel>
               <Select
-                value={form.practiceLanguage}
-                label="Practice Language"
-                onChange={(e) => onFormChange('practiceLanguage', e.target.value as 'en' | 'es' | 'fr' | '')}
+                value={form.nativeLanguage}
+                label="Native Language"
+                onChange={(e) =>
+                  onFormChange(
+                    "nativeLanguage",
+                    e.target.value as "en" | "es" | "fr" | "",
+                  )
+                }
               >
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="es">Spanish</MenuItem>
                 <MenuItem value="fr">French</MenuItem>
               </Select>
             </FormControl>
-            
             <FormControl fullWidth>
-              <InputLabel>Native Language</InputLabel>
+              <InputLabel>Practice Language</InputLabel>
               <Select
-                value={form.nativeLanguage}
-                label="Native Language"
-                onChange={(e) => onFormChange('nativeLanguage', e.target.value as 'en' | 'es' | 'fr' | '')}
+                value={form.practiceLanguage}
+                label="Practice Language"
+                onChange={(e) =>
+                  onFormChange(
+                    "practiceLanguage",
+                    e.target.value as "en" | "es" | "fr" | "",
+                  )
+                }
               >
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="es">Spanish</MenuItem>
@@ -131,13 +175,18 @@ export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
               </Select>
             </FormControl>
           </Box>
-          
+
           <FormControl fullWidth>
             <InputLabel>Difficulty</InputLabel>
             <Select
               value={form.difficulty}
               label="Difficulty"
-              onChange={(e) => onFormChange('difficulty', e.target.value as 'easy' | 'medium' | 'hard' | '')}
+              onChange={(e) =>
+                onFormChange(
+                  "difficulty",
+                  e.target.value as "easy" | "medium" | "hard" | "",
+                )
+              }
             >
               <MenuItem value="">Not Set</MenuItem>
               <MenuItem value="easy">Easy</MenuItem>
@@ -145,20 +194,27 @@ export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
               <MenuItem value="hard">Hard</MenuItem>
             </Select>
           </FormControl>
-          
+
           {/* Tags Management */}
           <Box>
-            <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography
+              variant="h6"
+              sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}
+            >
               <LocalOfferIcon /> Exercise Tags
             </Typography>
-            
+
             {/* Current Tags */}
             {tags.length > 0 && (
               <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1 }}
+                >
                   Current Tags:
                 </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                   {tags.map((tag) => (
                     <Chip
                       key={tag}
@@ -168,21 +224,23 @@ export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
                       variant="outlined"
                       color="primary"
                       sx={{
-                        '& .MuiChip-deleteIcon': {
-                          color: 'error.main',
-                          '&:hover': {
-                            color: 'error.dark'
-                          }
-                        }
+                        "& .MuiChip-deleteIcon": {
+                          color: "error.main",
+                          "&:hover": {
+                            color: "error.dark",
+                          },
+                        },
                       }}
                     />
                   ))}
                 </Box>
               </Box>
             )}
-            
+
             {/* Add New Tag */}
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start', mb: 2 }}>
+            <Box
+              sx={{ display: "flex", gap: 2, alignItems: "flex-start", mb: 2 }}
+            >
               <TextField
                 label="Add Tag"
                 value={newTag}
@@ -191,14 +249,16 @@ export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
                 size="small"
                 fullWidth
                 onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     addTag();
                   }
                 }}
               />
               <Button
                 onClick={addTag}
-                disabled={!newTag.trim() || tags.includes(newTag.trim().toLowerCase())}
+                disabled={
+                  !newTag.trim() || tags.includes(newTag.trim().toLowerCase())
+                }
                 variant="outlined"
                 startIcon={<AddIcon />}
                 sx={{ minWidth: 100 }}
@@ -206,25 +266,31 @@ export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
                 Add
               </Button>
             </Box>
-            
+
             {/* Existing Tags - Quick Add */}
             {allTags.length > 0 && (
               <Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1 }}
+                >
                   Quick Add from Existing Tags:
                 </Typography>
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
-                  gap: 1, 
-                  maxHeight: 120, 
-                  overflowY: 'auto', 
-                  p: 1, 
-                  bgcolor: 'grey.50', 
-                  borderRadius: 1 
-                }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 1,
+                    maxHeight: 120,
+                    overflowY: "auto",
+                    p: 1,
+                    bgcolor: "grey.50",
+                    borderRadius: 1,
+                  }}
+                >
                   {allTags
-                    .filter(tag => !tags.includes(tag))
+                    .filter((tag) => !tags.includes(tag))
                     .map((tag) => (
                       <Chip
                         key={tag}
@@ -232,12 +298,12 @@ export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
                         onClick={() => addExistingTag(tag)}
                         variant="outlined"
                         color="default"
-                        sx={{ 
-                          cursor: 'pointer',
-                          '&:hover': {
-                            bgcolor: 'primary.light',
-                            color: 'white'
-                          }
+                        sx={{
+                          cursor: "pointer",
+                          "&:hover": {
+                            bgcolor: "primary.light",
+                            color: "white",
+                          },
                         }}
                       />
                     ))}
@@ -248,27 +314,28 @@ export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button 
+        <Button
           onClick={onDelete}
           color="error"
           startIcon={<Delete />}
-          sx={{ mr: 'auto' }}
+          sx={{ mr: "auto" }}
         >
           Delete
         </Button>
-        <Button 
-          onClick={onClose} 
-          color="primary"
-        >
+        <Button onClick={onClose} color="primary">
           Cancel
         </Button>
-        <Button 
-          onClick={onSubmit} 
-          color="primary" 
+        <Button
+          onClick={onSubmit}
+          color="primary"
           variant="contained"
-          disabled={isUpdating || !form.practiceLanguageText.trim() || !form.nativeLanguageText.trim()}
+          disabled={
+            isUpdating ||
+            !form.practiceLanguageText.trim() ||
+            !form.nativeLanguageText.trim()
+          }
         >
-          {isUpdating ? 'Updating...' : 'Update Exercise'}
+          {isUpdating ? "Updating..." : "Update Exercise"}
         </Button>
       </DialogActions>
     </Dialog>

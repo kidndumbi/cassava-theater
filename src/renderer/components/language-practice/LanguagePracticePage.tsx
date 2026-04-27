@@ -449,8 +449,8 @@ export const LanguagePracticePage: React.FC = () => {
     setCreateForm({
       practiceLanguageText: '',
       nativeLanguageText: '',
-      practiceLanguage: '',
-      nativeLanguage: '',
+      practiceLanguage: 'es',
+      nativeLanguage: 'en',
       difficulty: ''
     });
     

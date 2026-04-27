@@ -269,7 +269,7 @@ export async function translateSubtitles(
   }
 }
 
-async function callLibreTranslate(
+export async function callLibreTranslate(
   text: string,
   sourceLanguage: string,
   targetLanguage: string,
