@@ -54,8 +54,10 @@ export const putLanguageLearningExercise = async (
 
 const cleanLanguageText = (text: string): string => {
   return text
-    .replace(/<\/?i>/g, "")
-    .replace(/\[[^\]]*\]/g, "")
+    .replace(/<\/?i>/g, "")           // Remove <i> and </i> tags
+    // eslint-disable-next-line no-useless-escape
+    .replace(/[<>#\[\]]/g, "")        // Remove <, >, #, [, and ] characters
+    .replace(/\s+/g, " ")             // Collapse multiple spaces into one
     .trim();
 };
 
