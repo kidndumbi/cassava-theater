@@ -406,7 +406,7 @@ export const ExerciseListModal: React.FC<ExerciseListModalProps> = ({
                           }
                           onUpdateFilter('tags', newTags);
                         }}
-                        color={filters.tags.includes(tag) ? 'primary' : 'default'}
+                        color={filters.tags.includes(tag) ? 'primary' : 'info'}
                         variant={filters.tags.includes(tag) ? 'filled' : 'outlined'}
                       />
                     ))}
