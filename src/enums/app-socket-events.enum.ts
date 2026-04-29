@@ -55,6 +55,7 @@ export enum AppSocketEvents {
   LANGUAGE_LEARNING_CREATE_EXERCISE = "language-learning:create-exercise",
   LANGUAGE_LEARNING_UPDATE_EXERCISE = "language-learning:update-exercise",
   LANGUAGE_LEARNING_UPDATE_EXERCISE_STATS = "language-learning:update-exercise-stats",
+  LANGUAGE_LEARNING_DELETE_EXERCISE = "language-learning:delete-exercise",
   TAG_GET_ALL_TAGS = "tag:get-all-tags",
   TAG_ADD_TAG = "tag:add-tag",
   TAG_DELETE_TAG = "tag:delete-tag",
