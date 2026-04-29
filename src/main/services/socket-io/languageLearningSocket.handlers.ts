@@ -11,6 +11,7 @@ import {
   updateExerciseStats,
   generateExerciseKey,
   calculateDifficulty,
+  deleteLanguageLearningExercise,
 } from "../languageLearningExerciseDb.service";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { loggingService as log } from "../main-logging.service";
@@ -199,6 +200,28 @@ export function registerLanguageLearningHandlers(
         callback({ success: true });
       } catch (error) {
         log.error(`Failed to update exercise stats ${data.id}:`, error);
+        callback({ success: false, error: (error as Error).message });
+      }
+    },
+  );
+
+  socket.on(
+    AppSocketEvents.LANGUAGE_LEARNING_DELETE_EXERCISE,
+    async (
+      data: { id: string },
+      callback: (response: {
+        success: boolean;
+        data?: any;
+        error?: string;
+      }) => void,
+    ) => {
+      try {
+        log.info(`Socket request: Delete exercise ${data.id}`);
+        await deleteLanguageLearningExercise(data.id);
+        log.info(`Successfully deleted exercise ${data.id}`);
+        callback({ success: true });
+      } catch (error) {
+        log.error(`Failed to delete exercise ${data.id}:`, error);
         callback({ success: false, error: (error as Error).message });
       }
     },
