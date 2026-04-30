@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { 
   Box, 
   Typography, 
@@ -24,7 +24,8 @@ import {
   MenuItem,
   InputAdornment,
   Pagination,
-  Stack
+  Stack,
+  Checkbox
 } from "@mui/material";
 import { 
   ExpandMore, 
@@ -74,6 +75,7 @@ interface ExerciseListModalProps {
   onDeleteExercise: (exercise: LanguageLearningExerciseModel) => void;
   onUpdateFilter: <K extends keyof ExerciseListModalProps['filters']>(key: K, value: ExerciseListModalProps['filters'][K]) => void;
   onClearFilters: () => void;
+  onBulkDeleteSelected?: (selectedExerciseIds: string[]) => void;
 }
 
 export const ExerciseListModal: React.FC<ExerciseListModalProps> = ({
@@ -101,7 +103,111 @@ export const ExerciseListModal: React.FC<ExerciseListModalProps> = ({
   onDeleteExercise,
   onUpdateFilter,
   onClearFilters,
+  onBulkDeleteSelected,
 }) => {
+  // State for selected exercises
+  const [selectedExercises, setSelectedExercises] = useState<Set<string>>(new Set());
+  const [selectAllOnPage, setSelectAllOnPage] = useState(false);
+
+  // Get current page exercise IDs
+  const currentPageExerciseIds = paginatedExercises.map(ex => ex.id).filter(id => id !== undefined) as string[];
+
+  // Handle select/deselect all on current page
+  const handleSelectAllOnPage = () => {
+    if (selectAllOnPage) {
+      // Deselect all on current page
+      const newSelected = new Set(selectedExercises);
+      currentPageExerciseIds.forEach(id => newSelected.delete(id));
+      setSelectedExercises(newSelected);
+      setSelectAllOnPage(false);
+    } else {
+      // Select all on current page
+      const newSelected = new Set(selectedExercises);
+      currentPageExerciseIds.forEach(id => newSelected.add(id));
+      setSelectedExercises(newSelected);
+      setSelectAllOnPage(true);
+    }
+  };
+
+  // Handle select/deselect individual exercise
+  const handleSelectExercise = (exerciseId: string) => {
+    const newSelected = new Set(selectedExercises);
+    if (newSelected.has(exerciseId)) {
+      newSelected.delete(exerciseId);
+    } else {
+      newSelected.add(exerciseId);
+    }
+    setSelectedExercises(newSelected);
+    
+    // Update selectAllOnPage state
+    const allSelectedOnPage = currentPageExerciseIds.every(id => newSelected.has(id));
+    setSelectAllOnPage(allSelectedOnPage && currentPageExerciseIds.length > 0);
+  };
+
+  // Handle select/deselect all filtered exercises (across all pages)
+  const handleSelectAllFiltered = () => {
+    const allFilteredIds = filteredExercises.map(ex => ex.id).filter(id => id !== undefined) as string[];
+    const allSelected = allFilteredIds.every(id => selectedExercises.has(id));
+    
+    if (allSelected) {
+      // Deselect all
+      setSelectedExercises(new Set());
+      setSelectAllOnPage(false);
+    } else {
+      // Select all filtered exercises
+      const newSelected = new Set(allFilteredIds);
+      setSelectedExercises(newSelected);
+      // Update selectAllOnPage for current page
+      const allSelectedOnCurrentPage = currentPageExerciseIds.every(id => newSelected.has(id));
+      setSelectAllOnPage(allSelectedOnCurrentPage && currentPageExerciseIds.length > 0);
+    }
+  };
+
+  // Handle bulk delete of selected exercises
+  const handleBulkDeleteSelected = () => {
+    if (selectedExercises.size === 0) return;
+    
+    const selectedIds = Array.from(selectedExercises);
+    if (onBulkDeleteSelected) {
+      onBulkDeleteSelected(selectedIds);
+    } else {
+      // Fallback: delete each exercise individually
+      selectedIds.forEach(id => {
+        const exercise = allExercises.find(ex => ex.id === id);
+        if (exercise) {
+          onDeleteExercise(exercise);
+        }
+      });
+    }
+    
+    // Clear selections after delete
+    setSelectedExercises(new Set());
+    setSelectAllOnPage(false);
+  };
+
+  // Clear all selections (useful when filters change or modal closes)
+  const clearSelections = () => {
+    setSelectedExercises(new Set());
+    setSelectAllOnPage(false);
+  };
+
+  // Reset selections when modal closes
+  React.useEffect(() => {
+    if (!isOpen) {
+      clearSelections();
+    }
+  }, [isOpen]);
+
+  // Reset selectAllOnPage when current page changes
+  React.useEffect(() => {
+    const allSelectedOnPage = currentPageExerciseIds.length > 0 && 
+      currentPageExerciseIds.every(id => selectedExercises.has(id));
+    setSelectAllOnPage(allSelectedOnPage);
+  }, [currentPage, paginatedExercises, selectedExercises]);
+
+  // Get number of selected exercises
+  const selectedCount = selectedExercises.size;
+
   return (
     <AppModal
       open={isOpen}
@@ -416,10 +522,51 @@ export const ExerciseListModal: React.FC<ExerciseListModalProps> = ({
             </CardContent>
           </Card>
           
+          {/* Bulk Actions Bar */}
+          {selectedCount > 0 && (
+            <Box 
+              sx={{ 
+                mb: 2, 
+                p: 2, 
+                bgcolor: 'primary.dark', 
+                borderRadius: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 2
+              }}
+            >
+              <Typography variant="body1" sx={{ color: 'white' }}>
+                {selectedCount} exercise{selectedCount !== 1 ? 's' : ''} selected
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button
+                  variant="contained"
+                  color="error"
+                  size="small"
+                  startIcon={<Delete />}
+                  onClick={handleBulkDeleteSelected}
+                  disabled={isBulkDeleting}
+                >
+                  Delete Selected
+                </Button>
+              </Box>
+            </Box>
+          )}
+          
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      indeterminate={selectedCount > 0 && selectedCount < filteredExercises.length}
+                      checked={selectAllOnPage}
+                      onChange={handleSelectAllOnPage}
+                      title="Select all on current page"
+                    />
+                  </TableCell>
                   <TableCell>Practice Text</TableCell>
                   <TableCell>Translation</TableCell>
                   <TableCell>Languages</TableCell>
@@ -436,6 +583,13 @@ export const ExerciseListModal: React.FC<ExerciseListModalProps> = ({
                       '&:hover': { bgcolor: 'grey.800' }
                     }}
                   >
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={exercise.id ? selectedExercises.has(exercise.id) : false}
+                        onChange={() => exercise.id && handleSelectExercise(exercise.id)}
+                        disabled={!exercise.id}
+                      />
+                    </TableCell>
                     <TableCell sx={{ maxWidth: 300 }}>
                       <Typography 
                         variant="body2" 

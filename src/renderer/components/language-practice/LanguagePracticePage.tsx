@@ -75,6 +75,9 @@ export const LanguagePracticePage: React.FC = () => {
   // Exercise to edit
   const [exerciseToEdit, setExerciseToEdit] = useState<LanguageLearningExerciseModel | null>(null);
 
+
+  const [isBulkDeletingSelected, setIsBulkDeletingSelected] = useState(false);
+
   // Edit form state
   const [editForm, setEditForm] = useState({
     practiceLanguageText: '',
@@ -110,7 +113,7 @@ export const LanguagePracticePage: React.FC = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(25); // Exercises per page
+  const [pageSize] = useState(500); // Exercises per page
   
   // Edit form tag management
   const [editFormTags, setEditFormTags] = useState<string[]>([]);
@@ -375,6 +378,62 @@ export const LanguagePracticePage: React.FC = () => {
     setExerciseToDelete(exercise);
     openDeleteDialog();
   };
+
+  // Handle bulk delete of selected exercises
+const handleBulkDeleteSelected = async (selectedExerciseIds: string[]) => {
+  if (!window.languageLearningAPI || selectedExerciseIds.length === 0) return;
+
+  setIsBulkDeletingSelected(true);
+  try {
+    let deletedCount = 0;
+    const updatedExercises = [...allExercises];
+    
+    // Delete each selected exercise
+    for (const exerciseId of selectedExerciseIds) {
+      try {
+        const response = await window.languageLearningAPI.deleteExercise(exerciseId);
+        if (response.success) {
+          // Remove from local state
+          const index = updatedExercises.findIndex(ex => ex.id === exerciseId);
+          if (index > -1) {
+            updatedExercises.splice(index, 1);
+            deletedCount++;
+          }
+        } else {
+          console.error('Failed to delete exercise:', exerciseId, response.error);
+        }
+      } catch (error) {
+        console.error('Error deleting exercise:', exerciseId, error);
+      }
+    }
+    
+    // Update state with cleaned exercises
+    setAllExercises(updatedExercises);
+    
+    // If current exercise was deleted, select a new one
+    if (currentExercise && !updatedExercises.find(ex => ex.id === currentExercise.id)) {
+      if (updatedExercises.length > 0) {
+        selectNextExercise(updatedExercises);
+      } else {
+        setCurrentExercise(null);
+        setError('No exercises remaining in database.');
+      }
+    }
+    
+    console.log(`Successfully deleted ${deletedCount} exercises`);
+    
+    // Show feedback to user
+    if (deletedCount > 0) {
+      // You could add a snackbar/notification here
+      console.log(`${deletedCount} exercise(s) deleted successfully`);
+    }
+    
+  } catch (error) {
+    console.error('Error during bulk delete:', error);
+  } finally {
+    setIsBulkDeletingSelected(false);
+  }
+};
 
   // Handle edit exercise
   const handleEditClick = (exercise?: LanguageLearningExerciseModel) => {
@@ -966,38 +1025,38 @@ export const LanguagePracticePage: React.FC = () => {
         </Typography>
       )}
 
-      <ExerciseListModal
-        isOpen={isExercisesListOpen}
-        onClose={closeExercisesList}
-        allExercises={allExercises}
-        filteredExercises={filteredExercises}
-        paginatedExercises={paginatedExercises}
-        currentExercise={currentExercise}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        pageSize={pageSize}
-        getDuplicateGroups={getDuplicateGroups}
-        isDuplicatesSectionExpanded={isDuplicatesSectionExpanded}
-        isBulkDeleting={isBulkDeleting}
-        hasActiveFilters={hasActiveFilters}
-        filters={filters}
-        uniqueVideoSources={uniqueVideoSources}
-        uniqueExerciseTags={uniqueExerciseTags}
-        isFavorite={isFavorite}
-        onSetCurrentPage={setCurrentPage}
-        onSetDuplicatesSectionExpanded={setIsDuplicatesSectionExpanded}
-        onBulkDeleteClick={openBulkDeleteDialog}
-        onSelectExercise={(exercise) => {
-          setCurrentExercise(exercise);
-          resetExerciseState(exercise.practiceLanguageText);
-          closeExercisesList();
-        }}
-        onEditExercise={handleEditClick}
-        onDeleteExercise={handleDeleteClick}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onUpdateFilter={updateFilter as any}
-        onClearFilters={clearFilters}
-      />
+<ExerciseListModal
+  isOpen={isExercisesListOpen}
+  onClose={closeExercisesList}
+  allExercises={allExercises}
+  filteredExercises={filteredExercises}
+  paginatedExercises={paginatedExercises}
+  currentExercise={currentExercise}
+  currentPage={currentPage}
+  totalPages={totalPages}
+  pageSize={pageSize}
+  getDuplicateGroups={getDuplicateGroups}
+  isDuplicatesSectionExpanded={isDuplicatesSectionExpanded}
+  isBulkDeleting={isBulkDeleting}
+  hasActiveFilters={hasActiveFilters}
+  filters={filters}
+  uniqueVideoSources={uniqueVideoSources}
+  uniqueExerciseTags={uniqueExerciseTags}
+  isFavorite={isFavorite}
+  onSetCurrentPage={setCurrentPage}
+  onSetDuplicatesSectionExpanded={setIsDuplicatesSectionExpanded}
+  onBulkDeleteClick={openBulkDeleteDialog}
+  onSelectExercise={(exercise) => {
+    setCurrentExercise(exercise);
+    resetExerciseState(exercise.practiceLanguageText);
+    closeExercisesList();
+  }}
+  onEditExercise={handleEditClick}
+  onDeleteExercise={handleDeleteClick}
+  onUpdateFilter={updateFilter as any}
+  onClearFilters={clearFilters}
+  onBulkDeleteSelected={handleBulkDeleteSelected}  // Add this line
+/>
 
       <DeleteConfirmationDialog
         isOpen={isDeleteDialogOpen}
