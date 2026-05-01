@@ -9,10 +9,9 @@ import {
   getAllLanguageLearningExercises,
   putLanguageLearningExercise,
   updateExerciseStats,
-  generateExerciseKey,
-  calculateDifficulty,
   deleteLanguageLearningExercise,
 } from "../languageLearningExerciseDb.service";
+import { createLanguageLearningExercise } from "../languageLearning.service";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { loggingService as log } from "../main-logging.service";
 import { callLibreTranslate } from "../translation.service";
@@ -129,49 +128,7 @@ export function registerLanguageLearningHandlers(
     ) => {
       try {
         log.info("Socket request: Create new language learning exercise");
-        const exerciseData = data.exercise;
-
-        if (
-          !exerciseData.videoFilePath ||
-          exerciseData.startTime == null ||
-          exerciseData.endTime == null
-        ) {
-          throw new Error(
-            "Missing required exercise data: videoFilePath, startTime, endTime",
-          );
-        }
-
-        const existingExercises = await getAllLanguageLearningExercises();
-
-        // Check for duplicate practice text to prevent duplicates
-        const isDuplicate = existingExercises.some(
-          (exercise) =>
-            exercise.practiceLanguageText === exerciseData.practiceLanguageText,
-        );
-
-        if (isDuplicate) {
-          throw new Error(
-            "An exercise with the same practice text already exists. Please modify the text to create a unique exercise.",
-          );
-        }
-
-        const key = generateExerciseKey(
-          exerciseData.startTime,
-          exerciseData.endTime,
-        );
-
-        // Calculate difficulty if not provided
-        if (!exerciseData.difficulty && exerciseData.practiceLanguageText) {
-          exerciseData.difficulty = calculateDifficulty(
-            exerciseData.practiceLanguageText,
-          );
-        }
-
-        const savedExercise = await putLanguageLearningExercise(
-          key,
-          exerciseData,
-        );
-        log.info(`Successfully created exercise ${key}`);
+        const savedExercise = await createLanguageLearningExercise(data.exercise);
         callback({ success: true, data: savedExercise });
       } catch (error) {
         log.error("Failed to create exercise:", error);

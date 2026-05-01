@@ -113,7 +113,7 @@ export const LanguagePracticePage: React.FC = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(500); // Exercises per page
+  const [pageSize] = useState(25); // Exercises per page
   
   // Edit form tag management
   const [editFormTags, setEditFormTags] = useState<string[]>([]);

@@ -3,15 +3,17 @@ import { getSocketIoGlobal } from "../socketGlobalManager";
 import { AppSocketEvents } from "../../enums/app-socket-events.enum";
 import { LanguageLearningIPCChannels } from "../../enums/llm-IPC-Channels.enum";
 import {
-  putLanguageLearningExercise,
   getLanguageLearningExercise,
   getLanguageLearningExercisesByVideo,
   getAllLanguageLearningExercises,
   deleteLanguageLearningExercise,
   updateExerciseStats,
-  generateExerciseKey,
-  calculateDifficulty,
+  putLanguageLearningExercise,
 } from "../services/languageLearningExerciseDb.service";
+import {
+  createLanguageLearningExercise,
+  calculateDifficulty,
+} from "../services/languageLearning.service";
 import { LanguageLearningExerciseModel } from "../../models/language-learning-exercise.model";
 import { loggingService as log } from "../services/main-logging.service";
 
@@ -76,60 +78,7 @@ export const languageLearningIpcHandlers = () => {
     LanguageLearningIPCChannels.SAVE_EXERCISE,
     async (_event, exerciseData: Partial<LanguageLearningExerciseModel>) => {
       try {
-        console.log("=== SAVING LANGUAGE LEARNING EXERCISE ===");
-        console.log(
-          "Received exercise data:",
-          JSON.stringify(exerciseData, null, 2),
-        );
-
-        if (
-          !exerciseData.videoFilePath ||
-          exerciseData.startTime == null ||
-          exerciseData.endTime == null
-        ) {
-          throw new Error(
-            "Missing required exercise data: videoFilePath, startTime, endTime",
-          );
-        }
-
-        const existingExercises = await getAllLanguageLearningExercises();
-
-        // Check for duplicate practice text to prevent duplicates
-        const isDuplicate = existingExercises.some(
-          (exercise) =>
-            exercise.practiceLanguageText === exerciseData.practiceLanguageText,
-        );
-
-        if (isDuplicate) {
-          throw new Error(
-            "An exercise with the same practice text already exists. Please modify the text to create a unique exercise.",
-          );
-        }
-
-        const key = generateExerciseKey(
-          exerciseData.startTime,
-          exerciseData.endTime,
-        );
-
-        // Calculate difficulty if not provided
-        if (!exerciseData.difficulty && exerciseData.practiceLanguageText) {
-          exerciseData.difficulty = calculateDifficulty(
-            exerciseData.practiceLanguageText,
-          );
-          console.log("Calculated difficulty:", exerciseData.difficulty);
-        }
-
-        const savedExercise = await putLanguageLearningExercise(
-          key,
-          exerciseData,
-        );
-        console.log(
-          "Successfully saved exercise:",
-          JSON.stringify(savedExercise, null, 2),
-        );
-        console.log("==========================================");
-
-        log.info(`Exercise saved: ${key}`);
+        const savedExercise = await createLanguageLearningExercise(exerciseData);
         return { success: true, data: savedExercise };
       } catch (error) {
         const errorMessage =
