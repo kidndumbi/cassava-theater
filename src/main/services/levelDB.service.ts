@@ -11,6 +11,7 @@ import { SettingsModel } from "../../models/settings.model";
 import { VideoScreenshotModel } from "../../models/video-screenshot.model";
 import { PlaylistModel } from "../../models/playlist.model";
 import { LanguageLearningExerciseModel } from "../../models/language-learning-exercise.model";
+import { PracticeSessionLog } from "../../models/practice-session-log.model";
 
 // Define your database collections
 type Collections = {
@@ -24,6 +25,7 @@ type Collections = {
   playlists: PlaylistModel;
   languageLearningExercises: LanguageLearningExerciseModel;
   appTags: string[]; // Array of unique tag strings
+  practiceSessionLogs: PracticeSessionLog;
 };
 
 type CollectionName = keyof Collections;

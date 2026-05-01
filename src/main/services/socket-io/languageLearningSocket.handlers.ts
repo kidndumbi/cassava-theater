@@ -12,7 +12,9 @@ import {
   deleteLanguageLearningExercise,
 } from "../languageLearningExerciseDb.service";
 import { createLanguageLearningExercise } from "../languageLearning.service";
+import { getAllSessionLogs } from "../sessionLog.service";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
+import { PracticeSessionLog } from "../../../models/practice-session-log.model";
 import { loggingService as log } from "../main-logging.service";
 import { callLibreTranslate } from "../translation.service";
 
@@ -226,6 +228,28 @@ export function registerLanguageLearningHandlers(
         );
         callback({ success: true, data: translatedText });
       } catch (error) {
+        callback({ success: false, error: (error as Error).message });
+      }
+    },
+  );
+
+  // Get all session logs (for overview/statistics page)
+  socket.on(
+    AppSocketEvents.LANGUAGE_LEARNING_GET_SESSION_LOGS,
+    async (
+      _requestData: unknown,
+      callback: (response: {
+        success: boolean;
+        data?: PracticeSessionLog[];
+        error?: string;
+      }) => void,
+    ) => {
+      try {
+        log.info("Socket request: Get all practice session logs");
+        const logs = await getAllSessionLogs();
+        callback({ success: true, data: logs });
+      } catch (error) {
+        log.error("Failed to get session logs:", error);
         callback({ success: false, error: (error as Error).message });
       }
     },

@@ -2,6 +2,7 @@ import { levelDBService } from "./levelDB.service";
 import { LanguageLearningExerciseModel } from "../../models/language-learning-exercise.model";
 import { loggingService as log } from "./main-logging.service";
 import { v4 as uuidv4 } from "uuid";
+import { logPracticeAttempt } from "./sessionLog.service";
 
 const COLLECTION_NAME = "languageLearningExercises";
 
@@ -157,6 +158,8 @@ export const updateExerciseStats = async (
       correctCount,
       accuracyRate,
     });
+
+    await logPracticeAttempt(key, isCorrect);
   } catch (error) {
     log.error(`Error updating exercise stats ${key}:`, error);
   }
