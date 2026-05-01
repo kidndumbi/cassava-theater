@@ -32,103 +32,103 @@ function getVideoFilePathFromVTT(vttFilePath: string): string {
 /**
  * Parse VTT timestamp to seconds
  */
-function parseVTTTimestamp(timestamp: string): number {
-  const [hours, minutes, secondsWithMs] = timestamp.split(':');
-  const [seconds, milliseconds] = secondsWithMs.split(/[.,]/);
+// function parseVTTTimestamp(timestamp: string): number {
+//   const [hours, minutes, secondsWithMs] = timestamp.split(':');
+//   const [seconds, milliseconds] = secondsWithMs.split(/[.,]/);
   
-  return parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds) + (parseInt(milliseconds || '0') / 1000);
-}
+//   return parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds) + (parseInt(milliseconds || '0') / 1000);
+// }
 
 /**
  * Parse VTT timestamp line to get start and end times
  */
-function parseVTTTimestampLine(timestampLine: string): { startTime: number; endTime: number } {
-  const [startTimeStr, endTimeStr] = timestampLine.split(' --> ');
-  return {
-    startTime: parseVTTTimestamp(startTimeStr.trim()),
-    endTime: parseVTTTimestamp(endTimeStr.trim())
-  };
-}
+// function parseVTTTimestampLine(timestampLine: string): { startTime: number; endTime: number } {
+//   const [startTimeStr, endTimeStr] = timestampLine.split(' --> ');
+//   return {
+//     startTime: parseVTTTimestamp(startTimeStr.trim()),
+//     endTime: parseVTTTimestamp(endTimeStr.trim())
+//   };
+// }
 
 /**
  * Save language learning exercise from translation
  */
-async function saveLanguageLearningExercise(
-  originalText: string,
-  translatedText: string,
-  sourceLanguage: string,
-  targetLanguage: string,
-  timestampLine: string,
-  vttFilePath: string,
-  existingExercises: LanguageLearningExerciseModel[]
-): Promise<void> {
-  try {
-    // Parse timestamps
-    const { startTime, endTime } = parseVTTTimestampLine(timestampLine);
+// export async function saveLanguageLearningExercise(
+//   originalText: string,
+//   translatedText: string,
+//   sourceLanguage: string,
+//   targetLanguage: string,
+//   timestampLine: string,
+//   vttFilePath: string,
+//   existingExercises: LanguageLearningExerciseModel[]
+// ): Promise<void> {
+//   try {
+//     // Parse timestamps
+//     const { startTime, endTime } = parseVTTTimestampLine(timestampLine);
     
-    // Get video file path and filename
-    const videoFilePath = getVideoFilePathFromVTT(vttFilePath);
-    const videoFileName = path.basename(videoFilePath);
+//     // Get video file path and filename
+//     const videoFilePath = getVideoFilePathFromVTT(vttFilePath);
+//     const videoFileName = path.basename(videoFilePath);
     
-    // Calculate exercise properties - exclude standalone dashes from word count
-    const wordsWithoutDashes = originalText.replace(/\s+-\s+/g, ' ').split(/\s+/).filter(word => word.length > 0 && word !== '-');
-    const wordCount = wordsWithoutDashes.length;
-    const difficulty = calculateDifficulty(originalText);
-    const duration = endTime - startTime;
+//     // Calculate exercise properties - exclude standalone dashes from word count
+//     const wordsWithoutDashes = originalText.replace(/\s+-\s+/g, ' ').split(/\s+/).filter(word => word.length > 0 && word !== '-');
+//     const wordCount = wordsWithoutDashes.length;
+//     const difficulty = calculateDifficulty(originalText);
+//     const duration = endTime - startTime;
     
-    // Skip very short or very long texts (minimum 4 words)
-    if (wordCount < 4 || wordCount > 25 || originalText.length < 10) {
-      return;
-    }
+//     // Skip very short or very long texts (minimum 4 words)
+//     if (wordCount < 4 || wordCount > 25 || originalText.length < 10) {
+//       return;
+//     }
     
-    // Determine practice text based on target language
-    const practiceText = targetLanguage === 'en' ? originalText : translatedText;
+//     // Determine practice text based on target language
+//     const practiceText = targetLanguage === 'en' ? originalText : translatedText;
     
-    // Check for duplicate practice text to prevent duplicates
-    const isDuplicate = existingExercises.some(exercise => 
-      exercise.practiceLanguageText === practiceText
-    );
+//     // Check for duplicate practice text to prevent duplicates
+//     const isDuplicate = existingExercises.some(exercise => 
+//       exercise.practiceLanguageText === practiceText
+//     );
     
-    if (isDuplicate) {
-      log.info(`Skipping duplicate exercise text: "${practiceText.substring(0, 50)}..."`); 
-      return;
-    }
+//     if (isDuplicate) {
+//       log.info(`Skipping duplicate exercise text: "${practiceText.substring(0, 50)}..."`); 
+//       return;
+//     }
     
-    // Create exercise model
-    const exercise: Partial<LanguageLearningExerciseModel> = {
-      videoFilePath,
-      videoFileName,
-      nativeLanguageText: targetLanguage === 'en' ? translatedText : originalText,
-      practiceLanguageText: targetLanguage === 'en' ? originalText : translatedText,
-      nativeLanguage: (targetLanguage === 'en' ? targetLanguage : sourceLanguage) as 'en' | 'es' | 'fr',
-      practiceLanguage: (targetLanguage === 'en' ? sourceLanguage : targetLanguage) as 'en' | 'es' | 'fr',
-      startTime,
-      endTime,
-      duration,
-      wordCount,
-      difficulty,
-      createdAt: Date.now(),
-      tags: []
-    };
+//     // Create exercise model
+//     const exercise: Partial<LanguageLearningExerciseModel> = {
+//       videoFilePath,
+//       videoFileName,
+//       nativeLanguageText: targetLanguage === 'en' ? translatedText : originalText,
+//       practiceLanguageText: targetLanguage === 'en' ? originalText : translatedText,
+//       nativeLanguage: (targetLanguage === 'en' ? targetLanguage : sourceLanguage) as 'en' | 'es' | 'fr',
+//       practiceLanguage: (targetLanguage === 'en' ? sourceLanguage : targetLanguage) as 'en' | 'es' | 'fr',
+//       startTime,
+//       endTime,
+//       duration,
+//       wordCount,
+//       difficulty,
+//       createdAt: Date.now(),
+//       tags: []
+//     };
     
-    // Validate that languages are different (same validation as in LanguageLearning component)
-    if (exercise.nativeLanguage === exercise.practiceLanguage) {
-      log.warn(`Skipping exercise - same languages: ${exercise.nativeLanguage}`);
-      return;
-    }
+//     // Validate that languages are different (same validation as in LanguageLearning component)
+//     if (exercise.nativeLanguage === exercise.practiceLanguage) {
+//       log.warn(`Skipping exercise - same languages: ${exercise.nativeLanguage}`);
+//       return;
+//     }
     
-    // Generate unique key
-    const exerciseKey = generateExerciseKey( startTime, endTime);
+//     // Generate unique key
+//     const exerciseKey = generateExerciseKey( startTime, endTime);
     
-    // Save to database
-    await putLanguageLearningExercise(exerciseKey, exercise);
+//     // Save to database
+//     await putLanguageLearningExercise(exerciseKey, exercise);
     
-    log.info(`Created language learning exercise: ${exercise.practiceLanguage} → ${exercise.nativeLanguage}, ${wordCount} words`);
+//     log.info(`Created language learning exercise: ${exercise.practiceLanguage} → ${exercise.nativeLanguage}, ${wordCount} words`);
     
-  } catch (error) {
-    log.error(`Failed to save language learning exercise:`, error);
-  }
-}
+//   } catch (error) {
+//     log.error(`Failed to save language learning exercise:`, error);
+//   }
+// }
 
 export async function translateSubtitles(
   vttFilePath: string,
@@ -150,8 +150,8 @@ export async function translateSubtitles(
     log.info(`Translating subtitles from ${sourceLanguage} to ${targetLanguage}: ${vttFilePath}`);
 
     // Fetch all existing exercises once for duplicate checking
-    const existingExercises = await getAllLanguageLearningExercises();
-    log.info(`Loaded ${existingExercises.length} existing exercises for duplicate checking`);
+    //const existingExercises = await getAllLanguageLearningExercises();
+    //log.info(`Loaded ${existingExercises.length} existing exercises for duplicate checking`);
 
     // Read the VTT file content
     const vttContent = fs.readFileSync(vttFilePath, { encoding: "utf-8" });
@@ -161,7 +161,7 @@ export async function translateSubtitles(
     const translatedLines: string[] = [];
     let i = 0;
     let subtitleBlockCount = 0;
-    let exercisesCreated = 0;
+    // let exercisesCreated = 0;
 
     while (i < lines.length) {
       const line = lines[i];
@@ -179,7 +179,7 @@ export async function translateSubtitles(
       // Also handles variable digit counts for seconds/milliseconds
       if (/^\d{1,2}:\d{2}:\d{1,2}[.,]\d{1,3} --> \d{1,2}:\d{2}:\d{1,2}[.,]\d{1,3}$/.test(trimmedLine)) {
         translatedLines.push(line);
-        const timestampLine = trimmedLine; // Store for language exercise
+        //const timestampLine = trimmedLine; // Store for language exercise
         i++;
         subtitleBlockCount++;
 
@@ -200,25 +200,26 @@ export async function translateSubtitles(
               const translatedText = await callLibreTranslate(textToTranslate, sourceLanguage, targetLanguage, libretranslateUrl);
               
               // Check if translation actually occurred (simple heuristic)
-              if (translatedText === textToTranslate) {
-                log.warn(`Translation returned identical text - LibreTranslate may not be working properly`);
-              } else {
-                // Save as language learning exercise (only if translation was successful and different)
-                try {
-                  await saveLanguageLearningExercise(
-                    textToTranslate,
-                    translatedText, 
-                    sourceLanguage,
-                    targetLanguage,
-                    timestampLine,
-                    vttFilePath,
-                    existingExercises
-                  );
-                  exercisesCreated++;
-                } catch (exerciseError) {
-                  log.error(`Failed to save language exercise:`, exerciseError);
-                }
-              }
+              // will be removing this completely soon.
+              // if (translatedText === textToTranslate) {
+              //   log.warn(`Translation returned identical text - LibreTranslate may not be working properly`);
+              // } else {
+              //   // Save as language learning exercise (only if translation was successful and different)
+              //   try {
+              //     await saveLanguageLearningExercise(
+              //       textToTranslate,
+              //       translatedText, 
+              //       sourceLanguage,
+              //       targetLanguage,
+              //       timestampLine,
+              //       vttFilePath,
+              //       existingExercises
+              //     );
+              //     exercisesCreated++;
+              //   } catch (exerciseError) {
+              //     log.error(`Failed to save language exercise:`, exerciseError);
+              //   }
+              // }
               
               // Split translated text back into lines if needed (preserve line breaks)
               const translatedLines_local = translatedText.split(" ");
@@ -247,7 +248,7 @@ export async function translateSubtitles(
     }
     
     log.info(`Processed ${subtitleBlockCount} subtitle blocks`);
-    log.info(`Created ${exercisesCreated} language learning exercises`);
+    // log.info(`Created ${exercisesCreated} language learning exercises`);
 
     // Generate new filename with language suffix
     const dir = path.dirname(vttFilePath);

@@ -32,13 +32,13 @@ export const putLanguageLearningExercise = async (
       ...value,
       id: key,
       // remove <i> and </i> tags, and [ ... ] blocks from practiceLanguageText for better searchability
-      practiceLanguageText: value.practiceLanguageText
-        ? cleanLanguageText(value.practiceLanguageText)
-        : existing?.practiceLanguageText || "",
-      // remove <i> and </i> tags, and [ ... ] blocks from nativeLanguageText for better searchability
-      nativeLanguageText: value.nativeLanguageText
-        ? cleanLanguageText(value.nativeLanguageText)
-        : existing?.nativeLanguageText || "",
+      // practiceLanguageText: value.practiceLanguageText
+      //   ? cleanLanguageText(value.practiceLanguageText)
+      //   : existing?.practiceLanguageText || "",
+      // // remove <i> and </i> tags, and [ ... ] blocks from nativeLanguageText for better searchability
+      // nativeLanguageText: value.nativeLanguageText
+      //   ? cleanLanguageText(value.nativeLanguageText)
+      //   : existing?.nativeLanguageText || "",
 
       createdAt: existing?.createdAt || Date.now(),
     } as LanguageLearningExerciseModel;
@@ -52,14 +52,14 @@ export const putLanguageLearningExercise = async (
   }
 };
 
-const cleanLanguageText = (text: string): string => {
-  return text
-    .replace(/<\/?i>/g, "")           // Remove <i> and </i> tags
-    // eslint-disable-next-line no-useless-escape
-    .replace(/[<>#\[\]]/g, "")        // Remove <, >, #, [, and ] characters
-    .replace(/\s+/g, " ")             // Collapse multiple spaces into one
-    .trim();
-};
+// const cleanLanguageText = (text: string): string => {
+//   return text
+//     .replace(/<\/?i>/g, "")           // Remove <i> and </i> tags
+//     // eslint-disable-next-line no-useless-escape
+//     .replace(/[<>#\[\]]/g, "")        // Remove <, >, #, [, and ] characters
+//     .replace(/\s+/g, " ")             // Collapse multiple spaces into one
+//     .trim();
+// };
 
 /**
  * Get a specific language learning exercise
