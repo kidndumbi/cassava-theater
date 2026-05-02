@@ -13,6 +13,7 @@ import { PlaylistModel } from "../../models/playlist.model";
 import { LanguageLearningExerciseModel } from "../../models/language-learning-exercise.model";
 import { PracticeSessionLog } from "../../models/practice-session-log.model";
 import { ExerciseLogs } from "../../models/exercise-log.model";
+import { ExerciseAiConversation } from "../../models/exercise-ai-chat.model";
 
 // Define your database collections
 type Collections = {
@@ -28,6 +29,7 @@ type Collections = {
   appTags: string[]; // Array of unique tag strings
   practiceSessionLogs: PracticeSessionLog;
   exerciseLogs: ExerciseLogs;
+  exerciseAiChats: ExerciseAiConversation;
 };
 
 type CollectionName = keyof Collections;
