@@ -56,7 +56,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   onEdit,
   onOpenGoogleTranslate,
 }) => {
-  const normalizeWord = (word: string) => word.replace(/[.,]/g, '').toLowerCase();
+  const normalizeWord = (word: string) => word.replace(/[.,?!¿¡]/g, '').toLowerCase();
   return (
     <Card 
       sx={{ 
