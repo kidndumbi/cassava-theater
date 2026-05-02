@@ -19,6 +19,8 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   subtitleUrl,
   nativeSubtitleUrl,
   currentTime,
+  currentVideo,
+  subtitleOverlayLanguage,
   isVisible = true,
   enabled = false,
   fontSize = 16,
@@ -43,6 +45,10 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   
   // UI visibility state (separate from functionality)
   const [isUIVisible, setIsUIVisible] = useState<boolean>(true);
+
+  // Save exercise state
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   // Send state updates to socket clients via IPC
   const sendStateUpdate = () => {
@@ -289,6 +295,48 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
     setExerciseCompleted(false);
   };
 
+  const handleSaveAsExercise = async () => {
+    if (!window.languageLearningAPI || !activeCue || isSaving) return;
+
+    setIsSaving(true);
+    setSaveStatus('idle');
+    try {
+      const practiceText = originalText.trim();
+      const nativeText = activeNativeCue?.text.replace(/\n/g, ' ').trim() || '';
+
+      const newExercise = {
+        practiceLanguageText: practiceText,
+        nativeLanguageText: nativeText,
+        practiceLanguage: subtitleOverlayLanguage || undefined,
+        wordCount: practiceText.split(/\s+/).filter(w => w.length > 0).length,
+        tags: ['subtitle-creation'],
+        createdAt: Date.now(),
+        practiceCount: 0,
+        accuracyRate: 0,
+        videoFileName: currentVideo?.fileName || 'Unknown',
+        videoFilePath: currentVideo?.filePath || 'subtitle-creation',
+        startTime: activeCue.startTime,
+        endTime: activeCue.endTime,
+        duration: activeCue.endTime - activeCue.startTime,
+      };
+
+      const response = await window.languageLearningAPI.saveExercise(newExercise);
+      if (response.success) {
+        setSaveStatus('success');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } else {
+        setSaveStatus('error');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      }
+    } catch (err) {
+      console.error('Error saving exercise:', err);
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Don't render anything if not enabled, not visible from parent, loading, or no active cue
   if (!enabled || !isVisible || loading || !activeCue) {
     return null;
@@ -420,6 +468,20 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
             className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded text-white font-medium transition-colors"
           >
             Reset
+          </button>
+          <button
+            onClick={(ev) => { ev.stopPropagation(); handleSaveAsExercise(); }}
+            disabled={isSaving || !originalText}
+            className={
+              saveStatus === 'success'
+                ? 'bg-green-500 px-4 py-2 rounded text-white font-medium transition-colors'
+                : saveStatus === 'error'
+                ? 'bg-red-600 px-4 py-2 rounded text-white font-medium transition-colors'
+                : 'bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:opacity-50 px-4 py-2 rounded text-white font-medium transition-colors'
+            }
+            title="Save as exercise (tagged: subtitle-creation)"
+          >
+            {isSaving ? 'Saving…' : saveStatus === 'success' ? '✓ Saved' : saveStatus === 'error' ? '✗ Failed' : 'Save'}
           </button>
         </div>
 
