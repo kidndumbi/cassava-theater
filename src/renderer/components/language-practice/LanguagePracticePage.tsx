@@ -11,6 +11,7 @@ import { EditExerciseDialog } from "./EditExerciseDialog";
 import { CreateExerciseDialog } from "./CreateExerciseDialog";
 import { TagManagementModal } from "./TagManagementModal";
 import { BulkDeleteDialog } from "./BulkDeleteDialog";
+import { ExerciseLogsDialog } from "./ExerciseLogsDialog";
 
 export const LanguagePracticePage: React.FC = () => {
   // Exercise data
@@ -74,6 +75,9 @@ export const LanguagePracticePage: React.FC = () => {
   
   // Exercise to edit
   const [exerciseToEdit, setExerciseToEdit] = useState<LanguageLearningExerciseModel | null>(null);
+
+  // Exercise logs dialog
+  const [isLogsDialogOpen, setIsLogsDialogOpen] = useState(false);
 
 
   const [isBulkDeletingSelected, setIsBulkDeletingSelected] = useState(false);
@@ -354,7 +358,12 @@ export const LanguagePracticePage: React.FC = () => {
     // Update exercise statistics
     if (currentExercise?.id && window.languageLearningAPI) {
       try {
-        await window.languageLearningAPI.updateExerciseStats(currentExercise.id, correct);
+        const snapshot = {
+          userAnswer: userText,
+          correctAnswer: originalText,
+          nativeText: currentExercise.nativeLanguageText ?? '',
+        };
+        await window.languageLearningAPI.updateExerciseStats(currentExercise.id, correct, snapshot);
       } catch (error) {
         console.error('Failed to update exercise stats:', error);
       }
@@ -1088,6 +1097,7 @@ const handleBulkDeleteSelected = async (selectedExerciseIds: string[]) => {
             handleDeleteClick(exerciseToEdit);
           }
         }}
+        onViewLogs={() => setIsLogsDialogOpen(true)}
         exercise={exerciseToEdit}
         form={editForm}
         onFormChange={(field, value) => setEditForm(prev => ({ ...prev, [field]: value }))}
@@ -1124,6 +1134,12 @@ const handleBulkDeleteSelected = async (selectedExerciseIds: string[]) => {
         isAddingTag={isAddingTag}
         isDeletingTag={isDeletingTag}
         tagError={tagError}
+      />
+
+      <ExerciseLogsDialog
+        isOpen={isLogsDialogOpen}
+        onClose={() => setIsLogsDialogOpen(false)}
+        exerciseId={exerciseToEdit?.id ?? null}
       />
     </Box>
   );

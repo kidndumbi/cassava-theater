@@ -14,6 +14,11 @@ import {
   createLanguageLearningExercise,
   calculateDifficulty,
 } from "../services/languageLearning.service";
+import {
+  logExerciseUpdate,
+  getExerciseLogs,
+  deleteExerciseLogs,
+} from "../services/exerciseLog.service";
 import { LanguageLearningExerciseModel } from "../../models/language-learning-exercise.model";
 import { loggingService as log } from "../services/main-logging.service";
 
@@ -141,6 +146,7 @@ export const languageLearningIpcHandlers = () => {
     async (_event, key: string) => {
       try {
         await deleteLanguageLearningExercise(key);
+        await deleteExerciseLogs(key);
         return { success: true };
       } catch (error) {
         const errorMessage =
@@ -164,6 +170,8 @@ export const languageLearningIpcHandlers = () => {
         console.log("Exercise key:", key);
         console.log("Update data:", JSON.stringify(exerciseData, null, 2));
 
+        const before = await getLanguageLearningExercise(key) ?? {};
+
         // Recalculate difficulty if practice text changed
         if (exerciseData.practiceLanguageText) {
           exerciseData.difficulty = calculateDifficulty(
@@ -175,6 +183,11 @@ export const languageLearningIpcHandlers = () => {
         const updatedExercise = await putLanguageLearningExercise(
           key,
           exerciseData,
+        );
+        await logExerciseUpdate(
+          key,
+          before as Record<string, any>,
+          exerciseData as Record<string, any>,
         );
         console.log(
           "Successfully updated exercise:",
@@ -196,14 +209,30 @@ export const languageLearningIpcHandlers = () => {
   // Update exercise statistics
   ipcMain.handle(
     LanguageLearningIPCChannels.UPDATE_EXERCISE_STATS,
-    async (_event, key: string, isCorrect: boolean) => {
+    async (_event, key: string, isCorrect: boolean, snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string }) => {
       try {
-        await updateExerciseStats(key, isCorrect);
+        await updateExerciseStats(key, isCorrect, snapshot);
         return { success: true };
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
         log.error(`Error updating exercise stats ${key}:`, error);
+        return { success: false, error: errorMessage };
+      }
+    },
+  );
+
+  // Get exercise logs
+  ipcMain.handle(
+    LanguageLearningIPCChannels.GET_EXERCISE_LOGS,
+    async (_event, key: string) => {
+      try {
+        const logs = await getExerciseLogs(key);
+        return { success: true, data: logs };
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        log.error(`Error getting exercise logs ${key}:`, error);
         return { success: false, error: errorMessage };
       }
     },

@@ -18,6 +18,7 @@ import {
   Delete,
   Add as AddIcon,
   LocalOffer as LocalOfferIcon,
+  History as HistoryIcon,
 } from "@mui/icons-material";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 
@@ -46,6 +47,7 @@ interface EditExerciseDialogProps {
   onNewTagChange: (tag: string) => void;
   allTags: string[];
   isUpdating: boolean;
+  onViewLogs?: () => void;
 }
 
 export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
@@ -62,6 +64,7 @@ export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
   onNewTagChange,
   allTags,
   isUpdating,
+  onViewLogs,
 }) => {
   const addTag = () => {
     const tagName = newTag.trim().toLowerCase();
@@ -322,6 +325,15 @@ export const EditExerciseDialog: React.FC<EditExerciseDialogProps> = ({
         >
           Delete
         </Button>
+        {onViewLogs && (
+          <Button
+            onClick={onViewLogs}
+            color="inherit"
+            startIcon={<HistoryIcon />}
+          >
+            View Logs
+          </Button>
+        )}
         <Button onClick={onClose} color="primary">
           Cancel
         </Button>
