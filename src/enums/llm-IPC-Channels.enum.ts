@@ -17,4 +17,5 @@ export enum LanguageLearningIPCChannels {
   DELETE_EXERCISE = "language-learning:deleteExercise",
   UPDATE_EXERCISE = "language-learning:updateExercise",
   UPDATE_EXERCISE_STATS = "language-learning:updateExerciseStats",
+  GET_EXERCISE_LOGS = "language-learning:getExerciseLogs",
 }

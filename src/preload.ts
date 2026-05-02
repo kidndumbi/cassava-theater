@@ -834,8 +834,12 @@ contextBridge.exposeInMainWorld("languageLearningAPI", {
     return ipcRenderer.invoke(LanguageLearningIPCChannels.UPDATE_EXERCISE, key, exerciseData);
   },
 
-  updateExerciseStats: (key: string, isCorrect: boolean) => {
-    return ipcRenderer.invoke(LanguageLearningIPCChannels.UPDATE_EXERCISE_STATS, key, isCorrect);
+  updateExerciseStats: (key: string, isCorrect: boolean, snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string }) => {
+    return ipcRenderer.invoke(LanguageLearningIPCChannels.UPDATE_EXERCISE_STATS, key, isCorrect, snapshot);
+  },
+
+  getExerciseLogs: (key: string) => {
+    return ipcRenderer.invoke(LanguageLearningIPCChannels.GET_EXERCISE_LOGS, key);
   },
 });
 

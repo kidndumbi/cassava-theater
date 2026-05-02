@@ -3,6 +3,7 @@ import { LanguageLearningExerciseModel } from "../../models/language-learning-ex
 import { loggingService as log } from "./main-logging.service";
 import { v4 as uuidv4 } from "uuid";
 import { logPracticeAttempt } from "./sessionLog.service";
+import { logPracticeResult } from "./exerciseLog.service";
 
 const COLLECTION_NAME = "languageLearningExercises";
 
@@ -140,6 +141,7 @@ export const deleteLanguageLearningExercise = async (
 export const updateExerciseStats = async (
   key: LanguageLearningExerciseKeyType,
   isCorrect: boolean,
+  snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string },
 ): Promise<void> => {
   try {
     const existing = await getLanguageLearningExercise(key);
@@ -160,6 +162,16 @@ export const updateExerciseStats = async (
     });
 
     await logPracticeAttempt(key, isCorrect);
+
+    if (snapshot) {
+      await logPracticeResult(
+        key,
+        isCorrect,
+        snapshot.userAnswer,
+        snapshot.correctAnswer,
+        snapshot.nativeText,
+      );
+    }
   } catch (error) {
     log.error(`Error updating exercise stats ${key}:`, error);
   }

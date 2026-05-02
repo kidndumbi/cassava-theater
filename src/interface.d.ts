@@ -375,7 +375,8 @@ export interface LanguageLearningAPI {
   getAllExercises: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
   deleteExercise: (key: string) => Promise<{ success: boolean; error?: string }>;
   updateExercise: (key: string, exerciseData: any) => Promise<{ success: boolean; data?: any; error?: string }>;
-  updateExerciseStats: (key: string, isCorrect: boolean) => Promise<{ success: boolean; error?: string }>;
+  updateExerciseStats: (key: string, isCorrect: boolean, snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string }) => Promise<{ success: boolean; error?: string }>;
+  getExerciseLogs: (key: string) => Promise<{ success: boolean; data?: any; error?: string }>;
 }
 
 export interface TagAPI {

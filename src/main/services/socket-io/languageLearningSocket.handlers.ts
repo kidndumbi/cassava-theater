@@ -13,8 +13,14 @@ import {
 } from "../languageLearningExerciseDb.service";
 import { createLanguageLearningExercise } from "../languageLearning.service";
 import { getAllSessionLogs } from "../sessionLog.service";
+import {
+  logExerciseUpdate,
+  getExerciseLogs,
+  deleteExerciseLogs,
+} from "../exerciseLog.service";
 import { LanguageLearningExerciseModel } from "../../../models/language-learning-exercise.model";
 import { PracticeSessionLog } from "../../../models/practice-session-log.model";
+import { ExerciseLogs } from "../../../models/exercise-log.model";
 import { loggingService as log } from "../main-logging.service";
 import { callLibreTranslate } from "../translation.service";
 
@@ -107,7 +113,15 @@ export function registerLanguageLearningHandlers(
         log.info(
           `Socket request: Update language learning exercise ${data.id}`,
         );
+        const before = await getAllLanguageLearningExercises().then(
+          (all) => all.find((e) => e.id === data.id) ?? {},
+        );
         await putLanguageLearningExercise(data.id, data.exercise);
+        await logExerciseUpdate(
+          data.id,
+          before as Record<string, any>,
+          data.exercise as Record<string, any>,
+        );
         log.info(`Successfully updated exercise ${data.id}`);
         callback({ success: true, data: data.exercise });
       } catch (error) {
@@ -143,7 +157,7 @@ export function registerLanguageLearningHandlers(
   socket.on(
     AppSocketEvents.LANGUAGE_LEARNING_UPDATE_EXERCISE_STATS,
     async (
-      data: { id: string; correct: boolean },
+      data: { id: string; correct: boolean; snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string } },
       callback: (response: {
         success: boolean;
         data?: any;
@@ -154,7 +168,7 @@ export function registerLanguageLearningHandlers(
         log.info(
           `Socket request: Update exercise stats ${data.id}, correct: ${data.correct}`,
         );
-        await updateExerciseStats(data.id, data.correct);
+        await updateExerciseStats(data.id, data.correct, data.snapshot);
         log.info(`Successfully updated stats for exercise ${data.id}`);
         callback({ success: true });
       } catch (error) {
@@ -177,6 +191,7 @@ export function registerLanguageLearningHandlers(
       try {
         log.info(`Socket request: Delete exercise ${data.id}`);
         await deleteLanguageLearningExercise(data.id);
+        await deleteExerciseLogs(data.id);
         log.info(`Successfully deleted exercise ${data.id}`);
         callback({ success: true });
       } catch (error) {
@@ -228,6 +243,28 @@ export function registerLanguageLearningHandlers(
         );
         callback({ success: true, data: translatedText });
       } catch (error) {
+        callback({ success: false, error: (error as Error).message });
+      }
+    },
+  );
+
+  // Get exercise logs for a specific exercise
+  socket.on(
+    AppSocketEvents.LANGUAGE_LEARNING_GET_EXERCISE_LOGS,
+    async (
+      data: { id: string },
+      callback: (response: {
+        success: boolean;
+        data?: ExerciseLogs;
+        error?: string;
+      }) => void,
+    ) => {
+      try {
+        log.info(`Socket request: Get exercise logs for ${data.id}`);
+        const logs = await getExerciseLogs(data.id);
+        callback({ success: true, data: logs });
+      } catch (error) {
+        log.error(`Failed to get exercise logs for ${data.id}:`, error);
         callback({ success: false, error: (error as Error).message });
       }
     },
