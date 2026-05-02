@@ -63,4 +63,7 @@ export enum AppSocketEvents {
   TAG_DELETE_TAG = "tag:delete-tag",
   TAG_EXISTS = "tag:tag-exists",
   TRANSLATE_TEXT = "translate:translate-text",
+  EXERCISE_AI_GET_CONVERSATION = "exercise-ai:get-conversation",
+  EXERCISE_AI_SAVE_CONVERSATION = "exercise-ai:save-conversation",
+  EXERCISE_AI_DELETE_CONVERSATION = "exercise-ai:delete-conversation",
 }
