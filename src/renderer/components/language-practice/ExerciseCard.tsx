@@ -56,6 +56,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   onEdit,
   onOpenGoogleTranslate,
 }) => {
+  const normalizeWord = (word: string) => word.replace(/[.,]/g, '').toLowerCase();
   return (
     <Card 
       sx={{ 
@@ -271,7 +272,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                     size="small"
                     sx={{ minWidth: 'auto' }}
                   >
-                    {word}
+                    {normalizeWord(word)}
                   </Button>
                 ))}
               </Box>
@@ -300,7 +301,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                   }
                 }}
               >
-                {word}
+                {normalizeWord(word)}
               </Button>
             ))}
           </Box>
