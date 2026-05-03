@@ -8,6 +8,7 @@ interface SubtitleOverlayProps {
   enabled?: boolean;
   fontSize?: number;
   hideText?: boolean;
+  subtitleOverlayLanguage?: 'en' | 'es' | 'fr' | null;
 }
 
 const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
@@ -17,12 +18,16 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
   enabled = false,
   fontSize = 16,
   hideText = false,
+  subtitleOverlayLanguage = null,
 }) => {
   const [cues, setCues] = useState<VTTCue[]>([]);
   const [activeCue, setActiveCue] = useState<VTTCue | null>(null);
   const [loading, setLoading] = useState(false);
   const [showCopyButton, setShowCopyButton] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [displayText, setDisplayText] = useState<string>('');
+  const [isTranslating, setIsTranslating] = useState(false);
+  const translationCacheRef = React.useRef<Map<string, string>>(new Map());
 
   // Fetch and parse VTT file when URL changes
   useEffect(() => {
@@ -57,6 +62,11 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     fetchSubtitles();
   }, [subtitleUrl, enabled]);
 
+  // Clear translation cache when subtitle file changes
+  useEffect(() => {
+    translationCacheRef.current.clear();
+  }, [subtitleUrl]);
+
   // Find active cue based on current time
   useEffect(() => {
     if (cues.length === 0) {
@@ -68,12 +78,57 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     setActiveCue(active);
   }, [cues, currentTime]);
 
+  // Translate active cue in real-time when it or the target language changes
+  useEffect(() => {
+    if (!activeCue) {
+      setDisplayText('');
+      return;
+    }
+
+    const sourceText = activeCue.text;
+
+    if (!subtitleOverlayLanguage) {
+      setDisplayText(sourceText);
+      return;
+    }
+
+    const cacheKey = `${sourceText}::${subtitleOverlayLanguage}`;
+    if (translationCacheRef.current.has(cacheKey)) {
+      setDisplayText(translationCacheRef.current.get(cacheKey) ?? sourceText);
+      return;
+    }
+
+    const languageNames: Record<string, string> = { en: 'English', es: 'Spanish', fr: 'French' };
+    const targetLanguageName = languageNames[subtitleOverlayLanguage];
+
+    setIsTranslating(true);
+    setDisplayText('');
+
+    const translate = async () => {
+      try {
+        const flatSource = sourceText.replace(/\n/g, ' ').trim();
+        const prompt = `Translate the following subtitle text to ${targetLanguageName}. Return ONLY the translated text with no explanation, no quotes, and no additional commentary:\n\n${flatSource}`;
+        const result = await window.llmAPI.generateLlmResponse(prompt);
+        const cleaned = result.trim();
+        translationCacheRef.current.set(cacheKey, cleaned);
+        setDisplayText(cleaned);
+      } catch (err) {
+        console.error('SubtitleOverlay translation failed, using original:', err);
+        setDisplayText(sourceText);
+      } finally {
+        setIsTranslating(false);
+      }
+    };
+
+    translate();
+  }, [activeCue, subtitleOverlayLanguage]);
+
   // Handle copying subtitle text to clipboard
   const handleCopyText = async () => {
-    if (!activeCue || hideText) return;
+    if (!displayText || hideText) return;
     
     try {
-      await navigator.clipboard.writeText(activeCue.text);
+      await navigator.clipboard.writeText(displayText);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
     } catch (err) {
@@ -81,8 +136,8 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
     }
   };
 
-  // Don't render anything if not enabled, not visible, loading, or no active cue
-  if (!enabled || !isVisible || loading || !activeCue) {
+  // Don't render anything if not enabled, not visible, loading, or no display text yet
+  if (!enabled || !isVisible || loading || (!displayText && !isTranslating) || !activeCue) {
     return null;
   }
 
@@ -106,8 +161,12 @@ const SubtitleOverlay: React.FC<SubtitleOverlayProps> = ({
       >
         {hideText ? (
           <div style={{ color: 'red' }}>Text Hidden</div>
+        ) : isTranslating ? (
+          <svg className="animate-spin mx-auto" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
         ) : (
-          activeCue.text.split('\n').map((line, index) => (
+          displayText.split('\n').map((line, index) => (
             <div key={index}>{line}</div>
           ))
         )}

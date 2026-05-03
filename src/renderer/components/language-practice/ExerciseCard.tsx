@@ -71,7 +71,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
         <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             <Chip 
-              label={`${exercise.practiceLanguage.toUpperCase()} → ${exercise.nativeLanguage.toUpperCase()}`} 
+              label={`${(exercise.practiceLanguage ?? '??').toUpperCase()} → ${(exercise.nativeLanguage ?? '??').toUpperCase()}`} 
               size="small" 
               color="secondary"
             />

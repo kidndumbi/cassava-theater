@@ -4,7 +4,6 @@ import { VideoDataModel } from "../../../models/videoData.model";
 
 interface LanguageLearningProps {
   subtitleUrl: string | null;
-  nativeSubtitleUrl: string | null;
   currentTime: number;
   currentVideo?: VideoDataModel | null;
   subtitleOverlayLanguage?: 'en' | 'es' | 'fr' | null;
@@ -17,7 +16,6 @@ interface LanguageLearningProps {
 
 const LanguageLearning: React.FC<LanguageLearningProps> = ({
   subtitleUrl,
-  nativeSubtitleUrl,
   currentTime,
   currentVideo,
   subtitleOverlayLanguage,
@@ -30,10 +28,11 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   const [cues, setCues] = useState<VTTCue[]>([]);
   const [activeCue, setActiveCue] = useState<VTTCue | null>(null);
   const [loading, setLoading] = useState(false);
-  
-  // Native language subtitle state
-  const [nativeCues, setNativeCues] = useState<VTTCue[]>([]);
-  const [activeNativeCue, setActiveNativeCue] = useState<VTTCue | null>(null);
+
+  // Real-time translation state
+  const [translatedText, setTranslatedText] = useState<string>('');
+  const [isTranslating, setIsTranslating] = useState<boolean>(false);
+  const translationCacheRef = React.useRef<Map<string, string>>(new Map());
   
   // Language learning exercise state
   const [scrambledWords, setScrambledWords] = useState<string[]>([]);
@@ -59,12 +58,7 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
         startTime: activeCue.startTime,
         endTime: activeCue.endTime
       } : null,
-      activeNativeCue: activeNativeCue ? {
-        id: activeNativeCue.id || `native-cue-${Date.now()}`,
-        text: activeNativeCue.text,
-        startTime: activeNativeCue.startTime,
-        endTime: activeNativeCue.endTime
-      } : null,
+      translatedText,
       scrambledWords,
       selectedWords,
       originalText,
@@ -141,7 +135,7 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   // Send state updates when relevant state changes
   useEffect(() => {
     sendStateUpdate();
-  }, [activeCue, activeNativeCue, scrambledWords, selectedWords, showResult, isCorrect, exerciseCompleted, enabled]);
+  }, [activeCue, translatedText, scrambledWords, selectedWords, showResult, isCorrect, exerciseCompleted, enabled]);
 
   // Fetch and parse VTT file when URL changes
   useEffect(() => {
@@ -176,34 +170,10 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
     fetchSubtitles();
   }, [subtitleUrl, enabled]);
 
-  // Fetch and parse native language VTT file
+  // Clear translation cache when subtitle file changes
   useEffect(() => {
-    if (!nativeSubtitleUrl || !enabled) {
-      setNativeCues([]);
-      setActiveNativeCue(null);
-      return;
-    }
-
-    const fetchNativeSubtitles = async () => {
-      try {
-        const response = await fetch(nativeSubtitleUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch native subtitles: ${response.statusText}`);
-        }
-        
-        const vttContent = await response.text();
-        const parsedCues = parseVTT(vttContent);
-        setNativeCues(parsedCues);
-        
-        console.log(`Parsed ${parsedCues.length} native subtitle cues for language learning`);
-      } catch (err) {
-        console.error("Error fetching/parsing native subtitles for language learning:", err);
-        setNativeCues([]);
-      }
-    };
-
-    fetchNativeSubtitles();
-  }, [nativeSubtitleUrl, enabled]);
+    translationCacheRef.current.clear();
+  }, [subtitleUrl]);
 
   // Find active cue based on current time
   useEffect(() => {
@@ -216,38 +186,74 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
     setActiveCue(active);
   }, [cues, currentTime]);
 
-  // Find active native cue based on current time
+  // Translate active cue in real-time when it changes
   useEffect(() => {
-    if (nativeCues.length === 0) {
-      setActiveNativeCue(null);
-      return;
-    }
-
-    const active = findActiveCue(nativeCues, currentTime);
-    setActiveNativeCue(active);
-  }, [nativeCues, currentTime]);
-
-  // Scramble words when active cue changes
-  useEffect(() => {
-    if (!activeCue) {
+    if (!activeCue || !enabled) {
+      setTranslatedText('');
+      setIsTranslating(false);
       resetExercise();
       return;
     }
 
-    // Reset exercise for new text
-    const text = activeCue.text.replace(/\n/g, ' ').trim();
-    setOriginalText(text);
-    
-    // Split into words and scramble
-    const words = text.split(/\s+/).filter(word => word.length > 0);
+    // Reset exercise state while we wait for translation
+    resetExercise();
+
+    const sourceText = activeCue.text.replace(/\n/g, ' ').trim();
+
+    // If no target language set, use original text as-is
+    if (!subtitleOverlayLanguage) {
+      setTranslatedText(sourceText);
+      return;
+    }
+
+    const cacheKey = `${sourceText}::${subtitleOverlayLanguage}`;
+    if (translationCacheRef.current.has(cacheKey)) {
+      setTranslatedText(translationCacheRef.current.get(cacheKey) ?? '');
+      return;
+    }
+
+    const languageNames: Record<string, string> = { en: 'English', es: 'Spanish', fr: 'French' };
+    const targetLanguageName = languageNames[subtitleOverlayLanguage] || subtitleOverlayLanguage;
+
+    setIsTranslating(true);
+    setTranslatedText('');
+
+    const translate = async () => {
+      try {
+        const prompt = `Translate the following subtitle text to ${targetLanguageName}. Return ONLY the translated text with no explanation, no quotes, and no additional commentary:\n\n${sourceText}`;
+        const result = await window.llmAPI.generateLlmResponse(prompt);
+        const cleaned = result.trim();
+        translationCacheRef.current.set(cacheKey, cleaned);
+        setTranslatedText(cleaned);
+      } catch (err) {
+        console.error('Translation failed, using original text:', err);
+        setTranslatedText(sourceText);
+      } finally {
+        setIsTranslating(false);
+      }
+    };
+
+    translate();
+  }, [activeCue, subtitleOverlayLanguage, enabled]);
+
+  // Scramble words when translation is ready
+  useEffect(() => {
+    if (!translatedText) {
+      return;
+    }
+
+    setOriginalText(translatedText);
+
+    const words = translatedText.split(/\s+/).filter(word => word.length > 0);
     const scrambled = [...words].sort(() => Math.random() - 0.5);
-    
+
     setScrambledWords(scrambled);
     setSelectedWords([]);
     setShowResult(false);
     setIsCorrect(false);
     setExerciseCompleted(false);
-  }, [activeCue]);
+  }, [translatedText]);
+
 
   const resetExercise = () => {
     setScrambledWords([]);
@@ -302,12 +308,13 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
     setSaveStatus('idle');
     try {
       const practiceText = originalText.trim();
-      const nativeText = activeNativeCue?.text.replace(/\n/g, ' ').trim() || '';
+      const nativeText = activeCue?.text.replace(/\n/g, ' ').trim() || '';
 
       const newExercise = {
         practiceLanguageText: practiceText,
         nativeLanguageText: nativeText,
         practiceLanguage: subtitleOverlayLanguage || undefined,
+        nativeLanguage: currentVideo?.activeSubtitleLanguage || 'en',
         wordCount: practiceText.split(/\s+/).filter(w => w.length > 0).length,
         tags: ['subtitle-creation'],
         createdAt: Date.now(),
@@ -395,18 +402,27 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
           </button>
         </div>
 
-        {/* Native Language Reference */}
-        {activeNativeCue && (
+        {/* Original Subtitle Reference */}
+        {activeCue && (
           <div className="mb-4 p-3 bg-gray-800 bg-opacity-20 rounded-lg border border-gray-600">
-            <div className="text-xs text-gray-300 mb-1">Reference (Native Language):</div>
+            <div className="text-xs text-gray-300 mb-1">Reference (Original):</div>
             <div 
               className="text-white text-center leading-relaxed"
               style={{ fontSize: `${Math.max(12, fontSize - 1)}px` }}
             >
-              {activeNativeCue.text.split('\n').map((line, index) => (
+              {activeCue.text.split('\n').map((line, index) => (
                 <div key={index}>{line}</div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Translating indicator */}
+        {isTranslating && (
+          <div className="mb-3 flex justify-center">
+            <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#93c5fd" strokeWidth="2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
           </div>
         )}
 
