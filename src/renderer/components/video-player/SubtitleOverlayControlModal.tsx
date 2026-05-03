@@ -16,12 +16,10 @@ import {
   Slider,
   styled,
 } from "@mui/material";
-import { VideoDataModel } from "../../../models/videoData.model";
 
 interface SubtitleOverlayControlModalProps {
   open: boolean;
   onClose: () => void;
-  videoData?: VideoDataModel;
   isEnabled: boolean;
   selectedLanguage: 'en' | 'es' | 'fr' | null;
   fontSize: number;
@@ -80,7 +78,6 @@ const StyledSlider = styled(Slider)(({ theme }) => ({
 export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalProps> = ({
   open,
   onClose,
-  videoData,
   isEnabled,
   selectedLanguage,
   fontSize,
@@ -108,29 +105,15 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
     }
   }, [open, isEnabled, selectedLanguage, fontSize, hideText, languageLearningEnabled]);
 
-  // Get available languages based on subtitle paths
-  const getAvailableLanguages = () => {
-    if (!videoData) return [];
+  // All languages are always available for real-time translation
+  const availableLanguages = [
+    { code: 'en' as const, name: 'English' },
+    { code: 'es' as const, name: 'Spanish' },
+    { code: 'fr' as const, name: 'French' },
+  ];
 
-    const languages = [];
-    
-    if (videoData.subtitlePath) {
-      languages.push({ code: 'en' as const, name: 'English', path: videoData.subtitlePath });
-    }
-    if (videoData.subtitlePathEs) {
-      languages.push({ code: 'es' as const, name: 'Spanish', path: videoData.subtitlePathEs });
-    }
-    if (videoData.subtitlePathFr) {
-      languages.push({ code: 'fr' as const, name: 'French', path: videoData.subtitlePathFr });
-    }
-
-    return languages;
-  };
-
-  const availableLanguages = getAvailableLanguages();
-
-  // Validation: if overlay is enabled and languages are available, a language must be selected
-  const isLanguageSelectionRequired = localEnabled && availableLanguages.length > 0 && !localLanguage;
+  // Validation: a language must be selected when overlay is enabled
+  const isLanguageSelectionRequired = localEnabled && !localLanguage;
   const canApply = !isLanguageSelectionRequired;
 
   const handleSave = () => {
@@ -186,7 +169,7 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
 
           {/* Language Selection */}
           {localEnabled && (
-            <StyledFormControl fullWidth disabled={availableLanguages.length === 0}>
+            <StyledFormControl fullWidth>
               <InputLabel>Language</InputLabel>
               <Select
                 value={localLanguage || ''}
@@ -292,21 +275,9 @@ export const SubtitleOverlayControlModal: React.FC<SubtitleOverlayControlModalPr
           )}
 
           {/* Info Text */}
-          {availableLanguages.length === 0 && (
-            <Typography variant="body2" color="text.secondary">
-              No subtitle files are available for this video.
-            </Typography>
-          )}
-
-          {availableLanguages.length > 0 && (
-            <Typography variant="body2" sx={
-                {
-                    color:"#fff"
-                }
-            }>
-              Available languages: {availableLanguages.map(lang => lang.name).join(', ')}
-            </Typography>
-          )}
+          <Typography variant="body2" sx={{ color: "#aaa" }}>
+            The active video subtitle will be translated in real time to the selected language.
+          </Typography>
         </Box>
       </DialogContent>
 

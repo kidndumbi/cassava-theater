@@ -521,18 +521,18 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
 
         {/* Custom Subtitle Overlay */}
         <SubtitleOverlay
-          subtitleUrl={getOverlaySubtitleUrl(subtitleOverlayLanguage)}
+          subtitleUrl={getSubtitleUrl()}
           currentTime={currentTime || 0}
           isVisible={!subtitleModalOpen}
           enabled={subtitleOverlayEnabled}
           fontSize={subtitleOverlayFontSize}
           hideText={subtitleOverlayHideText}
+          subtitleOverlayLanguage={subtitleOverlayLanguage}
         />
 
         {/* Language Learning Component */}
         <LanguageLearning
-          subtitleUrl={getOverlaySubtitleUrl(subtitleOverlayLanguage)}
-          nativeSubtitleUrl={getNativeSubtitleUrl()}
+          subtitleUrl={getSubtitleUrl()}
           currentTime={currentTime || 0}
           currentVideo={currentVideo}
           subtitleOverlayLanguage={subtitleOverlayLanguage}
@@ -611,7 +611,6 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
         <SubtitleOverlayControlModal
           open={subtitleOverlayControlModal.open}
           onClose={subtitleOverlayControlModal.setOpen.bind(null, false)}
-          videoData={currentVideo || undefined}
           isEnabled={subtitleOverlayEnabled}
           selectedLanguage={subtitleOverlayLanguage}
           fontSize={subtitleOverlayFontSize}

@@ -657,7 +657,7 @@ export const ExerciseListModal: React.FC<ExerciseListModalProps> = ({
                     </TableCell>
                     <TableCell>
                       <Chip 
-                        label={`${exercise.practiceLanguage.toUpperCase()} → ${exercise.nativeLanguage.toUpperCase()}`}
+                        label={`${(exercise.practiceLanguage ?? '??').toUpperCase()} → ${(exercise.nativeLanguage ?? '??').toUpperCase()}`}
                         size="small"
                         color="primary"
                         variant="outlined"
