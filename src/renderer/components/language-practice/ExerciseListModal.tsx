@@ -571,6 +571,7 @@ export const ExerciseListModal: React.FC<ExerciseListModalProps> = ({
                   <TableCell>Translation</TableCell>
                   <TableCell>Languages</TableCell>
                   <TableCell>Statistics</TableCell>
+                  <TableCell>Created</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -686,6 +687,14 @@ export const ExerciseListModal: React.FC<ExerciseListModalProps> = ({
                           color="default"
                         />
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="caption" sx={{ whiteSpace: 'nowrap' }}>
+                        {new Date(exercise.createdAt).toLocaleString(undefined, {
+                          year: 'numeric', month: '2-digit', day: '2-digit',
+                          hour: '2-digit', minute: '2-digit', second: '2-digit'
+                        })}
+                      </Typography>
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 0.5 }}>

@@ -724,7 +724,7 @@ const handleBulkDeleteSelected = async (selectedExerciseIds: string[]) => {
       }
       
       return true;
-    });
+    }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [allExercises, filters, isFavorite]);
 
   // Pagination calculations (memoized) - now works with filtered exercises
