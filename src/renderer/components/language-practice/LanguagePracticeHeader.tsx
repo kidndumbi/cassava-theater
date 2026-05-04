@@ -21,7 +21,7 @@ export const LanguagePracticeHeader: React.FC<LanguagePracticeHeaderProps> = ({
       <Typography variant="h4" component="h1" gutterBottom>
         Language Practice
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      <Typography variant="body2"  sx={{ mb: 2 , color: "primary.main" }}>
         Total exercises available: {totalExercises}
       </Typography>
       <Button
