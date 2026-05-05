@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Container, Box, Tab, Tabs, Alert } from "@mui/material";
 import { SettingsModel } from "../../../models/settings.model";
 import { GeneralSettings } from "./GeneralSettings";
+import { LanguagePracticeSettings } from "./LanguagePracticeSettings";
 import { a11yProps, CustomTabPanel } from "../common/TabPanel";
 import { useSnackbar } from "../../contexts/SnackbarContext";
 import { useConfirmation } from "../../contexts/ConfirmationContext";
@@ -94,6 +95,11 @@ export const SettingsPage: React.FC = () => {
               {...a11yProps(0)}
               sx={{ "&:not(.Mui-selected)": { color: "gray" } }}
             />
+            <Tab
+              label="Language Practice"
+              {...a11yProps(1)}
+              sx={{ "&:not(.Mui-selected)": { color: "gray" } }}
+            />
           </Tabs>
         </Box>
         <CustomTabPanel value={currentTabValue} index={0}>
@@ -102,6 +108,9 @@ export const SettingsPage: React.FC = () => {
             handleFolderSelection={handleFolderSelection}
             handleUpdateSetting={handleUpdateSetting}
           />
+        </CustomTabPanel>
+        <CustomTabPanel value={currentTabValue} index={1}>
+          <LanguagePracticeSettings />
         </CustomTabPanel>
       </Container>
     </>
