@@ -23,6 +23,7 @@ export const logPracticeResult = async (
   userAnswer: string,
   correctAnswer: string,
   nativeText: string,
+  practiceMode?: 'arrange-words' | 'fill-in-missing',
 ): Promise<void> => {
   try {
     const logs = await getOrCreate(exerciseId);
@@ -31,7 +32,7 @@ export const logPracticeResult = async (
       exerciseId,
       timestamp: Date.now(),
       type: "practice",
-      practiceDetails: { isCorrect, userAnswer, correctAnswer, nativeText },
+      practiceDetails: { isCorrect, userAnswer, correctAnswer, nativeText, practiceMode },
     };
     logs.entries.push(entry);
     await levelDBService.put(COLLECTION, exerciseId, logs);
