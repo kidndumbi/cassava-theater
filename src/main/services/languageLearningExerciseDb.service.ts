@@ -161,7 +161,7 @@ export const updateExerciseStats = async (
       accuracyRate,
     });
 
-    await logPracticeAttempt(key, isCorrect);
+    await logPracticeAttempt(key, isCorrect, snapshot?.practiceMode);
 
     if (snapshot) {
       await logPracticeResult(

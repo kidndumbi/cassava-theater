@@ -3,4 +3,8 @@ export interface PracticeSessionLog {
   totalAttempts: number;
   correctCount: number;
   exercisesAttempted: string[]; // unique exercise IDs practiced this day
+  arrangeWordsAttempts?: number;
+  arrangeWordsCorrect?: number;
+  fillInMissingAttempts?: number;
+  fillInMissingCorrect?: number;
 }
