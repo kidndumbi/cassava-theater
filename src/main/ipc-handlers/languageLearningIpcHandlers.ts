@@ -209,7 +209,7 @@ export const languageLearningIpcHandlers = () => {
   // Update exercise statistics
   ipcMain.handle(
     LanguageLearningIPCChannels.UPDATE_EXERCISE_STATS,
-    async (_event, key: string, isCorrect: boolean, snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string }) => {
+    async (_event, key: string, isCorrect: boolean, snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string; practiceMode?: 'arrange-words' | 'fill-in-missing' }) => {
       try {
         await updateExerciseStats(key, isCorrect, snapshot);
         return { success: true };

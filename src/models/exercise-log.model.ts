@@ -5,6 +5,7 @@ export interface PracticeLogDetails {
   userAnswer: string;
   correctAnswer: string;
   nativeText: string;
+  practiceMode?: 'arrange-words' | 'fill-in-missing';
 }
 
 export interface ExerciseUpdateDetails {
