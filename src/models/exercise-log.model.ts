@@ -5,7 +5,7 @@ export interface PracticeLogDetails {
   userAnswer: string;
   correctAnswer: string;
   nativeText: string;
-  practiceMode?: 'arrange-words' | 'fill-in-missing';
+  practiceMode?: 'arrange-words' | 'fill-in-missing' | 'spell-the-blanks';
 }
 
 export interface ExerciseUpdateDetails {
