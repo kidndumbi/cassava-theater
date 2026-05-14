@@ -7,4 +7,6 @@ export interface PracticeSessionLog {
   arrangeWordsCorrect?: number;
   fillInMissingAttempts?: number;
   fillInMissingCorrect?: number;
+  spellTheBlanksAttempts?: number;
+  spellTheBlanksCorrect?: number;
 }

@@ -55,6 +55,9 @@ export const logPracticeAttempt = async (
     } else if (practiceMode === 'fill-in-missing') {
       updated.fillInMissingAttempts = (current.fillInMissingAttempts ?? 0) + 1;
       updated.fillInMissingCorrect = (current.fillInMissingCorrect ?? 0) + (isCorrect ? 1 : 0);
+    } else if (practiceMode === 'spell-the-blanks') {
+      updated.spellTheBlanksAttempts = (current.spellTheBlanksAttempts ?? 0) + 1;
+      updated.spellTheBlanksCorrect = (current.spellTheBlanksCorrect ?? 0) + (isCorrect ? 1 : 0);
     }
 
     await levelDBService.put(COLLECTION_NAME, key, updated);
