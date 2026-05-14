@@ -15,7 +15,7 @@ const getTodayKey = (): string => {
 export const logPracticeAttempt = async (
   exerciseId: string,
   isCorrect: boolean,
-  practiceMode?: 'arrange-words' | 'fill-in-missing',
+  practiceMode?: 'arrange-words' | 'fill-in-missing' | 'spell-the-blanks',
 ): Promise<void> => {
   try {
     const key = getTodayKey();

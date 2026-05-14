@@ -23,7 +23,7 @@ export const logPracticeResult = async (
   userAnswer: string,
   correctAnswer: string,
   nativeText: string,
-  practiceMode?: 'arrange-words' | 'fill-in-missing',
+  practiceMode?: 'arrange-words' | 'fill-in-missing' | 'spell-the-blanks',
 ): Promise<void> => {
   try {
     const logs = await getOrCreate(exerciseId);
