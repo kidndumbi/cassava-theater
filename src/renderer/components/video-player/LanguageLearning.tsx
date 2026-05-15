@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { VTTCue, parseVTT, findActiveCue } from "../../util/vttParser";
 import { VideoDataModel } from "../../../models/videoData.model";
+import { useOllamaModels } from "../../hooks/useOllamaModels";
 
 interface LanguageLearningProps {
   subtitleUrl: string | null;
@@ -11,6 +12,8 @@ interface LanguageLearningProps {
   enabled?: boolean;
   fontSize?: number;
   language?: string;
+  translationEngine?: string;
+  libretranslateUrl?: string;
   onPause?: () => void;
 }
 
@@ -23,8 +26,12 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
   enabled = false,
   fontSize = 16,
   language = 'Language Learning',
+  translationEngine = '',
+  libretranslateUrl = 'http://localhost:5000',
   onPause,
 }) => {
+  const { data: ollamaModels } = useOllamaModels();
+
   const [cues, setCues] = useState<VTTCue[]>([]);
   const [activeCue, setActiveCue] = useState<VTTCue | null>(null);
   const [loading, setLoading] = useState(false);
@@ -220,9 +227,20 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
 
     const translate = async () => {
       try {
-        const prompt = `Translate the following subtitle text to ${targetLanguageName}. Return ONLY the translated text with no explanation, no quotes, and no additional commentary:\n\n${sourceText}`;
-        const result = await window.llmAPI.generateLlmResponse(prompt);
-        const cleaned = result.trim();
+        let cleaned: string;
+        if (translationEngine === 'libretranslate') {
+          const sourceLanguage = currentVideo?.activeSubtitleLanguage || 'en';
+          cleaned = (await window.translationAPI.translateText({
+            text: sourceText,
+            sourceLanguage,
+            targetLanguage: subtitleOverlayLanguage ?? 'en',
+            libretranslateUrl,
+          })).trim();
+        } else {
+          // Use the selected LLM model (translationEngine is the model name, or '' for default)
+          const prompt = `Translate the following subtitle text to ${targetLanguageName}. Return ONLY the translated text with no explanation, no quotes, and no additional commentary:\n\n${sourceText}`;
+          cleaned = (await window.llmAPI.generateLlmResponse(prompt, translationEngine || undefined)).trim();
+        }
         translationCacheRef.current.set(cacheKey, cleaned);
         setTranslatedText(cleaned);
       } catch (err) {
@@ -388,6 +406,12 @@ const LanguageLearning: React.FC<LanguageLearningProps> = ({
         <div className="flex justify-between items-center mb-3">
           <div className="flex-1 text-center font-semibold text-blue-200">
             {language} Exercise
+            <span
+              className="ml-2 text-xs font-normal opacity-70"
+              title={translationEngine === 'libretranslate' ? `LibreTranslate (${libretranslateUrl})` : `LLM: ${translationEngine || ollamaModels?.[0]?.name || 'default'}`}
+            >
+              [{translationEngine === 'libretranslate' ? 'LibreTranslate' : translationEngine || ollamaModels?.[0]?.name || 'Ollama'}]
+            </span>
           </div>
           <button
             onClick={(ev) => { 

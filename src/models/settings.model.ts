@@ -21,5 +21,7 @@ export interface SettingsModel {
   ollamaModel: string;
   subtitleOverlay: {
     fontSize: number;
+    translationEngine?: string;
+    libretranslateUrl?: string;
   };
 }

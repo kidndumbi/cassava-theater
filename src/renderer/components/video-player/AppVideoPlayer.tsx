@@ -540,6 +540,8 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           enabled={languageLearningEnabled}
           fontSize={subtitleOverlayFontSize}
           language={getLanguageDisplayName(subtitleOverlayLanguage)}
+          translationEngine={settings?.subtitleOverlay?.translationEngine ?? ''}
+          libretranslateUrl={settings?.subtitleOverlay?.libretranslateUrl ?? 'http://localhost:5000'}
           onPause={pause}
         />
 
