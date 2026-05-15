@@ -470,6 +470,22 @@ export const ExerciseListModal: React.FC<ExerciseListModalProps> = ({
                     <MenuItem value="hard">Hard</MenuItem>
                   </Select>
                 </FormControl>
+
+                {/* Practice Status Filter */}
+                <FormControl size="small" sx={{ minWidth: 150 }}>
+                  <InputLabel sx={{ color: 'grey.300' }}>Practice Status</InputLabel>
+                  <Select
+                    value={filters.practiceStatus}
+                    onChange={(e) => onUpdateFilter('practiceStatus', e.target.value as any)}
+                    sx={{ bgcolor: 'grey.800', '& fieldset': { borderColor: 'grey.600' } }}
+                  >
+                    <MenuItem value="all">All</MenuItem>
+                    <MenuItem value="never">Not Practiced</MenuItem>
+                    <MenuItem value="low-accuracy">Low Accuracy (&lt;60%)</MenuItem>
+                    <MenuItem value="high-accuracy">High Accuracy (≥80%)</MenuItem>
+                    <MenuItem value="favorites">Favorites</MenuItem>
+                  </Select>
+                </FormControl>
                 
                 {/* Video Source Filter */}
                 {uniqueVideoSources.length > 1 && (
