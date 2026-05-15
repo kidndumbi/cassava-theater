@@ -14,8 +14,10 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { Stop as StopIcon, PlayArrow as PlayIcon } from "@mui/icons-material";
+import { Stop as StopIcon, PlayArrow as PlayIcon, Save } from "@mui/icons-material";
 import { useOllamaModels } from "../../hooks/useOllamaModels";
+import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
+import { useSetSetting } from "../../hooks/settings/useSetSetting";
 
 type Language = "en" | "es" | "fr";
 type Length = "low" | "medium" | "high";
@@ -44,6 +46,29 @@ interface Progress {
 export const LanguagePracticeSettings: React.FC = () => {
   const theme = useTheme();
   const { data: ollamaModels = [] } = useOllamaModels();
+  const { data: settings } = useGetAllSettings();
+  const { mutateAsync: setSetting } = useSetSetting();
+
+  const subtitleEngine = settings?.subtitleOverlay?.translationEngine ?? '';
+  const subtitleLibretranslateUrl = settings?.subtitleOverlay?.libretranslateUrl ?? 'http://localhost:5000';
+  const [pendingSubtitleUrl, setPendingSubtitleUrl] = useState<string | null>(null);
+  const displayedSubtitleUrl = pendingSubtitleUrl ?? subtitleLibretranslateUrl;
+
+  const saveSubtitleEngine = (engine: string) => {
+    setSetting({
+      key: 'subtitleOverlay',
+      value: { ...(settings?.subtitleOverlay ?? { fontSize: 16 }), translationEngine: engine },
+    });
+  };
+
+  const saveSubtitleLibretranslateUrl = () => {
+    const url = pendingSubtitleUrl ?? subtitleLibretranslateUrl;
+    setSetting({
+      key: 'subtitleOverlay',
+      value: { ...(settings?.subtitleOverlay ?? { fontSize: 16 }), libretranslateUrl: url },
+    });
+    setPendingSubtitleUrl(null);
+  };
 
   const [nativeLanguage, setNativeLanguage] = useState<Language>("en");
   const [practiceLanguage, setPracticeLanguage] = useState<Language>("es");
@@ -198,6 +223,7 @@ export const LanguagePracticeSettings: React.FC = () => {
   const cardBg = theme.customVariables?.appDark;
 
   return (
+    <>
     <Card style={{ marginTop: "20px", backgroundColor: cardBg }}>
       <CardHeader
         title={
@@ -363,5 +389,68 @@ export const LanguagePracticeSettings: React.FC = () => {
         </Box>
       </CardContent>
     </Card>
+
+    {/* Subtitle Translation Engine */}
+    <Card style={{ marginTop: "20px", backgroundColor: cardBg }}>
+      <CardHeader
+        title={
+          <Typography variant="h6" style={{ color: theme.customVariables?.appWhiteSmoke }}>
+            Subtitle Translation Engine
+          </Typography>
+        }
+        subheader={
+          <Typography variant="body2" style={{ color: theme.customVariables?.appWhiteSmoke, opacity: 0.7 }}>
+            Which engine to use when translating subtitles in the Language Learning overlay
+          </Typography>
+        }
+      />
+      <CardContent>
+        <Box className="flex flex-col gap-4">
+          <FormControl fullWidth size="small">
+            <InputLabel>Translation Engine</InputLabel>
+            <Select
+              value={subtitleEngine}
+              label="Translation Engine"
+              onChange={(e) => saveSubtitleEngine(e.target.value)}
+              displayEmpty
+            >
+              <MenuItem value="libretranslate">LibreTranslate</MenuItem>
+              {ollamaModels.map((m) => (
+                <MenuItem key={m.model} value={m.name}>
+                  {m.name} (LLM)
+                </MenuItem>
+              ))}
+              {ollamaModels.length === 0 && (
+                <MenuItem value="" disabled>
+                  No LLM models found — install Ollama models first
+                </MenuItem>
+              )}
+            </Select>
+          </FormControl>
+
+          {subtitleEngine === 'libretranslate' && (
+            <Box style={{ display: 'flex', alignItems: 'center' }}>
+              <TextField
+                label="LibreTranslate URL"
+                size="small"
+                fullWidth
+                value={displayedSubtitleUrl}
+                onChange={(e) => setPendingSubtitleUrl(e.target.value)}
+                placeholder="http://localhost:5000"
+              />
+              <Button
+                sx={{ marginLeft: '8px', flexShrink: 0 }}
+                variant="contained"
+                color="primary"
+                onClick={saveSubtitleLibretranslateUrl}
+              >
+                <Save />
+              </Button>
+            </Box>
+          )}
+        </Box>
+      </CardContent>
+    </Card>
+    </>
   );
 };
