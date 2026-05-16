@@ -281,16 +281,16 @@ export const LanguagePracticeSettings: React.FC = () => {
 
           {/* Count */}
           <TextField
-            label="Number of Exercises (1–1000)"
+            label="Number of Exercises (1–10000)"
             type="number"
             size="small"
             value={count}
             onChange={(e) => {
               const v = parseInt(e.target.value, 10);
-              if (v >= 1 && v <= 1000) setCount(v);
+              if (v >= 1 && v <= 10000) setCount(v);
             }}
             disabled={isGenerating}
-            inputProps={{ min: 1, max: 1000 }}
+            inputProps={{ min: 1, max: 10000 }}
           />
 
           {/* Ollama Model */}
