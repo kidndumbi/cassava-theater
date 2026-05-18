@@ -66,4 +66,9 @@ export enum AppSocketEvents {
   EXERCISE_AI_GET_CONVERSATION = "exercise-ai:get-conversation",
   EXERCISE_AI_SAVE_CONVERSATION = "exercise-ai:save-conversation",
   EXERCISE_AI_DELETE_CONVERSATION = "exercise-ai:delete-conversation",
+  VOCABULARY_GET_ALL = "vocabulary:get-all",
+  VOCABULARY_CREATE = "vocabulary:create",
+  VOCABULARY_UPDATE = "vocabulary:update",
+  VOCABULARY_UPDATE_STATS = "vocabulary:update-stats",
+  VOCABULARY_DELETE = "vocabulary:delete",
 }
