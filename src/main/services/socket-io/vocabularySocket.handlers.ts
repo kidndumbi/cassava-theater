@@ -16,6 +16,10 @@ import {
   getVocabularyLogs,
   deleteVocabularyLogs,
 } from "../vocabularyLog.service";
+import {
+  logVocabularyPracticeSession,
+  getAllVocabularySessionLogs,
+} from "../vocabularySessionLog.service";
 
 type SocketCallback = (response: {
   success: boolean;
@@ -85,6 +89,7 @@ export function registerVocabularyHandlers(socket: Socket): void {
       try {
         await updateVocabularyWordStats(data.id, data.correct);
         await logVocabularyPractice(data.id, data.correct);
+        await logVocabularyPracticeSession(data.id, data.correct);
         callback({ success: true });
       } catch (error) {
         log.error(`Failed to update vocabulary stats ${data.id}:`, error);
@@ -117,6 +122,20 @@ export function registerVocabularyHandlers(socket: Socket): void {
         callback({ success: true, data: logs });
       } catch (error) {
         log.error(`Failed to get vocabulary logs for ${data.id}:`, error);
+        callback({ success: false, error: (error as Error).message });
+      }
+    },
+  );
+
+  socket.on(
+    AppSocketEvents.VOCABULARY_GET_SESSION_LOGS,
+    async (_requestData: unknown, callback: SocketCallback) => {
+      try {
+        log.info("Socket request: Get all vocabulary session logs");
+        const logs = await getAllVocabularySessionLogs();
+        callback({ success: true, data: logs });
+      } catch (error) {
+        log.error("Failed to get vocabulary session logs:", error);
         callback({ success: false, error: (error as Error).message });
       }
     },
