@@ -8,7 +8,14 @@ import {
   putVocabularyWord,
   deleteVocabularyWord,
   updateVocabularyWordStats,
+  getVocabularyWord,
 } from "../vocabularyDb.service";
+import {
+  logVocabularyUpdate,
+  logVocabularyPractice,
+  getVocabularyLogs,
+  deleteVocabularyLogs,
+} from "../vocabularyLog.service";
 
 type SocketCallback = (response: {
   success: boolean;
@@ -56,7 +63,11 @@ export function registerVocabularyHandlers(socket: Socket): void {
     ) => {
       try {
         log.info(`Socket request: Update vocabulary word ${data.id}`);
+        const before = await getVocabularyWord(data.id);
         const updated = await putVocabularyWord(data.id, data.word);
+        if (before) {
+          await logVocabularyUpdate(data.id, before as Record<string, any>, updated as Record<string, any>);
+        }
         callback({ success: true, data: updated });
       } catch (error) {
         log.error(`Failed to update vocabulary word ${data.id}:`, error);
@@ -73,6 +84,7 @@ export function registerVocabularyHandlers(socket: Socket): void {
     ) => {
       try {
         await updateVocabularyWordStats(data.id, data.correct);
+        await logVocabularyPractice(data.id, data.correct);
         callback({ success: true });
       } catch (error) {
         log.error(`Failed to update vocabulary stats ${data.id}:`, error);
@@ -87,9 +99,24 @@ export function registerVocabularyHandlers(socket: Socket): void {
       try {
         log.info(`Socket request: Delete vocabulary word ${data.id}`);
         await deleteVocabularyWord(data.id);
+        await deleteVocabularyLogs(data.id);
         callback({ success: true });
       } catch (error) {
         log.error(`Failed to delete vocabulary word ${data.id}:`, error);
+        callback({ success: false, error: (error as Error).message });
+      }
+    },
+  );
+
+  socket.on(
+    AppSocketEvents.VOCABULARY_GET_LOGS,
+    async (data: { id: string }, callback: SocketCallback) => {
+      try {
+        log.info(`Socket request: Get vocabulary logs for word ${data.id}`);
+        const logs = await getVocabularyLogs(data.id);
+        callback({ success: true, data: logs });
+      } catch (error) {
+        log.error(`Failed to get vocabulary logs for ${data.id}:`, error);
         callback({ success: false, error: (error as Error).message });
       }
     },
