@@ -71,4 +71,5 @@ export enum AppSocketEvents {
   VOCABULARY_UPDATE = "vocabulary:update",
   VOCABULARY_UPDATE_STATS = "vocabulary:update-stats",
   VOCABULARY_DELETE = "vocabulary:delete",
+  VOCABULARY_GET_LOGS = "vocabulary:get-logs",
 }

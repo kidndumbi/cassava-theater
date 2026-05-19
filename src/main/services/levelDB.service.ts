@@ -15,6 +15,7 @@ import { PracticeSessionLog } from "../../models/practice-session-log.model";
 import { ExerciseLogs } from "../../models/exercise-log.model";
 import { ExerciseAiConversation } from "../../models/exercise-ai-chat.model";
 import { VocabularyWordModel } from "../../models/vocabulary-word.model";
+import { VocabularyLogs } from "../../models/vocabulary-log.model";
 
 // Define your database collections
 type Collections = {
@@ -32,6 +33,7 @@ type Collections = {
   exerciseLogs: ExerciseLogs;
   exerciseAiChats: ExerciseAiConversation;
   vocabularyWords: VocabularyWordModel;
+  vocabularyLogs: VocabularyLogs;
 };
 
 type CollectionName = keyof Collections;
