@@ -209,7 +209,7 @@ export const languageLearningIpcHandlers = () => {
   // Update exercise statistics
   ipcMain.handle(
     LanguageLearningIPCChannels.UPDATE_EXERCISE_STATS,
-    async (_event, key: string, isCorrect: boolean, snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string; practiceMode?: 'arrange-words' | 'fill-in-missing' | 'spell-the-blanks' }) => {
+    async (_event, key: string, isCorrect: boolean, snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string; practiceMode?: 'arrange-words' | 'fill-in-missing' | 'spell-the-blanks' | 'conversation'; options?: string[] }) => {
       try {
         await updateExerciseStats(key, isCorrect, snapshot);
         return { success: true };

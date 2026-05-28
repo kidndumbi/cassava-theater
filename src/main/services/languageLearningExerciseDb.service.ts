@@ -141,7 +141,7 @@ export const deleteLanguageLearningExercise = async (
 export const updateExerciseStats = async (
   key: LanguageLearningExerciseKeyType,
   isCorrect: boolean,
-  snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string; practiceMode?: 'arrange-words' | 'fill-in-missing' | 'spell-the-blanks' },
+  snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string; practiceMode?: 'arrange-words' | 'fill-in-missing' | 'spell-the-blanks' | 'conversation'; options?: string[] },
 ): Promise<void> => {
   try {
     const existing = await getLanguageLearningExercise(key);
@@ -171,6 +171,7 @@ export const updateExerciseStats = async (
         snapshot.correctAnswer,
         snapshot.nativeText,
         snapshot.practiceMode,
+        snapshot.options,
       );
     }
   } catch (error) {
