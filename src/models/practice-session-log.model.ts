@@ -9,4 +9,6 @@ export interface PracticeSessionLog {
   fillInMissingCorrect?: number;
   spellTheBlanksAttempts?: number;
   spellTheBlanksCorrect?: number;
+  conversationAttempts?: number;
+  conversationCorrect?: number;
 }

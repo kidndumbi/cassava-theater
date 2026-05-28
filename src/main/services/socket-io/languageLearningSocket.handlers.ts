@@ -157,7 +157,7 @@ export function registerLanguageLearningHandlers(
   socket.on(
     AppSocketEvents.LANGUAGE_LEARNING_UPDATE_EXERCISE_STATS,
     async (
-      data: { id: string; correct: boolean; snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string } },
+      data: { id: string; correct: boolean; snapshot?: { userAnswer: string; correctAnswer: string; nativeText: string; practiceMode?: 'arrange-words' | 'fill-in-missing' | 'spell-the-blanks' | 'conversation'; options?: string[] } },
       callback: (response: {
         success: boolean;
         data?: any;

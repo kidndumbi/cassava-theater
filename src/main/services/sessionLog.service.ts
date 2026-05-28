@@ -15,7 +15,7 @@ const getTodayKey = (): string => {
 export const logPracticeAttempt = async (
   exerciseId: string,
   isCorrect: boolean,
-  practiceMode?: 'arrange-words' | 'fill-in-missing' | 'spell-the-blanks',
+  practiceMode?: 'arrange-words' | 'fill-in-missing' | 'spell-the-blanks' | 'conversation',
 ): Promise<void> => {
   try {
     const key = getTodayKey();
@@ -58,6 +58,9 @@ export const logPracticeAttempt = async (
     } else if (practiceMode === 'spell-the-blanks') {
       updated.spellTheBlanksAttempts = (current.spellTheBlanksAttempts ?? 0) + 1;
       updated.spellTheBlanksCorrect = (current.spellTheBlanksCorrect ?? 0) + (isCorrect ? 1 : 0);
+    } else if (practiceMode === 'conversation') {
+      updated.conversationAttempts = (current.conversationAttempts ?? 0) + 1;
+      updated.conversationCorrect = (current.conversationCorrect ?? 0) + (isCorrect ? 1 : 0);
     }
 
     await levelDBService.put(COLLECTION_NAME, key, updated);
