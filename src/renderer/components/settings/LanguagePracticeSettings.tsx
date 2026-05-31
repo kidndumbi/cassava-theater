@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import OpenAI from "openai";
 import {
   Box,
   Button,
@@ -13,15 +14,17 @@ import {
   TextField,
   Typography,
   useTheme,
+  InputAdornment,
+  IconButton,
+  Chip,
 } from "@mui/material";
-import { Stop as StopIcon, PlayArrow as PlayIcon, Save } from "@mui/icons-material";
+import { Stop as StopIcon, PlayArrow as PlayIcon, Save, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useOllamaModels } from "../../hooks/useOllamaModels";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
 
 type Language = "en" | "es" | "fr";
 type Length = "low" | "medium" | "high";
-type TranslationEngine = "libretranslate" | string;
 
 const LANG_NAMES: Record<Language, string> = {
   en: "English",
@@ -74,11 +77,72 @@ export const LanguagePracticeSettings: React.FC = () => {
   const [practiceLanguage, setPracticeLanguage] = useState<Language>("es");
   const [length, setLength] = useState<Length>("medium");
   const [count, setCount] = useState(10);
-  const [selectedModel, setSelectedModel] = useState("");
-  const [translationEngine, setTranslationEngine] = useState<TranslationEngine>("libretranslate");
   const [libretranslateUrl, setLibretranslateUrl] = useState("http://localhost:5000");
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState<Progress | null>(null);
+
+  // Persisted model/engine selections — default to deepseek (mirrors cas-lang behaviour)
+  const savedBulkModel = settings?.bulkGenerationModel ?? "deepseek";
+  const savedBulkEngine = settings?.bulkTranslationEngine ?? "deepseek";
+
+  const saveBulkModel = (model: string) => setSetting({ key: "bulkGenerationModel", value: model });
+  const saveBulkEngine = (engine: string) => setSetting({ key: "bulkTranslationEngine", value: engine });
+
+  const selectedModel = savedBulkModel;
+  const translationEngine = savedBulkEngine;
+
+  // DeepSeek API key
+  const savedDeepseekKey = settings?.deepseekApiKey ?? "";
+  const [pendingDeepseekKey, setPendingDeepseekKey] = useState<string | null>(null);
+  const displayedDeepseekKey = pendingDeepseekKey ?? savedDeepseekKey;
+  const [showDeepseekKey, setShowDeepseekKey] = useState(false);
+  const [deepseekTestStatus, setDeepseekTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
+  const [deepseekTestMessage, setDeepseekTestMessage] = useState("");
+
+  const saveDeepseekApiKey = () => {
+    const key = pendingDeepseekKey ?? savedDeepseekKey;
+    setSetting({ key: "deepseekApiKey", value: key });
+    setPendingDeepseekKey(null);
+    setDeepseekTestStatus("idle");
+    setDeepseekTestMessage("");
+  };
+
+  const testDeepseekApiKey = async () => {
+    const key = displayedDeepseekKey.trim();
+    if (!key) {
+      setDeepseekTestStatus("error");
+      setDeepseekTestMessage("API key is empty.");
+      return;
+    }
+    setDeepseekTestStatus("testing");
+    setDeepseekTestMessage("");
+    try {
+      const client = new OpenAI({ apiKey: key, baseURL: "https://api.deepseek.com", dangerouslyAllowBrowser: true });
+      await client.chat.completions.create({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: "Hi" }],
+        max_tokens: 5,
+        stream: false,
+      });
+      setDeepseekTestStatus("success");
+      setDeepseekTestMessage("API key is valid and working.");
+    } catch (err) {
+      setDeepseekTestStatus("error");
+      setDeepseekTestMessage(err instanceof Error ? `Failed: ${err.message}` : "Connection failed.");
+    }
+  };
+
+  const generateWithDeepseek = async (prompt: string): Promise<string> => {
+    const key = (settings?.deepseekApiKey ?? "").trim();
+    if (!key) throw new Error("No DeepSeek API key configured. Save your key in the DeepSeek API Key section below.");
+    const client = new OpenAI({ apiKey: key, baseURL: "https://api.deepseek.com", dangerouslyAllowBrowser: true });
+    const res = await client.chat.completions.create({
+      model: "deepseek-chat",
+      messages: [{ role: "user", content: prompt }],
+      stream: false,
+    });
+    return res.choices[0]?.message?.content?.trim() ?? "";
+  };
 
   const shouldStopRef = useRef(false);
 
@@ -89,6 +153,7 @@ export const LanguagePracticeSettings: React.FC = () => {
       `Generate a single, natural ${langName} sentence suitable for a language learning exercise. ` +
       `${lengthInstruction} ` +
       `Return only the sentence itself — no explanation, no quotes, no extra text.`;
+    if (effectiveModel === "deepseek") return generateWithDeepseek(prompt);
     return window.llmAPI.generateLlmResponse(prompt, effectiveModel || undefined);
   };
 
@@ -101,17 +166,21 @@ export const LanguagePracticeSettings: React.FC = () => {
         libretranslateUrl,
       });
     }
-    // Use LLM for translation
     const langNames: Record<Language, string> = { en: "English", es: "Spanish", fr: "French" };
     const prompt =
       `Translate the following ${langNames[source]} sentence into ${langNames[target]}. ` +
       `Return only the translated sentence — no explanation, no quotes, no extra text.\n\n"${text}"`;
+    if (translationEngine === "deepseek") return generateWithDeepseek(prompt);
     return window.llmAPI.generateLlmResponse(prompt, translationEngine);
   };
 
   const startGeneration = async () => {
-    if (!effectiveModel) {
+    if (effectiveModel !== "deepseek" && !effectiveModel) {
       alert("No Ollama model available. Ensure Ollama is running and a model is installed.");
+      return;
+    }
+    if (effectiveModel === "deepseek" && !(settings?.deepseekApiKey ?? "").trim()) {
+      alert("DeepSeek API key is not configured. Please save your API key in the DeepSeek API Key section below.");
       return;
     }
     if (nativeLanguage === practiceLanguage) {
@@ -293,23 +362,24 @@ export const LanguagePracticeSettings: React.FC = () => {
             inputProps={{ min: 1, max: 10000 }}
           />
 
-          {/* Ollama Model */}
+          {/* Generation Model */}
           <FormControl fullWidth size="small">
-            <InputLabel>Ollama Model (for phrase generation)</InputLabel>
+            <InputLabel>Generation Model</InputLabel>
             <Select
               value={selectedModel || (ollamaModels[0]?.name ?? "")}
-              label="Ollama Model (for phrase generation)"
-              onChange={(e) => setSelectedModel(e.target.value)}
+              label="Generation Model"
+              onChange={(e) => saveBulkModel(e.target.value)}
               disabled={isGenerating}
             >
+              <MenuItem value="deepseek">DeepSeek (API)</MenuItem>
               {ollamaModels.map((m) => (
                 <MenuItem key={m.model} value={m.name}>
-                  {m.name}
+                  {m.name} (Ollama)
                 </MenuItem>
               ))}
               {ollamaModels.length === 0 && (
                 <MenuItem value="" disabled>
-                  No models found
+                  No Ollama models found
                 </MenuItem>
               )}
             </Select>
@@ -321,10 +391,11 @@ export const LanguagePracticeSettings: React.FC = () => {
             <Select
               value={translationEngine}
               label="Translation Engine"
-              onChange={(e) => setTranslationEngine(e.target.value)}
+              onChange={(e) => saveBulkEngine(e.target.value)}
               disabled={isGenerating}
             >
               <MenuItem value="libretranslate">LibreTranslate</MenuItem>
+              <MenuItem value="deepseek">DeepSeek (API)</MenuItem>
               {ollamaModels.map((m) => (
                 <MenuItem key={m.model} value={m.name}>
                   {m.name} (LLM)
@@ -372,7 +443,7 @@ export const LanguagePracticeSettings: React.FC = () => {
               color="primary"
               startIcon={<PlayIcon />}
               onClick={startGeneration}
-              disabled={ollamaModels.length === 0}
+              disabled={effectiveModel !== "deepseek" && ollamaModels.length === 0}
             >
               Generate
             </Button>
@@ -386,6 +457,71 @@ export const LanguagePracticeSettings: React.FC = () => {
               Stop
             </Button>
           )}
+        </Box>
+      </CardContent>
+    </Card>
+
+    {/* DeepSeek API Key */}
+    <Card style={{ marginTop: "20px", backgroundColor: cardBg }}>
+      <CardHeader
+        title={
+          <Typography variant="h6" style={{ color: theme.customVariables?.appWhiteSmoke }}>
+            DeepSeek API Key
+          </Typography>
+        }
+        subheader={
+          <Typography variant="body2" style={{ color: theme.customVariables?.appWhiteSmoke, opacity: 0.7 }}>
+            Required when using DeepSeek as the generation model or translation engine
+          </Typography>
+        }
+      />
+      <CardContent>
+        <Box className="flex flex-col gap-4">
+          <Box style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <TextField
+              label="DeepSeek API Key"
+              size="small"
+              fullWidth
+              type={showDeepseekKey ? "text" : "password"}
+              value={displayedDeepseekKey}
+              onChange={(e) => setPendingDeepseekKey(e.target.value)}
+              placeholder="sk-..."
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setShowDeepseekKey((v) => !v)} edge="end">
+                      {showDeepseekKey ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Button
+              sx={{ flexShrink: 0 }}
+              variant="contained"
+              color="primary"
+              onClick={saveDeepseekApiKey}
+              disabled={pendingDeepseekKey === null}
+            >
+              <Save />
+            </Button>
+          </Box>
+          <Box style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={testDeepseekApiKey}
+              disabled={deepseekTestStatus === "testing" || !displayedDeepseekKey.trim()}
+            >
+              {deepseekTestStatus === "testing" ? "Testing…" : "Test Key"}
+            </Button>
+            {deepseekTestStatus === "success" && (
+              <Chip label={deepseekTestMessage} color="success" size="small" />
+            )}
+            {deepseekTestStatus === "error" && (
+              <Chip label={deepseekTestMessage} color="error" size="small" />
+            )}
+          </Box>
         </Box>
       </CardContent>
     </Card>
@@ -415,6 +551,7 @@ export const LanguagePracticeSettings: React.FC = () => {
               displayEmpty
             >
               <MenuItem value="libretranslate">LibreTranslate</MenuItem>
+              <MenuItem value="deepseek">DeepSeek (API)</MenuItem>
               {ollamaModels.map((m) => (
                 <MenuItem key={m.model} value={m.name}>
                   {m.name} (LLM)

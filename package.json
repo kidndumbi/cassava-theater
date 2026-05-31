@@ -93,6 +93,7 @@
     "jimp": "^1.6.0",
     "level": "^9.0.0",
     "lodash": "^4.17.21",
+    "openai": "^6.39.1",
     "proper-lockfile": "^4.1.2",
     "react": "^19.0.0",
     "react-dnd": "^16.0.1",
