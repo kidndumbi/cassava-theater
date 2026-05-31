@@ -24,4 +24,7 @@ export interface SettingsModel {
     translationEngine?: string;
     libretranslateUrl?: string;
   };
+  deepseekApiKey?: string;
+  bulkGenerationModel?: string;
+  bulkTranslationEngine?: string;
 }
