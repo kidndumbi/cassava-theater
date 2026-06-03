@@ -79,7 +79,7 @@ export function registerLanguageLearningHandlers(
   socket.on(
     AppSocketEvents.LANGUAGE_LEARNING_GET_ALL_EXERCISES,
     async (
-      _requestData: unknown,
+      requestData: { practiceLanguage?: string; nativeLanguage?: string },
       callback: (response: {
         success: boolean;
         data?: LanguageLearningExerciseModel[];
@@ -88,7 +88,13 @@ export function registerLanguageLearningHandlers(
     ) => {
       try {
         log.info("Socket request: Get all language learning exercises");
-        const exercises = await getAllLanguageLearningExercises();
+        let exercises = await getAllLanguageLearningExercises();
+        if (requestData?.practiceLanguage) {
+          exercises = exercises.filter((e) => e.practiceLanguage === requestData.practiceLanguage);
+        }
+        if (requestData?.nativeLanguage) {
+          exercises = exercises.filter((e) => e.nativeLanguage === requestData.nativeLanguage);
+        }
         log.info(`Found ${exercises.length} language learning exercises`);
         callback({ success: true, data: exercises });
       } catch (error) {
