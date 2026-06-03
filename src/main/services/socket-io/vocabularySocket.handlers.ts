@@ -30,10 +30,16 @@ type SocketCallback = (response: {
 export function registerVocabularyHandlers(socket: Socket): void {
   socket.on(
     AppSocketEvents.VOCABULARY_GET_ALL,
-    async (_requestData: unknown, callback: SocketCallback) => {
+    async (requestData: { practiceLanguage?: string; nativeLanguage?: string }, callback: SocketCallback) => {
       try {
         log.info("Socket request: Get all vocabulary words");
-        const words = await getAllVocabularyWords();
+        let words = await getAllVocabularyWords();
+        if (requestData?.practiceLanguage) {
+          words = words.filter((w) => w.practiceLanguage === requestData.practiceLanguage);
+        }
+        if (requestData?.nativeLanguage) {
+          words = words.filter((w) => w.nativeLanguage === requestData.nativeLanguage);
+        }
         callback({ success: true, data: words });
       } catch (error) {
         log.error("Failed to get all vocabulary words:", error);
