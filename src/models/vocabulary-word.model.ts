@@ -9,6 +9,12 @@ export interface VocabularyWordModel {
   practiceCount?: number;
   correctCount?: number;
   accuracyRate?: number;
+  /** Per-exercise-type stats: multiple-choice */
+  mcTotal?: number;
+  mcCorrect?: number;
+  /** Per-exercise-type stats: spell-word */
+  swTotal?: number;
+  swCorrect?: number;
   isFavorite?: boolean;
   isMarkedForReview?: boolean;
   notes?: string;

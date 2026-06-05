@@ -91,6 +91,7 @@ export const deleteVocabularyWord = async (key: string): Promise<void> => {
 export const updateVocabularyWordStats = async (
   key: string,
   isCorrect: boolean,
+  exerciseType: "multiple-choice" | "spell-word" = "multiple-choice",
 ): Promise<void> => {
   try {
     const existing = await getVocabularyWord(key);
@@ -101,12 +102,23 @@ export const updateVocabularyWordStats = async (
     const practiceCount = (existing.practiceCount || 0) + 1;
     const correctCount = (existing.correctCount || 0) + (isCorrect ? 1 : 0);
     const accuracyRate = (correctCount / practiceCount) * 100;
-    await putVocabularyWord(key, {
+
+    const patch: Partial<VocabularyWordModel> = {
       lastPracticed: Date.now(),
       practiceCount,
       correctCount,
       accuracyRate,
-    });
+    };
+
+    if (exerciseType === "multiple-choice") {
+      patch.mcTotal = (existing.mcTotal ?? 0) + 1;
+      patch.mcCorrect = (existing.mcCorrect ?? 0) + (isCorrect ? 1 : 0);
+    } else {
+      patch.swTotal = (existing.swTotal ?? 0) + 1;
+      patch.swCorrect = (existing.swCorrect ?? 0) + (isCorrect ? 1 : 0);
+    }
+
+    await putVocabularyWord(key, patch);
   } catch (error) {
     log.error(`Error updating vocabulary word stats ${key}:`, error);
   }
