@@ -13,20 +13,9 @@ export enum VerbTaggingIPCChannels {
   GET_PROGRESS = "verb-tagging:get-progress",
 }
 
-export enum VerbFormLinkingIPCChannels {
-  START = "verb-form-linking:start",
-  STOP = "verb-form-linking:stop",
-  GET_PROGRESS = "verb-form-linking:get-progress",
-}
-
 export enum VerbTaggingEvents {
   PROGRESS_UPDATE = "verb-tagging:progress-update",
   COMPLETED = "verb-tagging:completed",
   ERROR = "verb-tagging:error",
 }
 
-export enum VerbFormLinkingEvents {
-  PROGRESS_UPDATE = "verb-form-linking:progress-update",
-  COMPLETED = "verb-form-linking:completed",
-  ERROR = "verb-form-linking:error",
-}

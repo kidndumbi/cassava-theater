@@ -414,24 +414,6 @@ export interface VerbTaggingAPI {
   removeAllListeners: () => void;
 }
 
-export interface VerbFormLinkingProgressData {
-  current: number;
-  total: number;
-  status: "idle" | "running" | "stopping" | "completed" | "error";
-  linkedWords: Array<{ formWord: string; formId: string; infinitiveWord: string; infinitiveId: string }>;
-  error?: string;
-}
-
-export interface VerbFormLinkingAPI {
-  start: (practiceLanguage: string, nativeLanguage: string, model: string) => Promise<{ success: boolean; error?: string }>;
-  stop: () => Promise<{ success: boolean; error?: string }>;
-  getProgress: () => Promise<{ success: boolean; data?: VerbFormLinkingProgressData; error?: string }>;
-  onProgressUpdate: (callback: (progress: VerbFormLinkingProgressData) => void) => void;
-  onCompleted: (callback: (progress: VerbFormLinkingProgressData) => void) => void;
-  onError: (callback: (error: { error: string }) => void) => void;
-  removeAllListeners: () => void;
-}
-
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -456,6 +438,5 @@ declare global {
     tagAPI: TagAPI;
     vocabularyAPI: VocabularyAPI;
     verbTaggingAPI: VerbTaggingAPI;
-    verbFormLinkingAPI: VerbFormLinkingAPI;
   }
 }
