@@ -38,7 +38,7 @@ import {
   SubtitleGeneration 
 } from "./models/subtitle.model";
 import { TagIPCChannels } from "./enums/tagIPCChannels.enum";
-import { VocabularyIPCChannels, VerbTaggingIPCChannels, VerbTaggingEvents } from "./enums/vocabularyIPCChannels.enum";
+import { VocabularyIPCChannels, VerbTaggingIPCChannels, VerbTaggingEvents, VerbFormLinkingIPCChannels, VerbFormLinkingEvents } from "./enums/vocabularyIPCChannels.enum";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -877,6 +877,32 @@ contextBridge.exposeInMainWorld("vocabularyAPI", {
   },
   updateWordStats: (key: string, isCorrect: boolean, exerciseType: "multiple-choice" | "spell-word") => {
     return ipcRenderer.invoke(VocabularyIPCChannels.UPDATE_WORD_STATS, key, isCorrect, exerciseType);
+  },
+});
+
+contextBridge.exposeInMainWorld("verbFormLinkingAPI", {
+  start: (practiceLanguage: string, nativeLanguage: string, model: string) => {
+    return ipcRenderer.invoke(VerbFormLinkingIPCChannels.START, practiceLanguage, nativeLanguage, model);
+  },
+  stop: () => {
+    return ipcRenderer.invoke(VerbFormLinkingIPCChannels.STOP);
+  },
+  getProgress: () => {
+    return ipcRenderer.invoke(VerbFormLinkingIPCChannels.GET_PROGRESS);
+  },
+  onProgressUpdate: (callback: (progress: any) => void) => {
+    ipcRenderer.on(VerbFormLinkingEvents.PROGRESS_UPDATE, (_event, progress) => callback(progress));
+  },
+  onCompleted: (callback: (progress: any) => void) => {
+    ipcRenderer.on(VerbFormLinkingEvents.COMPLETED, (_event, progress) => callback(progress));
+  },
+  onError: (callback: (error: { error: string }) => void) => {
+    ipcRenderer.on(VerbFormLinkingEvents.ERROR, (_event, error) => callback(error));
+  },
+  removeAllListeners: () => {
+    ipcRenderer.removeAllListeners(VerbFormLinkingEvents.PROGRESS_UPDATE);
+    ipcRenderer.removeAllListeners(VerbFormLinkingEvents.COMPLETED);
+    ipcRenderer.removeAllListeners(VerbFormLinkingEvents.ERROR);
   },
 });
 

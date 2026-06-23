@@ -16,6 +16,7 @@ import { languageLearningIpcHandlers } from "./languageLearningIpcHandlers";
 import { registerTagIpcHandlers } from "./tagIpcHandlers";
 import { vocabularyIpcHandlers } from "./vocabularyIpcHandlers";
 import { verbTaggingIpcHandlers } from "./verbTaggingIpcHandlers";
+import { verbFormLinkingIpcHandlers } from "./verbFormLinkingIpcHandlers";
 
 export function registerIpcHandlers() {
   settingsIpcHandlers();
@@ -36,4 +37,5 @@ export function registerIpcHandlers() {
   registerTagIpcHandlers();
   vocabularyIpcHandlers();
   verbTaggingIpcHandlers();
+  verbFormLinkingIpcHandlers();
 }
