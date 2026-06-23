@@ -46,6 +46,12 @@ export const putVocabularyWord = async (
       id: key,
       createdAt: existing?.createdAt || Date.now(),
     } as VocabularyWordModel;
+    // Remove keys whose value was explicitly set to null or undefined (allows clearing optional fields)
+    for (const k of Object.keys(value)) {
+      if ((value as any)[k] === undefined || (value as any)[k] === null) {
+        delete (updated as any)[k];
+      }
+    }
     await levelDBService.put(COLLECTION_NAME, key, updated);
     log.info(`Saved vocabulary word: ${key}`);
     return updated;

@@ -151,11 +151,12 @@ export async function startVerbTagging(
 
   // Get all vocab words
   const allWords = await getAllVocabularyWords();
-  // Filter to practice language and those that don't already have the "verb" tag
+  // Filter to practice language, skip words that already have the "verb" tag or a parentVerbId
   const wordsToCheck = allWords.filter(
     (w) =>
       w.practiceLanguage === practiceLanguage &&
-      (!w.tags || !w.tags.includes("verb")),
+      (!w.tags || !w.tags.includes("verb")) &&
+      !w.parentVerbId,
   );
 
   progressState = {
