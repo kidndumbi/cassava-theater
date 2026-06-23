@@ -17,6 +17,8 @@ export interface VocabularyWordModel {
   swCorrect?: number;
   isFavorite?: boolean;
   isMarkedForReview?: boolean;
+  /** ID of the parent infinitive verb this word is a conjugated form of */
+  parentVerbId?: string;
   notes?: string;
   createdAt: number;
   lastPracticed?: number;

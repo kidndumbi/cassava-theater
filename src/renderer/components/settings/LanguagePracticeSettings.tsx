@@ -23,6 +23,7 @@ import { useOllamaModels } from "../../hooks/useOllamaModels";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
 import { VerbTaggingModal } from "./VerbTaggingModal";
+import { VerbFormLinkingModal } from "./VerbFormLinkingModal";
 
 type Language = "en" | "es" | "fr";
 type Length = "low" | "medium" | "high";
@@ -88,9 +89,19 @@ export const LanguagePracticeSettings: React.FC = () => {
   const [verbTaggingModalOpen, setVerbTaggingModalOpen] = useState(false);
   const [verbTaggingProgress, setVerbTaggingProgress] = useState<any>(null);
 
+  // Verb Form Linking state
+  const [formLinkingModel, setFormLinkingModel] = useState<string>(settings?.bulkGenerationModel ?? "deepseek");
+  const [formLinkingRunning, setFormLinkingRunning] = useState(false);
+  const [formLinkingModalOpen, setFormLinkingModalOpen] = useState(false);
+  const [formLinkingProgress, setFormLinkingProgress] = useState<any>(null);
+
   const handleStartVerbTagging = async () => {
     if (!verbTaggingModel) {
       alert("Please select a model first.");
+      return;
+    }
+    if (formLinkingRunning) {
+      alert("Verb Form Linking is currently running. Please stop it first.");
       return;
     }
     if (verbTaggingModel === "deepseek" && !(settings?.deepseekApiKey ?? "").trim()) {
@@ -116,9 +127,41 @@ export const LanguagePracticeSettings: React.FC = () => {
     setVerbTaggingRunning(false);
   };
 
+  const handleStartFormLinking = async () => {
+    if (!formLinkingModel) {
+      alert("Please select a model first.");
+      return;
+    }
+    if (verbTaggingRunning) {
+      alert("Verb Tagging is currently running. Please stop it first.");
+      return;
+    }
+    if (formLinkingModel === "deepseek" && !(settings?.deepseekApiKey ?? "").trim()) {
+      alert("DeepSeek API key is not configured. Please save your API key in the DeepSeek API Key section.");
+      return;
+    }
+    if (practiceLanguage === nativeLanguage) {
+      alert("Native and practice languages must be different.");
+      return;
+    }
+
+    const res = await window.verbFormLinkingAPI.start(practiceLanguage, nativeLanguage, formLinkingModel);
+    if (res.success) {
+      setFormLinkingRunning(true);
+      setFormLinkingModalOpen(true);
+    } else {
+      alert("Failed to start verb form linking: " + (res.error || "Unknown error"));
+    }
+  };
+
+  const handleStopFormLinking = async () => {
+    await window.verbFormLinkingAPI.stop();
+    setFormLinkingRunning(false);
+  };
+
   // Track verb tagging status via IPC events
   useEffect(() => {
-    const handleStatusUpdate = (data: any) => {
+    const handleTaggingStatusUpdate = (data: any) => {
       setVerbTaggingProgress(data);
       if (data?.status === "running") {
         setVerbTaggingRunning(true);
@@ -127,7 +170,17 @@ export const LanguagePracticeSettings: React.FC = () => {
       }
     };
 
-    window.verbTaggingAPI.onProgressUpdate(handleStatusUpdate);
+    const handleLinkingStatusUpdate = (data: any) => {
+      setFormLinkingProgress(data);
+      if (data?.status === "running") {
+        setFormLinkingRunning(true);
+      } else if (data?.status === "completed" || data?.status === "stopping" || data?.status === "error") {
+        setFormLinkingRunning(false);
+      }
+    };
+
+    window.verbTaggingAPI.onProgressUpdate(handleTaggingStatusUpdate);
+    window.verbFormLinkingAPI.onProgressUpdate(handleLinkingStatusUpdate);
 
     // Check initial state
     window.verbTaggingAPI.getProgress().then((res) => {
@@ -139,8 +192,18 @@ export const LanguagePracticeSettings: React.FC = () => {
       }
     });
 
+    window.verbFormLinkingAPI.getProgress().then((res) => {
+      if (res.success && res.data) {
+        setFormLinkingProgress(res.data);
+        if (res.data.status === "running") {
+          setFormLinkingRunning(true);
+        }
+      }
+    });
+
     return () => {
       window.verbTaggingAPI.removeAllListeners();
+      window.verbFormLinkingAPI.removeAllListeners();
     };
   }, []);
 
@@ -731,6 +794,87 @@ export const LanguagePracticeSettings: React.FC = () => {
       onClose={() => setVerbTaggingModalOpen(false)}
       progress={verbTaggingProgress}
       onStop={() => setVerbTaggingRunning(false)}
+    />
+
+    {/* Verb Form Linking */}
+    <Card style={{ marginTop: "20px", backgroundColor: cardBg }}>
+      <CardHeader
+        title={
+          <Typography variant="h6" style={{ color: theme.customVariables?.appWhiteSmoke }}>
+            Verb Form Linking
+          </Typography>
+        }
+        subheader={
+          <Typography variant="body2" style={{ color: theme.customVariables?.appWhiteSmoke, opacity: 0.7 }}>
+            Link conjugated verb forms (e.g. "tengo") to their infinitive parent (e.g. "tener") using the LLM.
+            No new words are created — only links are made between existing words.
+          </Typography>
+        }
+      />
+      <CardContent>
+        <Box className="flex flex-col gap-4">
+          {/* Model Selection */}
+          <FormControl fullWidth size="small">
+            <InputLabel>Form Linking Model</InputLabel>
+            <Select
+              value={formLinkingModel}
+              label="Form Linking Model"
+              onChange={(e) => setFormLinkingModel(e.target.value)}
+              disabled={formLinkingRunning}
+            >
+              <MenuItem value="deepseek">DeepSeek (API)</MenuItem>
+              {ollamaModels.map((m) => (
+                <MenuItem key={m.model} value={m.name}>
+                  {m.name} (Ollama)
+                </MenuItem>
+              ))}
+              {ollamaModels.length === 0 && (
+                <MenuItem value="" disabled>
+                  No Ollama models found
+                </MenuItem>
+              )}
+            </Select>
+          </FormControl>
+
+          {/* Action Buttons */}
+          <Box className="flex gap-4">
+            {!formLinkingRunning ? (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<PlayIcon />}
+                onClick={handleStartFormLinking}
+                disabled={!formLinkingModel || (formLinkingModel !== "deepseek" && ollamaModels.length === 0)}
+              >
+                Start Form Linking
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<StopIcon />}
+                onClick={handleStopFormLinking}
+              >
+                Stop Form Linking
+              </Button>
+            )}
+            <Button
+              variant="outlined"
+              onClick={() => setFormLinkingModalOpen(true)}
+            >
+              View Progress
+            </Button>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+
+    {/* Verb Form Linking Progress Modal */}
+    <VerbFormLinkingModal
+      open={formLinkingModalOpen}
+      onClose={() => setFormLinkingModalOpen(false)}
+      progress={formLinkingProgress}
+      onStop={() => setFormLinkingRunning(false)}
     />
     </>
   );
