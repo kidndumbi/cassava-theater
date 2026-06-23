@@ -120,7 +120,10 @@ export async function startVerbFormLinking(
 
   // Get ALL vocab words (no tag filter — we're only linking forms)
   const allWords = await getAllVocabularyWords();
-  const wordsInLang = allWords.filter((w) => w.practiceLanguage === practiceLanguage);
+  // Skip words that already have a parentVerbId (already linked)
+  const wordsInLang = allWords.filter(
+    (w) => w.practiceLanguage === practiceLanguage && !w.parentVerbId,
+  );
 
   linkingProgress = {
     current: 0,
