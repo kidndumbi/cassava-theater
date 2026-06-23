@@ -12,6 +12,7 @@ export interface VerbTaggingProgress {
   status: "idle" | "running" | "stopping" | "completed" | "error";
   updatedWords: Array<{ word: string; translation: string; id: string }>;
   createdWords: Array<{ word: string; translation: string }>;
+  linkedWords: Array<{ formWord: string; formId: string; infinitiveWord: string; infinitiveId: string }>;
   error?: string;
 }
 
@@ -21,6 +22,7 @@ let progressState: VerbTaggingProgress = {
   status: "idle",
   updatedWords: [],
   createdWords: [],
+  linkedWords: [],
 };
 
 let shouldStop = false;
@@ -37,6 +39,7 @@ function resetProgress(): void {
     status: "idle",
     updatedWords: [],
     createdWords: [],
+    linkedWords: [],
   };
 }
 
@@ -100,14 +103,14 @@ async function checkIsVerb(
     `Determine if the word is a verb or a conjugated form of a verb.\n\n` +
     `Rules:\n` +
     `- If the word IS the infinitive/dictionary form of a verb, respond with: VERB\n` +
-`- If the word is a CONJUGATED form of a verb (not the infinitive), respond with: CONJUGATED|<parent infinitive verb>|<abridged meanings of parent verb in ${nativeName}, separated by />\n` +
+    `- If the word is a CONJUGATED form of a verb (not the infinitive), respond with: CONJUGATED|<parent infinitive verb>|<abridged meanings of parent verb in ${nativeName}, separated by />\n` +
     `- If the word is NOT a verb and NOT a conjugated form of a verb, respond with: NO\n\n` +
     `Important:\n` +
     `- For Spanish, the infinitive forms end in -ar, -er, or -ir.\n` +
     `- For French, the infinitive forms end in -er, -ir, -re, or -oir.\n` +
     `- For English, the infinitive is the base form (often with "to").\n` +
     `- "tener" is a verb (infinitive). "tengo" is conjugated from "tener".\n` +
-`- "tengo" should return: CONJUGATED|tener|to have/to possess\n` +
+    `- "tengo" should return: CONJUGATED|tener|to have/to possess\n` +
     `- "casa" should return: NO\n` +
     `- "hablar" should return: VERB\n\n` +
     `Word to analyze: "${word}"\n\n` +
@@ -130,7 +133,6 @@ async function checkIsVerb(
           parentVerbTranslation: parts[2].trim(),
         };
       }
-      // Fallback: if format is wrong but starts with CONJUGATED
       return { isVerb: false };
     }
 
@@ -149,13 +151,12 @@ export async function startVerbTagging(
 ): Promise<void> {
   shouldStop = false;
 
-  // Get all vocab words
   const allWords = await getAllVocabularyWords();
-  // Filter to practice language, skip words that already have the "verb" tag or a parentVerbId
+  // Skip words that already have "verb", "not verb" tags, or a parentVerbId
   const wordsToCheck = allWords.filter(
     (w) =>
       w.practiceLanguage === practiceLanguage &&
-      (!w.tags || !w.tags.includes("verb")) &&
+      (!w.tags || (!w.tags.includes("verb") && !w.tags.includes("not verb"))) &&
       !w.parentVerbId,
   );
 
@@ -165,6 +166,7 @@ export async function startVerbTagging(
     status: "running",
     updatedWords: [],
     createdWords: [],
+    linkedWords: [],
   };
 
   await sendProgressUpdate(mainWindow);
@@ -185,15 +187,16 @@ export async function startVerbTagging(
       );
 
       if (result.isVerb && result.parentVerb) {
-        // This is a conjugated form — need to add parent verb
+        // Conjugated form — create parent if missing, then tag + link
         const parentExists = allWords.some(
           (w) =>
             w.word.toLowerCase() === result.parentVerb!.toLowerCase() &&
             w.practiceLanguage === practiceLanguage,
         );
 
+        let parentWord: VocabularyWordModel | undefined;
+
         if (!parentExists) {
-          // Create the parent verb
           try {
             const newWord = await createVocabularyWord({
               word: result.parentVerb,
@@ -206,37 +209,47 @@ export async function startVerbTagging(
               correctCount: 0,
               accuracyRate: 0,
             });
+            parentWord = newWord;
             progressState.createdWords.push({
               word: result.parentVerb,
               translation: result.parentVerbTranslation || "",
             });
-            // Add to local cache so subsequent lookups work
             allWords.push(newWord);
           } catch (createErr: any) {
-            // If duplicate, just ignore
             if (!createErr?.message?.includes("already exists")) {
               log.error(`Error creating parent verb "${result.parentVerb}":`, createErr);
             }
           }
         }
 
-        // Add "verb" tag to the current (conjugated) word
+        if (!parentWord) {
+          parentWord = allWords.find(
+            (w) =>
+              w.word.toLowerCase() === result.parentVerb!.toLowerCase() &&
+              w.practiceLanguage === practiceLanguage,
+          );
+        }
+
+        // Tag "verb" + link to infinitive
         const updatedTags = [...(word.tags || []), "verb"].filter(
           (t, i, arr) => arr.indexOf(t) === i,
         );
-        await putVocabularyWord(word.id, { tags: updatedTags });
+        await putVocabularyWord(word.id, { tags: updatedTags, parentVerbId: parentWord?.id });
         progressState.updatedWords.push({
           word: word.word,
           translation: word.translation || "",
           id: word.id,
         });
+        if (parentWord) {
+          progressState.linkedWords.push({
+            formWord: word.word,
+            formId: word.id,
+            infinitiveWord: parentWord.word,
+            infinitiveId: parentWord.id,
+          });
+        }
 
-        // Also add "verb" tag to the parent if it exists in allWords
-        const parentWord = allWords.find(
-          (w) =>
-            w.word.toLowerCase() === result.parentVerb!.toLowerCase() &&
-            w.practiceLanguage === practiceLanguage,
-        );
+        // Also tag the parent with "verb" if not already tagged
         if (parentWord && (!parentWord.tags || !parentWord.tags.includes("verb"))) {
           const parentTags = [...(parentWord.tags || []), "verb"].filter(
             (t, i, arr) => arr.indexOf(t) === i,
@@ -244,7 +257,7 @@ export async function startVerbTagging(
           await putVocabularyWord(parentWord.id, { tags: parentTags });
         }
       } else if (result.isVerb) {
-        // Direct verb — just add the tag
+        // Direct infinitive verb — just tag
         const updatedTags = [...(word.tags || []), "verb"].filter(
           (t, i, arr) => arr.indexOf(t) === i,
         );
@@ -254,11 +267,17 @@ export async function startVerbTagging(
           translation: word.translation || "",
           id: word.id,
         });
+      } else {
+        // Not a verb — tag "not verb" to prevent re-processing
+        if (!word.tags?.includes("not verb")) {
+          const updatedTags = [...(word.tags || []), "not verb"].filter(
+            (t, i, arr) => arr.indexOf(t) === i,
+          );
+          await putVocabularyWord(word.id, { tags: updatedTags });
+        }
       }
-      // else: not a verb, do nothing
     } catch (err) {
       log.error(`Error processing word "${word.word}":`, err);
-      // Continue to next word
     }
 
     progressState.current++;
