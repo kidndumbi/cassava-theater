@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import OpenAI from "openai";
 import {
   Box,
@@ -22,6 +22,7 @@ import { Stop as StopIcon, PlayArrow as PlayIcon, Save, Visibility, VisibilityOf
 import { useOllamaModels } from "../../hooks/useOllamaModels";
 import { useGetAllSettings } from "../../hooks/settings/useGetAllSettings";
 import { useSetSetting } from "../../hooks/settings/useSetSetting";
+import { VerbTaggingModal } from "./VerbTaggingModal";
 
 type Language = "en" | "es" | "fr";
 type Length = "low" | "medium" | "high";
@@ -80,6 +81,68 @@ export const LanguagePracticeSettings: React.FC = () => {
   const [libretranslateUrl, setLibretranslateUrl] = useState("http://localhost:5000");
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState<Progress | null>(null);
+
+  // Verb Tagging state
+  const [verbTaggingModel, setVerbTaggingModel] = useState<string>(settings?.bulkGenerationModel ?? "deepseek");
+  const [verbTaggingRunning, setVerbTaggingRunning] = useState(false);
+  const [verbTaggingModalOpen, setVerbTaggingModalOpen] = useState(false);
+  const [verbTaggingProgress, setVerbTaggingProgress] = useState<any>(null);
+
+  const handleStartVerbTagging = async () => {
+    if (!verbTaggingModel) {
+      alert("Please select a model first.");
+      return;
+    }
+    if (verbTaggingModel === "deepseek" && !(settings?.deepseekApiKey ?? "").trim()) {
+      alert("DeepSeek API key is not configured. Please save your API key in the DeepSeek API Key section.");
+      return;
+    }
+    if (practiceLanguage === nativeLanguage) {
+      alert("Native and practice languages must be different.");
+      return;
+    }
+
+    const res = await window.verbTaggingAPI.start(practiceLanguage, nativeLanguage, verbTaggingModel);
+    if (res.success) {
+      setVerbTaggingRunning(true);
+      setVerbTaggingModalOpen(true);
+    } else {
+      alert("Failed to start verb tagging: " + (res.error || "Unknown error"));
+    }
+  };
+
+  const handleStopVerbTagging = async () => {
+    await window.verbTaggingAPI.stop();
+    setVerbTaggingRunning(false);
+  };
+
+  // Track verb tagging status via IPC events
+  useEffect(() => {
+    const handleStatusUpdate = (data: any) => {
+      setVerbTaggingProgress(data);
+      if (data?.status === "running") {
+        setVerbTaggingRunning(true);
+      } else if (data?.status === "completed" || data?.status === "stopping" || data?.status === "error") {
+        setVerbTaggingRunning(false);
+      }
+    };
+
+    window.verbTaggingAPI.onProgressUpdate(handleStatusUpdate);
+
+    // Check initial state
+    window.verbTaggingAPI.getProgress().then((res) => {
+      if (res.success && res.data) {
+        setVerbTaggingProgress(res.data);
+        if (res.data.status === "running") {
+          setVerbTaggingRunning(true);
+        }
+      }
+    });
+
+    return () => {
+      window.verbTaggingAPI.removeAllListeners();
+    };
+  }, []);
 
   // Persisted model/engine selections — default to deepseek (mirrors cas-lang behaviour)
   const savedBulkModel = settings?.bulkGenerationModel ?? "deepseek";
@@ -588,6 +651,87 @@ export const LanguagePracticeSettings: React.FC = () => {
         </Box>
       </CardContent>
     </Card>
+
+    {/* Verb Tagging */}
+    <Card style={{ marginTop: "20px", backgroundColor: cardBg }}>
+      <CardHeader
+        title={
+          <Typography variant="h6" style={{ color: theme.customVariables?.appWhiteSmoke }}>
+            Verb Tagging
+          </Typography>
+        }
+        subheader={
+          <Typography variant="body2" style={{ color: theme.customVariables?.appWhiteSmoke, opacity: 0.7 }}>
+            Scan all vocabulary words for the practice language, identify verbs, and tag them automatically. 
+            Conjugated forms will have their parent infinitive verb created if missing.
+          </Typography>
+        }
+      />
+      <CardContent>
+        <Box className="flex flex-col gap-4">
+          {/* Model Selection */}
+          <FormControl fullWidth size="small">
+            <InputLabel>Verb Tagging Model</InputLabel>
+            <Select
+              value={verbTaggingModel}
+              label="Verb Tagging Model"
+              onChange={(e) => setVerbTaggingModel(e.target.value)}
+              disabled={verbTaggingRunning}
+            >
+              <MenuItem value="deepseek">DeepSeek (API)</MenuItem>
+              {ollamaModels.map((m) => (
+                <MenuItem key={m.model} value={m.name}>
+                  {m.name} (Ollama)
+                </MenuItem>
+              ))}
+              {ollamaModels.length === 0 && (
+                <MenuItem value="" disabled>
+                  No Ollama models found
+                </MenuItem>
+              )}
+            </Select>
+          </FormControl>
+
+          {/* Action Buttons */}
+          <Box className="flex gap-4">
+            {!verbTaggingRunning ? (
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<PlayIcon />}
+                onClick={handleStartVerbTagging}
+                disabled={!verbTaggingModel || (verbTaggingModel !== "deepseek" && ollamaModels.length === 0)}
+              >
+                Start Verb Tagging
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<StopIcon />}
+                onClick={handleStopVerbTagging}
+              >
+                Stop Verb Tagging
+              </Button>
+            )}
+            <Button
+              variant="outlined"
+              onClick={() => setVerbTaggingModalOpen(true)}
+            >
+              View Progress
+            </Button>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+
+    {/* Verb Tagging Progress Modal */}
+    <VerbTaggingModal
+      open={verbTaggingModalOpen}
+      onClose={() => setVerbTaggingModalOpen(false)}
+      progress={verbTaggingProgress}
+      onStop={() => setVerbTaggingRunning(false)}
+    />
     </>
   );
 };

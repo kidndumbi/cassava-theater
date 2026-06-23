@@ -89,11 +89,11 @@ export function registerVocabularyHandlers(socket: Socket): void {
   socket.on(
     AppSocketEvents.VOCABULARY_UPDATE_STATS,
     async (
-      data: { id: string; correct: boolean },
+      data: { id: string; correct: boolean; exerciseType?: "multiple-choice" | "spell-word" },
       callback: SocketCallback,
     ) => {
       try {
-        await updateVocabularyWordStats(data.id, data.correct);
+        await updateVocabularyWordStats(data.id, data.correct, data.exerciseType ?? "multiple-choice");
         await logVocabularyPractice(data.id, data.correct);
         await logVocabularyPracticeSession(data.id, data.correct);
         callback({ success: true });

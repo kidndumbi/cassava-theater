@@ -38,6 +38,7 @@ import {
   SubtitleGeneration 
 } from "./models/subtitle.model";
 import { TagIPCChannels } from "./enums/tagIPCChannels.enum";
+import { VocabularyIPCChannels, VerbTaggingIPCChannels, VerbTaggingEvents } from "./enums/vocabularyIPCChannels.enum";
 
 contextBridge.exposeInMainWorld("myAPI", {
   desktop: false,
@@ -855,5 +856,52 @@ contextBridge.exposeInMainWorld("tagAPI", {
   },
   tagExists: (tag: string) => {
     return ipcRenderer.invoke(TagIPCChannels.TagExists, tag);
+  },
+});
+
+contextBridge.exposeInMainWorld("vocabularyAPI", {
+  getAllWords: () => {
+    return ipcRenderer.invoke(VocabularyIPCChannels.GET_ALL_WORDS);
+  },
+  getWord: (key: string) => {
+    return ipcRenderer.invoke(VocabularyIPCChannels.GET_WORD, key);
+  },
+  createWord: (data: any) => {
+    return ipcRenderer.invoke(VocabularyIPCChannels.CREATE_WORD, data);
+  },
+  updateWord: (key: string, data: any) => {
+    return ipcRenderer.invoke(VocabularyIPCChannels.UPDATE_WORD, key, data);
+  },
+  deleteWord: (key: string) => {
+    return ipcRenderer.invoke(VocabularyIPCChannels.DELETE_WORD, key);
+  },
+  updateWordStats: (key: string, isCorrect: boolean, exerciseType: "multiple-choice" | "spell-word") => {
+    return ipcRenderer.invoke(VocabularyIPCChannels.UPDATE_WORD_STATS, key, isCorrect, exerciseType);
+  },
+});
+
+contextBridge.exposeInMainWorld("verbTaggingAPI", {
+  start: (practiceLanguage: string, nativeLanguage: string, model: string) => {
+    return ipcRenderer.invoke(VerbTaggingIPCChannels.START, practiceLanguage, nativeLanguage, model);
+  },
+  stop: () => {
+    return ipcRenderer.invoke(VerbTaggingIPCChannels.STOP);
+  },
+  getProgress: () => {
+    return ipcRenderer.invoke(VerbTaggingIPCChannels.GET_PROGRESS);
+  },
+  onProgressUpdate: (callback: (progress: any) => void) => {
+    ipcRenderer.on(VerbTaggingEvents.PROGRESS_UPDATE, (_event, progress) => callback(progress));
+  },
+  onCompleted: (callback: (progress: any) => void) => {
+    ipcRenderer.on(VerbTaggingEvents.COMPLETED, (_event, progress) => callback(progress));
+  },
+  onError: (callback: (error: { error: string }) => void) => {
+    ipcRenderer.on(VerbTaggingEvents.ERROR, (_event, error) => callback(error));
+  },
+  removeAllListeners: () => {
+    ipcRenderer.removeAllListeners(VerbTaggingEvents.PROGRESS_UPDATE);
+    ipcRenderer.removeAllListeners(VerbTaggingEvents.COMPLETED);
+    ipcRenderer.removeAllListeners(VerbTaggingEvents.ERROR);
   },
 });

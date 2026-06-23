@@ -14,6 +14,8 @@ import { youtubeIpcHandlers } from "./youtubeIpcHandlers";
 import { translationIpcHandlers } from "./translationIpcHandlers";
 import { languageLearningIpcHandlers } from "./languageLearningIpcHandlers";
 import { registerTagIpcHandlers } from "./tagIpcHandlers";
+import { vocabularyIpcHandlers } from "./vocabularyIpcHandlers";
+import { verbTaggingIpcHandlers } from "./verbTaggingIpcHandlers";
 
 export function registerIpcHandlers() {
   settingsIpcHandlers();
@@ -32,4 +34,6 @@ export function registerIpcHandlers() {
   subtitleSyncIpcHandlers();
   languageLearningIpcHandlers();
   registerTagIpcHandlers();
+  vocabularyIpcHandlers();
+  verbTaggingIpcHandlers();
 }
