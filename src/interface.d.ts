@@ -386,6 +386,34 @@ export interface TagAPI {
   tagExists: (tag: string) => Promise<{ success: boolean; data?: boolean; error?: string }>;
 }
 
+export interface VocabularyAPI {
+  getAllWords: () => Promise<{ success: boolean; data?: any[]; error?: string }>;
+  getWord: (key: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+  createWord: (data: any) => Promise<{ success: boolean; data?: any; error?: string }>;
+  updateWord: (key: string, data: any) => Promise<{ success: boolean; data?: any; error?: string }>;
+  deleteWord: (key: string) => Promise<{ success: boolean; error?: string }>;
+  updateWordStats: (key: string, isCorrect: boolean, exerciseType: "multiple-choice" | "spell-word") => Promise<{ success: boolean; error?: string }>;
+}
+
+export interface VerbTaggingProgressData {
+  current: number;
+  total: number;
+  status: "idle" | "running" | "stopping" | "completed" | "error";
+  updatedWords: Array<{ word: string; translation: string; id: string }>;
+  createdWords: Array<{ word: string; translation: string }>;
+  error?: string;
+}
+
+export interface VerbTaggingAPI {
+  start: (practiceLanguage: string, nativeLanguage: string, model: string) => Promise<{ success: boolean; error?: string }>;
+  stop: () => Promise<{ success: boolean; error?: string }>;
+  getProgress: () => Promise<{ success: boolean; data?: VerbTaggingProgressData; error?: string }>;
+  onProgressUpdate: (callback: (progress: VerbTaggingProgressData) => void) => void;
+  onCompleted: (callback: (progress: VerbTaggingProgressData) => void) => void;
+  onError: (callback: (error: { error: string }) => void) => void;
+  removeAllListeners: () => void;
+}
+
 declare global {
   interface Window {
     myAPI: IElectronAPI;
@@ -408,5 +436,7 @@ declare global {
     subtitleSyncAPI: SubtitleSyncAPI;
     languageLearningAPI: LanguageLearningAPI;
     tagAPI: TagAPI;
+    vocabularyAPI: VocabularyAPI;
+    verbTaggingAPI: VerbTaggingAPI;
   }
 }
