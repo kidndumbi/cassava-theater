@@ -230,11 +230,8 @@ export async function startVerbTagging(
           );
         }
 
-        // Tag "verb" + link to infinitive
-        const updatedTags = [...(word.tags || []), "verb"].filter(
-          (t, i, arr) => arr.indexOf(t) === i,
-        );
-        await putVocabularyWord(word.id, { tags: updatedTags, parentVerbId: parentWord?.id });
+        // Link to infinitive (do NOT tag conjugated forms with "verb")
+        await putVocabularyWord(word.id, { parentVerbId: parentWord?.id });
         progressState.updatedWords.push({
           word: word.word,
           translation: word.translation || "",
