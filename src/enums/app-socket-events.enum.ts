@@ -73,4 +73,7 @@ export enum AppSocketEvents {
   VOCABULARY_DELETE = "vocabulary:delete",
   VOCABULARY_GET_LOGS = "vocabulary:get-logs",
   VOCABULARY_GET_SESSION_LOGS = "vocabulary:get-session-logs",
+  VOCABULARY_GET_TENSES = "vocabulary:get-tenses",
+  VOCABULARY_SAVE_TENSES = "vocabulary:save-tenses",
+  VOCABULARY_DELETE_TENSES = "vocabulary:delete-tenses",
 }

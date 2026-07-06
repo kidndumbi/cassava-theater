@@ -23,6 +23,7 @@ import { registerLanguageLearningHandlers } from "./languageLearningSocket.handl
 import { tagSocketHandlers } from "./tagSocket.handlers";
 import { registerExerciseAiChatHandlers } from "./exerciseAiChatSocket.handlers";
 import { registerVocabularyHandlers } from "./vocabularySocket.handlers";
+import { registerTensesHandlers } from "./tensesSocket.handlers";
 
 // Function to check if a port is available
 const checkPortAvailability = (port: number): Promise<boolean> => {
@@ -112,6 +113,7 @@ export async function initializeSocket(
     tagSocketHandlers(socket);
     registerExerciseAiChatHandlers(socket);
     registerVocabularyHandlers(socket);
+    registerTensesHandlers(socket);
   });
 
   server.listen(port, () => {
