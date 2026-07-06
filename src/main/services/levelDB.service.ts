@@ -17,6 +17,7 @@ import { ExerciseAiConversation } from "../../models/exercise-ai-chat.model";
 import { VocabularyWordModel } from "../../models/vocabulary-word.model";
 import { VocabularyLogs } from "../../models/vocabulary-log.model";
 import { VocabularySessionLog } from "../../models/vocabulary-session-log.model";
+import { VerbTensesData } from "./tensesDb.service";
 
 // Define your database collections
 type Collections = {
@@ -36,6 +37,7 @@ type Collections = {
   vocabularyWords: VocabularyWordModel;
   vocabularyLogs: VocabularyLogs;
   vocabularySessionLogs: VocabularySessionLog;
+  verbTenses: VerbTensesData;
 };
 
 type CollectionName = keyof Collections;

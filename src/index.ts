@@ -72,6 +72,7 @@ app.on("ready", async () => {
 
     const port = parseInt((portFromDb as string) || "5000", 10);
     initializeSocket(mainWindow, port);
+
   } catch (err) {
     log.error("App initialization failed:", err);
     app.quit();
