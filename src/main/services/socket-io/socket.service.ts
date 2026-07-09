@@ -84,8 +84,17 @@ export async function initializeSocket(
     },
   );
 
-  // Initialize Socket.IO server
-  const io = new Server(server, { cors: { origin: "*" } });
+  // Initialize Socket.IO server with keepalive to prevent disconnects on app focus loss
+  const io = new Server(server, {
+    cors: { origin: "*" },
+    pingInterval: 10000,
+    pingTimeout: 60000,
+    connectTimeout: 45000,
+    connectionStateRecovery: {
+      maxDisconnectionDuration: 120000,
+      skipMiddlewares: true,
+    },
+  });
   setSocketIoGlobal(io);
 
   io.on("connection", (socket: Socket) => {

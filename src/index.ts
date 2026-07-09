@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, powerSaveBlocker } from "electron";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
@@ -27,6 +27,7 @@ cleanUp.runAppOpeningCleanup();
 
 // Main Window Management
 let mainWindow: BrowserWindow | null = null;
+let powerSaveBlockerId: number | null = null;
 
 const createWindow = (): BrowserWindow => {
   const window = new BrowserWindow({
@@ -66,6 +67,10 @@ app.on("ready", async () => {
     mainWindow = createWindow();
     setMainWindow(mainWindow);
 
+    // Prevent system sleep to keep socket server alive
+    powerSaveBlockerId = powerSaveBlocker.start("prevent-app-suspension");
+    log.info(`PowerSaveBlocker started (id: ${powerSaveBlockerId})`);
+
     registerIpcHandlers();
 
     const portFromDb = await settingsDataDbService.getSetting("port");
@@ -81,6 +86,10 @@ app.on("ready", async () => {
 
 app.on("before-quit", async () => {
   try {
+    if (powerSaveBlockerId !== null && powerSaveBlocker.isStarted(powerSaveBlockerId)) {
+      powerSaveBlocker.stop(powerSaveBlockerId);
+      log.info(`PowerSaveBlocker stopped (id: ${powerSaveBlockerId})`);
+    }
     appSetup.stopLibreTranslate();
     await levelDBService.close();
     log.info("Application shutdown completed");
