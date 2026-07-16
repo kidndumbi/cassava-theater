@@ -732,6 +732,65 @@ export const LanguagePracticeSettings: React.FC = () => {
       progress={verbTaggingProgress}
       onStop={() => setVerbTaggingRunning(false)}
     />
+
+    {/* Migrate Data to Cas-Lang Desktop */}
+    <Card style={{ marginTop: "20px", backgroundColor: cardBg }}>
+      <CardHeader
+        title={
+          <Typography variant="h6" style={{ color: theme.customVariables?.appWhiteSmoke }}>
+            Migrate Data to Cas-Lang Desktop
+          </Typography>
+        }
+        subheader={
+          <Typography variant="body2" style={{ color: theme.customVariables?.appWhiteSmoke, opacity: 0.7 }}>
+            Copies all vocabulary, exercises, tags, tenses, AI conversations, and logs to the new cas-lang-desktop backend.
+            Existing data in Cassava Theater will NOT be deleted.
+          </Typography>
+        }
+      />
+      <CardContent>
+        <Box className="flex flex-col gap-3">
+          <TextField
+            label="Cas-Lang Desktop URL"
+            size="small"
+            fullWidth
+            defaultValue="http://10.0.0.65:3030"
+            id="migrate-cas-lang-url"
+            placeholder="http://10.0.0.65:3030"
+            helperText="The API URL of the running cas-lang-desktop application"
+          />
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={async () => {
+              const urlInput = document.getElementById("migrate-cas-lang-url") as HTMLInputElement;
+              const url = urlInput?.value?.trim() || "http://10.0.0.65:3030";
+              try {
+                const result = await window.mainUtilAPI.migrateData(url);
+                if (result.success) {
+                  const counts = result.counts || {};
+                  alert(
+                    `Data migration completed!\n\n` +
+                    `Vocabulary words: ${counts.vocabularyCount || 0}\n` +
+                    `Exercises: ${counts.exerciseCount || 0}\n` +
+                    `Tags: ${counts.tagsCount || 0}\n` +
+                    `Verb tenses: ${counts.tensesCount || 0}\n` +
+                    `AI conversations: ${counts.conversationCount || 0}`
+                  );
+                } else {
+                  alert("Migration failed: " + (result.error || "Unknown error"));
+                }
+              } catch (err) {
+                alert("Migration error: " + (err instanceof Error ? err.message : String(err)));
+              }
+            }}
+            style={{ maxWidth: 300 }}
+          >
+            Migrate Data Now
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
     </>
   );
 };
