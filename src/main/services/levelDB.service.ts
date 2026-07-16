@@ -133,6 +133,25 @@ class LevelDBService {
     }
   }
 
+  public async getRawAll<T extends CollectionName>(
+    collection: T,
+  ): Promise<Array<{ key: string; value: Collections[T] }>> {
+    const items: Array<{ key: string; value: Collections[T] }> = [];
+    try {
+      for await (const [fullKey, value] of this.db.iterator({
+        gte: `${collection}:`,
+        lte: `${collection}:\xff`,
+      })) {
+        const rawKey = (fullKey as string).replace(`${collection}:`, "");
+        items.push({ key: rawKey, value: value as Collections[T] });
+      }
+      return items;
+    } catch (err) {
+      log.error(`DB getRawAll failed for ${collection}:`, err);
+      throw err;
+    }
+  }
+
   /**
    * Delete all entries in a given collection.
    */

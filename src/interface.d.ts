@@ -112,6 +112,7 @@ export interface MainUtilAPI {
   isPackaged: () => Promise<boolean>;
   restart: () => void;
   openExternalLink: (url: string) => Promise<void>;
+  migrateData: (casLangDesktopUrl: string) => Promise<{ success: boolean; counts?: any; error?: string }>;
 }
 
 export interface VideoAPI {

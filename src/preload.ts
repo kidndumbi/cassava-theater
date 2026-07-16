@@ -53,6 +53,11 @@ contextBridge.exposeInMainWorld("mainUtilAPI", {
       MainUtilIPCChannels.OPEN_EXTERNAL_LINK,
       url,
     ) as Promise<void>,
+  migrateData: (casLangDesktopUrl: string) =>
+    ipcRenderer.invoke(
+      MainUtilIPCChannels.MIGRATE_DATA,
+      casLangDesktopUrl,
+    ) as Promise<{ success: boolean; counts?: any; error?: string }>,
 });
 
 contextBridge.exposeInMainWorld("settingsAPI", {
