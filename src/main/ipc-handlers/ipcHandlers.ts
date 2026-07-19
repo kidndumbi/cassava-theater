@@ -1,39 +1,10 @@
-import { currentlPlayingIpcHandlers } from "./currentlPlayingIpcHandlers";
-import { fileIpcHandlers } from "./fileIpcHandlers";
-import { llmIpcHandlers } from "./llmIpcHandlers";
-import { mainUtilIpcHandlers } from "./mainUtilIpcHandlers";
-import { mp4ConversionIpcHandlers } from "./mp4ConversionIpcHandlers";
-import { openDialogIpcHandlers } from "./openDialogIpcHandlers";
-import { playlistIpcHandlers } from "./playlistIpcHandlers";
-import { settingsIpcHandlers } from "./settingsIpcHandlers";
-import { subtitleIpcHandlers } from "./subtitleIpcHandlers";
-import { subtitleSyncIpcHandlers } from "./subtitleSyncIpcHandlers";
-import { theMovieDbIpcHandlers } from "./theMovieDbIpcHandlers";
-import { videosIpcHandlers } from "./videosIpcHandlers";
-import { youtubeIpcHandlers } from "./youtubeIpcHandlers";
-import { translationIpcHandlers } from "./translationIpcHandlers";
-import { languageLearningIpcHandlers } from "./languageLearningIpcHandlers";
-import { registerTagIpcHandlers } from "./tagIpcHandlers";
-import { vocabularyIpcHandlers } from "./vocabularyIpcHandlers";
-import { verbTaggingIpcHandlers } from "./verbTaggingIpcHandlers";
+import { registerIpcHandlers as registerAllIpcHandlers } from "../shared-handlers/register-all-handlers";
 
+/**
+ * Registers all IPC handlers for the Electron main process.
+ * Delegates to the shared-handlers infrastructure which consolidates
+ * both IPC and Socket.IO registration into a single source of truth per domain.
+ */
 export function registerIpcHandlers() {
-  settingsIpcHandlers();
-  videosIpcHandlers();
-  openDialogIpcHandlers();
-  mainUtilIpcHandlers();
-  theMovieDbIpcHandlers();
-  fileIpcHandlers();
-  translationIpcHandlers();
-  mp4ConversionIpcHandlers();
-  playlistIpcHandlers();
-  youtubeIpcHandlers();
-  currentlPlayingIpcHandlers();
-  llmIpcHandlers();
-  subtitleIpcHandlers();
-  subtitleSyncIpcHandlers();
-  languageLearningIpcHandlers();
-  registerTagIpcHandlers();
-  vocabularyIpcHandlers();
-  verbTaggingIpcHandlers();
+  registerAllIpcHandlers();
 }

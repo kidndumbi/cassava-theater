@@ -9,20 +9,9 @@ import { serveLocalFile } from "../file.service";
 import { handleVideoRequest } from "../video-streaming.service";
 
 import { setSocketIoGlobal } from "../../socketGlobalManager";
-import { registerVideoHandlers } from "./videoSocket.handlers";
-import { registerPlaylistHandlers } from "./playlistSocket.handlers";
-import { registerSettingsHandlers } from "./settingsSocket.handlers";
-import { registerYoutubeHandlers } from "./youtubeSocket.handlers";
-import { registerCurrentlyPlayingHandlers } from "./currentlyPlayingSocket.handlers";
-import { registerMp4ConversionHandlers } from "./mp4ConversionSocket.handlers";
-import { registerSubtitleGenerationHandlers } from "./subtitleSocket.handlers";
-import { registerSubtitleSyncHandlers } from "./subtitleSyncSocket.handlers";
+import { registerSocketHandlers } from "../../shared-handlers/register-all-handlers";
 import { registerImagesSocketHandlers } from "./imagesSocket.handlers";
-import { registerLlmSocketHandlers } from "./llmSocket.handlers";
-import { registerLanguageLearningHandlers } from "./languageLearningSocket.handlers";
-import { tagSocketHandlers } from "./tagSocket.handlers";
 import { registerExerciseAiChatHandlers } from "./exerciseAiChatSocket.handlers";
-import { registerVocabularyHandlers } from "./vocabularySocket.handlers";
 import { registerTensesHandlers } from "./tensesSocket.handlers";
 
 // Function to check if a port is available
@@ -107,21 +96,11 @@ export async function initializeSocket(
       log.info("User disconnected:", socket.id);
     });
 
-    // Register grouped handlers
-    registerVideoHandlers(socket, mainWindow);
-    registerPlaylistHandlers(socket, mainWindow);
-    registerSettingsHandlers(socket);
-    registerYoutubeHandlers(socket, mainWindow);
-    registerCurrentlyPlayingHandlers(socket);
-    registerMp4ConversionHandlers(socket, mainWindow);
-    registerSubtitleGenerationHandlers(socket, mainWindow);
-    registerSubtitleSyncHandlers(socket, mainWindow);
+    // Register shared handlers (IPC + Socket.IO unified)
+    registerSocketHandlers(socket, mainWindow);
+    // Socket.IO-only handlers (no desktop IPC equivalent)
     registerImagesSocketHandlers(socket);
-    registerLlmSocketHandlers(socket);
-    registerLanguageLearningHandlers(socket, mainWindow);
-    tagSocketHandlers(socket);
     registerExerciseAiChatHandlers(socket);
-    registerVocabularyHandlers(socket);
     registerTensesHandlers(socket);
   });
 
