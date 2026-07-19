@@ -13,6 +13,7 @@ import VideoPlayerActionsContainer from "./VideoPlayerActionsContainer";
 import TitleOverlay from "./TitleOverlay";
 import SideControlsOverlay from "./SideControlsOverlay";
 import "./AppVideoPlayer.css";
+import { rendererLoggingService as rlog } from "../../util/renderer-logging.service";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
 import { useSubtitle } from "../../hooks/useSubtitle";
 import Video from "./video";
@@ -90,7 +91,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const { getActiveSubtitlePath } = useSubtitle();
     const { mkvCurrentTime, currentVideo } = useVideoPlayerLogic();
     const { mutateAsync: setSetting } = useSetSetting();
-  const saveJsonDataMutation = useSaveJsonData();
+    const saveJsonDataMutation = useSaveJsonData();
     const videoPlayerRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null!);
     const [error, setError] = useState<string | null>(null);
@@ -100,8 +101,6 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const subtitleOverlayControlModal = useModalState(false);
     const [subtitleModalOpen, setSubtitleModalOpen] = useState(false);
 
-    
-    
     // Initialize subtitle overlay settings from passed settings or defaults
     const [subtitleOverlayEnabled, setSubtitleOverlayEnabled] = useState(
       currentVideo?.subtitleOverlayEnabled ?? false
@@ -131,16 +130,12 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
       setSubtitleOverlayLanguage(currentVideo?.subtitleOverlayLanguage ?? null);
       setSubtitleOverlayHideText(currentVideo?.subtitleOverlayHideText ?? false);
       setLanguageLearningEnabled(currentVideo?.languageLearningEnabled ?? false);
-    }, [currentVideo?.filePath]); // Re-run when video changes
+    }, [currentVideo?.filePath]);
 
     // Sync font size when settings change
     useEffect(() => {
       setSubtitleOverlayFontSize(settings?.subtitleOverlay?.fontSize ?? 16);
     }, [settings?.subtitleOverlay?.fontSize]);
-
-    useEffect(() => {
-      console.log("Current video changed:", currentVideo);
-     },[currentVideo]);
 
     const {
       skipBy,
@@ -169,6 +164,8 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
 
     useEffect(() => {
       return () => {
+        // Only nullify the local ref on unmount; the external ref is managed
+        // through useVideoListLogic.setPlayer() and should not be cleared here.
         if (videoPlayerRef.current) {
           videoPlayerRef.current = null;
         }
@@ -185,14 +182,13 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     useEffect(() => {
       setVideoUrl(getVideoUrl() || "");
     }, [currentVideo, startFromBeginning, port]);
-    
+
     // Reset subtitle cache buster when subtitle file or active language changes
     useEffect(() => {
       setSubtitleCacheBuster(Date.now());
     }, [subtitleFilePath, currentVideo?.activeSubtitleLanguage]);
-    
+
     const getSubtitleUrl = () => {
-      // Use active subtitle path based on the activeSubtitleLanguage setting
       const activeSubtitlePath = currentVideo ? getActiveSubtitlePath(currentVideo) : subtitleFilePath;
       const baseUrl = getUrl("file", activeSubtitlePath, null, port);
       return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : "";
@@ -201,7 +197,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     // Get subtitle URL for overlay based on selected language
     const getOverlaySubtitleUrl = (language: 'en' | 'es' | 'fr' | null) => {
       if (!currentVideo || !language) return null;
-      
+
       let subtitlePath = null;
       switch (language) {
         case 'en':
@@ -214,9 +210,9 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           subtitlePath = currentVideo.subtitlePathFr;
           break;
       }
-      
+
       if (!subtitlePath) return null;
-      
+
       const baseUrl = getUrl("file", subtitlePath, null, port);
       return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : null;
     };
@@ -225,7 +221,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     const getLanguageDisplayName = (language: 'en' | 'es' | 'fr' | null): string => {
       const languageMap: Record<string, string> = {
         'en': 'English',
-        'es': 'Spanish', 
+        'es': 'Spanish',
         'fr': 'French'
       };
       return language ? languageMap[language] : 'Language Learning';
@@ -234,7 +230,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     // Get native language subtitle URL (usually English for reference)
     const getNativeSubtitleUrl = () => {
       if (!currentVideo?.subtitlePath) return null;
-      
+
       const baseUrl = getUrl("file", currentVideo.subtitlePath, null, port);
       return baseUrl ? `${baseUrl}&cb=${subtitleCacheBuster}` : null;
     };
@@ -335,21 +331,15 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
     };
 
     const handleTimingAdjusted = () => {
-      // Store current playback time before reloading
       const currentPlaybackTime = currentTime || 0;
-      
-      // Force both video and subtitle reload by updating URLs with cache busting
       setSubtitleCacheBuster(Date.now());
       setVideoUrl(getVideoUrl() || "");
-      
-      // Seek back to the previous position after a short delay to allow video to load
       setTimeout(() => {
         if (startPlayingAt && currentPlaybackTime > 0) {
           startPlayingAt(currentPlaybackTime);
         }
       }, 500);
-      
-      console.log("Subtitle timing adjusted successfully - video and subtitles reloaded");
+      rlog.debug("Subtitle timing adjusted successfully - video and subtitles reloaded");
     };
 
     // Handle video data updates (for multi-language subtitle changes)
@@ -379,7 +369,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             },
           });
         } catch (error) {
-          console.error('Failed to save subtitle overlay enabled setting:', error);
+          rlog.error('Failed to save subtitle overlay enabled setting:', error);
         }
       }
     };
@@ -396,7 +386,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             },
           });
         } catch (error) {
-          console.error('Failed to save subtitle overlay language setting:', error);
+          rlog.error('Failed to save subtitle overlay language setting:', error);
         }
       }
     };
@@ -411,7 +401,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
           },
         });
       } catch (error) {
-        console.error('Failed to save subtitle overlay font size setting:', error);
+        rlog.error('Failed to save subtitle overlay font size setting:', error);
       }
     };
 
@@ -427,7 +417,7 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             },
           });
         } catch (error) {
-          console.error('Failed to save subtitle overlay hide text setting:', error);
+          rlog.error('Failed to save subtitle overlay hide text setting:', error);
         }
       }
     };
@@ -444,12 +434,10 @@ const AppVideoPlayer = forwardRef<AppVideoPlayerHandle, AppVideoPlayerProps>(
             },
           });
         } catch (error) {
-          console.error('Failed to save language learning enabled setting:', error);
+          rlog.error('Failed to save language learning enabled setting:', error);
         }
       }
     };
-
- 
 
     const renderTimeDisplay = () => (
       <span className="absolute bottom-2.5 left-5 text-sm text-white">
