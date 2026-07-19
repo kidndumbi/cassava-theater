@@ -17,6 +17,7 @@ interface PosterCardProps {
   duration?: number;
   video?: VideoDataModel;
   showVideoType?: boolean;
+  disableHover?: boolean;
 }
 
 export const PosterCard: React.FC<PosterCardProps> = ({
@@ -30,6 +31,7 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   duration,
   video,
   showVideoType = false,
+  disableHover = false,
 }) => {
   const [hasError, setHasError] = useState(false);
 
@@ -41,7 +43,24 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   return (
     <Box
       className={`m-1 flex flex-col`}
-      sx={{ maxWidth: width, minWidth: width, position: "relative" }}
+      sx={{
+        maxWidth: width,
+        minWidth: width,
+        position: "relative",
+        transition: "transform 0.3s ease",
+        overflow: "hidden",
+        border: "3px solid transparent",
+        borderRadius: "8px",
+        ...(!disableHover
+          ? {
+              "&:hover": {
+                transform: "scale(1.40)",
+                zIndex: 5,
+                backgroundColor: theme.customVariables.appDark,
+              },
+            }
+          : {}),
+      }}
     >
       {showVideoType && video?.filePath && (
         <Box

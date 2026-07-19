@@ -83,6 +83,7 @@ const ResumeMovie: React.FC<ResumeMovieProps> = ({
         menuItems={getMenuItems(movie)}
       >
         <PosterCard
+          disableHover
           imageUrl={imageUrl() ?? ""}
           altText={movie.fileName ?? "Unknown Title"}
           currentTime={movie.currentTime}

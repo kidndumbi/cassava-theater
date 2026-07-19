@@ -52,13 +52,30 @@ export const PosterList = ({ children }: ListProps) => {
 
   return (
     <Box className="relative">
+      <Box
+        ref={boxRef}
+        className="flex gap-2 whitespace-nowrap"
+        onScroll={handleScroll}
+        sx={{
+          position: "relative",
+          overflowX: "auto",
+          overflowY: "hidden",
+          "&::-webkit-scrollbar": { display: "none" },
+          scrollbarWidth: "none",
+        }}
+      >
+        {children}
+      </Box>
       {scrollPosition !== "beginning" && scrollPosition !== "no-scroll" && (
-        <Box className="absolute inset-y-0 left-6 top-32 z-10">
+        <Box
+          className="absolute inset-y-0 left-6 top-32"
+          sx={{ zIndex: 10, pointerEvents: "auto", cursor: "pointer" }}
+        >
           <IconButton
             onClick={scrollLeft}
             sx={{
               color: theme.customVariables.appWhiteSmoke,
-              backgroundColor: `${theme.customVariables.appDark}CC`, // 80% opacity
+              backgroundColor: `${theme.customVariables.appDark}CC`,
               "&:hover": {
                 backgroundColor: `${theme.customVariables.appDark}CC`,
               },
@@ -69,20 +86,16 @@ export const PosterList = ({ children }: ListProps) => {
           </IconButton>
         </Box>
       )}
-      <Box
-        ref={boxRef}
-        className="flex gap-2 overflow-hidden  whitespace-nowrap"
-        onScroll={handleScroll}
-      >
-        {children}
-      </Box>
       {scrollPosition !== "end" && scrollPosition !== "no-scroll" && (
-        <Box className="absolute inset-y-0 right-6 top-32 z-10">
+        <Box
+          className="absolute inset-y-0 right-6 top-32"
+          sx={{ zIndex: 10, pointerEvents: "auto", cursor: "pointer" }}
+        >
           <IconButton
             onClick={scrollRight}
             sx={{
               color: theme.customVariables.appWhiteSmoke,
-              backgroundColor: `${theme.customVariables.appDark}CC`, // 80% opacity
+              backgroundColor: `${theme.customVariables.appDark}CC`,
               "&:hover": {
                 backgroundColor: `${theme.customVariables.appDark}CC`,
               },

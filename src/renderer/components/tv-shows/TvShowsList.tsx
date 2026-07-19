@@ -269,7 +269,7 @@ export const TvShowsList = React.memo(function TvShowsList(
         flexWrap="wrap"
         gap="4px"
         ref={scrollContainerRef}
-        sx={{ overflowY: "auto", maxHeight: "calc(100vh - 100px)" }}
+        sx={{ padding: "100px 80px" }}
       >
         {shows?.map((show: VideoDataModel, index: number) => (
           <AppContextMenu

@@ -294,7 +294,7 @@ const MovieList: React.FC<MovieListProps> = ({
         flexWrap="wrap"
         gap="4px"
         ref={scrollContainerRef}
-        sx={{ overflowY: "auto", maxHeight: "calc(100vh - 100px)" }}
+        sx={{ padding: "100px 80px" }}
       >
         {movies?.map((movie, index) => (
           <AppContextMenu
