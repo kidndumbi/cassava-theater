@@ -2,6 +2,12 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import importPlugin from "eslint-plugin-import";
 
+/**
+ * Styling Convention:
+ * - Use MUI `sx` prop for dynamic/themed styles
+ * - Use Tailwind `className` for static utility classes (spacing, layout)
+ * - NEVER use inline `style` objects — they bypass theme and Tailwind
+ */
 export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -14,6 +20,13 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": [
         "warn",
         { argsIgnorePattern: "^_" },
+      ],
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector: "JSXAttribute[name.name='style']",
+          message: "Inline `style` objects are not allowed. Use MUI `sx` prop or Tailwind `className` instead.",
+        },
       ],
     },
     languageOptions: {

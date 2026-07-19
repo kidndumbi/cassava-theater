@@ -127,8 +127,7 @@ export const HomePage: React.FC<HomePageProps> = ({
     <Box
       className="custom-scrollbar"
       ref={scrollContainerRef}
-      style={{
-        ...style,
+      sx={{
         padding: "100px 80px",
       }}
     >
