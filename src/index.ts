@@ -37,8 +37,8 @@ const createWindow = (): BrowserWindow => {
     minHeight: 600,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
-      // contextIsolation: true,
-      // sandbox: true,
+      contextIsolation: true,
+      sandbox: true,
     },
     autoHideMenuBar: true,
     show: false,

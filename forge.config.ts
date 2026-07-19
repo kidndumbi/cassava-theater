@@ -42,7 +42,7 @@ const config: ForgeConfig = {
     new WebpackPlugin({
       mainConfig,
       // devContentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
-      devContentSecurityPolicy: "connect-src 'self' * 'unsafe-eval'",
+      devContentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-eval'; connect-src 'self' http://localhost:* ws://localhost:*; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:* https://image.tmdb.org; media-src 'self' http://localhost:*;",
       renderer: {
         config: rendererConfig,
         entryPoints: [
