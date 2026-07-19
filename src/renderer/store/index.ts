@@ -20,12 +20,7 @@ const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: {
-        // The HTMLVideoElement DOM node is stored in videoPlayer.videoPlayer
-        // This is a known anti-pattern but requires significant refactoring to remove.
-        // For now, ignore just that path so all other state gets serializability checks.
-        ignoredPaths: ["videoPlayer.videoPlayer"],
-      },
+      serializableCheck: true,
     }),
 });
 

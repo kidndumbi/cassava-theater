@@ -1,34 +1,31 @@
-import { useSelector } from "react-redux";
-import {
-  selCurrentTime,
-  selCurrentVideo,
-  selLastVideoPlayedDate,
-  selMkvCurrentTime,
-  selVideoEnded,
-  selVideoPlayer,
-  videoPlayerActions,
-} from "../store/videoPlayer.slice";
-import { useAppDispatch } from "../store";
+import { useVideoPlayerContext } from "../contexts/VideoPlayerContext";
 import { isEmptyObject } from "../util/helperFunctions";
 import { useState } from "react";
 import { VideoDataModel } from "../../models/videoData.model";
 
 export const useVideoPlayerLogic = () => {
-  const dispatch = useAppDispatch();
-  const player = useSelector(selVideoPlayer);
-  const videoEnded = useSelector(selVideoEnded);
-  const currentVideo = useSelector(selCurrentVideo);
-  const mkvCurrentTime = useSelector(selMkvCurrentTime);
-  const currentTime = useSelector(selCurrentTime);
-  const lastVideoPlayedDate = useSelector(selLastVideoPlayedDate);
+  const {
+    videoPlayerRef,
+    currentVideo,
+    videoEnded,
+    mkvCurrentTime,
+    currentTime,
+    lastVideoPlayedDate,
+    setVideoEnded: ctxSetVideoEnded,
+    setMkvCurrentTime: ctxSetMkvCurrentTime,
+    setCurrentTime: ctxSetCurrentTime,
+    setLastVideoPlayedDate: ctxSetLastVideoPlayedDate,
+  } = useVideoPlayerContext();
+
+  const player = videoPlayerRef.current;
   const [isTheaterMode, setIsTheaterMode] = useState(true);
 
   const setVideoEnded = (isVideoEnded: boolean) => {
-    dispatch(videoPlayerActions.setVideoEnded(isVideoEnded));
+    ctxSetVideoEnded(isVideoEnded);
   };
 
-  const setMkvCurrentTime = (currentTime: number) => {
-    dispatch(videoPlayerActions.setMkvCurrentTime(currentTime));
+  const setMkvCurrentTime = (time: number) => {
+    ctxSetMkvCurrentTime(time);
   };
 
   const updateVideoDBCurrentTime = async (isEpisode = false) => {
@@ -44,16 +41,14 @@ export const useVideoPlayerLogic = () => {
         : player.currentTime;
     if (time <= 0) return;
 
-    const currentTime = time === currentVideo.duration ? 1 : time;
+    const dbTime = time === currentVideo.duration ? 1 : time;
 
-    dispatch(videoPlayerActions.setCurrentTime(currentTime));
-    dispatch(
-      videoPlayerActions.setLastVideoPlayedDate(new Date().toISOString()),
-    );
+    ctxSetCurrentTime(dbTime);
+    ctxSetLastVideoPlayedDate(new Date().toISOString());
 
     await window.videoAPI.saveVideoDbCurrentTime({
       currentVideo,
-      currentTime,
+      currentTime: dbTime,
       isEpisode,
     });
   };

@@ -3,7 +3,6 @@ import { RootState } from "./index";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 interface VideoPlayerState {
-  videoPlayer: HTMLVideoElement | null;
   videoEnded: boolean;
   mkvCurrentTime: number;
   currentTime: number;
@@ -12,7 +11,6 @@ interface VideoPlayerState {
 }
 
 const initialState: VideoPlayerState = {
-  videoPlayer: {} as HTMLVideoElement,
   currentVideo: {} as VideoDataModel,
   videoEnded: false,
   mkvCurrentTime: 0,
@@ -30,14 +28,16 @@ const videoPlayerSlice = createSlice({
     clearCurrentVideo: (state) => {
       state.currentVideo = null;
     },
-    setVideoPlayer: (state, action) => {
-      state.videoPlayer = action.payload;
+    setVideoPlayer: (state, action: PayloadAction<HTMLVideoElement>) => {
+      // Deprecated: HTMLVideoElement is now managed via VideoPlayerContext.
+      // This reducer exists only for backward compatibility during migration.
+      // New code should use useVideoPlayerContext() instead.
     },
     setVideoEnded: (state, action: PayloadAction<boolean>) => {
       state.videoEnded = action.payload;
     },
     clearVideoPlayer: (state) => {
-      state.videoPlayer = null;
+      // Deprecated: HTMLVideoElement is now managed via VideoPlayerContext.
     },
     setMkvCurrentTime: (state, action: PayloadAction<number>) => {
       state.mkvCurrentTime = action.payload;
@@ -53,7 +53,6 @@ const videoPlayerSlice = createSlice({
 
 const videoPlayerActions = videoPlayerSlice.actions;
 
-const selVideoPlayer = (state: RootState) => state.videoPlayer.videoPlayer;
 const selVideoEnded = (state: RootState) => state.videoPlayer.videoEnded;
 const selMkvCurrentTime = (state: RootState) =>
   state.videoPlayer.mkvCurrentTime;
@@ -65,7 +64,6 @@ const selCurrentVideo = (state: RootState) => state.videoPlayer.currentVideo;
 export {
   videoPlayerSlice,
   videoPlayerActions,
-  selVideoPlayer,
   selVideoEnded,
   selMkvCurrentTime,
   selCurrentTime,

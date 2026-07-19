@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import { selVideoPlayer } from "../store/videoPlayer.slice";
+import { useVideoPlayerContext } from "../contexts/VideoPlayerContext";
 import { v4 as uuidv4 } from "uuid";
 import { NoteModel } from "../../models/note.model";
 import { VideoDataModel } from "../../models/videoData.model";
 import { OverviewModel } from "../../models/overview.model";
 
 export const useNoteListLogic = () => {
-  const player = useSelector(selVideoPlayer);
+  const { videoPlayerRef } = useVideoPlayerContext();
+  const player = videoPlayerRef.current;
 
   const [showTextEditor, setShowTextEditor] = useState(false);
 

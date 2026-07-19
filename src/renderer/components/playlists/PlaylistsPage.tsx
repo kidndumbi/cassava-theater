@@ -8,7 +8,7 @@ import { AppTextField } from "../common/AppTextField";
 import { v4 as uuidv4 } from "uuid";
 import { PlaylistModel } from "../../../models/playlist.model";
 import { usePlaylists } from "../../hooks/usePlaylists";
-import { QueryClient, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { VideoDataModel } from "../../../models/videoData.model";
 import { useTmdbImageUrl } from "../../hooks/useImageUrl";
 import { getUrl } from "../../util/helperFunctions";
@@ -26,6 +26,7 @@ import { AppListPanel, DragMenuItem } from "../common/AppListPanel";
 import { useDragState } from "../../hooks/useDragState";
 import { AppDrop } from "../common/AppDrop";
 import { useSaveJsonData } from "../../hooks/useSaveJsonData";
+import { rendererLoggingService as rlog } from "../../util/renderer-logging.service";
 
 export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
   const navigate = useNavigate();
@@ -132,15 +133,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
     },
   });
 
-  const queryClient = new QueryClient();
-
-  const { mutateAsync: saveJsonData } = useSaveJsonData((_, variables) => {
-    if (variables) {
-      queryClient.invalidateQueries({
-        queryKey: ["videoDetails", variables.currentVideo.filePath, "movies"],
-      });
-    }
-  });
+  const { mutateAsync: saveJsonData } = useSaveJsonData();
 
   const handleAddPlaylist = newPlaylistModal.openModal;
 
@@ -260,7 +253,7 @@ export const PlaylistsPage = ({ menuId }: { menuId: string }) => {
         );
       })
       .catch((error) => {
-        console.error("Error resetting video current time:", error);
+        rlog.error("Error resetting video current time:", error);
       });
   };
 
