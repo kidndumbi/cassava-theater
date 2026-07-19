@@ -5,7 +5,26 @@ import axios, { isAxiosError } from "axios";
 import { getMainWindow } from "../mainWindowManager";
 import { v4 as uuidv4 } from "uuid";
 
-const OLLAMA_API_URL = "http://localhost:11434/api/generate";
+const OLLAMA_BASE_URL = "http://localhost:11434";
+
+function getOllamaApiUrl(): string {
+  const url = getBaseUrlFromSettings();
+  return `${url}/api/generate`;
+}
+
+function getOllamaTagsUrl(): string {
+  const url = getBaseUrlFromSettings();
+  return `${url}/api/tags`;
+}
+
+/**
+ * Returns the Ollama base URL from the app settings, falling back to the default localhost address.
+ */
+function getBaseUrlFromSettings(): string {
+  const envUrl = process.env.OLLAMA_API_URL;
+  if (envUrl) return envUrl.replace(/\/$/, "");
+  return OLLAMA_BASE_URL;
+}
 
 interface OllamaRequest {
   model: string;
@@ -19,7 +38,7 @@ interface OllamaModelsResponse {
 export const getAvailableModels = async (): Promise<OllamaModel[]> => {
   try {
     const response = await axios.get<OllamaModelsResponse>(
-      "http://localhost:11434/api/tags",
+      getOllamaTagsUrl(),
     );
     return response.data.models;
   } catch (error) {
@@ -31,7 +50,7 @@ export const getAvailableModels = async (): Promise<OllamaModel[]> => {
 const activeStreams = new Map<string, AbortController>();
 
 const makeOllamaRequest = async (request: OllamaRequest, options = {}) => {
-  return axios.post(OLLAMA_API_URL, request, {
+  return axios.post(getOllamaApiUrl(), request, {
     responseType: "stream",
     ...options,
   });
@@ -43,7 +62,7 @@ const processError = (error: unknown): Error => {
   if (isAxiosError(error)) {
     if (error.response?.status === 404) {
       return new Error(
-        "LLM service not found. Please check if Ollama is running on http://localhost:11434 and the API endpoint is correct.",
+        "LLM service not found. Please check if Ollama is running and the API endpoint is correct.",
       );
     } else if (error.response?.status) {
       return new Error(
@@ -51,7 +70,7 @@ const processError = (error: unknown): Error => {
       );
     } else if (error.code === "ECONNREFUSED") {
       return new Error(
-        "Cannot connect to LLM service. Please ensure Ollama is running on http://localhost:11434",
+        "Cannot connect to LLM service. Please ensure Ollama is running.",
       );
     }
   }
@@ -227,14 +246,14 @@ export const pingOllamaServer = async (
 ): Promise<boolean> => {
   try {
     await axios.post(
-      OLLAMA_API_URL,
+      getOllamaApiUrl(),
       {
         model,
         prompt: "Hi",
         stream: false,
       },
       {
-        timeout: 60000, // 30 second timeout
+        timeout: 30000,
       },
     );
     return true;
