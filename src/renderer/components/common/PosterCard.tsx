@@ -56,7 +56,7 @@ export const PosterCard: React.FC<PosterCardProps> = ({
               "&:hover": {
                 transform: "scale(1.40)",
                 zIndex: 5,
-                backgroundColor: "#000",
+                backgroundColor: theme.customVariables.appDark,
               },
             }
           : {}),
