@@ -129,9 +129,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       ref={scrollContainerRef}
       style={{
         ...style,
-        overflowY: "auto",
-        paddingTop: "20px",
-        maxHeight: "calc(100vh - 50px)",
+        padding: "100px 80px",
       }}
     >
       <AppIconButton

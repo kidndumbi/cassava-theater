@@ -105,7 +105,7 @@ export const Movies: React.FC<MoviesProps> = ({
   );
 
   return (
-    <Box style={{ ...style, overflowY: "auto" }}>
+    <Box style={{ ...style, overflow: "visible" }}>
       <SearchHeader
         onRefresh={handleRefresh}
         filter={filter}

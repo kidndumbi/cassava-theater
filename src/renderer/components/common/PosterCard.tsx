@@ -41,7 +41,20 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   return (
     <Box
       className={`m-1 flex flex-col`}
-      sx={{ maxWidth: width, minWidth: width, position: "relative" }}
+      sx={{
+        maxWidth: width,
+        minWidth: width,
+        position: "relative",
+        transition: "transform 0.3s ease",
+        overflow: "hidden",
+        border: "3px solid transparent",
+        borderRadius: "8px",
+        "&:hover": {
+          transform: "scale(1.40)",
+          zIndex: 9999,
+          backgroundColor: "#000",
+        },
+      }}
     >
       {showVideoType && video?.filePath && (
         <Box
