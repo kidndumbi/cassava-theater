@@ -4,8 +4,7 @@ import { PlaylistModel } from "../../../models/playlist.model";
 import AppIconButton from "../common/AppIconButton";
 import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
-import { useSelector } from "react-redux";
-import { selVideoPlayer } from "../../store/videoPlayer.slice";
+import { useVideoPlayerContext } from "../../contexts/VideoPlayerContext";
 import { useEffect, useState } from "react";
 import { useUpdatePlaylist } from "../../hooks/useUpdatePlaylist";
 import { useVideoListLogic } from "../../hooks/useVideoListLogic";
@@ -23,7 +22,8 @@ export const PlaylistDrawerPanel = ({
   currentVideo,
   onPlayVideo,
 }: PlaylistDrawerPanelProps) => {
-  const player = useSelector(selVideoPlayer);
+  const { videoPlayerRef } = useVideoPlayerContext();
+  const player = videoPlayerRef.current;
   const { setCurrentVideo } = useVideoListLogic();
 
   const [playlistVideos, setPlaylistVideos] = useState<VideoDataModel[]>([]);

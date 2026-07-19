@@ -7,8 +7,7 @@ import {
   sec,
 } from "../util/helperFunctions";
 import { useLocalStorage } from "@uidotdev/usehooks";
-import { useSelector } from "react-redux";
-import { selVideoPlayer } from "../store/videoPlayer.slice";
+import { useVideoPlayerContext } from "../contexts/VideoPlayerContext";
 import { useVideoPlayerLogic } from "./useVideoPlayerLogic";
 
 export const useVideoPlayer = (
@@ -17,13 +16,13 @@ export const useVideoPlayer = (
   startFromBeginning?: boolean,
   triggeredOnPlayInterval?: () => void,
 ) => {
-  const { setMkvCurrentTime } = useVideoPlayerLogic();
+  const { videoPlayerRef, setMkvCurrentTime: ctxSetMkvCurrentTime } = useVideoPlayerContext();
   const [currentTime, setCurrentTime] = useState(0);
   const [playedPercentage, setPlayedPercentage] = useState(0);
   const [formattedTime, setFormattedTime] = useState("");
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [volume, setVolume] = useLocalStorage("volume", 1);
-  const globalVideoPlayer = useSelector(selVideoPlayer);
+  const globalVideoPlayer = videoPlayerRef.current;
 
   // Helper function to calculate stopwatch offset
   const getStopwatchOffset = (currentTime = 0) => {
@@ -51,7 +50,7 @@ export const useVideoPlayer = (
   // Update totalSecondsRef and formatted time
   useEffect(() => {
     totalSecondsRef.current = totalSeconds;
-    setMkvCurrentTime(totalSecondsRef.current);
+    ctxSetMkvCurrentTime(totalSecondsRef.current);
     setFormattedTime(formatTime(hours, minutes, seconds));
   }, [totalSeconds, hours, minutes, seconds]);
 

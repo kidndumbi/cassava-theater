@@ -32,6 +32,7 @@ import { ConfirmationProvider } from "./renderer/contexts/ConfirmationContext";
 import { StatusDisplay } from "./renderer/components/StatusDisplay";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { VideoPlayerProvider } from "./renderer/contexts/VideoPlayerContext";
 import { Mp4ConversionEvents } from "./Mp4ConversionEvents";
 import { SubtitleGenerationEvents } from "./SubtitleGenerationEvents";
 import { SubtitleSyncEvents } from "./SubtitleSyncEvents";
@@ -127,7 +128,9 @@ root.render(
         <Provider store={store}>
           <QueryClientProvider client={queryClient}>
             <DndProvider backend={HTML5Backend}>
-              <App />
+              <VideoPlayerProvider>
+                <App />
+              </VideoPlayerProvider>
               <Mp4ConversionEvents />
               <SubtitleGenerationEvents />
               <SubtitleSyncEvents />
