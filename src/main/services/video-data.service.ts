@@ -153,7 +153,7 @@ export const fetchRecentlyWatchedVideosData = async (
     return filtered;
   } catch (error) {
     log.error("Error fetching sorted video list: ", error);
-    throw new Error("Error fetching sorted video list: " + error);
+    throw error;
   }
 };
 
@@ -204,7 +204,7 @@ export const fetchVideosData = async ({
     return data;
   } catch (error) {
     log.error("Error fetching video list: ", error);
-    throw new Error("Error fetching video list: " + error);
+    throw error;
   }
 };
 
@@ -267,7 +267,7 @@ export const AddTvShowFolder = async (data: {
     return videoData;
   } catch (error) {
     log.error("Error adding TV show folder: ", error);
-    throw new Error("Error adding TV show folder: " + error);
+    throw error;
   }
 };
 
@@ -336,7 +336,7 @@ export const fetchVideoDetails = async (
     return processedVideoData;
   } catch (error) {
     log.error("Error fetching video details: ", error);
-    throw new Error("Error fetching video details: " + error);
+    throw error;
   }
 };
 
@@ -387,7 +387,7 @@ export const fetchFolderDetails = async (
     return videoDetails;
   } catch (error) {
     log.error("Error fetching Folder details: ", error);
-    throw new Error("Error fetching Folder details: " + error);
+    throw error;
   }
 };
 
