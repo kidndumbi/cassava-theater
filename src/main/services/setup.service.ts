@@ -7,25 +7,39 @@ import { loggingService as log } from "./main-logging.service";
 
 let libreTranslateProcess: ChildProcess | null = null;
 
-export const initializeFfmpeg = () => {
-  let ffprobePath = path.join(
+function getFfprobeBinaryPath(): string {
+  const platform = process.platform;
+  const arch = process.arch === "x64" ? "x64" : process.arch;
+
+  const binaryName = platform === "win32" ? "ffprobe.exe" : "ffprobe";
+
+  if (app.isPackaged) {
+    return path.join(process.resourcesPath, binaryName);
+  }
+
+  let platformDir = "win32";
+  if (platform === "darwin") platformDir = "darwin";
+  else if (platform === "linux") platformDir = "linux";
+
+  return path.join(
     app.getAppPath(),
     "node_modules",
     "ffprobe-static",
     "bin",
-    "win32",
-    "x64",
-    "ffprobe.exe",
+    platformDir,
+    arch,
+    binaryName,
   );
+}
 
-  if (app.isPackaged) {
-    ffprobePath = path.join(process.resourcesPath, "ffprobe.exe");
-  }
+export const initializeFfmpeg = () => {
+  const ffprobePath = getFfprobeBinaryPath();
 
   if (fs.existsSync(ffprobePath)) {
     ffmpeg.setFfprobePath(ffprobePath);
+    log.info(`ffprobe path resolved: ${ffprobePath}`);
   } else {
-    log.error("ffprobe.exe does not exist at the resolved path.");
+    log.error(`ffprobe binary not found at: ${ffprobePath}`);
     throw new Error(
       "ffprobe binary not found. Please ensure ffprobe-static is installed correctly.",
     );
@@ -36,9 +50,10 @@ export const initializeLibreTranslate = () => {
   try {
     log.info("🌐 Starting LibreTranslate server...");
     
-    libreTranslateProcess = spawn('libretranslate', ['--load-only', 'en,es,fr'], {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      detached: false
+    const languages = process.env.LIBRETRANSLATE_LANGUAGES || "en,es,fr";
+    libreTranslateProcess = spawn("libretranslate", ["--load-only", languages], {
+      stdio: ["ignore", "pipe", "pipe"],
+      detached: false,
     });
 
     log.info(`🚀 LibreTranslate process started with PID: ${libreTranslateProcess.pid}`);

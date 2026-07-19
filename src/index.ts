@@ -23,7 +23,10 @@ if (require("electron-squirrel-startup")) {
 
 appSetup.initializeFfmpeg();
 appSetup.initializeLibreTranslate();
-cleanUp.runAppOpeningCleanup();
+// Fire-and-forget cleanup — failures during cleanup should not block app startup
+cleanUp.runAppOpeningCleanup().catch((err) => {
+  log.error("App opening cleanup failed:", err);
+});
 
 // Main Window Management
 let mainWindow: BrowserWindow | null = null;
@@ -37,8 +40,8 @@ const createWindow = (): BrowserWindow => {
     minHeight: 600,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
-      // contextIsolation: true,
-      // sandbox: true,
+      contextIsolation: true,
+      sandbox: true,
     },
     autoHideMenuBar: true,
     show: false,

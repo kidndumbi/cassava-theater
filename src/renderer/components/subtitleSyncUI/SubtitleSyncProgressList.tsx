@@ -106,7 +106,7 @@ export const SubtitleSyncProgressList = ({
             }}
             buttonText="Cancel"
             itemDroped={(item: DragSubtitleSyncProgressItem) => {
-              handleCancel(item.progressData.id);
+              handleCancel(item.progressData.id ?? "");
             }}
             accept={["SUBTITLE_SYNC"]}
             backgroundColor={theme.palette.primary.main}

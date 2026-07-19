@@ -53,6 +53,12 @@ const App = () => {
   const userConnectionStatus = useRef<boolean | null>(null);
   const { setCurrentVideo } = useVideoListLogic();
 
+  // Use refs to avoid stale closures in the one-time effect below
+  const showSnackbarRef = useRef(showSnackbar);
+  showSnackbarRef.current = showSnackbar;
+  const setCurrentVideoRef = useRef(setCurrentVideo);
+  setCurrentVideoRef.current = setCurrentVideo;
+
   useEffect(() => {
     userConnectionStatus.current =
       settings?.notifications?.userConnectionStatus ?? null;
@@ -61,7 +67,7 @@ const App = () => {
   useEffect(() => {
     window.llmAPI.pingOllamaServer().then((isConnected) => {
       if (!isConnected) {
-        showSnackbar("Ollama server is not connected", "error");
+        showSnackbarRef.current("Ollama server is not connected", "error");
       }
     });
 
@@ -74,10 +80,10 @@ const App = () => {
         playlistCommandsHandler(
           command,
           (nextVideo: VideoDataModel) => {
-            setCurrentVideo(nextVideo);
+            setCurrentVideoRef.current(nextVideo);
           },
           (previousVideo: VideoDataModel) => {
-            setCurrentVideo(previousVideo);
+            setCurrentVideoRef.current(previousVideo);
           },
         );
       },
@@ -85,13 +91,13 @@ const App = () => {
 
     window.mainNotificationsAPI.userConnected((userId: string) => {
       if (userConnectionStatus.current) {
-        showSnackbar("User connected: " + userId, "success");
+        showSnackbarRef.current("User connected: " + userId, "success");
       }
     });
 
     window.mainNotificationsAPI.userDisconnected((userId: string) => {
       if (userConnectionStatus.current) {
-        showSnackbar("User disconnected: " + userId, "error");
+        showSnackbarRef.current("User disconnected: " + userId, "error");
       }
     });
   }, []);

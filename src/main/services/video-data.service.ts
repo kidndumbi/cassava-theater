@@ -153,7 +153,7 @@ export const fetchRecentlyWatchedVideosData = async (
     return filtered;
   } catch (error) {
     log.error("Error fetching sorted video list: ", error);
-    throw new Error("Error fetching sorted video list: " + error);
+    throw error;
   }
 };
 
@@ -204,7 +204,7 @@ export const fetchVideosData = async ({
     return data;
   } catch (error) {
     log.error("Error fetching video list: ", error);
-    throw new Error("Error fetching video list: " + error);
+    throw error;
   }
 };
 
@@ -267,7 +267,7 @@ export const AddTvShowFolder = async (data: {
     return videoData;
   } catch (error) {
     log.error("Error adding TV show folder: ", error);
-    throw new Error("Error adding TV show folder: " + error);
+    throw error;
   }
 };
 
@@ -336,7 +336,7 @@ export const fetchVideoDetails = async (
     return processedVideoData;
   } catch (error) {
     log.error("Error fetching video details: ", error);
-    throw new Error("Error fetching video details: " + error);
+    throw error;
   }
 };
 
@@ -387,7 +387,7 @@ export const fetchFolderDetails = async (
     return videoDetails;
   } catch (error) {
     log.error("Error fetching Folder details: ", error);
-    throw new Error("Error fetching Folder details: " + error);
+    throw error;
   }
 };
 
@@ -403,7 +403,7 @@ export const getVideoJsonData = async (
     };
 
     if (!currentVideo || !currentVideo.filePath) {
-      console.warn(
+      log.warn(
         "Warning: Received undefined or invalid currentVideo.filepath.",
       );
       return EMPTY_JSON_RESPONSE;
@@ -419,7 +419,7 @@ export const getVideoJsonData = async (
     
     return result;
   } catch (error) {
-    console.error("An error occurred:", error);
+    log.error("An error occurred:", error);
     return null;
   }
 };
@@ -435,9 +435,9 @@ export const saveVideoJsonData = async (
 
   const handleError = (error: unknown) => {
     if (error instanceof Error) {
-      console.error("An error occurred:", error.message);
+      log.error("An error occurred:", error.message);
     } else {
-      console.error("An unknown error occurred:", error);
+      log.error("An unknown error occurred:", error);
     }
     throw new Error("Failed to save video JSON data");
   };
@@ -446,7 +446,7 @@ export const saveVideoJsonData = async (
     if (newVideoJsonData && newVideoJsonData.videoProgressScreenshot) {
       newVideoJsonData.videoProgressScreenshot = undefined;
     }
-    console.log(`Saving video JSON data for ${newFilePath}:`, newVideoJsonData);
+    log.info(`Saving video JSON data for ${newFilePath}:`, newVideoJsonData);
     await videoDbDataService.putVideo(
       normalizeFilePath(newFilePath),
       newVideoJsonData,
@@ -487,7 +487,7 @@ export const saveCurrentTime = async (
     videoDbData.watched = currentTime !== 0;
     videoDbData.lastVideoPlayedDate = new Date().toISOString();
 
-    videoDbDataService.putVideo(
+    await videoDbDataService.putVideo(
       normalizeFilePath(currentVideo.filePath),
       videoDbData,
     );

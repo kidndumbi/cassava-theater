@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
     "jsx": "react-jsx",
-    "target": "ES6",
+    "target": "ES2022",
     "allowJs": true,
     "module": "commonjs",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "noImplicitAny": true,
+    "strict": true,
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "dist",
-    "moduleResolution": "node",
+    "moduleResolution": "node10",
     "resolveJsonModule": true,
     "paths": {
       "*": ["node_modules/*"]

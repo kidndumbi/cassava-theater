@@ -1,0 +1,42 @@
+import "electron-log/preload";
+
+import { exposeSettingsApi } from "./settings.preload";
+import { exposeOpenDialogApi } from "./openDialog.preload";
+import { exposeVideoApi } from "./video.preload";
+import { exposeTheMovieDbApi } from "./theMovieDb.preload";
+import { exposeFileManagerApi } from "./fileManager.preload";
+import { exposeTranslationApi } from "./translation.preload";
+import { exposePlaylistApi } from "./playlist.preload";
+import { exposeYoutubeApi } from "./youtube.preload";
+import { exposeMp4ConversionApi } from "./mp4Conversion.preload";
+import { exposeLlmApi } from "./llm.preload";
+import { exposeSubtitleApi } from "./subtitle.preload";
+import { exposeSubtitleSyncApi } from "./subtitleSync.preload";
+import { exposeLanguageLearningApi } from "./languageLearning.preload";
+import { exposeTagApi } from "./tag.preload";
+import { exposeVocabularyApi } from "./vocabulary.preload";
+import { exposeVerbTaggingApi } from "./verbTagging.preload";
+import { exposeMainUtilApi } from "./mainUtil.preload";
+import { exposeCurrentlyPlayingApi } from "./currentlyPlaying.preload";
+import { exposeNotificationsApi } from "./notifications.preload";
+
+// Expose all APIs to the renderer process
+exposeSettingsApi();
+exposeOpenDialogApi();
+exposeVideoApi();
+exposeTheMovieDbApi();
+exposeFileManagerApi();
+exposeTranslationApi();
+exposePlaylistApi();
+exposeYoutubeApi();
+exposeMp4ConversionApi();
+exposeLlmApi();
+exposeSubtitleApi();
+exposeSubtitleSyncApi();
+exposeLanguageLearningApi();
+exposeTagApi();
+exposeVocabularyApi();
+exposeVerbTaggingApi();
+exposeMainUtilApi();
+exposeCurrentlyPlayingApi();
+exposeNotificationsApi();

@@ -105,7 +105,7 @@ const cleanUpVideoData = async () => {
   }
 };
 
-export const runAppOpeningCleanup = () => {
-  deleteMarkedForDeletion();
-  cleanUpVideoData();
+export const runAppOpeningCleanup = async (): Promise<void> => {
+  await deleteMarkedForDeletion();
+  await cleanUpVideoData();
 };

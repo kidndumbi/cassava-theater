@@ -81,14 +81,9 @@ export const Movies: React.FC<MoviesProps> = ({
   const [randomMovie, setRandomMovie] = useState<VideoDataModel | null>(null);
 
   const getRandomMovie = () => {
-    const intervalId = setInterval(() => {
-      const randomIndex = Math.floor(Math.random() * movies?.length);
-      setRandomMovie(movies[randomIndex]);
-    }, 100);
-
-    setTimeout(() => {
-      clearInterval(intervalId);
-    }, 2000);
+    if (!movies?.length) return;
+    const randomIndex = Math.floor(Math.random() * movies.length);
+    setRandomMovie(movies[randomIndex]);
   };
 
   const getImageUrl = useCallback(
@@ -105,7 +100,7 @@ export const Movies: React.FC<MoviesProps> = ({
   );
 
   return (
-    <Box style={{ ...style, overflow: "visible" }}>
+    <Box sx={{ overflow: "visible" }}>
       <SearchHeader
         onRefresh={handleRefresh}
         filter={filter}
