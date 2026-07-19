@@ -41,7 +41,7 @@ export const CustomFolderVideoCard: React.FC<CustomFolderVideoCardProps> = ({
     }),
   });
 
-  const previewSrc = useDragPreviewImage(video.fileName);
+  const previewSrc = useDragPreviewImage(video.fileName ?? "");
 
   React.useEffect(() => {
     dragging(isDragging, idx);
@@ -51,7 +51,7 @@ export const CustomFolderVideoCard: React.FC<CustomFolderVideoCardProps> = ({
 
   return (
     <>
-      <DragPreviewImage connect={dragPreview} src={previewSrc} />
+      <DragPreviewImage connect={dragPreview} src={previewSrc ?? ""} />
       <div ref={ref}>
         <AppContextMenu
           key={video.filePath || idx}
@@ -60,7 +60,7 @@ export const CustomFolderVideoCard: React.FC<CustomFolderVideoCardProps> = ({
         >
           {displayType === "grid" && (
             <PosterCard
-              imageUrl={getImageUrl(video)}
+              imageUrl={getImageUrl(video) ?? ""}
               altText={video.fileName || ""}
               footer={trimFileName(video.fileName || "")}
               onClick={() => onClick(video)}
@@ -74,7 +74,7 @@ export const CustomFolderVideoCard: React.FC<CustomFolderVideoCardProps> = ({
               video={video}
               getImageUrl={getImageUrl}
               onClick={onClick}
-              showVideoType={settings?.showVideoType}
+              showVideoType={settings?.showVideoType ?? false}
             />
           )}
         </AppContextMenu>
