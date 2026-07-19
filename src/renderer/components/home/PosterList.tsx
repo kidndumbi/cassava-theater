@@ -58,7 +58,7 @@ export const PosterList = ({ children }: ListProps) => {
             onClick={scrollLeft}
             sx={{
               color: theme.customVariables.appWhiteSmoke,
-              backgroundColor: `${theme.customVariables.appDark}CC`, // 80% opacity
+              backgroundColor: `${theme.customVariables.appDark}CC`,
               "&:hover": {
                 backgroundColor: `${theme.customVariables.appDark}CC`,
               },
@@ -82,7 +82,7 @@ export const PosterList = ({ children }: ListProps) => {
             onClick={scrollRight}
             sx={{
               color: theme.customVariables.appWhiteSmoke,
-              backgroundColor: `${theme.customVariables.appDark}CC`, // 80% opacity
+              backgroundColor: `${theme.customVariables.appDark}CC`,
               "&:hover": {
                 backgroundColor: `${theme.customVariables.appDark}CC`,
               },

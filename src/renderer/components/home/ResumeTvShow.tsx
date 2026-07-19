@@ -97,6 +97,7 @@ const ResumeTvShow: React.FC<ResumeTvShowProps> = ({
       onMouseLeave={() => setShowActions(false)}
     >
       <PosterCard
+        disableHover
         imageUrl={imageUrl}
         altText={tvShow.fileName ?? "Unknown"}
         currentTime={tvShow.lastVideoPlayedTime ?? undefined}

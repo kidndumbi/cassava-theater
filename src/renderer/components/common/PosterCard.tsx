@@ -17,6 +17,7 @@ interface PosterCardProps {
   duration?: number;
   video?: VideoDataModel;
   showVideoType?: boolean;
+  disableHover?: boolean;
 }
 
 export const PosterCard: React.FC<PosterCardProps> = ({
@@ -30,6 +31,7 @@ export const PosterCard: React.FC<PosterCardProps> = ({
   duration,
   video,
   showVideoType = false,
+  disableHover = false,
 }) => {
   const [hasError, setHasError] = useState(false);
 
@@ -49,11 +51,15 @@ export const PosterCard: React.FC<PosterCardProps> = ({
         overflow: "hidden",
         border: "3px solid transparent",
         borderRadius: "8px",
-        "&:hover": {
-          transform: "scale(1.40)",
-          zIndex: 9999,
-          backgroundColor: "#000",
-        },
+        ...(!disableHover
+          ? {
+              "&:hover": {
+                transform: "scale(1.40)",
+                zIndex: 5,
+                backgroundColor: "#000",
+              },
+            }
+          : {}),
       }}
     >
       {showVideoType && video?.filePath && (

@@ -68,6 +68,7 @@ export const WatchLater: React.FC<WatchLaterMovieCardProps> = ({
         menuItems={getMenuItems(movie)}
       >
         <PosterCard
+          disableHover
           imageUrl={getImageUlr() ?? ""}
           altText={movie.fileName ?? "Unknown Title"}
           footer={
