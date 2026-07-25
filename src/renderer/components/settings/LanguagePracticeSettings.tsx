@@ -182,7 +182,7 @@ export const LanguagePracticeSettings: React.FC = () => {
     try {
       const client = new OpenAI({ apiKey: key, baseURL: "https://api.deepseek.com", dangerouslyAllowBrowser: true });
       await client.chat.completions.create({
-        model: "deepseek-chat",
+        model: "deepseek-v4-flash",
         messages: [{ role: "user", content: "Hi" }],
         max_tokens: 5,
         stream: false,
@@ -200,7 +200,7 @@ export const LanguagePracticeSettings: React.FC = () => {
     if (!key) throw new Error("No DeepSeek API key configured. Save your key in the DeepSeek API Key section below.");
     const client = new OpenAI({ apiKey: key, baseURL: "https://api.deepseek.com", dangerouslyAllowBrowser: true });
     const res = await client.chat.completions.create({
-      model: "deepseek-chat",
+      model: "deepseek-v4-flash",
       messages: [{ role: "user", content: prompt }],
       stream: false,
     });

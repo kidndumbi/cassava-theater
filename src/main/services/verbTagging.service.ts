@@ -62,7 +62,7 @@ async function generateWithLLM(
       baseURL: "https://api.deepseek.com",
     });
     const res = await client.chat.completions.create({
-      model: "deepseek-chat",
+      model: "deepseek-v4-flash",
       messages: [{ role: "user", content: prompt }],
       stream: false,
     });
